@@ -1,0 +1,188 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: StringTable Shared Data
+  m_EditorClassIdentifier: 
+  m_TableCollectionName: StringTable
+  m_TableCollectionNameGuidString: 7d8d57bedebf1954db92f72969b59263
+  m_Entries:
+  - m_Id: 88301023232
+    m_Key: Play
+    m_Metadata:
+      m_Items: []
+  - m_Id: 574282444800
+    m_Key: Language
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26808395673600
+    m_Key: MouseSens
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27030165303296
+    m_Key: Oflline
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27180690485248
+    m_Key: Settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27238353776640
+    m_Key: Exit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27356159193088
+    m_Key: General
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27414908809216
+    m_Key: Grap
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27504130043904
+    m_Key: Audio
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27565803089920
+    m_Key: Back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28147393671168
+    m_Key: Credits
+    m_Metadata:
+      m_Items: []
+  - m_Id: 118380277706752
+    m_Key: Save
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4669780596797440
+    m_Key: Customize
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4669983794049024
+    m_Key: Day
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4670284437565440
+    m_Key: INTENSIVE DAY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4670557176377344
+    m_Key: DELIVERY BONUS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4670594551820288
+    m_Key: ANGRY CUSTOMERS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4670644065579008
+    m_Key: RELAXED DAY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4670683781443584
+    m_Key: SLOW LOGISTICS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4670721878306816
+    m_Key: EXPRESS CARGO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4670821572718592
+    m_Key: HEAVY BOXES
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4670864191041536
+    m_Key: GOLDEN BOX DAY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4670907031662592
+    m_Key: OPPORTUNITY DAY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4670942314147840
+    m_Key: FATIGUE PROBLEM
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4671003622289408
+    m_Key: VIP SERVICE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4671211781402624
+    m_Key: CharacterC
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4671355847356416
+    m_Key: accs
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4671495475736576
+    m_Key: Face
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4671520289239040
+    m_Key: Glasses
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4671581857427456
+    m_Key: GLOVES
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4671685976829952
+    m_Key: Hairs
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4671905867411456
+    m_Key: Hats
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4671966126977024
+    m_Key: Mustache
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4672063447412736
+    m_Key: Outerwear
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4672192313208832
+    m_Key: Pant
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4672235917193216
+    m_Key: Shoes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4672275557560320
+    m_Key: SkinC
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4672388858294272
+    m_Key: Prestige
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4672484777832448
+    m_Key: Next
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4672617426890752
+    m_Key: Continue
+    m_Metadata:
+      m_Items: []
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 5332238030163411043
+  references:
+    version: 2
+    RefIds:
+    - rid: 5332238030163411043
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1754916717504

@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed5bd7c844f447849955a6f2faf30057, type: 3}
+  m_Name: YellowBox
+  m_EditorClassIdentifier: 
+  itemName: YellowBox
+  visualPrefab: {fileID: 7458859209666148350, guid: ad258e225a95b604b97de573e5024a30, type: 3}
+  worldPrefab: {fileID: 7458859209666148350, guid: 38b5581f067480140b7ab9ea4926dbd2, type: 3}
+  throwForce: 10
+  itemID: 2
+  itemCategory: 0

@@ -1,0 +1,183 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: StringTable_tr
+  m_EditorClassIdentifier: 
+  m_LocaleId:
+    m_Code: tr
+  m_SharedData: {fileID: 11400000, guid: 7d8d57bedebf1954db92f72969b59263, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 88301023232
+    m_Localized: Cok Oyunculu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 574282444800
+    m_Localized: "D\u0131l"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26808395673600
+    m_Localized: "Mouse Hassasiyet\u0131"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27030165303296
+    m_Localized: "Cevr\u0131m D\u0131s\u0131"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27180690485248
+    m_Localized: Ayarlar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27238353776640
+    m_Localized: "C\u0131k\u0131s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27356159193088
+    m_Localized: Genel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27414908809216
+    m_Localized: "Graf\u0131kler"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27504130043904
+    m_Localized: Ses
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27565803089920
+    m_Localized: "Ger\u0131"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28147393671168
+    m_Localized: "Katk\u0131"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 118380277706752
+    m_Localized: Kaydet
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4669780596797440
+    m_Localized: "Kozmat\u0131kler"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4669983794049024
+    m_Localized: Gun
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4670284437565440
+    m_Localized: YOGUN GUN
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4670557176377344
+    m_Localized: TESLIMAT BONUSU
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4670594551820288
+    m_Localized: OFKELI MUSTERILER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4670644065579008
+    m_Localized: RAHAT BIR GUN
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4670683781443584
+    m_Localized: "YAVA\u015E LOJISTIK"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4670721878306816
+    m_Localized: EKSPRES KARGO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4670821572718592
+    m_Localized: AGIR KUTULAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4670864191041536
+    m_Localized: "ALTIN \u200B\u200BKUTU GUNU"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4670907031662592
+    m_Localized: FIRSAT GUNU
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4670942314147840
+    m_Localized: YORGUNLUK SORUNU
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4671003622289408
+    m_Localized: "VIP H\u0130ZMET"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4671211781402624
+    m_Localized: "Karakter Kozmat\u0131kler\u0131"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4671355847356416
+    m_Localized: Aksesuarlar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4671495475736576
+    m_Localized: Yuzler
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4671520289239040
+    m_Localized: Gozlukler
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4671581857427456
+    m_Localized: "Eld\u0131venler"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4671685976829952
+    m_Localized: "Sa\xE7 St\u0131ller\u0131"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4671905867411456
+    m_Localized: Sapkalar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4671966126977024
+    m_Localized: "B\u0131y\u0131klar"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4672063447412736
+    m_Localized: "D\u0131\u015F G\u0131y\u0131m"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4672192313208832
+    m_Localized: Pantalonlar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4672235917193216
+    m_Localized: "Ayakkab\u0131lar"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4672275557560320
+    m_Localized: "Ten Reng\u0131"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4672388858294272
+    m_Localized: PRESTIJ
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4672484777832448
+    m_Localized: "S\u0131radak\u0131 Gun"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4672617426890752
+    m_Localized: Devam Et
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 1
+    path: Assets/MainMenu/MainMenu.unity
+    guid: 30b58170c61257547a15aedada8058db
+  - enabled: 1
+    path: Assets/Scenes/Map1.unity
+    guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 0
+    path: Assets/MainMenu/OnlineRoom.unity
+    guid: 271c24a17497f94498d325c4bb70fa71
+  m_configObjects:
+    com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: 91c865e435557a346a0c41457a3b3255, type: 2}
+    com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: ba23e2938a7f2ef408633e4746c88ada, type: 2}
+    com.unity.addressableassets: {fileID: 11400000, guid: 54b59d19631e21148a07216eb100ddbe, type: 2}
+    com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+    com.unity.localization.settings: {fileID: 11400000, guid: 96fd4d5a9084a1a47b3b145cc76000da, type: 2}
+  m_UseUCBPForAssetBundles: 0

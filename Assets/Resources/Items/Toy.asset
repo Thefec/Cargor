@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed5bd7c844f447849955a6f2faf30057, type: 3}
+  m_Name: Toy
+  m_EditorClassIdentifier: 
+  itemName: Toy
+  visualPrefab: {fileID: 5012447057166926047, guid: 2d47149a8f5ad6548ad3a7fefa7df8fe, type: 3}
+  worldPrefab: {fileID: 5012447057166926047, guid: fe7b6eb1396687d44b68db0e21c7eaa3, type: 3}
+  throwForce: 10
+  itemID: 9
+  itemCategory: 1
