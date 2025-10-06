@@ -1,24 +1,26 @@
 using UnityEngine;
 using System.Collections.Generic;
 using Unity.Netcode;
-using Unity.Collections; // FixedString64Bytes için gerekli
+using Unity.Collections;
 
 namespace NewCss
 {
     public class EventEffectManager : NetworkBehaviour
     {
-        [Header("Manager References")] public CustomerManager customerManager;
-        public UpgradePanel upgradePanel; // For Opportunity Day (future)
+        [Header("Manager References")]
+        public CustomerManager customerManager;
+        public UpgradePanel upgradePanel;
         public StaminaBar staminaBar;
         public TruckSpawner truckSpawner;
 
-        [Header("Event Calendar Reference")] public EventCalendarUI eventCalendar;
+        [Header("Event Calendar Reference")]
+        public EventCalendarUI eventCalendar;
 
         // Network Variables for synchronization
         private NetworkVariable<int> currentActiveEvent = new NetworkVariable<int>(-1,
             NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-        // List of active events (using index for network sync)
+        // List of active events
         private List<string> eventNames = new List<string>
         {
             "INTENSIVE DAY",
@@ -34,19 +36,18 @@ namespace NewCss
             "VIP SERVICE"
         };
 
-        // To save current values at event start
+        // Store original values
         private Dictionary<Truck, EventTruckValues> eventStartTruckValues = new Dictionary<Truck, EventTruckValues>();
-
-        private Dictionary<CustomerAI, CustomerWaitTimeValues> eventStartCustomerWaitTimes =
-            new Dictionary<CustomerAI, CustomerWaitTimeValues>();
+        private Dictionary<CustomerAI, CustomerWaitTimeValues> eventStartCustomerWaitTimes = new Dictionary<CustomerAI, CustomerWaitTimeValues>();
 
         private float eventStartPlayerMoveSpeed;
         private float eventStartPlayerSprintSpeed;
         private float eventStartStaminaRegenRate;
-        private float eventStartMaxSpawnInterval;
-        private float eventStartMinSpawnInterval;
 
-        // To store event multipliers
+        // NEW: Store customer manager values
+        private int eventStartBaseCustomersPerDay;
+        private int eventStartCustomerIncreasePerDay;
+
         private Dictionary<string, EventMultipliers> eventMultipliers = new Dictionary<string, EventMultipliers>();
 
         [System.Serializable]
@@ -58,11 +59,10 @@ namespace NewCss
             public float playerMoveSpeedMultiplier;
             public float playerSprintSpeedMultiplier;
             public float staminaRegenRateMultiplier;
-            public float spawnIntervalMultiplier;
+            public float dailyCustomerMultiplier; // NEW: Replaces spawnIntervalMultiplier
             public bool isGoldenBoxDay;
             public bool isVIPServiceDay;
-            public float upgradeCostMultiplier;    // <— yenisi
-            
+            public float upgradeCostMultiplier;
         }
 
         [System.Serializable]
@@ -83,16 +83,10 @@ namespace NewCss
         {
             base.OnNetworkSpawn();
 
-            // Initialize event multipliers
             InitializeEventMultipliers();
-
-            // Subscribe to day change event
             DayCycleManager.OnNewDay += OnNewDayHandler;
-
-            // Subscribe to network variable changes
             currentActiveEvent.OnValueChanged += OnActiveEventChanged;
 
-            // Apply current event if joining mid-game
             if (currentActiveEvent.Value != -1)
             {
                 ApplyEventEffectLocally(eventNames[currentActiveEvent.Value]);
@@ -102,7 +96,6 @@ namespace NewCss
         public override void OnNetworkDespawn()
         {
             base.OnNetworkDespawn();
-
             DayCycleManager.OnNewDay -= OnNewDayHandler;
             currentActiveEvent.OnValueChanged -= OnActiveEventChanged;
         }
@@ -117,7 +110,7 @@ namespace NewCss
                 playerMoveSpeedMultiplier = 1f,
                 playerSprintSpeedMultiplier = 1f,
                 staminaRegenRateMultiplier = 1f,
-                spawnIntervalMultiplier = 0.5f, // Spawn intervals reduced by 50%
+                dailyCustomerMultiplier = 1.5f, // 50% more customers per day
                 isGoldenBoxDay = false,
                 isVIPServiceDay = false,
                 upgradeCostMultiplier = 1f
@@ -125,13 +118,13 @@ namespace NewCss
 
             eventMultipliers["DELIVERY BONUS"] = new EventMultipliers
             {
-                rewardPerBoxMultiplier = 1.2f, // 20% bonus to reward per box
+                rewardPerBoxMultiplier = 1.2f,
                 exitDelayMultiplier = 1f,
                 customerWaitTimeMultiplier = 1f,
                 playerMoveSpeedMultiplier = 1f,
                 playerSprintSpeedMultiplier = 1f,
                 staminaRegenRateMultiplier = 1f,
-                spawnIntervalMultiplier = 1f,
+                dailyCustomerMultiplier = 1f,
                 isGoldenBoxDay = false,
                 isVIPServiceDay = false,
                 upgradeCostMultiplier = 1f
@@ -141,11 +134,11 @@ namespace NewCss
             {
                 rewardPerBoxMultiplier = 1f,
                 exitDelayMultiplier = 1f,
-                customerWaitTimeMultiplier = 0.7f, // 30% reduction in wait time
+                customerWaitTimeMultiplier = 0.7f,
                 playerMoveSpeedMultiplier = 1f,
                 playerSprintSpeedMultiplier = 1f,
                 staminaRegenRateMultiplier = 1f,
-                spawnIntervalMultiplier = 1f,
+                dailyCustomerMultiplier = 1f,
                 isGoldenBoxDay = false,
                 isVIPServiceDay = false,
                 upgradeCostMultiplier = 1f
@@ -155,11 +148,11 @@ namespace NewCss
             {
                 rewardPerBoxMultiplier = 1f,
                 exitDelayMultiplier = 1f,
-                customerWaitTimeMultiplier = 1.3f, // 30% increase in wait time
+                customerWaitTimeMultiplier = 1.3f,
                 playerMoveSpeedMultiplier = 1f,
                 playerSprintSpeedMultiplier = 1f,
                 staminaRegenRateMultiplier = 1f,
-                spawnIntervalMultiplier = 1f,
+                dailyCustomerMultiplier = 0.7f, // 30% fewer customers
                 isGoldenBoxDay = false,
                 isVIPServiceDay = false,
                 upgradeCostMultiplier = 1f
@@ -168,12 +161,12 @@ namespace NewCss
             eventMultipliers["SLOW LOGISTICS"] = new EventMultipliers
             {
                 rewardPerBoxMultiplier = 1f,
-                exitDelayMultiplier = 1.5f, // 50% increase in exit delay
+                exitDelayMultiplier = 1.5f,
                 customerWaitTimeMultiplier = 1f,
                 playerMoveSpeedMultiplier = 1f,
                 playerSprintSpeedMultiplier = 1f,
                 staminaRegenRateMultiplier = 1f,
-                spawnIntervalMultiplier = 1f,
+                dailyCustomerMultiplier = 1f,
                 isGoldenBoxDay = false,
                 isVIPServiceDay = false,
                 upgradeCostMultiplier = 1f
@@ -182,12 +175,12 @@ namespace NewCss
             eventMultipliers["EXPRESS CARGO"] = new EventMultipliers
             {
                 rewardPerBoxMultiplier = 1f,
-                exitDelayMultiplier = 0.7f, // 30% reduction in exit delay
+                exitDelayMultiplier = 0.7f,
                 customerWaitTimeMultiplier = 1f,
                 playerMoveSpeedMultiplier = 1f,
                 playerSprintSpeedMultiplier = 1f,
                 staminaRegenRateMultiplier = 1f,
-                spawnIntervalMultiplier = 1f,
+                dailyCustomerMultiplier = 1f,
                 isGoldenBoxDay = false,
                 isVIPServiceDay = false,
                 upgradeCostMultiplier = 1f
@@ -198,10 +191,10 @@ namespace NewCss
                 rewardPerBoxMultiplier = 1f,
                 exitDelayMultiplier = 1f,
                 customerWaitTimeMultiplier = 1f,
-                playerMoveSpeedMultiplier = 0.8f, // 20% reduction in move speed
-                playerSprintSpeedMultiplier = 0.8f, // 20% reduction in sprint speed
+                playerMoveSpeedMultiplier = 0.8f,
+                playerSprintSpeedMultiplier = 0.8f,
                 staminaRegenRateMultiplier = 1f,
-                spawnIntervalMultiplier = 1f,
+                dailyCustomerMultiplier = 1f,
                 isGoldenBoxDay = false,
                 isVIPServiceDay = false,
                 upgradeCostMultiplier = 1f
@@ -209,13 +202,13 @@ namespace NewCss
 
             eventMultipliers["GOLDEN BOX DAY"] = new EventMultipliers
             {
-                rewardPerBoxMultiplier = 1.3f, // 30% bonus to reward per box
-                exitDelayMultiplier = 0.8f, // 20% reduction in exit delay
+                rewardPerBoxMultiplier = 1.3f,
+                exitDelayMultiplier = 0.8f,
                 customerWaitTimeMultiplier = 1f,
-                playerMoveSpeedMultiplier = 1.2f, // 20% increase in move speed
-                playerSprintSpeedMultiplier = 1.2f, // 20% increase in sprint speed
-                staminaRegenRateMultiplier = 0.8f, // 20% reduction in stamina regen
-                spawnIntervalMultiplier = 1f,
+                playerMoveSpeedMultiplier = 1.2f,
+                playerSprintSpeedMultiplier = 1.2f,
+                staminaRegenRateMultiplier = 0.8f,
+                dailyCustomerMultiplier = 1.2f, // 20% more customers
                 isGoldenBoxDay = true,
                 isVIPServiceDay = false,
                 upgradeCostMultiplier = 1f
@@ -229,10 +222,10 @@ namespace NewCss
                 playerMoveSpeedMultiplier = 1f,
                 playerSprintSpeedMultiplier = 1f,
                 staminaRegenRateMultiplier = 1f,
-                spawnIntervalMultiplier = 1f,
+                dailyCustomerMultiplier = 1f,
                 isGoldenBoxDay = false,
                 isVIPServiceDay = false,
-                upgradeCostMultiplier = 0.8f    // <— %20 indirim
+                upgradeCostMultiplier = 0.8f
             };
 
             eventMultipliers["FATIGUE PROBLEM"] = new EventMultipliers
@@ -241,9 +234,9 @@ namespace NewCss
                 exitDelayMultiplier = 1f,
                 customerWaitTimeMultiplier = 1f,
                 playerMoveSpeedMultiplier = 1f,
-                playerSprintSpeedMultiplier = 0.7f, // 30% reduction in sprint speed
-                staminaRegenRateMultiplier = 0.6f, // 40% reduction in stamina regen
-                spawnIntervalMultiplier = 1f,
+                playerSprintSpeedMultiplier = 0.7f,
+                staminaRegenRateMultiplier = 0.6f,
+                dailyCustomerMultiplier = 0.8f, // 20% fewer customers
                 isGoldenBoxDay = false,
                 isVIPServiceDay = false,
                 upgradeCostMultiplier = 1f
@@ -251,13 +244,13 @@ namespace NewCss
 
             eventMultipliers["VIP SERVICE"] = new EventMultipliers
             {
-                rewardPerBoxMultiplier = 1f, // Base multiplier, special logic applied per truck
+                rewardPerBoxMultiplier = 1f,
                 exitDelayMultiplier = 1f,
                 customerWaitTimeMultiplier = 1f,
                 playerMoveSpeedMultiplier = 1f,
                 playerSprintSpeedMultiplier = 1f,
                 staminaRegenRateMultiplier = 1f,
-                spawnIntervalMultiplier = 1f,
+                dailyCustomerMultiplier = 1f,
                 isGoldenBoxDay = false,
                 isVIPServiceDay = true,
                 upgradeCostMultiplier = 1f
@@ -266,57 +259,43 @@ namespace NewCss
 
         private void OnNewDayHandler()
         {
-            if (!IsServer) return; // Only server handles day changes
+            if (!IsServer) return;
 
-            // Check today's event
             int currentDay = DayCycleManager.Instance != null ? DayCycleManager.Instance.currentDay : 1;
             var todaysEvent = eventCalendar.GetEventForDay(currentDay);
 
             if (todaysEvent != null)
             {
                 int eventIndex = eventNames.IndexOf(todaysEvent.name);
-                if (eventIndex != -1)
-                {
-                    currentActiveEvent.Value = eventIndex;
-                }
-                else
-                {
-                    currentActiveEvent.Value = -1; // No event
-                }
+                currentActiveEvent.Value = eventIndex != -1 ? eventIndex : -1;
             }
             else
             {
-                currentActiveEvent.Value = -1; // No event
+                currentActiveEvent.Value = -1;
             }
 
-            // Notify upgrade panel to refresh prices (for all clients)
             NotifyUpgradePanelRefreshClientRpc();
         }
 
         [ClientRpc]
         private void NotifyUpgradePanelRefreshClientRpc()
         {
-           
+            // For future use
         }
 
         private void OnActiveEventChanged(int previousValue, int newValue)
         {
-            // Remove previous effects
             RemoveAllEventEffects();
 
-            // Apply new event if valid
             if (newValue != -1 && newValue < eventNames.Count)
             {
                 ApplyEventEffectLocally(eventNames[newValue]);
             }
-
-            // Refresh upgrade panel prices when event changes
-            
         }
 
         public float GetUpgradeCostMultiplier()
         {
-            if (currentActiveEvent.Value == -1) 
+            if (currentActiveEvent.Value == -1)
                 return 1f;
 
             string name = eventNames[currentActiveEvent.Value];
@@ -339,14 +318,21 @@ namespace NewCss
 
         private void SaveCurrentValuesAndApplyMultipliers(EventMultipliers multipliers, string eventName)
         {
-            // Apply spawn interval changes
+            // Apply daily customer count changes (NEW)
             if (customerManager != null)
             {
-                eventStartMaxSpawnInterval = customerManager.maxSpawnInterval;
-                eventStartMinSpawnInterval = customerManager.minSpawnInterval;
+                // Store original values if not already stored
+                if (eventStartBaseCustomersPerDay == 0)
+                {
+                    eventStartBaseCustomersPerDay = customerManager.baseCustomersPerDay;
+                    eventStartCustomerIncreasePerDay = customerManager.customerIncreasePerDay;
+                }
 
-                customerManager.maxSpawnInterval = eventStartMaxSpawnInterval * multipliers.spawnIntervalMultiplier;
-                customerManager.minSpawnInterval = eventStartMinSpawnInterval * multipliers.spawnIntervalMultiplier;
+                // Apply multiplier to base customers
+                customerManager.baseCustomersPerDay = Mathf.RoundToInt(eventStartBaseCustomersPerDay * multipliers.dailyCustomerMultiplier);
+                customerManager.customerIncreasePerDay = Mathf.RoundToInt(eventStartCustomerIncreasePerDay * multipliers.dailyCustomerMultiplier);
+
+                Debug.Log($"Event '{eventName}': Daily customers adjusted to {customerManager.baseCustomersPerDay} (multiplier: {multipliers.dailyCustomerMultiplier})");
             }
 
             // Apply player movement changes
@@ -373,16 +359,12 @@ namespace NewCss
                 };
                 eventStartTruckValues[truck] = currentValues;
 
-                // Apply reward multiplier
                 truck.rewardPerBox = (int)(currentValues.rewardPerBox * multipliers.rewardPerBoxMultiplier);
-
-                // Apply exit delay multiplier
                 truck.exitDelay = currentValues.exitDelay * multipliers.exitDelayMultiplier;
 
-                // Special VIP Service logic
                 if (multipliers.isVIPServiceDay && Random.Range(0f, 1f) < 0.1f)
                 {
-                    truck.rewardPerBox = (int)(truck.rewardPerBox * 1.1f); // Additional 10% bonus
+                    truck.rewardPerBox = (int)(truck.rewardPerBox * 1.1f);
                 }
             }
 
@@ -404,11 +386,11 @@ namespace NewCss
 
         private void RemoveAllEventEffects()
         {
-            // Restore spawn intervals
-            if (customerManager != null && eventStartMaxSpawnInterval > 0)
+            // Restore customer manager values (NEW)
+            if (customerManager != null && eventStartBaseCustomersPerDay > 0)
             {
-                customerManager.maxSpawnInterval = eventStartMaxSpawnInterval;
-                customerManager.minSpawnInterval = eventStartMinSpawnInterval;
+                customerManager.baseCustomersPerDay = eventStartBaseCustomersPerDay;
+                customerManager.customerIncreasePerDay = eventStartCustomerIncreasePerDay;
             }
 
             // Restore player movement
@@ -450,7 +432,6 @@ namespace NewCss
             eventStartCustomerWaitTimes.Clear();
         }
 
-        // Apply event effects to newly spawned objects
         public void ApplyEventEffectToNewObject(GameObject newObject)
         {
             if (currentActiveEvent.Value == -1) return;
@@ -472,7 +453,6 @@ namespace NewCss
                 truck.rewardPerBox = (int)(currentValues.rewardPerBox * multipliers.rewardPerBoxMultiplier);
                 truck.exitDelay = currentValues.exitDelay * multipliers.exitDelayMultiplier;
 
-                // Special VIP Service logic
                 if (multipliers.isVIPServiceDay && Random.Range(0f, 1f) < 0.1f)
                 {
                     truck.rewardPerBox = (int)(truck.rewardPerBox * 1.1f);
@@ -493,7 +473,6 @@ namespace NewCss
             }
         }
 
-        // Public methods for other systems to check event status
         public bool IsGoldenBoxDay()
         {
             if (currentActiveEvent.Value == -1) return false;
@@ -520,7 +499,6 @@ namespace NewCss
             return eventNames[currentActiveEvent.Value];
         }
 
-        // Server RPC for manual event testing (admin only)
         [ServerRpc(RequireOwnership = false)]
         public void TestEventServerRpc(int eventIndex)
         {
@@ -534,7 +512,6 @@ namespace NewCss
             }
         }
 
-        // For debug: manually test event
         [System.Obsolete("Used for debugging only")]
         public void TestEvent(string eventName)
         {

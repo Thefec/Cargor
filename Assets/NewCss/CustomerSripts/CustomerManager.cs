@@ -11,9 +11,16 @@ namespace NewCss
         [Header("Spawn Settings")]
         public GameObject customerPrefab;
         public Transform spawnPoint;
-        public float minSpawnInterval = 1f;
-        public float maxSpawnInterval = 3f;
         public int maxQueueSize = 3;
+
+        [Header("Daily Customer Settings")]
+        [Tooltip("Ýlk gün kaç müþteri gelecek")]
+        public int baseCustomersPerDay = 10;
+        [Tooltip("Her geçen gün müþteri sayýsý ne kadar artacak")]
+        public int customerIncreasePerDay = 2;
+        [Tooltip("Spawn zamanlarýna rastgelelik ekle (0-1 arasý, 0 = tam eþit daðýlým)")]
+        [Range(0f, 1f)]
+        public float spawnTimeRandomness = 0.2f;
 
         [Header("Queue & Tables")]
         public Transform[] queuePositions;
@@ -28,48 +35,156 @@ namespace NewCss
         public float spawnEndHour = 14f;
 
         private List<CustomerAI> customerQueue = new List<CustomerAI>();
-        private float lastSpawnTime = -Mathf.Infinity;
+
+        // Daily spawn tracking
+        private int todaysTotalCustomers;
+        private int customersSpawnedToday;
+        private List<float> scheduledSpawnTimes = new List<float>();
+        private int nextScheduledIndex = 0;
+        private bool dayInitialized = false;
+
+        void Start()
+        {
+            if (IsServer)
+            {
+                // DayCycleManager event'ini dinle
+                DayCycleManager.OnNewDay += OnNewDay;
+
+                // Ýlk günü baþlat
+                InitializeDailyCustomers();
+            }
+        }
+
+        void OnDestroy()
+        {
+            if (IsServer)
+            {
+                DayCycleManager.OnNewDay -= OnNewDay;
+            }
+        }
 
         void Update()
         {
-            if (IsServer && IsWithinSpawningHours())
+            if (!IsServer) return;
+
+            // Gün henüz baþlamadýysa init et
+            if (!dayInitialized && DayCycleManager.Instance != null)
             {
-                TrySpawnCustomer();
+                InitializeDailyCustomers();
+            }
+
+            if (IsWithinSpawningHours())
+            {
+                TrySpawnScheduledCustomer();
             }
         }
+
+        #region Daily Customer Management
+        private void OnNewDay()
+        {
+            if (IsServer)
+            {
+                Debug.Log("New day started - reinitializing customers");
+                InitializeDailyCustomers();
+            }
+        }
+
+        private void InitializeDailyCustomers()
+        {
+            if (DayCycleManager.Instance == null)
+            {
+                Debug.LogWarning("DayCycleManager not found, cannot initialize daily customers");
+                return;
+            }
+
+            int currentDay = DayCycleManager.Instance.currentDay;
+
+            // Bugün toplam kaç müþteri gelecek
+            todaysTotalCustomers = baseCustomersPerDay + ((currentDay - 1) * customerIncreasePerDay);
+            customersSpawnedToday = 0;
+            nextScheduledIndex = 0;
+            dayInitialized = true;
+
+            // Spawn zamanlarýný hesapla
+            CalculateSpawnSchedule();
+
+            Debug.Log($"Day {currentDay} - Total customers scheduled: {todaysTotalCustomers}");
+            Debug.Log($"Spawn times calculated between {spawnStartHour:F1} and {spawnEndHour:F1}");
+        }
+
+        private void CalculateSpawnSchedule()
+        {
+            scheduledSpawnTimes.Clear();
+
+            if (todaysTotalCustomers <= 0)
+            {
+                Debug.LogWarning("No customers scheduled for today");
+                return;
+            }
+
+            float spawnWindow = spawnEndHour - spawnStartHour;
+            float baseInterval = spawnWindow / todaysTotalCustomers;
+
+            for (int i = 0; i < todaysTotalCustomers; i++)
+            {
+                // Temel spawn zamaný
+                float baseSpawnTime = spawnStartHour + (i * baseInterval) + (baseInterval * 0.5f);
+
+                // Rastgelelik ekle (spawn zamanlarýný biraz deðiþtir)
+                float randomOffset = Random.Range(-baseInterval * spawnTimeRandomness, baseInterval * spawnTimeRandomness);
+                float spawnTime = Mathf.Clamp(baseSpawnTime + randomOffset, spawnStartHour, spawnEndHour);
+
+                scheduledSpawnTimes.Add(spawnTime);
+            }
+
+            // Zamanlarý sýrala
+            scheduledSpawnTimes.Sort();
+
+            // Debug: Ýlk 5 spawn zamanýný göster
+            Debug.Log("First 5 spawn times:");
+            for (int i = 0; i < Mathf.Min(5, scheduledSpawnTimes.Count); i++)
+            {
+                Debug.Log($"  Customer {i + 1}: {scheduledSpawnTimes[i]:F2}");
+            }
+        }
+
+        private void TrySpawnScheduledCustomer()
+        {
+            if (DayCycleManager.Instance == null) return;
+
+            // Tüm müþteriler spawn olduysa
+            if (nextScheduledIndex >= scheduledSpawnTimes.Count)
+                return;
+
+            // Kuyruk doluysa bekle
+            if (customerQueue.Count >= maxQueueSize || customerQueue.Count >= queuePositions.Length)
+                return;
+
+            float currentTime = DayCycleManager.Instance.CurrentTime;
+
+            // Þimdiki zaman, bir sonraki scheduled spawn zamanýný geçtiyse spawn et
+            if (currentTime >= scheduledSpawnTimes[nextScheduledIndex])
+            {
+                int nextQueueIndex = GetNextAvailableQueueIndex();
+                if (nextQueueIndex != -1)
+                {
+                    SpawnCustomer(nextQueueIndex);
+                    customersSpawnedToday++;
+                    nextScheduledIndex++;
+
+                    Debug.Log($"Customer {customersSpawnedToday}/{todaysTotalCustomers} spawned at time {currentTime:F2}");
+                }
+            }
+        }
+        #endregion
 
         #region Spawning Logic
         private bool IsWithinSpawningHours()
         {
             if (DayCycleManager.Instance == null) return false;
-            
+
             float currentTime = DayCycleManager.Instance.CurrentTime;
             return currentTime >= spawnStartHour && currentTime <= spawnEndHour;
-        }
-
-        private void TrySpawnCustomer()
-        {
-            if (customerQueue.Count >= maxQueueSize || customerQueue.Count >= queuePositions.Length)
-                return;
-
-            if (Time.time - lastSpawnTime < GetEffectiveSpawnInterval())
-                return;
-
-            int nextQueueIndex = GetNextAvailableQueueIndex();
-            if (nextQueueIndex != -1)
-            {
-                SpawnCustomer(nextQueueIndex);
-                lastSpawnTime = Time.time;
-            }
-        }
-
-        private float GetEffectiveSpawnInterval()
-        {
-            float prestij = PrestigeManager.Instance?.GetPrestige() ?? 0f;
-            float bonusOrani = Mathf.Clamp(prestij * 0.005f, 0f, 0.80f);
-            float baseInterval = Random.Range(minSpawnInterval, maxSpawnInterval);
-            
-            return baseInterval * (1f - bonusOrani);
         }
 
         private int GetNextAvailableQueueIndex()
@@ -237,28 +352,51 @@ namespace NewCss
             float currentTime = DayCycleManager.Instance.CurrentTime;
             bool canSpawn = IsWithinSpawningHours();
 
-            return $"Current Time: {currentTime:F2}, Spawn Window: {spawnStartHour:F1}-{spawnEndHour:F1}, Can Spawn: {canSpawn}";
+            return $"Day {DayCycleManager.Instance.currentDay}\n" +
+                   $"Current Time: {currentTime:F2}\n" +
+                   $"Spawn Window: {spawnStartHour:F1}-{spawnEndHour:F1}\n" +
+                   $"Customers Today: {customersSpawnedToday}/{todaysTotalCustomers}\n" +
+                   $"Can Spawn: {canSpawn}";
         }
         #endregion
 
         #region Debug Tools
-        [ContextMenu("Spawn Test Customer")]
-        private void SpawnTestCustomer()
+        [ContextMenu("Show Daily Customer Info")]
+        private void ShowDailyCustomerInfo()
+        {
+            Debug.Log(GetSpawningStatusInfo());
+
+            if (scheduledSpawnTimes.Count > 0)
+            {
+                Debug.Log("\nScheduled spawn times:");
+                for (int i = 0; i < scheduledSpawnTimes.Count; i++)
+                {
+                    string spawned = i < nextScheduledIndex ? "[SPAWNED]" : "[PENDING]";
+                    Debug.Log($"  Customer {i + 1}: {scheduledSpawnTimes[i]:F2} {spawned}");
+                }
+            }
+        }
+
+        [ContextMenu("Force Spawn Next Customer")]
+        private void ForceSpawnNextCustomer()
         {
             if (!IsServer) return;
 
-            if (!IsWithinSpawningHours())
-                return;
-
             int availableIndex = GetNextAvailableQueueIndex();
             if (availableIndex != -1)
+            {
                 SpawnCustomer(availableIndex);
+                customersSpawnedToday++;
+                if (nextScheduledIndex < scheduledSpawnTimes.Count)
+                    nextScheduledIndex++;
+            }
         }
 
-        [ContextMenu("Show Spawning Status")]
-        private void ShowSpawningStatus()
+        [ContextMenu("Reset Daily Customers")]
+        private void ResetDailyCustomers()
         {
-            Debug.Log(GetSpawningStatusInfo());
+            if (!IsServer) return;
+            InitializeDailyCustomers();
         }
         #endregion
     }

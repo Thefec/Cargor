@@ -187,7 +187,7 @@ namespace NewCss
                     }
 
                     // Client'lara bilgi gönder
-                    TakeItemClientRpc(itemRef, i, rpcParams.Receive.SenderClientId);
+                    TakeItemClientRpc(itemRef, i);
 
                     // Item'ı requester player'ına otomatik olarak ver
                     GiveItemToPlayerServerRpc(itemRef, rpcParams.Receive.SenderClientId);
@@ -196,7 +196,7 @@ namespace NewCss
             }
         }
 
-        // Yeni method: Item'ı player'a otomatik olarak ver
+        // DÜZELTME: Item'ı player'a otomatik olarak ver (Server'da)
         [ServerRpc(RequireOwnership = false)]
         private void GiveItemToPlayerServerRpc(NetworkObjectReference itemRef, ulong playerClientId)
         {
@@ -204,52 +204,45 @@ namespace NewCss
 
             if (!itemRef.TryGet(out NetworkObject itemNetworkObj) || itemNetworkObj == null) return;
 
+            // Hedef player'ı bul
+            if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(playerClientId, out var client) || client.PlayerObject == null)
+                return;
+
+            var playerInventory = client.PlayerObject.GetComponent<PlayerInventory>();
+            if (playerInventory == null) return;
+
             // 1. Ownership'i isteyene ver
             itemNetworkObj.ChangeOwnership(playerClientId);
 
-            // 2. Hedef client'a sadece ona pickup yaptıracak ClientRpc gönder
-            var clientRpcParams = new ClientRpcParams
-            {
-                Send = new ClientRpcSendParams
-                {
-                    TargetClientIds = new ulong[] { playerClientId }
-                }
-            };
+            // 2. SERVER'da item'ı player'a ver
+            playerInventory.PickupItemFromTable(itemNetworkObj, null);
 
-            GiveItemToRequesterClientRpc(itemRef, clientRpcParams);
+            // 3. Tüm CLIENT'lara bilgi gönder (server'da zaten yapıldı, sadece görsel sync için)
+            GiveItemToPlayerClientRpc(itemRef, playerClientId);
         }
 
+        // DÜZELTME: Tüm client'lara item'ın kime verildiğini bildir
         [ClientRpc]
-        private void GiveItemToRequesterClientRpc(NetworkObjectReference itemRef, ClientRpcParams clientRpcParams = default)
+        private void GiveItemToPlayerClientRpc(NetworkObjectReference itemRef, ulong targetPlayerClientId)
         {
-            // Bu method sadece hedef client'ta çalışacak
+            if (IsServer) return; // Server'da zaten yapıldı
+
             if (!itemRef.TryGet(out NetworkObject itemNetworkObj) || itemNetworkObj == null) return;
 
-            // Local player'ın PlayerObject'ini al
-            var localPlayerObj = NetworkManager.Singleton.LocalClient.PlayerObject;
-            if (localPlayerObj == null) return;
+            // Hedef player'ı bul
+            if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(targetPlayerClientId, out var client) || client.PlayerObject == null)
+                return;
 
-            var playerInventory = localPlayerObj.GetComponent<PlayerInventory>();
+            var playerInventory = client.PlayerObject.GetComponent<PlayerInventory>();
             if (playerInventory == null) return;
 
-            // PlayerInventory içindeki PickupItemFromTable'ın "client-side local pickup" yapacak şekilde olması gerekiyor.
-            // (Örn: transform parent -> player's hand, collider kapat, rb kinematic vb. işlerini burada yapın)
+            // Client'ta item'ı player'a ver
             playerInventory.PickupItemFromTable(itemNetworkObj, null);
-        }
-
-        private System.Collections.IEnumerator DelayedGiveToPlayer(PlayerInventory playerInventory, NetworkObject itemNetworkObj)
-        {
-            yield return new WaitForSeconds(0.1f);
-
-            if (playerInventory != null && itemNetworkObj != null)
-            {
-                playerInventory.PickupItemFromTable(itemNetworkObj, null);
-            }
         }
 
         // Client'lara item alma bilgisi gönder
         [ClientRpc]
-        private void TakeItemClientRpc(NetworkObjectReference itemRef, int slotIndex, ulong requesterClientId)
+        private void TakeItemClientRpc(NetworkObjectReference itemRef, int slotIndex)
         {
             if (IsServer) return; // Server'da zaten yapıldı
 

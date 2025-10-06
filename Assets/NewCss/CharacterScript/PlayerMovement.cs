@@ -41,7 +41,6 @@ namespace NewCss
 
         void Awake()
         {
-            // Bileşenleri Awake'de al - Start'tan önce çalışır
             controller = GetComponent<CharacterController>();
             animator = GetComponent<Animator>();
         }
@@ -53,7 +52,6 @@ namespace NewCss
 
         public override void OnNetworkSpawn()
         {
-            // Kamera ataması sadece owner için
             if (IsOwner)
             {
                 CameraFollow cameraScript = FindObjectOfType<CameraFollow>();
@@ -66,20 +64,51 @@ namespace NewCss
 
         void Update()
         {
-            // Sadece owner input alabilir
             if (!IsOwner) return;
-            
-            if (isMovementLocked) return;
+
+            // CRITICAL: Lock kontrolü EN BAŞTA yapılmalı
+            if (isMovementLocked)
+            {
+                // Kilitlendiyse tüm hareketi ve animasyonu sıfırla
+                isSprinting = false;
+
+                // Animasyonu sıfırla
+                if (animator != null)
+                {
+                    animator.SetFloat("X", 0f);
+                    animator.SetFloat("Z", 0f);
+                    animator.SetBool("IsRun", false);
+                }
+
+                // Network üzerinden de sıfırla
+                UpdateAnimationServerRpc(0f, 0f, false);
+
+                // Sadece yerçekimini uygula
+                ApplyGravityOnly();
+                return;
+            }
 
             HandleStamina();
             MoveCharacter();
             UpdateAnimator();
         }
 
+        private void ApplyGravityOnly()
+        {
+            if (controller == null) return;
+
+            // Sadece yerçekimi
+            if (!controller.isGrounded)
+                velocity.y -= gravity * Time.deltaTime;
+            else
+                velocity.y = -2f;
+
+            controller.Move(velocity * Time.deltaTime);
+        }
+
         public void SetCarrying(bool carry)
         {
             isCarrying = carry;
-            // Network üzerinden animator parametrelerini güncelle
             if (IsOwner)
             {
                 SetCarryingServerRpc(carry);
@@ -95,7 +124,6 @@ namespace NewCss
         [ClientRpc]
         void SetCarryingClientRpc(bool carry)
         {
-            // Null kontrolü ekle
             if (animator != null)
             {
                 animator.SetBool("IsPickup", carry);
@@ -109,21 +137,18 @@ namespace NewCss
             float h = Input.GetAxisRaw("Horizontal");
             float v = Input.GetAxisRaw("Vertical");
 
-            // Animasyon parametrelerini network üzerinden güncelle
             UpdateAnimationServerRpc(h, v, isSprinting);
         }
 
         [ServerRpc]
         void UpdateAnimationServerRpc(float x, float z, bool isRunning)
         {
-            // Tüm clientlere animasyon parametrelerini gönder
             UpdateAnimationClientRpc(x, z, isRunning);
         }
 
         [ClientRpc]
         void UpdateAnimationClientRpc(float x, float z, bool isRunning)
         {
-            // Null kontrolü ekle
             if (animator != null)
             {
                 animator.SetFloat("X", x, 0.05f, Time.deltaTime);
@@ -146,6 +171,13 @@ namespace NewCss
 
         void HandleStamina()
         {
+            // Lock varsa stamina işlemlerini yapma
+            if (isMovementLocked)
+            {
+                isSprinting = false;
+                return;
+            }
+
             if (isInCooldown)
             {
                 isSprinting = false;
@@ -185,8 +217,14 @@ namespace NewCss
 
         void MoveCharacter()
         {
-            // Controller null kontrolü
             if (controller == null) return;
+
+            // Lock varsa hareket etme
+            if (isMovementLocked)
+            {
+                ApplyGravityOnly();
+                return;
+            }
 
             float h = Input.GetAxisRaw("Horizontal");
             float v = Input.GetAxisRaw("Vertical");
@@ -205,8 +243,10 @@ namespace NewCss
             }
 
             // Apply gravity
-            if (!controller.isGrounded) velocity.y -= gravity * Time.deltaTime;
-            else velocity.y = -2f;
+            if (!controller.isGrounded)
+                velocity.y -= gravity * Time.deltaTime;
+            else
+                velocity.y = -2f;
 
             controller.Move(velocity * Time.deltaTime);
         }
@@ -217,7 +257,16 @@ namespace NewCss
 
             if (locked && IsOwner)
             {
-                // Animasyonu durdur
+                // Hemen animasyonu sıfırla
+                isSprinting = false;
+
+                if (animator != null)
+                {
+                    animator.SetFloat("X", 0f);
+                    animator.SetFloat("Z", 0f);
+                    animator.SetBool("IsRun", false);
+                }
+
                 UpdateAnimationServerRpc(0f, 0f, false);
             }
         }

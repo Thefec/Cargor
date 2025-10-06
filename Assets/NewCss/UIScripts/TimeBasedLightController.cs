@@ -1,141 +1,228 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using Unity.Netcode;
 using System.Collections.Generic;
 
 namespace NewCss
 {
-    [System.Serializable]
-    public class LightGroup
+    public class AutoLightController : NetworkBehaviour
     {
-        public string groupName = "Light Group";
-        [Tooltip("Bu gruptaki ýþýklar")]
-        public List<Light> spotlights = new List<Light>();
-        [Tooltip("Bu grubun maksimum intensity deðeri")]
-        public float maxIntensity = 2f;
-    }
-
-    public class TimeBasedLightController : NetworkBehaviour
-    {
-        [Header("Light Settings")]
-        [Tooltip("Iþýklar bu saatten sonra açýlmaya baþlar")]
-        public int activationHour = 12;
-
-        [Tooltip("Iþýklarýn tam açýlma süresi (saniye)")]
-        public float transitionDuration = 5f;
-
         [Header("Light Groups")]
-        [Tooltip("Farklý intensity deðerlerine sahip ýþýk gruplarý")]
-        public List<LightGroup> lightGroups = new List<LightGroup>();
+        [Tooltip("IÅŸÄ±klar max 0.15 intensity'ye ulaÅŸacak")]
+        public List<Light> lightGroupA = new List<Light>();
+
+        [Tooltip("IÅŸÄ±klar max 0.3 intensity'ye ulaÅŸacak")]
+        public List<Light> lightGroupB = new List<Light>();
+
+        [Header("Time Settings")]
+        [Tooltip("Bu saati geÃ§ince Ä±ÅŸÄ±klar yanacak (Ã¶rn: 12 = Ã¶ÄŸlen 12:00'den sonra yanacak)")]
+        public int lightTriggerHour = 12;
 
         [Header("Intensity Settings")]
-        [Tooltip("Baþlangýç intensity (kapalý durum)")]
-        public float minIntensity = 0f;
+        [Tooltip("Grup A iÃ§in maksimum intensity")]
+        public float maxIntensityGroupA = 0.15f;
 
-        private bool isTransitioning = false;
-        private float transitionProgress = 0f;
-        private bool lightsActivated = false;
+        [Tooltip("Grup B iÃ§in maksimum intensity")]
+        public float maxIntensityGroupB = 0.3f;
+
+        [Tooltip("IÅŸÄ±klarÄ±n aÃ§Ä±lÄ±p kapanma hÄ±zÄ± (saniye)")]
+        public float transitionSpeed = 2f;
+
+        [Header("Debug")]
+        public bool showDebugLogs = false;
+
+        // Network variable for light state
+        private NetworkVariable<bool> networkLightsOn = new NetworkVariable<bool>(false);
+
+        // Internal state
+        private bool lightsOn = false;
+        private float currentTransitionA = 0f;
+        private float currentTransitionB = 0f;
+
+        // BaÅŸlangÄ±Ã§ intensity deÄŸerlerini sakla
+        private Dictionary<Light, float> originalIntensitiesA = new Dictionary<Light, float>();
+        private Dictionary<Light, float> originalIntensitiesB = new Dictionary<Light, float>();
 
         void Start()
         {
-            // Baþlangýçta tüm spotlightlarý kapat
-            SetAllLightsIntensity(minIntensity);
+            // KapalÄ± durumdaki intensity'leri 0 olarak kaydet
+            // Ã‡Ã¼nkÃ¼ kapalÄ± = tamamen sÃ¶nÃ¼k olmalÄ±
+            foreach (var light in lightGroupA)
+            {
+                if (light != null)
+                {
+                    originalIntensitiesA[light] = 0f;
+                    light.intensity = 0f; // Hemen 0 yap
+                }
+            }
+
+            foreach (var light in lightGroupB)
+            {
+                if (light != null)
+                {
+                    originalIntensitiesB[light] = 0f;
+                    light.intensity = 0f; // Hemen 0 yap
+                }
+            }
+
+            // BaÅŸlangÄ±Ã§ta Ä±ÅŸÄ±klarÄ± kapat
+            SetLightsImmediate(false);
+        }
+
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+
+            // Network variable deÄŸiÅŸikliklerini dinle
+            networkLightsOn.OnValueChanged += OnLightsStateChanged;
+
+            // Mevcut durumu uygula
+            lightsOn = networkLightsOn.Value;
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            networkLightsOn.OnValueChanged -= OnLightsStateChanged;
+            base.OnNetworkDespawn();
         }
 
         void Update()
         {
             if (DayCycleManager.Instance == null) return;
 
-            float currentTime = DayCycleManager.Instance.CurrentTime;
-            int currentHour = Mathf.FloorToInt(currentTime);
-
-            // Iþýklar henüz açýlmadýysa ve belirlenen saati geçtiyse
-            if (!lightsActivated && currentHour >= activationHour)
+            // Sadece server saati kontrol eder ve karar verir
+            if (IsServer)
             {
-                isTransitioning = true;
-                lightsActivated = true;
+                CheckTimeAndUpdateLights();
             }
 
-            // Smooth transition
-            if (isTransitioning)
+            // TÃ¼m client'lar (server dahil) smooth geÃ§iÅŸi uygular
+            ApplySmoothTransition();
+        }
+
+        private void CheckTimeAndUpdateLights()
+        {
+            int currentHour = DayCycleManager.Instance.CurrentHour;
+            bool shouldLightsBeOn = ShouldLightsBeOn(currentHour);
+
+            // Durum deÄŸiÅŸtiyse network variable'Ä± gÃ¼ncelle
+            if (shouldLightsBeOn != networkLightsOn.Value)
             {
-                transitionProgress += Time.deltaTime / transitionDuration;
+                networkLightsOn.Value = shouldLightsBeOn;
 
-                if (transitionProgress >= 1f)
+                if (showDebugLogs)
                 {
-                    transitionProgress = 1f;
-                    isTransitioning = false;
-                }
-
-                // Smooth interpolation - her grup için ayrý max intensity
-                float easedProgress = Mathf.SmoothStep(0f, 1f, transitionProgress);
-
-                foreach (var group in lightGroups)
-                {
-                    float currentIntensity = Mathf.Lerp(minIntensity, group.maxIntensity, easedProgress);
-                    SetGroupLightsIntensity(group, currentIntensity);
+                    Debug.Log($"[AutoLightController] Hour: {currentHour}:00 - Lights turning {(shouldLightsBeOn ? "ON" : "OFF")} (Trigger: {lightTriggerHour}:00)");
                 }
             }
         }
 
-        void SetAllLightsIntensity(float intensity)
+        private bool ShouldLightsBeOn(int hour)
         {
-            foreach (var group in lightGroups)
+            // Belirlenen saati geÃ§ince Ä±ÅŸÄ±klar yanar
+            // Ã–rnek: lightTriggerHour=12
+            // Saat 11:00 â†’ KapalÄ±
+            // Saat 12:00 ve sonrasÄ± â†’ AÃ§Ä±k
+            return hour >= lightTriggerHour;
+        }
+
+        private void OnLightsStateChanged(bool previousValue, bool newValue)
+        {
+            lightsOn = newValue;
+
+            if (showDebugLogs)
             {
-                SetGroupLightsIntensity(group, intensity);
+                Debug.Log($"[AutoLightController] Lights state changed to: {(newValue ? "ON" : "OFF")}");
             }
         }
 
-        void SetGroupLightsIntensity(LightGroup group, float intensity)
+        private void ApplySmoothTransition()
         {
-            foreach (Light spotlight in group.spotlights)
+            float targetA = lightsOn ? 1f : 0f;
+            float targetB = lightsOn ? 1f : 0f;
+
+            // Smooth geÃ§iÅŸ
+            currentTransitionA = Mathf.MoveTowards(currentTransitionA, targetA, Time.deltaTime / transitionSpeed);
+            currentTransitionB = Mathf.MoveTowards(currentTransitionB, targetB, Time.deltaTime / transitionSpeed);
+
+            // Grup A'yÄ± gÃ¼ncelle
+            foreach (var light in lightGroupA)
             {
-                if (spotlight != null)
+                if (light != null)
                 {
-                    spotlight.intensity = intensity;
+                    float baseIntensity = originalIntensitiesA.ContainsKey(light) ? originalIntensitiesA[light] : 0f;
+                    light.intensity = Mathf.Lerp(baseIntensity, maxIntensityGroupA, currentTransitionA);
+                }
+            }
+
+            // Grup B'yi gÃ¼ncelle
+            foreach (var light in lightGroupB)
+            {
+                if (light != null)
+                {
+                    float baseIntensity = originalIntensitiesB.ContainsKey(light) ? originalIntensitiesB[light] : 0f;
+                    light.intensity = Mathf.Lerp(baseIntensity, maxIntensityGroupB, currentTransitionB);
                 }
             }
         }
 
-        // Gün sýfýrlandýðýnda çaðrýlacak
-        void OnEnable()
+        private void SetLightsImmediate(bool on)
         {
-            DayCycleManager.OnNewDay += ResetLights;
-        }
+            currentTransitionA = on ? 1f : 0f;
+            currentTransitionB = on ? 1f : 0f;
 
-        void OnDisable()
-        {
-            DayCycleManager.OnNewDay -= ResetLights;
-        }
-
-        void ResetLights()
-        {
-            lightsActivated = false;
-            isTransitioning = false;
-            transitionProgress = 0f;
-            SetAllLightsIntensity(minIntensity);
-        }
-
-        // Inspector'da test etmek için
-        [ContextMenu("Test Light Activation")]
-        void TestActivation()
-        {
-            isTransitioning = true;
-            lightsActivated = true;
-            transitionProgress = 0f;
-        }
-
-        [ContextMenu("Reset Lights")]
-        void TestReset()
-        {
-            ResetLights();
-        }
-
-        [ContextMenu("Show Group Info")]
-        void ShowGroupInfo()
-        {
-            foreach (var group in lightGroups)
+            foreach (var light in lightGroupA)
             {
-                Debug.Log($"Group: {group.groupName} - Lights: {group.spotlights.Count} - Max Intensity: {group.maxIntensity}");
+                if (light != null)
+                {
+                    float baseIntensity = originalIntensitiesA.ContainsKey(light) ? originalIntensitiesA[light] : 0f;
+                    light.intensity = on ? maxIntensityGroupA : baseIntensity;
+                }
+            }
+
+            foreach (var light in lightGroupB)
+            {
+                if (light != null)
+                {
+                    float baseIntensity = originalIntensitiesB.ContainsKey(light) ? originalIntensitiesB[light] : 0f;
+                    light.intensity = on ? maxIntensityGroupB : baseIntensity;
+                }
+            }
+        }
+
+        // Debug metodlarÄ±
+        [ContextMenu("Test - Turn Lights ON")]
+        public void TestLightsOn()
+        {
+            if (IsServer)
+            {
+                networkLightsOn.Value = true;
+                Debug.Log("Test: Lights turned ON");
+            }
+        }
+
+        [ContextMenu("Test - Turn Lights OFF")]
+        public void TestLightsOff()
+        {
+            if (IsServer)
+            {
+                networkLightsOn.Value = false;
+                Debug.Log("Test: Lights turned OFF");
+            }
+        }
+
+        [ContextMenu("Print Current State")]
+        public void PrintCurrentState()
+        {
+            if (DayCycleManager.Instance != null)
+            {
+                int hour = DayCycleManager.Instance.CurrentHour;
+                bool shouldBeOn = ShouldLightsBeOn(hour);
+                Debug.Log($"Current Hour: {hour}:00\n" +
+                         $"Trigger Hour: {lightTriggerHour}:00\n" +
+                         $"Lights Should Be: {(shouldBeOn ? "ON" : "OFF")} (hour >= {lightTriggerHour})\n" +
+                         $"Lights Currently: {(lightsOn ? "ON" : "OFF")}\n" +
+                         $"Transition A: {currentTransitionA:F2}\n" +
+                         $"Transition B: {currentTransitionB:F2}");
             }
         }
     }
