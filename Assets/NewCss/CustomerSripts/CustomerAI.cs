@@ -31,7 +31,9 @@ namespace NewCss
         public float interactionTime = 5f;
 
         [Header("Interaction Settings")] public float interactionRange = 2f;
-        private bool playerInRange = false;
+
+        // Her client kendi playerInRange durumunu takip eder
+        private NetworkVariable<ulong> playerInRangeClientId = new NetworkVariable<ulong>(ulong.MaxValue);
 
         // Etkileşime giren oyuncunun ID'sini sakla
         private ulong interactingPlayerId = ulong.MaxValue;
@@ -162,29 +164,50 @@ namespace NewCss
                     case State.MovingToQueue: MoveToQueue(); break;
                     case State.WaitingInQueue: CheckServiceStart(); break;
                     case State.Service: HandleService(); break;
-                    case State.WaitingForPickup: break; // Coroutine ile kontrol ediliyor
+                    case State.WaitingForPickup: break;
                     case State.Exiting: ExitScene(); break;
                 }
             }
 
-            // Client tarafında kendi input kontrolü - sadece kendisi range içindeyse
-            if (IsOwner && state == State.Service && !hasInteracted && playerInRange)
+            // HER CLIENT kendi input kontrolünü yapar
+            if (IsClient && state == State.Service && !hasInteracted)
             {
-                if (Input.GetKeyDown(KeyCode.E))
+                // Local player'ın bu customer'ın range'inde olup olmadığını kontrol et
+                bool isLocalPlayerInRange = CheckIfLocalPlayerInRange();
+
+                if (isLocalPlayerInRange && Input.GetKeyDown(KeyCode.E))
                 {
-                    // Server'a bu client'ın ID'si ile etkileşim isteği gönder
                     RequestInteractionServerRpc(NetworkManager.Singleton.LocalClientId);
                 }
             }
         }
 
+        // Client-side: Local player'ın range içinde olup olmadığını kontrol et
+        private bool CheckIfLocalPlayerInRange()
+        {
+            if (NetworkManager.Singleton == null) return false;
+
+            var localClientId = NetworkManager.Singleton.LocalClientId;
+
+            // Local player'ı bul
+            foreach (var netObj in FindObjectsOfType<NetworkObject>())
+            {
+                if (netObj.OwnerClientId == localClientId && netObj.CompareTag("Character"))
+                {
+                    float distance = Vector3.Distance(transform.position, netObj.transform.position);
+                    return distance <= interactionRange;
+                }
+            }
+
+            return false;
+        }
+
         [ServerRpc(RequireOwnership = false)]
         private void RequestInteractionServerRpc(ulong requestingPlayerId, ServerRpcParams rpcParams = default)
         {
-            // Gönderen client'ın ID'sini al
             ulong senderClientId = rpcParams.Receive.SenderClientId;
 
-            // Güvenlik kontrolü - gönderen kendi ID'sini mi gönderiyor?
+            // Güvenlik kontrolü
             if (senderClientId != requestingPlayerId)
             {
                 Debug.LogWarning($"Client {senderClientId} tried to interact as {requestingPlayerId}!");
@@ -194,7 +217,6 @@ namespace NewCss
             // Server tarafında etkileşimi kontrol et
             if (state == State.Service && !hasInteracted && !isInInteraction)
             {
-                // Etkileşime giren oyuncuyu bul ve doğrula
                 if (ValidatePlayerInRange(senderClientId))
                 {
                     StartInteraction(senderClientId);
@@ -204,22 +226,21 @@ namespace NewCss
 
         private bool ValidatePlayerInRange(ulong playerId)
         {
-            // Range içindeki tüm oyuncuları kontrol et
-            Collider[] colliders = Physics.OverlapSphere(transform.position, interactionRange);
-
-            foreach (var col in colliders)
+            // Tüm networked player'ları kontrol et
+            foreach (var netObj in FindObjectsOfType<NetworkObject>())
             {
-                if (col.CompareTag("Character"))
+                if (netObj.OwnerClientId == playerId && netObj.CompareTag("Character"))
                 {
-                    NetworkObject netObj = col.GetComponent<NetworkObject>();
-                    if (netObj != null && netObj.OwnerClientId == playerId)
+                    float distance = Vector3.Distance(transform.position, netObj.transform.position);
+
+                    if (distance <= interactionRange)
                     {
-                        // Bu oyuncunun PlayerMovement'ını kaydet
-                        interactingPlayer = col.GetComponent<PlayerMovement>();
+                        // PlayerMovement referansını bul ve kaydet
+                        interactingPlayer = netObj.GetComponent<PlayerMovement>();
                         if (interactingPlayer == null)
-                            interactingPlayer = col.GetComponentInChildren<PlayerMovement>();
+                            interactingPlayer = netObj.GetComponentInChildren<PlayerMovement>();
                         if (interactingPlayer == null)
-                            interactingPlayer = col.GetComponentInParent<PlayerMovement>();
+                            interactingPlayer = netObj.GetComponentInParent<PlayerMovement>();
 
                         return true;
                     }
@@ -365,15 +386,13 @@ namespace NewCss
 
         private void HandleService()
         {
-            // Server sadece state'i yönetir, input client'lardan gelir
-            // CheckProductPickup kaldırıldı - artık coroutine ile yönetiliyor
+            // Server sadece state'i yönetir
         }
 
         private void StartInteraction(ulong playerId = ulong.MaxValue)
         {
             if (hasInteracted || isInInteraction) return;
 
-            // Etkileşime giren oyuncunun ID'sini kaydet
             if (playerId != ulong.MaxValue)
             {
                 interactingPlayerId = playerId;
@@ -448,21 +467,25 @@ namespace NewCss
         [ClientRpc]
         private void LockSpecificPlayerClientRpc(ulong targetPlayerId)
         {
-            // Sadece hedef player kendini kilitler
+            // Sadece hedef client bu kodu çalıştırır
             if (NetworkManager.Singleton.LocalClientId == targetPlayerId)
             {
-                var playerObj = GameObject.FindWithTag("Character");
-                if (playerObj != null)
+                // Kendi local player'ını bul
+                foreach (var netObj in FindObjectsOfType<NetworkObject>())
                 {
-                    var netObj = playerObj.GetComponent<NetworkObject>();
-                    if (netObj != null && netObj.IsOwner)
+                    if (netObj.IsOwner && netObj.CompareTag("Character"))
                     {
-                        var playerMovement = playerObj.GetComponent<PlayerMovement>();
+                        var playerMovement = netObj.GetComponent<PlayerMovement>();
+                        if (playerMovement == null)
+                            playerMovement = netObj.GetComponentInChildren<PlayerMovement>();
+
                         if (playerMovement != null)
                         {
+                            Debug.Log($"[Client {targetPlayerId}] Locking movement");
                             playerMovement.LockMovement(true);
                             playerMovement.LockAllInteractions(true);
                         }
+                        break;
                     }
                 }
             }
@@ -471,21 +494,25 @@ namespace NewCss
         [ClientRpc]
         private void UnlockSpecificPlayerClientRpc(ulong targetPlayerId)
         {
-            // Sadece hedef player kilidini açar
+            // Sadece hedef client bu kodu çalıştırır
             if (NetworkManager.Singleton.LocalClientId == targetPlayerId)
             {
-                var playerObj = GameObject.FindWithTag("Character");
-                if (playerObj != null)
+                // Kendi local player'ını bul
+                foreach (var netObj in FindObjectsOfType<NetworkObject>())
                 {
-                    var netObj = playerObj.GetComponent<NetworkObject>();
-                    if (netObj != null && netObj.IsOwner)
+                    if (netObj.IsOwner && netObj.CompareTag("Character"))
                     {
-                        var playerMovement = playerObj.GetComponent<PlayerMovement>();
+                        var playerMovement = netObj.GetComponent<PlayerMovement>();
+                        if (playerMovement == null)
+                            playerMovement = netObj.GetComponentInChildren<PlayerMovement>();
+
                         if (playerMovement != null)
                         {
+                            Debug.Log($"[Client {targetPlayerId}] Unlocking movement");
                             playerMovement.LockMovement(false);
                             playerMovement.LockAllInteractions(false);
                         }
+                        break;
                     }
                 }
             }
@@ -538,30 +565,7 @@ namespace NewCss
             return false;
         }
 
-        private void OnTriggerEnter(Collider other)
-        {
-            if (other.CompareTag("Character"))
-            {
-                // Sadece owner olan player için playerInRange'i true yap
-                NetworkObject netObj = other.GetComponent<NetworkObject>();
-                if (netObj != null && netObj.IsOwner)
-                {
-                    playerInRange = true;
-                }
-            }
-        }
-
-        private void OnTriggerExit(Collider other)
-        {
-            if (other.CompareTag("Character"))
-            {
-                NetworkObject netObj = other.GetComponent<NetworkObject>();
-                if (netObj != null && netObj.IsOwner)
-                {
-                    playerInRange = false;
-                }
-            }
-        }
+        // OnTriggerEnter/Exit KALDIRILDI - Artık gerek yok
 
         private GameObject PlaceOnDropOffTableAsChild()
         {
@@ -690,10 +694,10 @@ namespace NewCss
 
         void OnDrawGizmosSelected()
         {
-            Gizmos.color = playerInRange ? Color.green : Color.red;
+            Gizmos.color = Color.yellow;
             Gizmos.DrawWireSphere(transform.position, interactionRange);
 
-            string debugInfo = $"State: {state}\nInteracted: {hasInteracted}\nInRange: {playerInRange}";
+            string debugInfo = $"State: {state}\nInteracted: {hasInteracted}";
             if (IsServer)
             {
                 debugInfo += $"\nWait Time: {actualWaitTime:F1}s";

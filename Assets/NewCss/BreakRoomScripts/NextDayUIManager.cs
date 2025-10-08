@@ -11,10 +11,11 @@ namespace NewCss
     public class NextDayUIManager : MonoBehaviour
     {
         [Header("Next Day UI Elements")]
+        public GameObject nextDayPanel; // Ana panel referansı - INSPECTOR'DAN ATANMALI
         public GameObject[] playerUIElements; // Player1, Player2, Player3, Player4 UI elementleri
         public TextMeshProUGUI[] playerNameTexts; // Her oyuncu için isim text'leri
         public GameObject[] playerIcons; // Oyuncu ikonları (yeşil adamcıklar)
-        
+
         [Header("Settings")]
         public string defaultPlayerName = "Player";
 
@@ -28,6 +29,50 @@ namespace NewCss
         {
             // UI aktif olduğunda güncelle
             UpdateNextDayUI();
+
+            // Mouse kontrolü
+            SetupCursor();
+        }
+
+        void Update()
+        {
+            // Next Day UI aktifken ESC tuşunu engelle
+            if (IsUIActive())
+            {
+                // Mouse'u her frame güncelle
+                SetupCursor();
+
+                // ESC tuşunu yakala ve devre dışı bırak
+                if (Input.GetKeyDown(KeyCode.Escape))
+                {
+                    Debug.Log("[NextDayUI] ESC key blocked while Next Day UI is active");
+                    // Hiçbir şey yapma - ESC menüsü açılmasın
+                }
+            }
+        }
+
+        /// <summary>
+        /// UI'ın aktif olup olmadığını kontrol eder
+        /// </summary>
+        public bool IsUIActive()
+        {
+            // nextDayPanel aktif mi kontrol et
+            if (nextDayPanel != null)
+            {
+                return nextDayPanel.activeInHierarchy;
+            }
+
+            // Panel referansı yoksa gameObject'in kendisine bak
+            return gameObject.activeInHierarchy;
+        }
+
+        /// <summary>
+        /// Mouse cursor ayarlarını yapar
+        /// </summary>
+        private void SetupCursor()
+        {
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
         }
 
         public void UpdateNextDayUI()
@@ -50,6 +95,8 @@ namespace NewCss
             {
                 ShowPlayer(i, members[i].Name);
             }
+
+            Debug.Log($"[NextDayUI] Updated UI - Showing {members.Length} players");
         }
 
         private Lobby? GetCurrentLobby()
@@ -113,7 +160,17 @@ namespace NewCss
         {
             // Burada next day logic'inizi ekleyin
             Debug.Log("Next Day clicked!");
-            
+
+            // UI'ı kapat
+            if (nextDayPanel != null)
+            {
+                nextDayPanel.SetActive(false);
+            }
+
+            // Mouse'u geri kilitle (FPS oyunu ise)
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+
             // Örnek: Oyun sahnesine geç
             // SceneManager.LoadScene("GameScene");
         }
@@ -136,6 +193,13 @@ namespace NewCss
                 }
             }
             return count;
+        }
+
+        void OnDisable()
+        {
+            // UI kapandığında mouse'u geri kilitle
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
         }
     }
 }

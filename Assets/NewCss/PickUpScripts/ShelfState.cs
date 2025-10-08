@@ -6,9 +6,8 @@ namespace NewCss
     public class ShelfState : NetworkBehaviour
     {
         [Header("Shelf Configuration")]
-        public Transform[] shelfSlots; // Raf üzerindeki boş noktalar
+        public Transform[] shelfSlots;
 
-        // NetworkVariable ile client-server sync
         private NetworkList<NetworkObjectReference> _slotItems;
 
         private void Awake()
@@ -20,17 +19,14 @@ namespace NewCss
         {
             base.OnNetworkSpawn();
 
-            // Slot sayısını başlat
             if (IsServer)
             {
-                // Slot sayısını shelfSlots array'ine göre ayarla
                 for (int i = 0; i < shelfSlots.Length; i++)
                 {
                     _slotItems.Add(new NetworkObjectReference());
                 }
             }
 
-            // Client'larda değişiklikleri dinle
             _slotItems.OnListChanged += OnSlotItemsChanged;
         }
 
@@ -43,23 +39,20 @@ namespace NewCss
             base.OnNetworkDespawn();
         }
 
-        // Network list değişikliklerini handle et
         private void OnSlotItemsChanged(NetworkListEvent<NetworkObjectReference> changeEvent)
         {
-            if (IsClient && !IsServer) // Sadece client'larda çalışsın
+            if (IsClient && !IsServer)
             {
                 UpdateVisualState();
             }
         }
 
-        // Görsel durumu güncelle (client-side)
         private void UpdateVisualState()
         {
             for (int i = 0; i < _slotItems.Count && i < shelfSlots.Length; i++)
             {
                 if (_slotItems[i].TryGet(out NetworkObject networkObj) && networkObj != null)
                 {
-                    // Item varsa slot pozisyonuna yerleştir
                     GameObject item = networkObj.gameObject;
                     item.transform.SetParent(shelfSlots[i]);
                     item.transform.localPosition = Vector3.zero;
@@ -74,7 +67,6 @@ namespace NewCss
             }
         }
 
-        // Rafın tamamen dolu olup olmadığını kontrol eder
         public bool IsFull()
         {
             if (_slotItems.Count < shelfSlots.Length) return false;
@@ -87,7 +79,6 @@ namespace NewCss
             return true;
         }
 
-        // En yakın boş slotu bulur
         private int FindEmptySlotIndex()
         {
             for (int i = 0; i < _slotItems.Count && i < shelfSlots.Length; i++)
@@ -98,19 +89,16 @@ namespace NewCss
             return -1;
         }
 
-        // Item rafta bir slota yerleştirilir (Server RPC)
         [ServerRpc(RequireOwnership = false)]
         public void PlaceItemOnShelfServerRpc(NetworkObjectReference itemRef)
         {
             if (!IsServer) return;
 
             int slotIndex = FindEmptySlotIndex();
-            if (slotIndex == -1) return; // Yer yok
+            if (slotIndex == -1) return;
 
-            // Network list'i güncelle
             _slotItems[slotIndex] = itemRef;
 
-            // Server'da görsel güncellemeyi yap
             if (itemRef.TryGet(out NetworkObject networkObj) && networkObj != null)
             {
                 GameObject item = networkObj.gameObject;
@@ -124,16 +112,14 @@ namespace NewCss
                 var col = item.GetComponent<Collider>();
                 if (col != null) col.enabled = false;
 
-                // Client'lara bilgi gönder
                 PlaceItemClientRpc(itemRef, slotIndex);
             }
         }
 
-        // Client'lara item yerleştirme bilgisi gönder
         [ClientRpc]
         private void PlaceItemClientRpc(NetworkObjectReference itemRef, int slotIndex)
         {
-            if (IsServer) return; // Server'da zaten yapıldı
+            if (IsServer) return;
 
             if (itemRef.TryGet(out NetworkObject networkObj) && networkObj != null)
             {
@@ -150,120 +136,88 @@ namespace NewCss
             }
         }
 
-        // En yakın slottaki ürünü raftan alır (Server RPC)
+        // DÜZELTME: requesterClientId parametresi eklendi
         [ServerRpc(RequireOwnership = false)]
-        public void TakeItemFromShelfServerRpc(ServerRpcParams rpcParams = default)
+        public void TakeItemFromShelfServerRpc(ulong requesterClientId, ServerRpcParams rpcParams = default)
         {
             if (!IsServer) return;
 
+            // SADECE güvenlik kontrolü - isteği gönderen client gerçekten o client mi?
+            ulong senderClientId = rpcParams.Receive.SenderClientId;
+            if (senderClientId != requesterClientId)
+            {
+                Debug.LogWarning($"Client {senderClientId} tried to take item for {requesterClientId}!");
+                return;
+            }
+
+            // Hedef player'ı kontrol et
+            if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(requesterClientId, out var client) ||
+                client.PlayerObject == null)
+            {
+                Debug.LogError($"Player object not found for client: {requesterClientId}");
+                return;
+            }
+
+            var playerInventory = client.PlayerObject.GetComponent<PlayerInventory>();
+            if (playerInventory == null)
+            {
+                Debug.LogError($"PlayerInventory not found for client: {requesterClientId}");
+                return;
+            }
+
+            // Player'ın zaten item'ı varsa işlemi iptal et
+            if (playerInventory.HasItem)
+            {
+                Debug.Log($"Player {requesterClientId} already has an item, cannot take from shelf");
+                return;
+            }
+
+            // İlk dolu slotu bul
             for (int i = 0; i < _slotItems.Count; i++)
             {
                 if (_slotItems[i].TryGet(out NetworkObject networkObj) && networkObj != null)
                 {
-                    NetworkObjectReference itemRef = _slotItems[i];
+                    NetworkWorldItem worldItem = networkObj.GetComponent<NetworkWorldItem>();
+                    if (worldItem == null || worldItem.ItemData == null)
+                    {
+                        Debug.LogError("WorldItem or ItemData is null!");
+                        continue;
+                    }
+
+                    int itemID = worldItem.ItemData.itemID;
+                    Debug.Log($"Taking item from shelf slot {i}, ItemID: {itemID}, giving to client: {requesterClientId}");
 
                     // Slot'u temizle
                     _slotItems[i] = new NetworkObjectReference();
 
-                    // Item'ı serbest bırak
-                    GameObject item = networkObj.gameObject;
-                    item.transform.SetParent(null);
+                    // Item'ı despawn et
+                    networkObj.Despawn();
 
-                    var rb = item.GetComponent<Rigidbody>();
-                    if (rb != null)
-                    {
-                        rb.isKinematic = false;
-                        rb.useGravity = true;
-                    }
+                    // Item'ı isteyen player'a ver
+                    playerInventory.SetInventoryStateServerRpc(true, itemID);
 
-                    var col = item.GetComponent<Collider>();
-                    if (col != null) col.enabled = true;
+                    // Tüm client'lara bildir
+                    TakeItemFromShelfClientRpc(requesterClientId, itemID);
 
-                    // Item'ı pickup edilebilir hale getir
-                    NetworkWorldItem worldItem = item.GetComponent<NetworkWorldItem>();
-                    if (worldItem != null)
-                    {
-                        worldItem.EnablePickup();
-                    }
-
-                    // Client'lara bilgi gönder
-                    TakeItemClientRpc(itemRef, i);
-
-                    // Item'ı requester player'ına otomatik olarak ver
-                    GiveItemToPlayerServerRpc(itemRef, rpcParams.Receive.SenderClientId);
+                    Debug.Log($"Item successfully given to player {requesterClientId}");
                     return;
                 }
             }
+
+            Debug.Log("No items found on shelf");
         }
 
-        // DÜZELTME: Item'ı player'a otomatik olarak ver (Server'da)
-        [ServerRpc(RequireOwnership = false)]
-        private void GiveItemToPlayerServerRpc(NetworkObjectReference itemRef, ulong playerClientId)
-        {
-            if (!IsServer) return;
 
-            if (!itemRef.TryGet(out NetworkObject itemNetworkObj) || itemNetworkObj == null) return;
-
-            // Hedef player'ı bul
-            if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(playerClientId, out var client) || client.PlayerObject == null)
-                return;
-
-            var playerInventory = client.PlayerObject.GetComponent<PlayerInventory>();
-            if (playerInventory == null) return;
-
-            // 1. Ownership'i isteyene ver
-            itemNetworkObj.ChangeOwnership(playerClientId);
-
-            // 2. SERVER'da item'ı player'a ver
-            playerInventory.PickupItemFromTable(itemNetworkObj, null);
-
-            // 3. Tüm CLIENT'lara bilgi gönder (server'da zaten yapıldı, sadece görsel sync için)
-            GiveItemToPlayerClientRpc(itemRef, playerClientId);
-        }
-
-        // DÜZELTME: Tüm client'lara item'ın kime verildiğini bildir
         [ClientRpc]
-        private void GiveItemToPlayerClientRpc(NetworkObjectReference itemRef, ulong targetPlayerClientId)
+        private void TakeItemFromShelfClientRpc(ulong targetPlayerClientId, int itemID)
         {
-            if (IsServer) return; // Server'da zaten yapıldı
-
-            if (!itemRef.TryGet(out NetworkObject itemNetworkObj) || itemNetworkObj == null) return;
-
-            // Hedef player'ı bul
-            if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(targetPlayerClientId, out var client) || client.PlayerObject == null)
-                return;
-
-            var playerInventory = client.PlayerObject.GetComponent<PlayerInventory>();
-            if (playerInventory == null) return;
-
-            // Client'ta item'ı player'a ver
-            playerInventory.PickupItemFromTable(itemNetworkObj, null);
-        }
-
-        // Client'lara item alma bilgisi gönder
-        [ClientRpc]
-        private void TakeItemClientRpc(NetworkObjectReference itemRef, int slotIndex)
-        {
-            if (IsServer) return; // Server'da zaten yapıldı
-
-            if (itemRef.TryGet(out NetworkObject networkObj) && networkObj != null)
+            // Her client kendi player'ını kontrol eder
+            if (NetworkManager.Singleton.LocalClientId == targetPlayerClientId)
             {
-                GameObject item = networkObj.gameObject;
-                item.transform.SetParent(null);
-
-                var rb = item.GetComponent<Rigidbody>();
-                if (rb != null)
-                {
-                    rb.isKinematic = false;
-                    rb.useGravity = true;
-                }
-
-                var col = item.GetComponent<Collider>();
-                if (col != null) col.enabled = true;
+                Debug.Log($"Client {targetPlayerClientId} received item pickup confirmation");
             }
         }
 
-        // Slotların item'ı olup olmadığını kontrol eder
         public bool HasItem()
         {
             for (int i = 0; i < _slotItems.Count; i++)
@@ -274,7 +228,6 @@ namespace NewCss
             return false;
         }
 
-        // Public wrapper metodlar (client'ların çağırabileceği)
         public void PlaceItem(GameObject item)
         {
             var networkObj = item.GetComponent<NetworkObject>();
@@ -284,12 +237,19 @@ namespace NewCss
             }
         }
 
+        // DÜZELTME: Bu metod artık kullanılmamalı, TakeItem(ulong clientId) kullanılmalı
+        [System.Obsolete("Use TakeItem(ulong clientId) instead")]
         public void TakeItem()
         {
-            TakeItemFromShelfServerRpc();
+            Debug.LogWarning("TakeItem() without clientId is deprecated! Use TakeItem(ulong clientId)");
         }
 
-        // Debug için slot durumlarını göster
+        // YENİ: Client ID parametreli versiyon
+        public void TakeItem(ulong clientId)
+        {
+            TakeItemFromShelfServerRpc(clientId);
+        }
+
         [ContextMenu("Debug Slot States")]
         private void DebugSlotStates()
         {

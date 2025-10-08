@@ -21,8 +21,8 @@ public class SteamManager : MonoBehaviour
     private bool wasInMainMenu = true;
 
     [Header("Join Error Messages")]
-    [SerializeField] private TextMeshProUGUI ErrorMessageText; // Hata mesajı için text
-    [SerializeField] private float ErrorMessageDuration = 3f; // Hata mesajı gösterim süresi
+    [SerializeField] private TextMeshProUGUI ErrorMessageText;
+    [SerializeField] private float ErrorMessageDuration = 3f;
 
     [Header("Start Game Button")]
     [SerializeField] private Button StartGameButton;
@@ -35,7 +35,8 @@ public class SteamManager : MonoBehaviour
     [SerializeField] private Sprite emptySlotSprite;
 
     private const int MAX_PLAYERS = 4;
-    private bool isJoiningLobby = false; // Çift tıklama engellemek için
+    private bool isJoiningLobby = false;
+    private bool isLobbyJoinValid = false; // YENİ: Lobiye başarıyla katılıp katılmadığımızı takip eder
 
     [System.Serializable]
     public class PlayerSlot
@@ -138,6 +139,13 @@ public class SteamManager : MonoBehaviour
 
     private void OnLobbyMemberJoined(Lobby lobby, Friend friend)
     {
+        // Sadece geçerli bir lobby'deyken üye katılımlarını işle
+        if (!isLobbyJoinValid || CurrentLobby.Id == 0 || CurrentLobby.Id != lobby.Id)
+        {
+            Debug.LogWarning($"Ignoring member join event for invalid lobby state");
+            return;
+        }
+
         Debug.Log($"Player joined: {friend.Name}");
         UpdatePlayerSlots();
         UpdateStartButtonVisibility();
@@ -145,6 +153,13 @@ public class SteamManager : MonoBehaviour
 
     private void OnLobbyMemberLeave(Lobby lobby, Friend friend)
     {
+        // Sadece geçerli bir lobby'deyken üye ayrılmalarını işle
+        if (!isLobbyJoinValid || CurrentLobby.Id == 0 || CurrentLobby.Id != lobby.Id)
+        {
+            Debug.LogWarning($"Ignoring member leave event for invalid lobby state");
+            return;
+        }
+
         Debug.Log($"Player left: {friend.Name}");
         UpdatePlayerSlots();
         UpdateStartButtonVisibility();
@@ -153,6 +168,13 @@ public class SteamManager : MonoBehaviour
     private void UpdateStartButtonVisibility()
     {
         if (StartGameButton == null) return;
+
+        // Geçerli bir lobby'de değilsek butonu gizle
+        if (!isLobbyJoinValid || CurrentLobby.Id == 0)
+        {
+            StartGameButton.gameObject.SetActive(false);
+            return;
+        }
 
         if (NetworkManager.Singleton == null)
         {
@@ -168,18 +190,45 @@ public class SteamManager : MonoBehaviour
 
     private void UpdatePlayerSlots()
     {
-        if (CurrentLobby.Id == 0) return;
+        // Geçerli lobby yoksa tüm slotları boşalt ve çık
+        if (!isLobbyJoinValid || CurrentLobby.Id == 0)
+        {
+            Debug.LogWarning("UpdatePlayerSlots called with invalid lobby state");
+            for (int i = 0; i < MAX_PLAYERS; i++)
+            {
+                SetSlotEmpty(i);
+            }
+            return;
+        }
 
+        // Önce tüm slotları temizle
         for (int i = 0; i < MAX_PLAYERS; i++)
         {
             SetSlotEmpty(i);
         }
 
-        var members = CurrentLobby.Members.ToArray();
-
-        for (int i = 0; i < members.Length && i < MAX_PLAYERS; i++)
+        try
         {
-            SetSlotOccupied(i, members[i].Name);
+            var members = CurrentLobby.Members.ToArray();
+
+            // Eğer üye yoksa, bu geçersiz bir lobby'dir
+            if (members.Length == 0)
+            {
+                Debug.LogWarning("Lobby has no members, marking as invalid");
+                InvalidateLobby();
+                return;
+            }
+
+            // Üyeleri slotlara yerleştir
+            for (int i = 0; i < members.Length && i < MAX_PLAYERS; i++)
+            {
+                SetSlotOccupied(i, members[i].Name);
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"Error updating player slots: {ex.Message}");
+            InvalidateLobby();
         }
     }
 
@@ -209,16 +258,23 @@ public class SteamManager : MonoBehaviour
         {
             Debug.Log($"Steam overlay join requested for lobby: {lobby.Id}");
             var joinResult = await lobby.Join();
+
             if (joinResult != RoomEnter.Success)
             {
                 Debug.LogError($"Failed to join requested lobby: {joinResult}");
-                ShowErrorMessage("Lobiye katılılamadı!");
+                ShowErrorMessage("Lobiye katılınamadı!");
+                isLobbyJoinValid = false;
+            }
+            else
+            {
+                isLobbyJoinValid = true;
             }
         }
         catch (System.Exception ex)
         {
             Debug.LogError($"Error joining lobby: {ex.Message}");
             ShowErrorMessage("Bağlantı hatası!");
+            isLobbyJoinValid = false;
         }
     }
 
@@ -229,15 +285,16 @@ public class SteamManager : MonoBehaviour
             Debug.Log($"Lobby created successfully with ID: {lobby.Id}");
 
             CurrentLobby = lobby;
-            
-            // Lobby ayarlarını yapılandır
+            isLobbyJoinValid = true; // Host her zaman geçerli lobby'ye sahiptir
+
             lobby.SetPublic();
             lobby.SetJoinable(true);
-            lobby.SetData("game_version", Application.version); // Opsiyonel: versiyon kontrolü için
+            lobby.SetData("game_version", Application.version);
 
             if (NetworkManager.Singleton == null)
             {
                 Debug.LogError("NetworkManager.Singleton is null!");
+                InvalidateLobby();
                 return;
             }
 
@@ -256,6 +313,7 @@ public class SteamManager : MonoBehaviour
         {
             Debug.LogError($"Lobby creation failed: {result}");
             ShowErrorMessage("Lobi oluşturulamadı!");
+            isLobbyJoinValid = false;
         }
     }
 
@@ -268,6 +326,7 @@ public class SteamManager : MonoBehaviour
             if (NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsClient)
             {
                 Debug.LogError("NetworkManager is still active! Cannot start host.");
+                InvalidateLobby();
                 return;
             }
 
@@ -276,6 +335,7 @@ public class SteamManager : MonoBehaviour
             {
                 Debug.LogError("FacepunchTransport component not found!");
                 ShowErrorMessage("Network hatası!");
+                InvalidateLobby();
                 return;
             }
 
@@ -286,18 +346,21 @@ public class SteamManager : MonoBehaviour
             if (hostStarted)
             {
                 Debug.Log("Host started successfully");
+                isLobbyJoinValid = true;
                 UpdateStartButtonVisibility();
             }
             else
             {
                 Debug.LogError("Failed to start host!");
                 ShowErrorMessage("Host başlatılamadı!");
+                InvalidateLobby();
             }
         }
         catch (System.Exception ex)
         {
             Debug.LogError($"Error starting host: {ex.Message}");
             ShowErrorMessage("Host hatası!");
+            InvalidateLobby();
         }
     }
 
@@ -309,11 +372,18 @@ public class SteamManager : MonoBehaviour
 
     private void LobbyEntered(Lobby lobby)
     {
+        // SADECE geçerli katılma işlemlerinde UI'ı güncelle
+        if (!isLobbyJoinValid)
+        {
+            Debug.LogWarning("LobbyEntered called but join was not valid, ignoring...");
+            return;
+        }
+
+        Debug.Log($"LobbyEntered: Valid join to lobby {lobby.Id}");
+
         CurrentLobby = lobby;
         LobbySaver.instance.CurrentLobby = lobby;
         LobbyID.text = lobby.Id.ToString();
-        MainMenu.SetActive(false);
-        InLobbyMenu.SetActive(true);
 
         // Client ise network'e bağlan
         if (!NetworkManager.Singleton.IsHost && !NetworkManager.Singleton.IsClient)
@@ -323,15 +393,42 @@ public class SteamManager : MonoBehaviour
 
             bool clientStarted = NetworkManager.Singleton.StartClient();
             Debug.Log($"Client start attempt: {clientStarted}");
-            
+
             if (!clientStarted)
             {
                 ShowErrorMessage("Bağlantı başarısız!");
+                InvalidateLobby();
+                return;
             }
         }
 
+        // Üyeleri kontrol et - eğer üye yoksa geçersiz lobby
+        try
+        {
+            var members = lobby.Members.ToArray();
+            if (members.Length == 0)
+            {
+                Debug.LogError("Lobby has no members after join!");
+                ShowErrorMessage("Geçersiz lobi!");
+                InvalidateLobby();
+                return;
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"Error checking lobby members: {ex.Message}");
+            ShowErrorMessage("Lobi hatası!");
+            InvalidateLobby();
+            return;
+        }
+
+        // Her şey başarılıysa UI'ı güncelle
+        MainMenu.SetActive(false);
+        InLobbyMenu.SetActive(true);
         UpdatePlayerSlots();
         UpdateStartButtonVisibility();
+
+        Debug.Log("Successfully entered and validated lobby");
     }
 
     public async void HostLobby()
@@ -346,23 +443,29 @@ public class SteamManager : MonoBehaviour
             if (lobby.HasValue)
             {
                 Debug.Log("Lobby creation initiated");
+                // isLobbyJoinValid, LobbyCreated callback'inde set edilecek
             }
             else
             {
                 Debug.LogError("Failed to initiate lobby creation");
                 ShowErrorMessage("Lobi oluşturulamadı!");
+                isLobbyJoinValid = false;
             }
         }
         catch (System.Exception ex)
         {
             Debug.LogError($"Error creating lobby: {ex.Message}");
             ShowErrorMessage("Lobi hatası!");
+            isLobbyJoinValid = false;
         }
     }
 
     private async System.Threading.Tasks.Task ForceNetworkCleanup()
     {
         Debug.Log("=== STARTING FORCE NETWORK CLEANUP ===");
+
+        // Önce geçersiz duruma getir
+        isLobbyJoinValid = false;
 
         if (NetworkManager.Singleton != null)
         {
@@ -407,7 +510,14 @@ public class SteamManager : MonoBehaviour
         if (CurrentLobby.Id != 0)
         {
             Debug.Log($"Leaving previous lobby {CurrentLobby.Id}");
-            CurrentLobby.Leave();
+            try
+            {
+                CurrentLobby.Leave();
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogWarning($"Error leaving lobby: {ex.Message}");
+            }
             CurrentLobby = default(Lobby);
         }
 
@@ -424,12 +534,17 @@ public class SteamManager : MonoBehaviour
 
     public void CopyID()
     {
+        if (!isLobbyJoinValid || CurrentLobby.Id == 0)
+        {
+            ShowErrorMessage("Geçerli bir lobi yok!");
+            return;
+        }
+
         TextEditor textEditor = new TextEditor();
         textEditor.text = LobbyID.text;
         textEditor.SelectAll();
         textEditor.Copy();
-        
-        // Opsiyonel: Kopyalama başarılı mesajı
+
         if (ErrorMessageText != null)
         {
             ShowErrorMessage("Lobi ID kopyalandı!", 2f);
@@ -440,6 +555,7 @@ public class SteamManager : MonoBehaviour
     {
         Debug.Log("LeaveLobby called - starting comprehensive cleanup...");
 
+        isLobbyJoinValid = false;
         await ForceNetworkCleanup();
 
         for (int i = 0; i < MAX_PLAYERS; i++)
@@ -458,7 +574,7 @@ public class SteamManager : MonoBehaviour
 
     private void CheckUI()
     {
-        if (LobbySaver.instance.CurrentLobby == null)
+        if (!isLobbyJoinValid || LobbySaver.instance.CurrentLobby == null || CurrentLobby.Id == 0)
         {
             MainMenu.SetActive(true);
             InLobbyMenu.SetActive(false);
@@ -476,24 +592,58 @@ public class SteamManager : MonoBehaviour
         }
     }
 
-    // ÖNEMLİ: DÜZELTİLMİŞ ID İLE KATILMA FONKSİYONU
+    // Lobby'yi geçersiz kıl ve UI'ı düzelt
+    private void InvalidateLobby()
+    {
+        Debug.Log("Invalidating current lobby...");
+        isLobbyJoinValid = false;
+
+        // Slotları temizle
+        for (int i = 0; i < MAX_PLAYERS; i++)
+        {
+            SetSlotEmpty(i);
+        }
+
+        // UI'ı ana menüye döndür
+        MainMenu.SetActive(true);
+        InLobbyMenu.SetActive(false);
+
+        if (StartGameButton != null)
+        {
+            StartGameButton.gameObject.SetActive(false);
+        }
+
+        // Lobby'yi temizle
+        if (CurrentLobby.Id != 0)
+        {
+            try
+            {
+                CurrentLobby.Leave();
+            }
+            catch { }
+            CurrentLobby = default(Lobby);
+        }
+
+        if (LobbySaver.instance != null)
+        {
+            LobbySaver.instance.ForceClearLobby();
+        }
+    }
+
     public async void JoinLobbyWithID()
     {
-        // Çift tıklama kontrolü
         if (isJoiningLobby)
         {
             Debug.Log("Already attempting to join a lobby, please wait...");
             return;
         }
 
-        // Input kontrolü
         if (string.IsNullOrEmpty(LobbyIDInputField.text))
         {
             ShowErrorMessage("Lütfen bir Lobi ID girin!");
             return;
         }
 
-        // ID formatı kontrolü
         if (!ulong.TryParse(LobbyIDInputField.text, out ulong lobbyID))
         {
             ShowErrorMessage("Geçersiz Lobi ID formatı!");
@@ -501,6 +651,7 @@ public class SteamManager : MonoBehaviour
         }
 
         isJoiningLobby = true;
+        isLobbyJoinValid = false; // Henüz geçerli değil
         Debug.Log($"Attempting to join lobby with ID: {lobbyID}");
 
         try
@@ -518,49 +669,72 @@ public class SteamManager : MonoBehaviour
 
             Debug.Log($"Attempting to join lobby directly...");
 
-            // Doğrudan katılmayı dene - bu lobby'nin varlığını da test eder
+            // Doğrudan katılmayı dene
             var joinResult = await targetLobby.Join();
 
             if (joinResult == RoomEnter.Success)
             {
-                Debug.Log($"Successfully joined lobby: {lobbyID}");
-                // LobbyEntered event'i otomatik çağrılacak
-                isJoiningLobby = false;
-                return;
+                Debug.Log($"Join successful, validating lobby...");
+
+                // Lobinin geçerli olup olmadığını kontrol et
+                try
+                {
+                    var members = targetLobby.Members.ToArray();
+                    if (members.Length > 0)
+                    {
+                        Debug.Log($"Lobby validated with {members.Length} members");
+                        isLobbyJoinValid = true; // Geçerli katılım
+                        // LobbyEntered event'i otomatik çağrılacak
+                    }
+                    else
+                    {
+                        Debug.LogError("Lobby has no members!");
+                        ShowErrorMessage("Geçersiz lobi!");
+                        isLobbyJoinValid = false;
+                        targetLobby.Leave();
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Debug.LogError($"Error validating lobby: {ex.Message}");
+                    ShowErrorMessage("Lobi doğrulanamadı!");
+                    isLobbyJoinValid = false;
+                    targetLobby.Leave();
+                }
             }
-
-            // Katılma başarısız olduysa sebebe göre mesaj göster
-            string errorMessage = joinResult switch
+            else
             {
-                RoomEnter.DoesntExist => "Lobi mevcut değil!",
-                RoomEnter.NotAllowed => "Lobiye girme yetkiniz yok!",
-                RoomEnter.Full => "Lobi dolu!",
-                RoomEnter.Error => "Bağlantı hatası!",
-                RoomEnter.Banned => "Bu lobiden banlandınız!",
-                RoomEnter.Limited => "Hesabınız sınırlı!",
-                RoomEnter.ClanDisabled => "Klan devre dışı!",
-                RoomEnter.CommunityBan => "Topluluk yasağınız var!",
-                _ => $"Katılım başarısız: {joinResult}"
-            };
+                // Katılma başarısız
+                isLobbyJoinValid = false;
+                string errorMessage = joinResult switch
+                {
+                    RoomEnter.DoesntExist => "Lobi mevcut değil!",
+                    RoomEnter.NotAllowed => "Lobiye girme yetkiniz yok!",
+                    RoomEnter.Full => "Lobi dolu!",
+                    RoomEnter.Error => "Bağlantı hatası!",
+                    RoomEnter.Banned => "Bu lobiden banlandınız!",
+                    RoomEnter.Limited => "Hesabınız sınırlı!",
+                    RoomEnter.ClanDisabled => "Klan devre dışı!",
+                    RoomEnter.CommunityBan => "Topluluk yasağınız var!",
+                    _ => $"Katılım başarısız: {joinResult}"
+                };
 
-            Debug.LogWarning($"Join failed with result: {joinResult}");
-            ShowErrorMessage(errorMessage);
+                Debug.LogWarning($"Join failed with result: {joinResult}");
+                ShowErrorMessage(errorMessage);
+            }
         }
         catch (System.Exception ex)
         {
             Debug.LogError($"Exception while joining lobby: {ex.Message}\n{ex.StackTrace}");
             ShowErrorMessage("Beklenmeyen hata oluştu!");
+            isLobbyJoinValid = false;
         }
         finally
         {
             isJoiningLobby = false;
         }
     }
-    
-   
 
-
-    // Hata mesajı gösterme fonksiyonu
     private void ShowErrorMessage(string message, float duration = -1)
     {
         if (ErrorMessageText == null)
@@ -572,10 +746,8 @@ public class SteamManager : MonoBehaviour
         ErrorMessageText.text = message;
         ErrorMessageText.gameObject.SetActive(true);
 
-        // Eğer duration belirtilmemişse default değeri kullan
         float displayDuration = duration > 0 ? duration : ErrorMessageDuration;
 
-        // Önceki coroutine'i durdur
         StopAllCoroutines();
         StartCoroutine(HideErrorMessageAfterDelay(displayDuration));
     }
@@ -598,19 +770,18 @@ public class SteamManager : MonoBehaviour
             ShowErrorMessage("Steam bağlantısı yok!");
         }
 
-        // Başlangıçta tüm slotları boş göster
+        isLobbyJoinValid = false;
+
         for (int i = 0; i < MAX_PLAYERS; i++)
         {
             SetSlotEmpty(i);
         }
 
-        // Başlangıçta start butonunu gizle
         if (StartGameButton != null)
         {
             StartGameButton.gameObject.SetActive(false);
         }
 
-        // Hata mesajını başlangıçta gizle
         if (ErrorMessageText != null)
         {
             ErrorMessageText.gameObject.SetActive(false);
@@ -619,6 +790,12 @@ public class SteamManager : MonoBehaviour
 
     public void StartGameServer()
     {
+        if (!isLobbyJoinValid || CurrentLobby.Id == 0)
+        {
+            ShowErrorMessage("Geçerli bir lobi yok!");
+            return;
+        }
+
         if (!NetworkManager.Singleton.IsHost)
         {
             Debug.LogWarning("Only the host can start the game!");

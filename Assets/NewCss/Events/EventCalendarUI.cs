@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
+using UnityEngine.UI;
 
 namespace NewCss
 {
@@ -14,23 +15,26 @@ namespace NewCss
 
         [Header("Event Prefab")]
         public GameObject eventTextPrefab;
-        
+
         [Header("Calendar Panel")]
         public GameObject calendarPanel;
-        
+
+        [Header("Exit Button")]
+        public Button exitButton; // Exit butonu referansı
+
         [Header("Animation Settings")]
         [Tooltip("Animator component for panel animations")]
         public Animator panelAnimator;
-        
+
         [Tooltip("Name of the close animation clip (used to determine length)")]
         public string closeAnimationClipName = "DateExit";
-        
+
         [Tooltip("Name of the open animation clip (used to determine length)")]
         public string openAnimationClipName = "DateOpening";
-        
+
         // Event types enum
         public enum EventType { Positive, Negative, Neutral }
-        
+
         // Event class
         [System.Serializable]
         public class GameEvent
@@ -38,7 +42,7 @@ namespace NewCss
             public string name;
             public EventType type;
             public string description;
-            
+
             public GameEvent(string name, EventType type, string description)
             {
                 this.name = name;
@@ -46,7 +50,7 @@ namespace NewCss
                 this.description = description;
             }
         }
-        
+
         // Event list
         private List<GameEvent> allEvents = new List<GameEvent>
         {
@@ -77,9 +81,11 @@ namespace NewCss
         private List<GameObject> spawnedEventTexts = new List<GameObject>();
 
         // Animation control
-        private bool isPlayerInTrigger = false;
         private bool isPanelOpen = false;
         private bool isAnimating = false;
+
+        // Player reference
+        private PlayerMovement currentPlayer;
 
         private void Awake()
         {
@@ -89,6 +95,16 @@ namespace NewCss
                 panelAnimator = calendarPanel.GetComponent<Animator>();
                 if (panelAnimator == null)
                     Debug.LogWarning("panelAnimator not assigned and calendarPanel has no Animator!", this);
+            }
+
+            // Exit button listener ekle
+            if (exitButton != null)
+            {
+                exitButton.onClick.AddListener(OnExitButtonClicked);
+            }
+            else
+            {
+                Debug.LogWarning("Exit Button not assigned in EventCalendarUI!", this);
             }
         }
 
@@ -101,15 +117,22 @@ namespace NewCss
                 var networkObject = other.GetComponent<NetworkObject>();
                 if (networkObject != null && networkObject.IsOwner)
                 {
-                    isPlayerInTrigger = true;
-                    
+                    // Player referansını sakla
+                    currentPlayer = other.GetComponent<PlayerMovement>();
+
                     // Eğer animasyon sırasındaysa bekle
                     if (isAnimating)
                     {
                         Debug.Log("Animation in progress, ignoring trigger enter");
                         return;
                     }
-                    
+
+                    // Player hareketini kilitle
+                    if (currentPlayer != null)
+                    {
+                        currentPlayer.LockMovement(true);
+                    }
+
                     ShowCalendar();
                 }
             }
@@ -117,45 +140,75 @@ namespace NewCss
 
         private void OnTriggerExit(Collider other)
         {
-            // Sadece local player'ın karakteri ise UI'ı kapat
+            // Trigger'dan çıkınca otomatik kapatma yok artık
+            // Sadece player referansını temizle
             if (other.CompareTag("Character"))
             {
                 var networkObject = other.GetComponent<NetworkObject>();
                 if (networkObject != null && networkObject.IsOwner)
                 {
-                    isPlayerInTrigger = false;
-                    
-                    // Eğer panel açıksa animasyonlu kapat
-                    if (isPanelOpen)
+                    // Player referansını kontrol et ve eşleşiyorsa temizle
+                    var player = other.GetComponent<PlayerMovement>();
+                    if (player == currentPlayer)
                     {
-                        HideCalendar();
+                        // Panel açıksa ve exit ediliyorsa, paneli kapat
+                        if (isPanelOpen)
+                        {
+                            CloseCalendarAndUnlockPlayer();
+                        }
                     }
                 }
             }
         }
 
+        // Exit button için callback
+        private void OnExitButtonClicked()
+        {
+            Debug.Log("Exit button clicked");
+            CloseCalendarAndUnlockPlayer();
+        }
+
+        // UI'ı kapat ve player'ı unlock et
+        private void CloseCalendarAndUnlockPlayer()
+        {
+            if (!isPanelOpen) return;
+
+            // UI'ı kapat
+            HideCalendar();
+
+            // Player hareketini geri aç
+            if (currentPlayer != null)
+            {
+                currentPlayer.LockMovement(false);
+            }
+        }
+
         private void ShowCalendar()
         {
-            if (isPanelOpen || isAnimating) 
+            if (isPanelOpen || isAnimating)
             {
                 Debug.Log("Panel already open or animating, ignoring open request");
                 return;
             }
-            
+
             isPanelOpen = true;
             isAnimating = true;
-            
+
             if (calendarPanel != null)
             {
                 // Panel'i aktif et
                 calendarPanel.SetActive(true);
-                
+
+                // Cursor'u göster ve kilitle
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+
                 if (panelAnimator != null)
                 {
                     // Animator state'ini temizle
                     panelAnimator.ResetTrigger("Open");
                     panelAnimator.ResetTrigger("Close");
-                    
+
                     // Açılma animasyonunu başlat
                     StartCoroutine(DelayedOpenAnimation());
                 }
@@ -170,15 +223,19 @@ namespace NewCss
 
         private void HideCalendar()
         {
-            if (!isPanelOpen || isAnimating) 
+            if (!isPanelOpen || isAnimating)
             {
                 Debug.Log("Panel not open or animating, ignoring close request");
                 return;
             }
-            
+
             isPanelOpen = false;
             isAnimating = true;
-            
+
+            // Cursor'u gizle
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+
             if (calendarPanel != null)
             {
                 if (panelAnimator != null)
@@ -186,7 +243,7 @@ namespace NewCss
                     // Kapatma animasyonunu başlat
                     panelAnimator.ResetTrigger("Open");
                     panelAnimator.SetTrigger("Close");
-                    
+
                     // Animasyon bitene kadar bekle, sonra panel'i deaktif et
                     StartCoroutine(DisablePanelAfterAnimation());
                 }
@@ -199,17 +256,17 @@ namespace NewCss
                 }
             }
         }
-        
+
         // Geciktirilmiş açılma animasyonu
         private IEnumerator DelayedOpenAnimation()
         {
             // Bir frame bekle ki panel düzgün aktif olsun
             yield return null;
-            
+
             if (panelAnimator != null)
             {
                 panelAnimator.SetTrigger("Open");
-                
+
                 // Açılma animasyonu bitene kadar bekle
                 yield return StartCoroutine(WaitForOpenAnimation());
             }
@@ -218,7 +275,7 @@ namespace NewCss
                 isAnimating = false;
             }
         }
-        
+
         // Açılma animasyonunun bitmesini bekle
         private IEnumerator WaitForOpenAnimation()
         {
@@ -232,7 +289,7 @@ namespace NewCss
                 {
                     foreach (var clip in ac.animationClips)
                     {
-                        if (clip.name.Contains("Open") || clip.name.Contains("Opening") || 
+                        if (clip.name.Contains("Open") || clip.name.Contains("Opening") ||
                             clip.name == openAnimationClipName)
                         {
                             waitTime = clip.length;
@@ -248,7 +305,7 @@ namespace NewCss
             isAnimating = false;
             Debug.Log("Calendar open animation completed");
         }
-        
+
         // Kapatma animasyonu bitince panel'i deaktif et
         private IEnumerator DisablePanelAfterAnimation()
         {
@@ -262,7 +319,7 @@ namespace NewCss
                 {
                     foreach (var clip in ac.animationClips)
                     {
-                        if (clip.name.Contains("Exit") || clip.name.Contains("Close") || 
+                        if (clip.name.Contains("Exit") || clip.name.Contains("Close") ||
                             clip.name == closeAnimationClipName)
                         {
                             waitTime = clip.length;
@@ -274,17 +331,17 @@ namespace NewCss
 
             Debug.Log($"Waiting {waitTime} seconds for close animation...");
             yield return new WaitForSeconds(waitTime);
-            
+
             // Animasyon bittikten sonra panel'i deaktif et
             if (calendarPanel != null)
             {
                 calendarPanel.SetActive(false);
                 Debug.Log("Calendar panel disabled after close animation");
             }
-            
+
             isAnimating = false;
         }
-        
+
         // BONUS: Animation Event callback'leri (opsiyonel)
         public void OnOpenAnimationComplete()
         {
@@ -305,11 +362,11 @@ namespace NewCss
         {
             if (calendarPanel != null)
                 calendarPanel.SetActive(false);
-                
+
             // Generate initial events
             GenerateInitialEvents();
             UpdateCalendarUI();
-            
+
             // Subscribe to OnNewDay event if calendar should update as days pass:
             DayCycleManager.OnNewDay += OnNewDayHandler;
         }
@@ -317,6 +374,12 @@ namespace NewCss
         private void OnDestroy()
         {
             DayCycleManager.OnNewDay -= OnNewDayHandler;
+
+            // Exit button listener'ını temizle
+            if (exitButton != null)
+            {
+                exitButton.onClick.RemoveListener(OnExitButtonClicked);
+            }
         }
 
         public override void OnNetworkSpawn()
@@ -331,24 +394,24 @@ namespace NewCss
             int maxDay = startDay + 100;
             int currentDay = startDay;
             int eventCount = 0;
-            
+
             // Separate event types
             List<GameEvent> positiveEvents = allEvents.FindAll(e => e.type == EventType.Positive);
             List<GameEvent> negativeEvents = allEvents.FindAll(e => e.type == EventType.Negative);
-            
+
             while (currentDay < maxDay)
             {
                 // Add 3-4 days interval
                 int interval = Random.Range(3, 5);
                 currentDay += interval;
-                
+
                 // Rent day check (multiples of 7)
                 if (currentDay % 7 == 0)
                 {
                     // If rent day, shift event 1 day forward or backward
                     int adjustment = Random.Range(0, 2) == 0 ? -1 : 1;
                     int adjustedDay = currentDay + adjustment;
-                    
+
                     // Check shifted day is not rent day and positive
                     if (adjustedDay % 7 != 0 && adjustedDay > 0)
                     {
@@ -360,14 +423,14 @@ namespace NewCss
                         currentDay += 2;
                     }
                 }
-                
+
                 // Add event day to list
                 if (!randomEventDays.Contains(currentDay))
                 {
                     randomEventDays.Add(currentDay);
-                    
+
                     GameEvent selectedEvent;
-                    
+
                     if (eventCount < 2)
                     {
                         // First 2 events guaranteed positive
@@ -383,13 +446,13 @@ namespace NewCss
                         // After 4th event, random
                         selectedEvent = allEvents[Random.Range(0, allEvents.Count)];
                     }
-                    
+
                     // Assign event to day
                     eventsByDay[currentDay] = selectedEvent;
                     eventCount++;
                 }
             }
-            
+
             // Sort list
             randomEventDays.Sort();
         }
@@ -425,12 +488,12 @@ namespace NewCss
                 if (hasRandomEvent && eventsByDay.ContainsKey(currentDay))
                 {
                     GameEvent gameEvent = eventsByDay[currentDay];
-                    
+
                     var go = Instantiate(eventTextPrefab, eventSpawnPoints[i].position, Quaternion.identity, eventSpawnPoints[i]);
                     var tmp = go.GetComponent<TMP_Text>();
                     tmp.text = gameEvent.name;
                     tmp.color = Color.white; // All events white color
-                    
+
                     spawnedEventTexts.Add(go);
                 }
 
@@ -454,13 +517,13 @@ namespace NewCss
             startDay += daysPassed;
             UpdateCalendarUI();
         }
-        
+
         // Get event info for a specific day
         public GameEvent GetEventForDay(int day)
         {
             return eventsByDay.ContainsKey(day) ? eventsByDay[day] : null;
         }
-        
+
         // For debug - print events to console
         [System.Obsolete("Used for debugging")]
         public void PrintEventDays()

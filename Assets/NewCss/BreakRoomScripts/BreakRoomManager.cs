@@ -1,89 +1,149 @@
-using System.Collections.Generic;
 using UnityEngine;
+using Unity.Netcode;
+using System.Collections.Generic;
+using UnityEngine.UI;
+using TMPro;
 
-namespace NewCss
+public class BreakRoomManager : NetworkBehaviour
 {
-    [RequireComponent(typeof(Collider))]
-    public class BreakRoomManager : MonoBehaviour
+    [Header("UI References")]
+    [SerializeField] private GameObject nextDayUI;
+    [SerializeField] private TextMeshProUGUI playersInBreakRoomText;
+
+    // Network variable to track players in break room
+    private NetworkVariable<int> playersInBreakRoom = new NetworkVariable<int>(0);
+    private NetworkVariable<int> totalActivePlayers = new NetworkVariable<int>(0);
+
+    // Local cache of players who entered the break room
+    private HashSet<ulong> playersInRoom = new HashSet<ulong>();
+
+    public static BreakRoomManager Instance { get; private set; }
+
+    private void Awake()
     {
-        [Tooltip("Number of players required to enter the break room")]
-        public int requiredPlayers = 1;
-
-        [Header("UI Reference")]
-        public NextDayUIManager nextDayUI;
-
-        private readonly HashSet<GameObject> playersInside = new HashSet<GameObject>();
-
-        void Awake()
+        if (Instance != null && Instance != this)
         {
-            var col = GetComponent<Collider>();
-            col.isTrigger = true;
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+
+        if (IsServer)
+        {
+            // Server başlatıldığında toplam oyuncu sayısını güncelle
+            totalActivePlayers.Value = NetworkManager.Singleton.ConnectedClients.Count;
+
+            // Bağlantı/kopma olaylarını dinle
+            NetworkManager.Singleton.OnClientConnectedCallback += OnPlayerConnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback += OnPlayerDisconnected;
         }
 
-        void Start()
+        // UI'ı başlangıçta gizle
+        if (nextDayUI != null)
         {
-            // Next Day UI Manager'ı bul
-            if (nextDayUI == null)
+            nextDayUI.SetActive(false);
+        }
+
+        // Network değişkenlerini dinle
+        playersInBreakRoom.OnValueChanged += OnPlayersInBreakRoomChanged;
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        if (IsServer)
+        {
+            NetworkManager.Singleton.OnClientConnectedCallback -= OnPlayerConnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback -= OnPlayerDisconnected;
+        }
+
+        playersInBreakRoom.OnValueChanged -= OnPlayersInBreakRoomChanged;
+        base.OnNetworkDespawn();
+    }
+
+    private void OnPlayerConnected(ulong clientId)
+    {
+        if (IsServer)
+        {
+            totalActivePlayers.Value = NetworkManager.Singleton.ConnectedClients.Count;
+            Debug.Log($"Player connected. Total players: {totalActivePlayers.Value}");
+        }
+    }
+
+    private void OnPlayerDisconnected(ulong clientId)
+    {
+        if (IsServer)
+        {
+            totalActivePlayers.Value = NetworkManager.Singleton.ConnectedClients.Count;
+
+            // Eğer ayrılan oyuncu break room'daysa, onu listeden çıkar
+            if (playersInRoom.Contains(clientId))
             {
-                nextDayUI = FindObjectOfType<NextDayUIManager>();
+                playersInRoom.Remove(clientId);
+                playersInBreakRoom.Value = playersInRoom.Count;
+            }
+
+            Debug.Log($"Player disconnected. Total players: {totalActivePlayers.Value}");
+        }
+    }
+
+    private void OnPlayersInBreakRoomChanged(int previous, int current)
+    {
+        UpdateBreakRoomUI();
+        CheckAndShowNextDayUI();
+    }
+
+    private void UpdateBreakRoomUI()
+    {
+        if (playersInBreakRoomText != null)
+        {
+            playersInBreakRoomText.text = $"Players in Break Room: {playersInBreakRoom.Value}/{totalActivePlayers.Value}";
+        }
+    }
+
+    private void CheckAndShowNextDayUI()
+    {
+        if (nextDayUI != null)
+        {
+            bool shouldShow = playersInBreakRoom.Value >= totalActivePlayers.Value && totalActivePlayers.Value > 0;
+            nextDayUI.SetActive(shouldShow);
+
+            if (shouldShow)
+            {
+                Debug.Log("All players are in break room - showing Next Day UI");
             }
         }
+    }
 
-        void OnTriggerEnter(Collider other)
+    // Oyuncu break room'a girdiğinde çağrılacak method
+    [ServerRpc(RequireOwnership = false)]
+    public void PlayerEnteredBreakRoomServerRpc(ServerRpcParams serverRpcParams = default)
+    {
+        var clientId = serverRpcParams.Receive.SenderClientId;
+
+        if (!playersInRoom.Contains(clientId))
         {
-            if (!other.CompareTag("Character")) return;
-            playersInside.Add(other.gameObject);
-            CheckIfAllPlayersPresent();
+            playersInRoom.Add(clientId);
+            playersInBreakRoom.Value = playersInRoom.Count;
+            Debug.Log($"Player {clientId} entered break room. Total in room: {playersInBreakRoom.Value}");
         }
+    }
 
-        void OnTriggerExit(Collider other)
+    // Oyuncu break room'dan çıktığında çağrılacak method
+    [ServerRpc(RequireOwnership = false)]
+    public void PlayerExitedBreakRoomServerRpc(ServerRpcParams serverRpcParams = default)
+    {
+        var clientId = serverRpcParams.Receive.SenderClientId;
+
+        if (playersInRoom.Contains(clientId))
         {
-            if (!other.CompareTag("Character")) return;
-            playersInside.Remove(other.gameObject);
-        }
-
-        private void CheckIfAllPlayersPresent()
-        {
-            var day = DayCycleManager.Instance;
-            if (day == null) return;
-
-            // Lobby'deki oyuncu sayısını kontrol et
-            int lobbyPlayerCount = GetLobbyPlayerCount();
-            int actualRequiredPlayers = Mathf.Max(requiredPlayers, lobbyPlayerCount);
-
-            if (day.IsTimeUp && playersInside.Count >= actualRequiredPlayers)
-            {
-                day.isBreakRoomReady = true;
-                
-                // Next Day UI'ını güncelle
-                if (nextDayUI != null)
-                {
-                    nextDayUI.RefreshUI();
-                }
-            }
-        }
-
-        private int GetLobbyPlayerCount()
-        {
-            // LobbySaver'dan lobby bilgisini al
-            if (LobbySaver.instance != null && LobbySaver.instance.CurrentLobby.HasValue)
-            {
-                return LobbySaver.instance.CurrentLobby.Value.MemberCount;
-            }
-            
-            // Lobby yoksa 1 oyuncu (local player)
-            return 1;
-        }
-
-        // Debug metodları
-        public int GetPlayersInside()
-        {
-            return playersInside.Count;
-        }
-
-        public int GetLobbyMemberCount()
-        {
-            return GetLobbyPlayerCount();
+            playersInRoom.Remove(clientId);
+            playersInBreakRoom.Value = playersInRoom.Count;
+            Debug.Log($"Player {clientId} exited break room. Total in room: {playersInBreakRoom.Value}");
         }
     }
 }

@@ -20,6 +20,9 @@ public class EscapeMenuManager : NetworkBehaviour
     public Button optionsBackButton;
     public Button creditsBackButton;
 
+    [Header("Next Day UI Reference")]
+    public NewCss.NextDayUIManager nextDayUIManager; // NextDayUIManager referansı
+
     private bool isMenuOpen = false;
     private GameObject currentActivePanel;
     private bool isExiting = false;
@@ -37,23 +40,42 @@ public class EscapeMenuManager : NetworkBehaviour
 
         previousTimeScale = Time.timeScale;
 
+        // NextDayUIManager'ı bul
+        if (nextDayUIManager == null)
+        {
+            nextDayUIManager = FindObjectOfType<NewCss.NextDayUIManager>();
+        }
+
         InitializeMenu();
         SetupButtonListeners();
     }
 
     private void Update()
     {
-        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
-        {
-            if (!IsOwner) return;
-        }
-
         if (isExiting) return;
+
+        // Next Day UI açıksa ESC menüsünü engelle
+        if (IsNextDayUIActive())
+        {
+            return; // ESC tuşu işlenmeyecek
+        }
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             HandleEscapeKey();
         }
+    }
+
+    /// <summary>
+    /// Next Day UI'ının aktif olup olmadığını kontrol eder
+    /// </summary>
+    private bool IsNextDayUIActive()
+    {
+        if (nextDayUIManager != null)
+        {
+            return nextDayUIManager.IsUIActive();
+        }
+        return false;
     }
 
     private void InitializeMenu()
@@ -197,9 +219,6 @@ public class EscapeMenuManager : NetworkBehaviour
         }
     }
 
-    // ============================================
-    // EXIT TO MAIN MENU
-    // ============================================
     private void RequestExitGame()
     {
         if (isExiting) return;
@@ -212,7 +231,6 @@ public class EscapeMenuManager : NetworkBehaviour
         }
         else
         {
-            // Singleplayer - direkt helper'a gönder
             isExiting = true;
             CloseMenuLocal();
             ExitHelper.Instance.StartExitProcess(false, false);
@@ -230,13 +248,11 @@ public class EscapeMenuManager : NetworkBehaviour
 
         if (senderIsHost)
         {
-            // Host çıkıyor - tüm oyuncular çıkacak
             Debug.Log("[Server] Host is exiting - notifying all clients");
             NotifyAllClientsExitClientRpc(true);
         }
         else
         {
-            // Sadece bu client çıkıyor
             Debug.Log($"[Server] Client {senderClientId} is leaving");
             var clientRpcParams = new ClientRpcParams
             {
@@ -254,15 +270,12 @@ public class EscapeMenuManager : NetworkBehaviour
     {
         Debug.Log($"[Client {GetClientId()}] Exit notification received. HostShutdown={isHostShutdown}");
 
-        // Bu makinenin rolünü kontrol et
         bool amIHost = NetworkManager.Singleton != null &&
                       NetworkManager.Singleton.IsServer;
 
-        // Exit işlemini başlat
         isExiting = true;
         CloseMenuLocal();
 
-        // ExitHelper'a devret (NetworkBehaviour'dan bağımsız çalışacak)
         ExitHelper.Instance.StartExitProcess(amIHost, isHostShutdown);
     }
 

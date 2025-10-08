@@ -588,8 +588,11 @@ public class PlayerInventory : NetworkBehaviour
 
     // Yeni ServerRpc: Raftan alma
     [ServerRpc]
-    private void RequestTakeFromShelfServerRpc()
+    private void RequestTakeFromShelfServerRpc(ServerRpcParams rpcParams = default)
     {
+        // Gerçek gönderen client ID'yi al
+        ulong requesterClientId = rpcParams.Receive.SenderClientId;
+
         if (hasItem.Value)
         {
             ResetProcessingInteractionClientRpc();
@@ -604,9 +607,8 @@ public class PlayerInventory : NetworkBehaviour
             return;
         }
 
-        // Shelf'den item al
-        nearbyShelf.TakeItemFromShelfServerRpc();
-
+        // İstek yapan client'ın ID'sini gönder
+        nearbyShelf.TakeItemFromShelfServerRpc(requesterClientId);
         ResetProcessingInteractionClientRpc();
     }
 
