@@ -159,9 +159,7 @@ namespace NewCss.UIScripts
             // Panel'i aktif et
             upgradePanel.SetActive(true);
 
-            // Cursor'u görünür yap ve kilidi aç (UI ile etkileşim için)
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
+          
 
             if (panelAnimator != null)
             {
@@ -198,9 +196,7 @@ namespace NewCss.UIScripts
                 Debug.Log("Local player movement unlocked");
             }
 
-            // Cursor'u tekrar kilitle (oyun modu için)
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
+           
 
             if (panelAnimator != null)
             {

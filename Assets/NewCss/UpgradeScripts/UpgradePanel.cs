@@ -79,16 +79,19 @@ namespace NewCss
 
     public class UpgradePanel : NetworkBehaviour
     {
-        [Header("UI References")] [SerializeField]
+        [Header("UI References")]
+        [SerializeField]
         private GameObject panel;
 
         [SerializeField] private Transform contentParent;
         [SerializeField] private GameObject entryPrefab;
 
-        [Header("Upgrade Definitions")] [SerializeField]
+        [Header("Upgrade Definitions")]
+        [SerializeField]
         private List<UpgradeDefinition> upgrades = new();
 
-        [Header("Manager References")] [SerializeField]
+        [Header("Manager References")]
+        [SerializeField]
         private CustomerManager CustomerManager;
 
         [SerializeField] private PlayerMovement PlayerMovement;
@@ -194,10 +197,16 @@ namespace NewCss
                     // Update level objects - show all levels up to current level
                     UpdateLevelObjects(entry, newLevel);
 
-                    // Special handling for Truck upgrade - update garage doors
+                    // Special handling for Truck upgrade - update garage doors AND spawner
                     if (entry.def.displayName == "Truck")
                     {
                         UpdateGarageDoorControllers(entry, newLevel);
+
+                        // TruckSpawner'a yeni seviyeyi bildir
+                        if (TruckSpawner.Instance != null && IsServer)
+                        {
+                            TruckSpawner.Instance.SetTruckUpgradeLevel(newLevel);
+                        }
                     }
                 }
             }

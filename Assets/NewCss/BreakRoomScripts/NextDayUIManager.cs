@@ -71,8 +71,7 @@ namespace NewCss
         /// </summary>
         private void SetupCursor()
         {
-            Cursor.visible = true;
-            Cursor.lockState = CursorLockMode.None;
+            
         }
 
         public void UpdateNextDayUI()
@@ -167,9 +166,7 @@ namespace NewCss
                 nextDayPanel.SetActive(false);
             }
 
-            // Mouse'u geri kilitle (FPS oyunu ise)
-            Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked;
+        
 
             // Örnek: Oyun sahnesine geç
             // SceneManager.LoadScene("GameScene");
@@ -195,11 +192,6 @@ namespace NewCss
             return count;
         }
 
-        void OnDisable()
-        {
-            // UI kapandığında mouse'u geri kilitle
-            Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked;
-        }
+        
     }
 }

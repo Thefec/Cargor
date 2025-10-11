@@ -371,6 +371,8 @@ namespace NewCss
                 }
             }
 
+
+
             Debug.Log($"Day {networkCurrentDay.Value} started (server)");
 
             networkIsDayOver.Value = false;
@@ -384,6 +386,13 @@ namespace NewCss
 
             UpdateDayTimeUI();
             HideDayEndScreenClientRpc();
+
+            var breakRoomManager = FindObjectOfType<NewCss.BreakRoomManager>();
+            if (breakRoomManager != null)
+            {
+                breakRoomManager.requiredPlayers = breakRoomManager.GetSteamLobbyPlayerCount();
+                Debug.Log($"BreakRoomManager.requiredPlayers güncellendi: {breakRoomManager.requiredPlayers}");
+            }
         }
 
         [ClientRpc]

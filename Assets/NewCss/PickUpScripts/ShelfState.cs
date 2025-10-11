@@ -142,66 +142,67 @@ namespace NewCss
         {
             if (!IsServer) return;
 
-            // SADECE güvenlik kontrolü - isteği gönderen client gerçekten o client mi?
-            ulong senderClientId = rpcParams.Receive.SenderClientId;
-            if (senderClientId != requesterClientId)
-            {
-                Debug.LogWarning($"Client {senderClientId} tried to take item for {requesterClientId}!");
-                return;
-            }
+            Debug.Log($"TakeItemFromShelfServerRpc called for client {requesterClientId}");
 
-            // Hedef player'ı kontrol et
-            if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(requesterClientId, out var client) ||
-                client.PlayerObject == null)
+            try
             {
-                Debug.LogError($"Player object not found for client: {requesterClientId}");
-                return;
-            }
-
-            var playerInventory = client.PlayerObject.GetComponent<PlayerInventory>();
-            if (playerInventory == null)
-            {
-                Debug.LogError($"PlayerInventory not found for client: {requesterClientId}");
-                return;
-            }
-
-            // Player'ın zaten item'ı varsa işlemi iptal et
-            if (playerInventory.HasItem)
-            {
-                Debug.Log($"Player {requesterClientId} already has an item, cannot take from shelf");
-                return;
-            }
-
-            // İlk dolu slotu bul
-            for (int i = 0; i < _slotItems.Count; i++)
-            {
-                if (_slotItems[i].TryGet(out NetworkObject networkObj) && networkObj != null)
+                // Player'ı ve inventory'yi bul
+                if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(requesterClientId, out var client) ||
+                    client.PlayerObject == null)
                 {
-                    NetworkWorldItem worldItem = networkObj.GetComponent<NetworkWorldItem>();
-                    if (worldItem == null || worldItem.ItemData == null)
-                    {
-                        Debug.LogError("WorldItem or ItemData is null!");
-                        continue;
-                    }
-
-                    int itemID = worldItem.ItemData.itemID;
-                    Debug.Log($"Taking item from shelf slot {i}, ItemID: {itemID}, giving to client: {requesterClientId}");
-
-                    // Slot'u temizle
-                    _slotItems[i] = new NetworkObjectReference();
-
-                    // Item'ı despawn et
-                    networkObj.Despawn();
-
-                    // Item'ı isteyen player'a ver
-                    playerInventory.SetInventoryStateServerRpc(true, itemID);
-
-                    // Tüm client'lara bildir
-                    TakeItemFromShelfClientRpc(requesterClientId, itemID);
-
-                    Debug.Log($"Item successfully given to player {requesterClientId}");
+                    Debug.LogError($"Player object not found for client: {requesterClientId}");
                     return;
                 }
+
+                var playerInventory = client.PlayerObject.GetComponent<PlayerInventory>();
+                if (playerInventory == null)
+                {
+                    Debug.LogError($"PlayerInventory not found for client: {requesterClientId}");
+                    return;
+                }
+
+                // Player'ın zaten item'ı varsa işlemi iptal et
+                if (playerInventory.HasItem)
+                {
+                    Debug.Log($"Player {requesterClientId} already has an item, cannot take from shelf");
+                    return;
+                }
+
+                // İlk dolu slotu bul ve item'ı al
+                for (int i = 0; i < _slotItems.Count; i++)
+                {
+                    if (_slotItems[i].TryGet(out NetworkObject networkObj) && networkObj != null)
+                    {
+                        NetworkWorldItem worldItem = networkObj.GetComponent<NetworkWorldItem>();
+                        if (worldItem == null || worldItem.ItemData == null)
+                        {
+                            Debug.LogError($"WorldItem or ItemData is null in slot {i}!");
+                            continue;
+                        }
+
+                        int itemID = worldItem.ItemData.itemID;
+                        Debug.Log($"Taking item from shelf slot {i}, ItemID: {itemID}, giving to client: {requesterClientId}");
+
+                        // Slot'u temizle
+                        _slotItems[i] = new NetworkObjectReference();
+
+                        // Item'ı despawn et
+                        networkObj.Despawn();
+
+                        // Item'ı player'a ver
+                        playerInventory.SetInventoryStateServerRpc(true, itemID);
+
+                        // Tüm client'lara bildir
+                        TakeItemFromShelfClientRpc(requesterClientId, itemID);
+
+                        Debug.Log($"Item successfully given to player {requesterClientId}");
+                        return;
+                    }
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"Error in TakeItemFromShelfServerRpc: {e.Message}");
             }
 
             Debug.Log("No items found on shelf");

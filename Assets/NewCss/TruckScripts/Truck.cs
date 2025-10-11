@@ -10,7 +10,7 @@ namespace NewCss
         [Header("Truck Request Settings")]
         public BoxInfo.BoxType requestedBoxType;
         public int requiredCargo;
-        
+
         // Network Variables - ÖNEMLİ: Default değerler set et
         private NetworkVariable<int> deliveredCount = new NetworkVariable<int>(0);
         private NetworkVariable<BoxInfo.BoxType> networkRequestedBoxType = new NetworkVariable<BoxInfo.BoxType>(BoxInfo.BoxType.Red);
@@ -20,10 +20,10 @@ namespace NewCss
 
         [Header("UI")]
         public TextMeshProUGUI truckText;
-        
+
         [Header("Collider Settings")]
         public GameObject triggerColliderObject;
-        
+
         [Header("Truck Parts - Colors")]
         public GameObject truckBody;
         public GameObject leftDoor;
@@ -46,20 +46,23 @@ namespace NewCss
         // ÖNEMLİ: Pre-initialize için değişken ekle
         private bool hasPreInitialized = false;
 
+        // ÖNEMLİ: Hangar tracking
+        [HideInInspector] public int hangarIndex = 0; // Bu kamyonun hangi hangardan geldiği
+
         // ÖNEMLİ: Spawn öncesi initialize metodu
         public void PreInitialize(BoxInfo.BoxType reqType, int reqAmount)
         {
             requestedBoxType = reqType;
             requiredCargo = reqAmount;
             hasPreInitialized = true;
-            
+
             Debug.Log($"PreInitialize called: {reqType}, {reqAmount}");
         }
 
         public override void OnNetworkSpawn()
         {
             Debug.Log($"Truck OnNetworkSpawn - IsServer: {IsServer}, HasPreInit: {hasPreInitialized}");
-            
+
             // Network variable subscription'ları ekle
             deliveredCount.OnValueChanged += OnDeliveredCountChanged;
             networkRequestedBoxType.OnValueChanged += OnRequestedBoxTypeChanged;
@@ -68,14 +71,14 @@ namespace NewCss
             isEntering.OnValueChanged += OnIsEnteringChanged;
 
             SetupTriggerCollider();
-            
+
             // ÖNEMLİ: Pre-initialized değerleri kullan
             if (hasPreInitialized)
             {
                 UpdateUIText();
                 SetTruckColors();
             }
-    
+
             // Client için başlangıç değerlerini güncelle
             if (!IsServer)
             {
@@ -88,7 +91,7 @@ namespace NewCss
                 UpdateUIText();
                 SetTruckColors();
             }
-    
+
             if (IsServer)
             {
                 StartEnterAnimation();
@@ -109,7 +112,7 @@ namespace NewCss
         public void InitializeServerRpc(BoxInfo.BoxType reqType, int reqAmount)
         {
             Debug.Log($"InitializeServerRpc called: {reqType}, {reqAmount}");
-            
+
             networkRequestedBoxType.Value = reqType;
             networkRequiredCargo.Value = reqAmount;
             deliveredCount.Value = 0;
@@ -128,10 +131,10 @@ namespace NewCss
         private void UpdateVisualsClientRpc(BoxInfo.BoxType reqType, int reqAmount)
         {
             Debug.Log($"UpdateVisualsClientRpc called: {reqType}, {reqAmount}");
-            
+
             requestedBoxType = reqType;
             requiredCargo = reqAmount;
-    
+
             UpdateUIText();
             SetTruckColors();
         }
@@ -176,22 +179,22 @@ namespace NewCss
         private void SetupTriggerCollider()
         {
             GameObject colliderObj = triggerColliderObject != null ? triggerColliderObject : gameObject;
-            
+
             Collider col = colliderObj.GetComponent<Collider>();
             if (col == null)
             {
                 Debug.LogError($"[NETWORK TRUCK] No Collider found on {colliderObj.name}!");
                 return;
             }
-            
+
             col.isTrigger = true;
-            
-           TruckTrigger trigger = colliderObj.GetComponent<TruckTrigger>();
+
+            TruckTrigger trigger = colliderObj.GetComponent<TruckTrigger>();
             if (trigger == null)
             {
                 trigger = colliderObj.AddComponent<TruckTrigger>();
             }
-            
+
             trigger.mainTruck = this;
         }
 
@@ -213,14 +216,14 @@ namespace NewCss
             if (truckAnimator != null)
             {
                 yield return new WaitForEndOfFrame();
-                
-                while (!truckAnimator.GetCurrentAnimatorStateInfo(0).IsName("Enter") || 
+
+                while (!truckAnimator.GetCurrentAnimatorStateInfo(0).IsName("Enter") ||
                        truckAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1.0f)
                 {
                     yield return null;
                 }
             }
-            
+
             if (IsServer)
             {
                 isEntering.Value = false;
@@ -240,7 +243,7 @@ namespace NewCss
         {
             Color targetColor = GetColorForBoxType(requestedBoxType);
             Debug.Log($"Setting truck colors to: {requestedBoxType} ({targetColor})");
-            
+
             SetObjectColor(truckBody, targetColor);
             SetObjectColor(leftDoor, targetColor);
             SetObjectColor(rightDoor, targetColor);
@@ -283,7 +286,7 @@ namespace NewCss
             {
                 // Correct box
                 deliveredCount.Value++;
-                
+
                 // Add money (assuming MoneySystem is also networked)
                 if (MoneySystem.Instance != null)
                 {
@@ -308,7 +311,7 @@ namespace NewCss
         public void ForceExitDueToTime()
         {
             if (!IsServer) return;
-            
+
             if (isEntering.Value || isComplete.Value)
                 return;
 
@@ -341,14 +344,14 @@ namespace NewCss
             if (truckAnimator != null)
             {
                 yield return new WaitForEndOfFrame();
-                
-                while (!truckAnimator.GetCurrentAnimatorStateInfo(0).IsName("Exit") || 
+
+                while (!truckAnimator.GetCurrentAnimatorStateInfo(0).IsName("Exit") ||
                        truckAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1.0f)
                 {
                     yield return null;
                 }
             }
-            
+
             CompleteTruckExit();
         }
 
@@ -358,8 +361,8 @@ namespace NewCss
             {
                 if (TruckSpawner.Instance != null)
                 {
-                    TruckSpawner.Instance.OnTruckDestroyed();
-                   TruckSpawner.Instance.SpawnNewTruck();
+                    // Hangar index'i kullanarak doğru hangarı bilgilendir
+                    TruckSpawner.Instance.OnTruckDestroyed(hangarIndex);
                 }
 
                 GetComponent<NetworkObject>().Despawn();

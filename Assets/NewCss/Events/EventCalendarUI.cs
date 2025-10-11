@@ -199,9 +199,7 @@ namespace NewCss
                 // Panel'i aktif et
                 calendarPanel.SetActive(true);
 
-                // Cursor'u göster ve kilitle
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
+
 
                 if (panelAnimator != null)
                 {
@@ -232,9 +230,6 @@ namespace NewCss
             isPanelOpen = false;
             isAnimating = true;
 
-            // Cursor'u gizle
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
 
             if (calendarPanel != null)
             {
@@ -405,15 +400,15 @@ namespace NewCss
                 int interval = Random.Range(3, 5);
                 currentDay += interval;
 
-                // Rent day check (multiples of 7)
-                if (currentDay % 7 == 0)
+                // Rent day check (multiples of 6)
+                if (currentDay % 6 == 0)
                 {
                     // If rent day, shift event 1 day forward or backward
                     int adjustment = Random.Range(0, 2) == 0 ? -1 : 1;
                     int adjustedDay = currentDay + adjustment;
 
                     // Check shifted day is not rent day and positive
-                    if (adjustedDay % 7 != 0 && adjustedDay > 0)
+                    if (adjustedDay % 6 != 0 && adjustedDay > 0)
                     {
                         currentDay = adjustedDay;
                     }
@@ -482,7 +477,7 @@ namespace NewCss
 
                 // Check random event
                 bool hasRandomEvent = randomEventDays.Contains(currentDay);
-                bool isRentDay = currentDay % 7 == 0;
+                bool isRentDay = currentDay % 6 == 0;
 
                 // Place random event if exists
                 if (hasRandomEvent && eventsByDay.ContainsKey(currentDay))

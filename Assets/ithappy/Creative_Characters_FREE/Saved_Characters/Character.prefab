@@ -4351,7 +4351,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   detectionRange: 1.5
-  updateInterval: 0.01
+  updateInterval: 0.025
   itemLayerMask:
     serializedVersion: 2
     m_Bits: 4294967295

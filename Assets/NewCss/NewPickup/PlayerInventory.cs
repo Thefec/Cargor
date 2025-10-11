@@ -16,6 +16,9 @@ public class PlayerInventory : NetworkBehaviour
     [Header("Detection Center Settings")] [SerializeField]
     private Transform detectionCenter; // Manuel olarak atanabilir
 
+    private float interactionCooldown = 1f; // 1 saniye cooldown
+    private float lastInteractionTime = -10f;
+
     [SerializeField] private Vector3 detectionOffset = Vector3.up * 1f; // Y ekseni offset'i
     [SerializeField] private bool useCustomDetectionCenter = false; // Inspector'dan kontrol edilebilir
 
@@ -492,44 +495,61 @@ public class PlayerInventory : NetworkBehaviour
 
     private void HandleInput()
     {
-        if (isProcessingInteraction)
+        if (isProcessingInteraction || Time.time - lastInteractionTime < interactionCooldown)
         {
             return;
         }
 
+        // F tuşu: Sadece bırakma işlemi
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            if (hasItem.Value && !isAnimating)
+            {
+                isProcessingInteraction = true;
+                lastInteractionTime = Time.time;
+                RequestDropServerRpc();
+                StartCoroutine(ResetInteractionFlagWithDelay());
+            }
+        }
+
+        // E tuşu: rafa kutu koyma, ürünü kutulama, pickup, table işlemleri
         if (Input.GetKeyDown(KeyCode.E))
         {
-            Debug.Log(
-                $"E pressed. HasItem: {hasItem.Value}, TargetedItem: {(targetedItem != null ? targetedItem.name : "null")}");
+            Debug.Log($"E pressed. HasItem: {hasItem.Value}, TargetedItem: {(targetedItem != null ? targetedItem.name : "null")}");
 
-            // Önce shelf'den alma kontrolü yap
+            // Shelf'den alma
             if (!hasItem.Value)
             {
                 ShelfState nearbyShelf = GetNearbyShelf();
                 if (nearbyShelf != null && nearbyShelf.HasItem())
                 {
                     isProcessingInteraction = true;
+                    lastInteractionTime = Time.time;
                     RequestTakeFromShelfServerRpc();
+                    StartCoroutine(ResetInteractionFlagWithDelay());
                     return;
                 }
             }
 
-            // YENİ ÖNCELIK SIRASI: Önce targeted item kontrolü yap
+            // Targeted item pickup
             if (!hasItem.Value && targetedItem != null)
             {
                 Debug.Log($"Attempting to pickup targeted item: {targetedItem.name}");
                 isProcessingInteraction = true;
+                lastInteractionTime = Time.time;
                 RequestPickupServerRpc(targetedItem.NetworkObjectId);
-                return; // Burada return ekliyoruz ki table kontrolüne geçmesin
+                StartCoroutine(ResetInteractionFlagWithDelay());
+                return;
             }
 
-            // Table kontrolü - sadece targeted item yoksa
+            // Table interaction
             Table nearbyTable = GetNearbyTable();
             if (nearbyTable != null)
             {
                 isProcessingInteraction = true;
+                lastInteractionTime = Time.time;
                 nearbyTable.InteractWithTable(this);
-                StartCoroutine(ResetInteractionFlag());
+                StartCoroutine(ResetInteractionFlagWithDelay());
             }
             else
             {
@@ -537,53 +557,23 @@ public class PlayerInventory : NetworkBehaviour
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.F))
-        {
-            if (hasItem.Value && !isAnimating)
-            {
-                // Debug için shelf kontrolü
-                ShelfState nearbyShelf = GetNearbyShelf();
-                Debug.Log($"F pressed - Nearby shelf: {(nearbyShelf != null ? "Found" : "Not found")}");
-
-                if (nearbyShelf != null)
-                {
-                    bool canPlace = CanPlaceBoxOnShelf(nearbyShelf);
-                    Debug.Log($"Can place box on shelf: {canPlace}");
-
-                    if (canPlace)
-                    {
-                        Debug.Log("Attempting to place on shelf...");
-                        // Rafa yerleştir
-                        isProcessingInteraction = true;
-                        RequestPlaceOnShelfServerRpc();
-                    }
-                    else
-                    {
-                        Debug.Log("Cannot place box - doing normal drop");
-                        // Normal drop
-                        isProcessingInteraction = true;
-                        RequestDropServerRpc();
-                    }
-                }
-                else
-                {
-                    Debug.Log("No shelf nearby - doing normal drop");
-                    // Normal drop
-                    isProcessingInteraction = true;
-                    RequestDropServerRpc();
-                }
-            }
-        }
-
+        // Sol click: fırlatma işlemi
         if (Input.GetMouseButtonDown(0))
         {
             if (hasItem.Value && !isAnimating)
             {
                 Vector3 throwDirection = (transform.forward + Vector3.up * 0.3f).normalized;
                 isProcessingInteraction = true;
+                lastInteractionTime = Time.time;
                 RequestThrowServerRpc(throwDirection);
+                StartCoroutine(ResetInteractionFlagWithDelay());
             }
         }
+    }
+    private IEnumerator ResetInteractionFlagWithDelay()
+    {
+        yield return new WaitForSeconds(interactionCooldown);
+        isProcessingInteraction = false;
     }
 
     // Yeni ServerRpc: Raftan alma
@@ -592,6 +582,8 @@ public class PlayerInventory : NetworkBehaviour
     {
         // Gerçek gönderen client ID'yi al
         ulong requesterClientId = rpcParams.Receive.SenderClientId;
+
+        Debug.Log($"RequestTakeFromShelfServerRpc called by client {requesterClientId}");
 
         if (hasItem.Value)
         {
@@ -607,9 +599,20 @@ public class PlayerInventory : NetworkBehaviour
             return;
         }
 
-        // İstek yapan client'ın ID'sini gönder
-        nearbyShelf.TakeItemFromShelfServerRpc(requesterClientId);
-        ResetProcessingInteractionClientRpc();
+        try
+        {
+            // İstek yapan client'ın ID'sini gönder
+            Debug.Log($"Requesting item from shelf for client {requesterClientId}");
+            nearbyShelf.TakeItemFromShelfServerRpc(requesterClientId, rpcParams);
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Error in RequestTakeFromShelfServerRpc: {e.Message}");
+        }
+        finally
+        {
+            ResetProcessingInteractionClientRpc();
+        }
     }
 
     // Yeni ServerRpc: Rafa yerleştirme
@@ -1280,13 +1283,19 @@ public class PlayerInventory : NetworkBehaviour
             playerMovement.SetCarrying(hasItemValue);
         }
 
-        // Eğer item temizleniyorsa, tüm client'larda visual'ı temizle
-        if (!hasItemValue)
+        // Eğer item alındıysa pickup animasyonunu başlat
+        if (hasItemValue)
+        {
+            StartPickupAnimationClientRpc();
+        }
+        // Eğer item bırakıldıysa visual'ı temizle ve drop animasyonunu başlat
+        else
         {
             ClearHeldItemVisualClientRpc();
+            StartDropAnimationClientRpc();
         }
 
-        Debug.Log($"Inventory state set: hasItem={hasItemValue}, itemID={itemID}");
+        Debug.Log($"Inventory state set: hasItem={hasItemValue}, itemID={itemID}, starting animation: {(hasItemValue ? "pickup" : "drop")}");
     }
 
 
