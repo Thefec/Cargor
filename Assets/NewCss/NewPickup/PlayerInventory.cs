@@ -16,9 +16,6 @@ public class PlayerInventory : NetworkBehaviour
     [Header("Detection Center Settings")] [SerializeField]
     private Transform detectionCenter; // Manuel olarak atanabilir
 
-    private float interactionCooldown = 1f; // 1 saniye cooldown
-    private float lastInteractionTime = -10f;
-
     [SerializeField] private Vector3 detectionOffset = Vector3.up * 1f; // Y ekseni offset'i
     [SerializeField] private bool useCustomDetectionCenter = false; // Inspector'dan kontrol edilebilir
 
@@ -37,6 +34,11 @@ public class PlayerInventory : NetworkBehaviour
 
     [Header("Drop Settings")] [SerializeField]
     private Transform dropPosition;
+
+    private static readonly Dictionary<ulong, float> itemPickupLocks = new Dictionary<ulong, float>();
+    private static readonly object itemLock = new object();
+    private static bool cleanupStarted = false;
+    private const float PICKUP_LOCK_DURATION = 2f; // mevcut sabitiniz zaten vardı
 
     [SerializeField] private string dropPositionName = "DropPosition";
     [SerializeField] private Vector3 defaultDropOffset = Vector3.forward * 1.5f;
@@ -64,15 +66,93 @@ public class PlayerInventory : NetworkBehaviour
     {
         ValidateHoldPosition();
         ValidateDropPosition();
-
         playerMovement = GetComponent<PlayerMovement>();
-
 
         if (IsOwner)
         {
             rangeUpdateCoroutine = StartCoroutine(UpdateRangeDetection());
         }
+
+        // Server ise kilit temizleme coroutine'ini SUNUCU üzerine sadece bir kere başlat
+        if (IsServer && !cleanupStarted)
+        {
+            StartCoroutine(CleanupExpiredLocks());
+            cleanupStarted = true;
+        }
     }
+
+    private IEnumerator CleanupExpiredLocks()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(1f);
+
+            List<ulong> expiredKeys = new List<ulong>();
+            float currentTime = Time.time;
+
+            lock (itemLock)
+            {
+                foreach (var kvp in itemPickupLocks)
+                {
+                    if (currentTime - kvp.Value > PICKUP_LOCK_DURATION)
+                    {
+                        expiredKeys.Add(kvp.Key);
+                    }
+                }
+
+                foreach (ulong key in expiredKeys)
+                {
+                    itemPickupLocks.Remove(key);
+                    Debug.Log($"Lock expired for item {key}");
+                }
+            }
+        }
+    }
+    private bool IsItemLocked(ulong itemNetworkId)
+    {
+        lock (itemLock)
+        {
+            if (!itemPickupLocks.TryGetValue(itemNetworkId, out float lockTime))
+                return false;
+
+            bool isLocked = (Time.time - lockTime) < PICKUP_LOCK_DURATION;
+            if (!isLocked)
+            {
+                itemPickupLocks.Remove(itemNetworkId);
+            }
+            return isLocked;
+        }
+    }
+
+    // 🆕 YENİ METHOD: Item'ı kilitle
+    private bool TryLockItem(ulong itemNetworkId)
+    {
+        lock (itemLock)
+        {
+            if (itemPickupLocks.TryGetValue(itemNetworkId, out float lockTime))
+            {
+                if ((Time.time - lockTime) < PICKUP_LOCK_DURATION)
+                {
+                    Debug.LogWarning($"Item {itemNetworkId} is already locked by another player!");
+                    return false;
+                }
+                else
+                {
+                    // expired, overwrite
+                    itemPickupLocks[itemNetworkId] = Time.time;
+                    Debug.Log($"Item {itemNetworkId} lock overwritten at {Time.time}");
+                    return true;
+                }
+            }
+            else
+            {
+                itemPickupLocks[itemNetworkId] = Time.time;
+                Debug.Log($"Item {itemNetworkId} locked at {Time.time}");
+                return true;
+            }
+        }
+    }
+
 
     private void OnDestroy()
     {
@@ -82,6 +162,12 @@ public class PlayerInventory : NetworkBehaviour
         }
 
         ClearAllOutlines();
+
+        // Server ise kilitleri temizle
+        if (IsServer)
+        {
+            itemPickupLocks.Clear();
+        }
     }
 
     private IEnumerator UpdateRangeDetection()
@@ -495,61 +581,44 @@ public class PlayerInventory : NetworkBehaviour
 
     private void HandleInput()
     {
-        if (isProcessingInteraction || Time.time - lastInteractionTime < interactionCooldown)
+        if (isProcessingInteraction)
         {
             return;
         }
 
-        // F tuşu: Sadece bırakma işlemi
-        if (Input.GetKeyDown(KeyCode.F))
-        {
-            if (hasItem.Value && !isAnimating)
-            {
-                isProcessingInteraction = true;
-                lastInteractionTime = Time.time;
-                RequestDropServerRpc();
-                StartCoroutine(ResetInteractionFlagWithDelay());
-            }
-        }
-
-        // E tuşu: rafa kutu koyma, ürünü kutulama, pickup, table işlemleri
         if (Input.GetKeyDown(KeyCode.E))
         {
-            Debug.Log($"E pressed. HasItem: {hasItem.Value}, TargetedItem: {(targetedItem != null ? targetedItem.name : "null")}");
+            Debug.Log(
+                $"E pressed. HasItem: {hasItem.Value}, TargetedItem: {(targetedItem != null ? targetedItem.name : "null")}");
 
-            // Shelf'den alma
+            // Önce shelf'den alma kontrolü yap
             if (!hasItem.Value)
             {
                 ShelfState nearbyShelf = GetNearbyShelf();
                 if (nearbyShelf != null && nearbyShelf.HasItem())
                 {
                     isProcessingInteraction = true;
-                    lastInteractionTime = Time.time;
                     RequestTakeFromShelfServerRpc();
-                    StartCoroutine(ResetInteractionFlagWithDelay());
                     return;
                 }
             }
 
-            // Targeted item pickup
+            // YENİ ÖNCELIK SIRASI: Önce targeted item kontrolü yap
             if (!hasItem.Value && targetedItem != null)
             {
                 Debug.Log($"Attempting to pickup targeted item: {targetedItem.name}");
                 isProcessingInteraction = true;
-                lastInteractionTime = Time.time;
                 RequestPickupServerRpc(targetedItem.NetworkObjectId);
-                StartCoroutine(ResetInteractionFlagWithDelay());
-                return;
+                return; // Burada return ekliyoruz ki table kontrolüne geçmesin
             }
 
-            // Table interaction
+            // Table kontrolü - sadece targeted item yoksa
             Table nearbyTable = GetNearbyTable();
             if (nearbyTable != null)
             {
                 isProcessingInteraction = true;
-                lastInteractionTime = Time.time;
                 nearbyTable.InteractWithTable(this);
-                StartCoroutine(ResetInteractionFlagWithDelay());
+                StartCoroutine(ResetInteractionFlag());
             }
             else
             {
@@ -557,23 +626,53 @@ public class PlayerInventory : NetworkBehaviour
             }
         }
 
-        // Sol click: fırlatma işlemi
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            if (hasItem.Value && !isAnimating)
+            {
+                // Debug için shelf kontrolü
+                ShelfState nearbyShelf = GetNearbyShelf();
+                Debug.Log($"F pressed - Nearby shelf: {(nearbyShelf != null ? "Found" : "Not found")}");
+
+                if (nearbyShelf != null)
+                {
+                    bool canPlace = CanPlaceBoxOnShelf(nearbyShelf);
+                    Debug.Log($"Can place box on shelf: {canPlace}");
+
+                    if (canPlace)
+                    {
+                        Debug.Log("Attempting to place on shelf...");
+                        // Rafa yerleştir
+                        isProcessingInteraction = true;
+                        RequestPlaceOnShelfServerRpc();
+                    }
+                    else
+                    {
+                        Debug.Log("Cannot place box - doing normal drop");
+                        // Normal drop
+                        isProcessingInteraction = true;
+                        RequestDropServerRpc();
+                    }
+                }
+                else
+                {
+                    Debug.Log("No shelf nearby - doing normal drop");
+                    // Normal drop
+                    isProcessingInteraction = true;
+                    RequestDropServerRpc();
+                }
+            }
+        }
+
         if (Input.GetMouseButtonDown(0))
         {
             if (hasItem.Value && !isAnimating)
             {
                 Vector3 throwDirection = (transform.forward + Vector3.up * 0.3f).normalized;
                 isProcessingInteraction = true;
-                lastInteractionTime = Time.time;
                 RequestThrowServerRpc(throwDirection);
-                StartCoroutine(ResetInteractionFlagWithDelay());
             }
         }
-    }
-    private IEnumerator ResetInteractionFlagWithDelay()
-    {
-        yield return new WaitForSeconds(interactionCooldown);
-        isProcessingInteraction = false;
     }
 
     // Yeni ServerRpc: Raftan alma
@@ -714,45 +813,96 @@ public class PlayerInventory : NetworkBehaviour
     {
         Debug.Log($"RequestPickupServerRpc called for item: {itemNetworkId}");
 
-        if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(itemNetworkId,
-                out NetworkObject networkObject))
+        // 🔒 ADIM 1: Item zaten kilitli mi kontrol et
+        if (IsItemLocked(itemNetworkId))
         {
-            NetworkWorldItem worldItem = networkObject.GetComponent<NetworkWorldItem>();
-
-            if (worldItem != null && worldItem.CanBePickedUp && !hasItem.Value)
-            {
-                Debug.Log($"Attempting to pickup item: {worldItem.ItemData?.itemName}");
-
-                ItemData itemData = worldItem.ItemData;
-
-                // ÇÖZÜM: Extra null check
-                if (itemData != null)
-                {
-                    hasItem.Value = true;
-                    currentItemID.Value = GetItemID(itemData);
-
-                    OnItemPickedUpClientRpc(itemNetworkId);
-                    StartCoroutine(DelayedDespawn(worldItem, itemData));
-
-                    Debug.Log($"Item picked up successfully: {itemData.itemName}");
-                }
-                else
-                {
-                    Debug.LogError("ItemData is null!");
-                }
-            }
-            else
-            {
-                Debug.LogWarning(
-                    $"Cannot pickup item. CanBePickedUp: {worldItem?.CanBePickedUp}, HasItem: {hasItem.Value}");
-            }
+            Debug.LogWarning($"Item {itemNetworkId} is locked! Cannot pickup.");
+            ResetProcessingInteractionClientRpc();
+            return;
         }
-        else
+
+        // 🔒 ADIM 2: NetworkObject var mı kontrol et
+        if (!NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(itemNetworkId, out NetworkObject networkObject))
         {
             Debug.LogError($"NetworkObject not found for ID: {itemNetworkId}");
+            ResetProcessingInteractionClientRpc();
+            return;
         }
 
+        // 🔒 ADIM 3: Hala spawn durumda mı kontrol et
+        if (networkObject == null || !networkObject.IsSpawned)
+        {
+            Debug.LogWarning($"Item {itemNetworkId} is already despawned!");
+            ResetProcessingInteractionClientRpc();
+            return;
+        }
+
+        NetworkWorldItem worldItem = networkObject.GetComponent<NetworkWorldItem>();
+
+        // 🔒 ADIM 4: WorldItem ve pickup durumu kontrol et
+        if (worldItem == null || !worldItem.CanBePickedUp || hasItem.Value)
+        {
+            Debug.LogWarning($"Cannot pickup: WorldItem={worldItem != null}, CanPickup={worldItem?.CanBePickedUp}, HasItem={hasItem.Value}");
+            ResetProcessingInteractionClientRpc();
+            return;
+        }
+
+        // 🔒 ADIM 5: Item'ı KİLİTLE - Bu noktadan sonra başka kimse alamaz
+        if (!TryLockItem(itemNetworkId))
+        {
+            Debug.LogWarning($"Failed to lock item {itemNetworkId}");
+            ResetProcessingInteractionClientRpc();
+            return;
+        }
+
+        // ℹ️ NOT: WorldItem.CanBePickedUp read-only olduğu için sadece dictionary ile kilitleme yapıyoruz
+        Debug.Log($"✅ Item {itemNetworkId} locked for client {OwnerClientId}");
+
+        // 🔒 ADIM 7: ItemData kontrolü
+        ItemData itemData = worldItem.ItemData;
+        if (itemData == null)
+        {
+            Debug.LogError("ItemData is null!");
+            // Kilit açma (hata durumunda) - EnablePickup kullan
+            itemPickupLocks.Remove(itemNetworkId);
+            worldItem.EnablePickup();
+            ResetProcessingInteractionClientRpc();
+            return;
+        }
+
+        // ✅ ADIM 8: Item'i oyuncuya ver
+        hasItem.Value = true;
+        currentItemID.Value = GetItemID(itemData);
+
+        // ✅ ADIM 9: Client'lara bildir
+        OnItemPickedUpClientRpc(itemNetworkId);
+
+        // ✅ ADIM 10: Despawn işlemi
+        StartCoroutine(DelayedDespawnWithUnlock(worldItem, itemData, itemNetworkId));
+
+        Debug.Log($"✅ Item picked up successfully: {itemData.itemName}");
+
         ResetProcessingInteractionClientRpc();
+    }
+
+    private IEnumerator DelayedDespawnWithUnlock(NetworkWorldItem worldItem, ItemData itemData, ulong itemNetworkId)
+    {
+        yield return new WaitForSeconds(0.1f);
+
+        if (worldItem != null && worldItem.NetworkObject != null && worldItem.NetworkObject.IsSpawned)
+        {
+            worldItem.NetworkObject.Despawn();
+            Debug.Log($"Item {itemNetworkId} despawned");
+        }
+
+        // Despawn sonrası kilidi kaldır
+        if (itemPickupLocks.ContainsKey(itemNetworkId))
+        {
+            itemPickupLocks.Remove(itemNetworkId);
+            Debug.Log($"Lock removed for item {itemNetworkId} after despawn");
+        }
+
+        StartPickupAnimationClientRpc();
     }
 
     private IEnumerator DelayedDespawn(NetworkWorldItem worldItem, ItemData itemData)
@@ -837,12 +987,12 @@ public class PlayerInventory : NetworkBehaviour
             }
         }
 
-        if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(itemNetworkId,
-                out NetworkObject networkObject))
+        if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(itemNetworkId, out NetworkObject networkObject))
         {
-            if (networkObject != null && networkObject.gameObject != null)
+            var worldItem = networkObject.GetComponent<NetworkWorldItem>();
+            if (worldItem != null)
             {
-                networkObject.gameObject.SetActive(false);
+                worldItem.DisablePickup(); // diğer client'ların CanBePickedUp kontrolünü engelle
             }
         }
     }
