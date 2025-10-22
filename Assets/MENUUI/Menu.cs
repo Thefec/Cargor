@@ -48,11 +48,22 @@ public class Menu : MonoBehaviour
     public string twitterURL = "https://twitter.com/youraccount";
     public string instagramURL = "https://instagram.com/youraccount";
 
+    [Header("Audio Sources")]
+    public AudioSource musicAudioSource;
+    public AudioSource sfxAudioSource;
+    public AudioSource uiAudioSource;
+
+    [Header("UI Sound Effects")]
+    public AudioClip buttonClickSound;
+    public AudioClip buttonHoverSound;
+    [Range(0f, 1f)]
+    public float buttonSoundVolume = 1f;
+
     [Header("Oyun Ayarları")]
     public string gameVersion = "v1.0.0";
 
     [Header("Settings Manager")]
-    public UnifiedSettingsManager settingsManager; // LocaleSelector yerine UnifiedSettingsManager
+    public UnifiedSettingsManager settingsManager;
 
     // Panel durumlarını takip etmek için
     private bool isMainMenuActive = true;
@@ -86,53 +97,104 @@ public class Menu : MonoBehaviour
     {
         // Ana menü butonları
         if (playOnlineButton != null)
-            playOnlineButton.onClick.AddListener(ShowHostJoinMenu);
+            playOnlineButton.onClick.AddListener(() => { PlayButtonSound(); ShowHostJoinMenu(); });
 
         if (playOfflineButton != null)
-            playOfflineButton.onClick.AddListener(PlayOffline);
+            playOfflineButton.onClick.AddListener(() => { PlayButtonSound(); PlayOffline(); });
 
         if (settingsButton != null)
-            settingsButton.onClick.AddListener(OpenSettings);
+            settingsButton.onClick.AddListener(() => { PlayButtonSound(); OpenSettings(); });
 
         if (creditsButton != null)
-            creditsButton.onClick.AddListener(OpenCredits);
+            creditsButton.onClick.AddListener(() => { PlayButtonSound(); OpenCredits(); });
 
         if (quitButton != null)
-            quitButton.onClick.AddListener(QuitGame);
+            quitButton.onClick.AddListener(() => { PlayButtonSound(); QuitGame(); });
 
         // Host/Join butonları
         if (hostButton != null)
-            hostButton.onClick.AddListener(CreateLobby);
+            hostButton.onClick.AddListener(() => { PlayButtonSound(); CreateLobby(); });
 
         if (joinButton != null)
-            joinButton.onClick.AddListener(JoinLobby);
+            joinButton.onClick.AddListener(() => { PlayButtonSound(); JoinLobby(); });
 
         if (exitHostJoinButton != null)
-            exitHostJoinButton.onClick.AddListener(ExitHostJoinMenu);
+            exitHostJoinButton.onClick.AddListener(() => { PlayButtonSound(); ExitHostJoinMenu(); });
 
         // Settings panel butonları
         if (backFromSettingsButton != null)
-            backFromSettingsButton.onClick.AddListener(BackFromSettings);
+            backFromSettingsButton.onClick.AddListener(() => { PlayButtonSound(); BackFromSettings(); });
 
         if (saveSettingsButton != null)
-            saveSettingsButton.onClick.AddListener(SaveSettings);
+            saveSettingsButton.onClick.AddListener(() => { PlayButtonSound(); SaveSettings(); });
 
         // Credits geri butonu
         if (backFromCreditsButton != null)
         {
             backFromCreditsButton.onClick.RemoveAllListeners();
-            backFromCreditsButton.onClick.AddListener(CloseCredits);
+            backFromCreditsButton.onClick.AddListener(() => { PlayButtonSound(); CloseCredits(); });
         }
 
         // Sosyal medya butonları
         if (discordButton != null)
-            discordButton.onClick.AddListener(OpenDiscord);
+            discordButton.onClick.AddListener(() => { PlayButtonSound(); OpenDiscord(); });
 
         if (twitterButton != null)
-            twitterButton.onClick.AddListener(OpenTwitter);
+            twitterButton.onClick.AddListener(() => { PlayButtonSound(); OpenTwitter(); });
 
         if (instagramButton != null)
-            instagramButton.onClick.AddListener(OpenInstagram);
+            instagramButton.onClick.AddListener(() => { PlayButtonSound(); OpenInstagram(); });
+    }
+
+    // ✨ YENİ: Buton ses efekti metodu
+    void PlayButtonSound()
+    {
+        if (buttonClickSound == null) return;
+
+        // Ses seviyesini hesapla (settingsManager'dan alınacak)
+        float finalVolume = buttonSoundVolume;
+
+        if (settingsManager != null)
+        {
+            finalVolume *= settingsManager.GetSFXVolume() * settingsManager.GetMasterVolume();
+        }
+
+        // AudioSource öncelik sırası: uiAudioSource -> sfxAudioSource -> Yeni AudioSource
+        if (uiAudioSource != null)
+        {
+            uiAudioSource.PlayOneShot(buttonClickSound, finalVolume);
+        }
+        else if (sfxAudioSource != null)
+        {
+            sfxAudioSource.PlayOneShot(buttonClickSound, finalVolume);
+        }
+        else
+        {
+            // Geçici AudioSource oluştur
+            AudioSource.PlayClipAtPoint(buttonClickSound, Camera.main.transform.position, finalVolume);
+        }
+    }
+
+    // ✨ YENİ: Hover ses efekti metodu (opsiyonel)
+    void PlayHoverSound()
+    {
+        if (buttonHoverSound == null) return;
+
+        float finalVolume = buttonSoundVolume * 0.5f; // Hover sesi daha düşük
+
+        if (settingsManager != null)
+        {
+            finalVolume *= settingsManager.GetSFXVolume() * settingsManager.GetMasterVolume();
+        }
+
+        if (uiAudioSource != null)
+        {
+            uiAudioSource.PlayOneShot(buttonHoverSound, finalVolume);
+        }
+        else if (sfxAudioSource != null)
+        {
+            sfxAudioSource.PlayOneShot(buttonHoverSound, finalVolume);
+        }
     }
 
     void SetGameVersion()
@@ -335,7 +397,6 @@ public class Menu : MonoBehaviour
     // Settings Panel Fonksiyonları
     public void BackFromSettings()
     {
-        // UnifiedSettingsManager'daki kaydedilmemiş değişiklikleri geri al
         if (settingsManager != null && settingsManager.HasUnsavedChanges())
         {
             settingsManager.OnBackButtonPressed();
@@ -348,7 +409,6 @@ public class Menu : MonoBehaviour
 
     public void SaveSettings()
     {
-        // UnifiedSettingsManager'daki değişiklikleri kaydet
         if (settingsManager != null)
         {
             settingsManager.SaveAllSettings();
@@ -414,14 +474,17 @@ public class Menu : MonoBehaviour
         {
             if (settingsPanel != null && settingsPanel.activeInHierarchy)
             {
+                PlayButtonSound(); // ESC tuşu için de ses
                 BackFromSettings();
             }
             else if (creditsPanel != null && creditsPanel.activeInHierarchy)
             {
+                PlayButtonSound();
                 CloseCredits();
             }
             else if (isHostJoinMenuActive)
             {
+                PlayButtonSound();
                 ExitHostJoinMenu();
             }
         }
@@ -429,7 +492,6 @@ public class Menu : MonoBehaviour
 
     void OnDestroy()
     {
-        // Button listener'ları temizle
         if (playOnlineButton != null)
             playOnlineButton.onClick.RemoveAllListeners();
 

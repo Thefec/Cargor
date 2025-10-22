@@ -5,14 +5,25 @@ namespace NewCss
 {
     public class PlayerMovement : NetworkBehaviour
     {
+        [Header("Movement Settings")]
         public float moveSpeed = 5f;
         public float sprintSpeed = 7f;
+        public float exhaustedSpeed = 3f;
+
+        [Header("Sprint Settings")]
         public float sprintDuration = 3f;
         public float sprintCooldown = 3f;
         public float staminaRegenRate = 1f;
 
+        [Header("Audio Settings")]
+        public AudioClip[] walkSounds;
+        public AudioClip[] runSounds;
+        [Range(0f, 1f)]
+        public float footstepVolume = 0.5f;
+
         private CharacterController controller;
         private Animator animator;
+        private AudioSource audioSource;
 
         private float currentStamina;
         private float cooldownTimer = 0f;
@@ -33,7 +44,6 @@ namespace NewCss
         private bool isCarrying = false;
         private bool interactionsLocked = false;
 
-        // Network Variables for animation synchronization
         private NetworkVariable<float> networkX = new NetworkVariable<float>();
         private NetworkVariable<float> networkZ = new NetworkVariable<float>();
         private NetworkVariable<bool> networkIsRunning = new NetworkVariable<bool>();
@@ -43,6 +53,18 @@ namespace NewCss
         {
             controller = GetComponent<CharacterController>();
             animator = GetComponent<Animator>();
+
+            audioSource = GetComponent<AudioSource>();
+            if (audioSource == null)
+            {
+                audioSource = gameObject.AddComponent<AudioSource>();
+            }
+
+            audioSource.spatialBlend = 1f;
+            audioSource.rolloffMode = AudioRolloffMode.Linear;
+            audioSource.minDistance = 1f;
+            audioSource.maxDistance = 15f;
+            audioSource.volume = footstepVolume;
         }
 
         void Start()
@@ -66,13 +88,10 @@ namespace NewCss
         {
             if (!IsOwner) return;
 
-            // CRITICAL: Lock kontrolü EN BAŞTA yapılmalı
             if (isMovementLocked)
             {
-                // Kilitlendiyse tüm hareketi ve animasyonu sıfırla
                 isSprinting = false;
 
-                // Animasyonu sıfırla
                 if (animator != null)
                 {
                     animator.SetFloat("X", 0f);
@@ -80,10 +99,7 @@ namespace NewCss
                     animator.SetBool("IsRun", false);
                 }
 
-                // Network üzerinden de sıfırla
                 UpdateAnimationServerRpc(0f, 0f, false);
-
-                // Sadece yerçekimini uygula
                 ApplyGravityOnly();
                 return;
             }
@@ -97,13 +113,80 @@ namespace NewCss
         {
             if (controller == null) return;
 
-            // Sadece yerçekimi
             if (!controller.isGrounded)
                 velocity.y -= gravity * Time.deltaTime;
             else
                 velocity.y = -2f;
 
             controller.Move(velocity * Time.deltaTime);
+        }
+
+        // ═══════════════════════════════════════════════════════
+        // 🔊 ANIMATION EVENT - Animasyon tarafından çağrılır
+        // ═══════════════════════════════════════════════════════
+        public void OnFootstep()
+        {
+            if (!IsOwner || isMovementLocked) return;
+
+            PlayFootstepSound();
+        }
+
+        void PlayFootstepSound()
+        {
+            if (audioSource == null) return;
+
+            AudioClip[] soundArray;
+
+            // Koşma veya yürüme sesini seç
+            if (isSprinting && !isInCooldown)
+            {
+                soundArray = runSounds != null && runSounds.Length > 0 ? runSounds : walkSounds;
+            }
+            else
+            {
+                soundArray = walkSounds;
+            }
+
+            if (soundArray == null || soundArray.Length == 0)
+            {
+                Debug.LogWarning("Ses dizisi boş! Walk Sounds veya Run Sounds ekleyin.");
+                return;
+            }
+
+            // Rastgele ses seç ve çal
+            AudioClip clip = soundArray[Random.Range(0, soundArray.Length)];
+            if (clip != null)
+            {
+                audioSource.PlayOneShot(clip, footstepVolume);
+
+                // Network üzerinden de çal
+                PlayFootstepServerRpc();
+            }
+        }
+
+        [ServerRpc]
+        void PlayFootstepServerRpc()
+        {
+            PlayFootstepClientRpc();
+        }
+
+        [ClientRpc]
+        void PlayFootstepClientRpc()
+        {
+            if (!IsOwner && audioSource != null)
+            {
+                AudioClip[] soundArray = (isSprinting && !isInCooldown) ?
+                    (runSounds != null && runSounds.Length > 0 ? runSounds : walkSounds) : walkSounds;
+
+                if (soundArray != null && soundArray.Length > 0)
+                {
+                    AudioClip clip = soundArray[Random.Range(0, soundArray.Length)];
+                    if (clip != null)
+                    {
+                        audioSource.PlayOneShot(clip, footstepVolume);
+                    }
+                }
+            }
         }
 
         public void SetCarrying(bool carry)
@@ -166,12 +249,10 @@ namespace NewCss
         {
             if (interactionsLocked)
                 return;
-            // Interaction kodun buraya
         }
 
         void HandleStamina()
         {
-            // Lock varsa stamina işlemlerini yapma
             if (isMovementLocked)
             {
                 isSprinting = false;
@@ -219,7 +300,6 @@ namespace NewCss
         {
             if (controller == null) return;
 
-            // Lock varsa hareket etme
             if (isMovementLocked)
             {
                 ApplyGravityOnly();
@@ -230,19 +310,29 @@ namespace NewCss
             float v = Input.GetAxisRaw("Vertical");
 
             Vector3 dir = new Vector3(h, 0, v).normalized;
-            float targetSpeed = (isSprinting && !isInCooldown) ? sprintSpeed : moveSpeed;
+
+            float targetSpeed;
+            if (isSprinting && !isInCooldown)
+            {
+                targetSpeed = sprintSpeed;
+            }
+            else if (isInCooldown)
+            {
+                targetSpeed = exhaustedSpeed;
+            }
+            else
+            {
+                targetSpeed = moveSpeed;
+            }
 
             if (dir.magnitude >= 0.1f)
             {
-                // Rotation
                 Quaternion targetRotation = Quaternion.LookRotation(dir);
                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
 
-                // Movement
                 controller.Move(dir * targetSpeed * Time.deltaTime);
             }
 
-            // Apply gravity
             if (!controller.isGrounded)
                 velocity.y -= gravity * Time.deltaTime;
             else
@@ -257,7 +347,6 @@ namespace NewCss
 
             if (locked && IsOwner)
             {
-                // Hemen animasyonu sıfırla
                 isSprinting = false;
 
                 if (animator != null)

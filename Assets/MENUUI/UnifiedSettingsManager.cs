@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.Localization.Settings;
@@ -20,9 +20,32 @@ public class UnifiedSettingsManager : MonoBehaviour
     [Header("Screen Mode Settings")]
     public TMP_Dropdown screenModeDropdown;
 
+    [Header("Resolution Settings")]
+    public TMP_Dropdown resolutionDropdown;
+
     [Header("FPS Settings")]
     public TMP_Dropdown fpsDropdown;
     public Toggle vSyncToggle;
+
+    [Header("Audio Settings")]
+    public Slider masterVolumeSlider;
+    public TextMeshProUGUI masterVolumeText;
+    public Slider musicVolumeSlider;
+    public TextMeshProUGUI musicVolumeText;
+    public Slider sfxVolumeSlider;
+    public TextMeshProUGUI sfxVolumeText;
+
+    [Header("Audio Sources")]
+    public AudioSource musicAudioSource;
+    public AudioSource sfxAudioSource;
+    public AudioSource uiAudioSource; // ✨ YENİ: UI sesleri için
+
+    [Header("UI Sound Effects")] // ✨ YENİ BÖLÜM
+    public AudioClip buttonClickSound;
+    public AudioClip dropdownClickSound; // Dropdown için ayrı ses (opsiyonel)
+    public AudioClip sliderChangeSound; // Slider için ses (opsiyonel)
+    [Range(0f, 1f)]
+    public float uiSoundVolume = 0.8f;
 
     [Header("FPS Options")]
     public int[] fpsOptions = { 30, 60, 90, 120, 140, 160 };
@@ -35,6 +58,10 @@ public class UnifiedSettingsManager : MonoBehaviour
     private const string PREF_SCREEN_MODE = "ScreenMode_Setting";
     private const string PREF_FPS = "FPS_Setting";
     private const string PREF_VSYNC = "VSync_Setting";
+    private const string PREF_RESOLUTION = "Resolution_Setting";
+    private const string PREF_MASTER_VOLUME = "MasterVolume_Setting";
+    private const string PREF_MUSIC_VOLUME = "MusicVolume_Setting";
+    private const string PREF_SFX_VOLUME = "SFXVolume_Setting";
 
     // Screen Mode Enum
     public enum ScreenMode
@@ -44,12 +71,20 @@ public class UnifiedSettingsManager : MonoBehaviour
         FullscreenExclusive = 2
     }
 
+    // Resolution data
+    private Resolution[] availableResolutions;
+    private List<Resolution> filteredResolutions;
+
     // Current (saved) values
     private int currentQualityLevel;
     private int currentLocaleID;
     private ScreenMode currentScreenMode;
     private int currentFPSIndex;
     private bool currentVSyncEnabled;
+    private int currentResolutionIndex;
+    private float currentMasterVolume;
+    private float currentMusicVolume;
+    private float currentSFXVolume;
 
     // Selected (preview - unsaved) values
     private int selectedQualityLevel;
@@ -57,17 +92,27 @@ public class UnifiedSettingsManager : MonoBehaviour
     private ScreenMode selectedScreenMode;
     private int selectedFPSIndex;
     private bool selectedVSyncEnabled;
+    private int selectedResolutionIndex;
+    private float selectedMasterVolume;
+    private float selectedMusicVolume;
+    private float selectedSFXVolume;
 
     private bool hasUnsavedChanges = false;
     private bool localizationActive = false;
+
+    // ✨ YENİ: Slider ses throttling için
+    private float lastSliderSoundTime = 0f;
+    private const float sliderSoundCooldown = 0.1f;
 
     private IEnumerator Start()
     {
         // Setup all dropdowns and buttons
         SetupQualityDropdown();
         SetupScreenModeDropdown();
+        SetupResolutionDropdown();
         SetupFPSDropdown();
         SetupVSyncToggle();
+        SetupAudioSliders();
         SetupLanguageDropdown();
         SetupButtons();
 
@@ -96,7 +141,10 @@ public class UnifiedSettingsManager : MonoBehaviour
         }
 
         qualityDropdown.AddOptions(qualityOptions);
-        qualityDropdown.onValueChanged.AddListener(OnQualityChanged);
+        qualityDropdown.onValueChanged.AddListener((value) => {
+            PlayUISound(dropdownClickSound ?? buttonClickSound); // ✨ Ses efekti
+            OnQualityChanged(value);
+        });
     }
 
     void SetupLanguageDropdown()
@@ -104,7 +152,7 @@ public class UnifiedSettingsManager : MonoBehaviour
         if (languageDropdown == null) return;
 
         languageDropdown.ClearOptions();
-        List<string> languageNames = new List<string> { "T�rk�e", "English" };
+        List<string> languageNames = new List<string> { "Türkçe", "English" };
 
         foreach (string languageName in languageNames)
         {
@@ -112,7 +160,10 @@ public class UnifiedSettingsManager : MonoBehaviour
         }
 
         languageDropdown.RefreshShownValue();
-        languageDropdown.onValueChanged.AddListener(OnLanguageChanged);
+        languageDropdown.onValueChanged.AddListener((value) => {
+            PlayUISound(dropdownClickSound ?? buttonClickSound); // ✨ Ses efekti
+            OnLanguageChanged(value);
+        });
     }
 
     void SetupScreenModeDropdown()
@@ -121,7 +172,47 @@ public class UnifiedSettingsManager : MonoBehaviour
 
         screenModeDropdown.ClearOptions();
         screenModeDropdown.AddOptions(GetLocalizedScreenModeOptions());
-        screenModeDropdown.onValueChanged.AddListener(OnScreenModeChanged);
+        screenModeDropdown.onValueChanged.AddListener((value) => {
+            PlayUISound(dropdownClickSound ?? buttonClickSound); // ✨ Ses efekti
+            OnScreenModeChanged(value);
+        });
+    }
+
+    void SetupResolutionDropdown()
+    {
+        if (resolutionDropdown == null) return;
+
+        // Tüm çözünürlükleri al
+        availableResolutions = Screen.resolutions;
+        filteredResolutions = new List<Resolution>();
+
+        // Benzersiz çözünürlükleri filtrele
+        Resolution previousResolution = new Resolution();
+        foreach (Resolution resolution in availableResolutions)
+        {
+            if (resolution.width != previousResolution.width ||
+                resolution.height != previousResolution.height)
+            {
+                filteredResolutions.Add(resolution);
+                previousResolution = resolution;
+            }
+        }
+
+        // Dropdown'u doldur
+        resolutionDropdown.ClearOptions();
+        List<string> options = new List<string>();
+
+        foreach (Resolution resolution in filteredResolutions)
+        {
+            string resolutionString = GetResolutionDisplayName(resolution);
+            options.Add(resolutionString);
+        }
+
+        resolutionDropdown.AddOptions(options);
+        resolutionDropdown.onValueChanged.AddListener((value) => {
+            PlayUISound(dropdownClickSound ?? buttonClickSound); // ✨ Ses efekti
+            OnResolutionChanged(value);
+        });
     }
 
     List<string> GetLocalizedScreenModeOptions()
@@ -134,8 +225,8 @@ public class UnifiedSettingsManager : MonoBehaviour
             return new List<string>
             {
                 "Pencere Modu",
-                "Tam Ekran (�er�eveli)",
-                "Tam Ekran (�er�evesiz)"
+                "Tam Ekran (Çerçeveli)",
+                "Tam Ekran (Çerçevesiz)"
             };
         }
         else
@@ -159,28 +250,134 @@ public class UnifiedSettingsManager : MonoBehaviour
             options.Add(fps + " FPS");
 
         fpsDropdown.AddOptions(options);
-        fpsDropdown.onValueChanged.AddListener(OnFPSChanged);
+        fpsDropdown.onValueChanged.AddListener((value) => {
+            PlayUISound(dropdownClickSound ?? buttonClickSound); // ✨ Ses efekti
+            OnFPSChanged(value);
+        });
     }
 
     void SetupVSyncToggle()
     {
         if (vSyncToggle == null) return;
-        vSyncToggle.onValueChanged.AddListener(OnVSyncChanged);
+        vSyncToggle.onValueChanged.AddListener((value) => {
+            PlayUISound(buttonClickSound); // ✨ Ses efekti
+            OnVSyncChanged(value);
+        });
+    }
+
+    void SetupAudioSliders()
+    {
+        // Master Volume Slider
+        if (masterVolumeSlider != null)
+        {
+            masterVolumeSlider.minValue = 0f;
+            masterVolumeSlider.maxValue = 1f;
+            masterVolumeSlider.onValueChanged.AddListener((value) => {
+                PlaySliderSound(); // ✨ Slider sesi (throttled)
+                OnMasterVolumeChanged(value);
+            });
+        }
+
+        // Music Volume Slider
+        if (musicVolumeSlider != null)
+        {
+            musicVolumeSlider.minValue = 0f;
+            musicVolumeSlider.maxValue = 1f;
+            musicVolumeSlider.onValueChanged.AddListener((value) => {
+                PlaySliderSound(); // ✨ Slider sesi (throttled)
+                OnMusicVolumeChanged(value);
+            });
+        }
+
+        // SFX Volume Slider
+        if (sfxVolumeSlider != null)
+        {
+            sfxVolumeSlider.minValue = 0f;
+            sfxVolumeSlider.maxValue = 1f;
+            sfxVolumeSlider.onValueChanged.AddListener((value) => {
+                PlaySliderSound(); // ✨ Slider sesi (throttled)
+                OnSFXVolumeChanged(value);
+            });
+        }
     }
 
     void SetupButtons()
     {
         if (saveButton != null)
         {
-            saveButton.onClick.AddListener(SaveAllSettings);
+            saveButton.onClick.AddListener(() => {
+                PlayUISound(buttonClickSound); // ✨ Ses efekti
+                SaveAllSettings();
+            });
         }
 
         if (backButton != null)
         {
-            backButton.onClick.AddListener(OnBackButtonPressed);
+            backButton.onClick.AddListener(() => {
+                PlayUISound(buttonClickSound); // ✨ Ses efekti
+                OnBackButtonPressed();
+            });
         }
 
         UpdateSaveButtonState();
+    }
+
+    #endregion
+
+    #region UI Sound Effects ✨ YENİ
+
+    /// <summary>
+    /// Buton ve dropdown sesleri için
+    /// </summary>
+    void PlayUISound(AudioClip clip)
+    {
+        if (clip == null) return;
+
+        // SFX ve Master volume'ü kullan
+        float finalVolume = uiSoundVolume * selectedSFXVolume * selectedMasterVolume;
+
+        if (uiAudioSource != null)
+        {
+            uiAudioSource.PlayOneShot(clip, finalVolume);
+        }
+        else if (sfxAudioSource != null)
+        {
+            sfxAudioSource.PlayOneShot(clip, finalVolume);
+        }
+        else
+        {
+            // Geçici AudioSource oluştur
+            AudioSource.PlayClipAtPoint(clip, Camera.main.transform.position, finalVolume);
+        }
+    }
+
+    /// <summary>
+    /// Slider değişimleri için (çok sık çalmayı önlemek için throttled)
+    /// </summary>
+    void PlaySliderSound()
+    {
+        // Çok sık ses çalmasın diye cooldown
+        if (Time.time - lastSliderSoundTime < sliderSoundCooldown)
+            return;
+
+        lastSliderSoundTime = Time.time;
+
+        // Slider ses varsa onu çal, yoksa button sesini kullan
+        AudioClip clipToPlay = sliderChangeSound != null ? sliderChangeSound : buttonClickSound;
+
+        if (clipToPlay == null) return;
+
+        // Slider sesi daha düşük olsun
+        float finalVolume = uiSoundVolume * 0.3f * selectedSFXVolume * selectedMasterVolume;
+
+        if (uiAudioSource != null)
+        {
+            uiAudioSource.PlayOneShot(clipToPlay, finalVolume);
+        }
+        else if (sfxAudioSource != null)
+        {
+            sfxAudioSource.PlayOneShot(clipToPlay, finalVolume);
+        }
     }
 
     #endregion
@@ -212,7 +409,17 @@ public class UnifiedSettingsManager : MonoBehaviour
         selectedScreenMode = currentScreenMode;
         if (screenModeDropdown != null)
             screenModeDropdown.SetValueWithoutNotify((int)currentScreenMode);
-        ApplyScreenMode(currentScreenMode);
+
+        // Load Resolution
+        int savedResolutionIndex = PlayerPrefs.GetInt(PREF_RESOLUTION, GetCurrentResolutionIndex());
+        savedResolutionIndex = Mathf.Clamp(savedResolutionIndex, 0, filteredResolutions.Count - 1);
+        currentResolutionIndex = savedResolutionIndex;
+        selectedResolutionIndex = savedResolutionIndex;
+        if (resolutionDropdown != null)
+            resolutionDropdown.SetValueWithoutNotify(currentResolutionIndex);
+
+        // Apply Screen Mode and Resolution
+        ApplyResolutionAndScreenMode(currentResolutionIndex, currentScreenMode);
 
         // Load FPS Settings
         currentFPSIndex = PlayerPrefs.GetInt(PREF_FPS, defaultFPSIndex);
@@ -229,10 +436,29 @@ public class UnifiedSettingsManager : MonoBehaviour
         UpdateFPSDropdownInteractable(!currentVSyncEnabled);
         ApplyFPSSettings(currentFPSIndex, currentVSyncEnabled);
 
+        // Load Audio Settings
+        currentMasterVolume = PlayerPrefs.GetFloat(PREF_MASTER_VOLUME, 0.5f);
+        currentMusicVolume = PlayerPrefs.GetFloat(PREF_MUSIC_VOLUME, 0.5f);
+        currentSFXVolume = PlayerPrefs.GetFloat(PREF_SFX_VOLUME, 0.5f);
+
+        selectedMasterVolume = currentMasterVolume;
+        selectedMusicVolume = currentMusicVolume;
+        selectedSFXVolume = currentSFXVolume;
+
+        if (masterVolumeSlider != null)
+            masterVolumeSlider.SetValueWithoutNotify(currentMasterVolume);
+        if (musicVolumeSlider != null)
+            musicVolumeSlider.SetValueWithoutNotify(currentMusicVolume);
+        if (sfxVolumeSlider != null)
+            sfxVolumeSlider.SetValueWithoutNotify(currentSFXVolume);
+
+        ApplyAudioSettings(currentMasterVolume, currentMusicVolume, currentSFXVolume);
+        UpdateAudioTexts();
+
         hasUnsavedChanges = false;
         UpdateSaveButtonState();
 
-        Debug.Log("T�m ayarlar y�klendi.");
+        Debug.Log("Tüm ayarlar yüklendi.");
     }
 
     #endregion
@@ -244,7 +470,7 @@ public class UnifiedSettingsManager : MonoBehaviour
         selectedQualityLevel = newQualityIndex;
         QualitySettings.SetQualityLevel(newQualityIndex, true);
         CheckForChanges();
-        Debug.Log($"Kalite de�i�tirildi: {QualitySettings.names[newQualityIndex]} (Kaydedilmedi)");
+        Debug.Log($"Kalite değiştirildi: {QualitySettings.names[newQualityIndex]} (Kaydedilmedi)");
     }
 
     void OnLanguageChanged(int localeID)
@@ -259,9 +485,19 @@ public class UnifiedSettingsManager : MonoBehaviour
         if (modeIndex < 0 || modeIndex > 2) return;
 
         selectedScreenMode = (ScreenMode)modeIndex;
-        ApplyScreenMode(selectedScreenMode);
+        ApplyResolutionAndScreenMode(selectedResolutionIndex, selectedScreenMode);
         CheckForChanges();
-        Debug.Log($"Ekran modu de�i�tirildi: {GetScreenModeName(selectedScreenMode)} (Kaydedilmedi)");
+        Debug.Log($"Ekran modu değiştirildi: {GetScreenModeName(selectedScreenMode)} (Kaydedilmedi)");
+    }
+
+    void OnResolutionChanged(int index)
+    {
+        if (index < 0 || index >= filteredResolutions.Count) return;
+
+        selectedResolutionIndex = index;
+        ApplyResolutionAndScreenMode(selectedResolutionIndex, selectedScreenMode);
+        CheckForChanges();
+        Debug.Log($"Çözünürlük değiştirildi: {GetResolutionDisplayName(filteredResolutions[selectedResolutionIndex])} (Kaydedilmedi)");
     }
 
     void OnFPSChanged(int index)
@@ -272,7 +508,7 @@ public class UnifiedSettingsManager : MonoBehaviour
         selectedFPSIndex = index;
         ApplyFPSSettings(selectedFPSIndex, selectedVSyncEnabled);
         CheckForChanges();
-        Debug.Log($"FPS de�i�tirildi: {fpsOptions[selectedFPSIndex]} (Kaydedilmedi)");
+        Debug.Log($"FPS değiştirildi: {fpsOptions[selectedFPSIndex]} (Kaydedilmedi)");
     }
 
     void OnVSyncChanged(bool isOn)
@@ -281,27 +517,71 @@ public class UnifiedSettingsManager : MonoBehaviour
         UpdateFPSDropdownInteractable(!selectedVSyncEnabled);
         ApplyFPSSettings(selectedFPSIndex, selectedVSyncEnabled);
         CheckForChanges();
-        Debug.Log($"VSync de�i�tirildi: {selectedVSyncEnabled} (Kaydedilmedi)");
+        Debug.Log($"VSync değiştirildi: {selectedVSyncEnabled} (Kaydedilmedi)");
+    }
+
+    void OnMasterVolumeChanged(float volume)
+    {
+        selectedMasterVolume = volume;
+        ApplyAudioSettings(selectedMasterVolume, selectedMusicVolume, selectedSFXVolume);
+        UpdateAudioTexts();
+        CheckForChanges();
+    }
+
+    void OnMusicVolumeChanged(float volume)
+    {
+        selectedMusicVolume = volume;
+        ApplyAudioSettings(selectedMasterVolume, selectedMusicVolume, selectedSFXVolume);
+        UpdateAudioTexts();
+        CheckForChanges();
+    }
+
+    void OnSFXVolumeChanged(float volume)
+    {
+        selectedSFXVolume = volume;
+        ApplyAudioSettings(selectedMasterVolume, selectedMusicVolume, selectedSFXVolume);
+        UpdateAudioTexts();
+        CheckForChanges();
     }
 
     #endregion
 
     #region Apply Methods
 
-    void ApplyScreenMode(ScreenMode mode)
+    void ApplyResolutionAndScreenMode(int resolutionIndex, ScreenMode screenMode)
     {
-        switch (mode)
+        if (resolutionIndex < 0 || resolutionIndex >= filteredResolutions.Count) return;
+
+        Resolution resolution = filteredResolutions[resolutionIndex];
+
+        // En yüksek refresh rate'i bul
+        int maxRefreshRate = 60;
+        foreach (Resolution res in availableResolutions)
+        {
+            if (res.width == resolution.width && res.height == resolution.height)
+            {
+                if (res.refreshRate > maxRefreshRate)
+                    maxRefreshRate = res.refreshRate;
+            }
+        }
+
+        // FullScreenMode'u belirle
+        FullScreenMode fullScreenMode = FullScreenMode.ExclusiveFullScreen;
+        switch (screenMode)
         {
             case ScreenMode.Windowed:
-                Screen.fullScreenMode = FullScreenMode.Windowed;
+                fullScreenMode = FullScreenMode.Windowed;
                 break;
             case ScreenMode.FullscreenWindowed:
-                Screen.fullScreenMode = FullScreenMode.FullScreenWindow;
+                fullScreenMode = FullScreenMode.FullScreenWindow;
                 break;
             case ScreenMode.FullscreenExclusive:
-                Screen.fullScreenMode = FullScreenMode.ExclusiveFullScreen;
+                fullScreenMode = FullScreenMode.ExclusiveFullScreen;
                 break;
         }
+
+        Screen.SetResolution(resolution.width, resolution.height, fullScreenMode, maxRefreshRate);
+        Debug.Log($"✅ Ayarlar uygulandı: Çözünürlük={resolution.width}x{resolution.height}, Mod={screenMode}, RefreshRate={maxRefreshRate}Hz");
     }
 
     void ApplyFPSSettings(int fpsIndex, bool vSyncEnabled)
@@ -319,6 +599,36 @@ public class UnifiedSettingsManager : MonoBehaviour
                 Application.targetFrameRate = fpsOptions[fpsIndex];
             }
         }
+    }
+
+    void ApplyAudioSettings(float masterVolume, float musicVolume, float sfxVolume)
+    {
+        // Unity AudioListener master volume
+        AudioListener.volume = masterVolume;
+
+        // Music AudioSource
+        if (musicAudioSource != null)
+        {
+            musicAudioSource.volume = musicVolume * masterVolume;
+        }
+
+        // SFX AudioSource
+        if (sfxAudioSource != null)
+        {
+            sfxAudioSource.volume = sfxVolume * masterVolume;
+        }
+    }
+
+    void UpdateAudioTexts()
+    {
+        if (masterVolumeText != null)
+            masterVolumeText.text = Mathf.RoundToInt(selectedMasterVolume * 100).ToString();
+
+        if (musicVolumeText != null)
+            musicVolumeText.text = Mathf.RoundToInt(selectedMusicVolume * 100).ToString();
+
+        if (sfxVolumeText != null)
+            sfxVolumeText.text = Mathf.RoundToInt(selectedSFXVolume * 100).ToString();
     }
 
     void ChangeLocalePreview(int localeID)
@@ -341,7 +651,7 @@ public class UnifiedSettingsManager : MonoBehaviour
             LocalizationSettings.SelectedLocale = locales[_localeID];
             yield return new WaitForEndOfFrame();
             RefreshLocalizedUI();
-            RefreshScreenModeDropdown(); // Ekran modu dropdown'unu g�ncelle
+            RefreshScreenModeDropdown();
         }
 
         localizationActive = false;
@@ -374,7 +684,7 @@ public class UnifiedSettingsManager : MonoBehaviour
     {
         if (!hasUnsavedChanges)
         {
-            Debug.Log("Kaydedilecek de�i�iklik yok.");
+            Debug.Log("Kaydedilecek değişiklik yok.");
             return;
         }
 
@@ -382,20 +692,28 @@ public class UnifiedSettingsManager : MonoBehaviour
         currentQualityLevel = selectedQualityLevel;
         currentLocaleID = selectedLocaleID;
         currentScreenMode = selectedScreenMode;
+        currentResolutionIndex = selectedResolutionIndex;
         currentFPSIndex = selectedFPSIndex;
         currentVSyncEnabled = selectedVSyncEnabled;
+        currentMasterVolume = selectedMasterVolume;
+        currentMusicVolume = selectedMusicVolume;
+        currentSFXVolume = selectedSFXVolume;
 
         PlayerPrefs.SetInt(PREF_QUALITY, currentQualityLevel);
         PlayerPrefs.SetInt(PREF_LOCALE, currentLocaleID);
         PlayerPrefs.SetInt(PREF_SCREEN_MODE, (int)currentScreenMode);
+        PlayerPrefs.SetInt(PREF_RESOLUTION, currentResolutionIndex);
         PlayerPrefs.SetInt(PREF_FPS, currentFPSIndex);
         PlayerPrefs.SetInt(PREF_VSYNC, currentVSyncEnabled ? 1 : 0);
+        PlayerPrefs.SetFloat(PREF_MASTER_VOLUME, currentMasterVolume);
+        PlayerPrefs.SetFloat(PREF_MUSIC_VOLUME, currentMusicVolume);
+        PlayerPrefs.SetFloat(PREF_SFX_VOLUME, currentSFXVolume);
         PlayerPrefs.Save();
 
         hasUnsavedChanges = false;
         UpdateSaveButtonState();
 
-        Debug.Log("T�m ayarlar kaydedildi!");
+        Debug.Log($"✅ Tüm ayarlar kaydedildi! Master: {currentMasterVolume:F2}, Music: {currentMusicVolume:F2}, SFX: {currentSFXVolume:F2}");
     }
 
     public void OnBackButtonPressed()
@@ -403,10 +721,8 @@ public class UnifiedSettingsManager : MonoBehaviour
         if (hasUnsavedChanges)
         {
             ResetToSavedSettings();
-            Debug.Log("Kaydedilmemi� de�i�iklikler geri al�nd�.");
+            Debug.Log("Kaydedilmemiş değişiklikler geri alındı.");
         }
-
-        // Buraya men� kapatma kodunuzu ekleyebilirsiniz
     }
 
     void ResetToSavedSettings()
@@ -415,8 +731,12 @@ public class UnifiedSettingsManager : MonoBehaviour
         selectedQualityLevel = currentQualityLevel;
         selectedLocaleID = currentLocaleID;
         selectedScreenMode = currentScreenMode;
+        selectedResolutionIndex = currentResolutionIndex;
         selectedFPSIndex = currentFPSIndex;
         selectedVSyncEnabled = currentVSyncEnabled;
+        selectedMasterVolume = currentMasterVolume;
+        selectedMusicVolume = currentMusicVolume;
+        selectedSFXVolume = currentSFXVolume;
 
         // Update UI (without triggering listeners)
         if (qualityDropdown != null)
@@ -425,17 +745,27 @@ public class UnifiedSettingsManager : MonoBehaviour
             languageDropdown.SetValueWithoutNotify(currentLocaleID);
         if (screenModeDropdown != null)
             screenModeDropdown.SetValueWithoutNotify((int)currentScreenMode);
+        if (resolutionDropdown != null)
+            resolutionDropdown.SetValueWithoutNotify(currentResolutionIndex);
         if (fpsDropdown != null)
             fpsDropdown.SetValueWithoutNotify(currentFPSIndex);
         if (vSyncToggle != null)
             vSyncToggle.SetIsOnWithoutNotify(currentVSyncEnabled);
+        if (masterVolumeSlider != null)
+            masterVolumeSlider.SetValueWithoutNotify(currentMasterVolume);
+        if (musicVolumeSlider != null)
+            musicVolumeSlider.SetValueWithoutNotify(currentMusicVolume);
+        if (sfxVolumeSlider != null)
+            sfxVolumeSlider.SetValueWithoutNotify(currentSFXVolume);
 
         // Reapply saved settings
         QualitySettings.SetQualityLevel(currentQualityLevel, true);
         ChangeLocalePreview(currentLocaleID);
-        ApplyScreenMode(currentScreenMode);
+        ApplyResolutionAndScreenMode(currentResolutionIndex, currentScreenMode);
         UpdateFPSDropdownInteractable(!currentVSyncEnabled);
         ApplyFPSSettings(currentFPSIndex, currentVSyncEnabled);
+        ApplyAudioSettings(currentMasterVolume, currentMusicVolume, currentSFXVolume);
+        UpdateAudioTexts();
 
         hasUnsavedChanges = false;
         UpdateSaveButtonState();
@@ -450,8 +780,12 @@ public class UnifiedSettingsManager : MonoBehaviour
         hasUnsavedChanges = (selectedQualityLevel != currentQualityLevel) ||
                            (selectedLocaleID != currentLocaleID) ||
                            (selectedScreenMode != currentScreenMode) ||
+                           (selectedResolutionIndex != currentResolutionIndex) ||
                            (selectedFPSIndex != currentFPSIndex) ||
-                           (selectedVSyncEnabled != currentVSyncEnabled);
+                           (selectedVSyncEnabled != currentVSyncEnabled) ||
+                           !Mathf.Approximately(selectedMasterVolume, currentMasterVolume) ||
+                           !Mathf.Approximately(selectedMusicVolume, currentMusicVolume) ||
+                           !Mathf.Approximately(selectedSFXVolume, currentSFXVolume);
 
         UpdateSaveButtonState();
     }
@@ -493,8 +827,8 @@ public class UnifiedSettingsManager : MonoBehaviour
             switch (mode)
             {
                 case ScreenMode.Windowed: return "Pencere Modu";
-                case ScreenMode.FullscreenWindowed: return "Tam Ekran (�er�eveli)";
-                case ScreenMode.FullscreenExclusive: return "Tam Ekran (�er�evesiz)";
+                case ScreenMode.FullscreenWindowed: return "Tam Ekran (Çerçeveli)";
+                case ScreenMode.FullscreenExclusive: return "Tam Ekran (Çerçevesiz)";
                 default: return "Bilinmeyen";
             }
         }
@@ -508,6 +842,59 @@ public class UnifiedSettingsManager : MonoBehaviour
                 default: return "Unknown";
             }
         }
+    }
+
+    string GetResolutionDisplayName(Resolution resolution)
+    {
+        string aspectRatio = GetAspectRatio(resolution.width, resolution.height);
+        string qualityLabel = GetResolutionQualityLabel(resolution.height);
+
+        return $"{resolution.width} x {resolution.height} {qualityLabel} ({aspectRatio})";
+    }
+
+    string GetAspectRatio(int width, int height)
+    {
+        int gcd = GCD(width, height);
+        int ratioWidth = width / gcd;
+        int ratioHeight = height / gcd;
+
+        return $"{ratioWidth}:{ratioHeight}";
+    }
+
+    int GCD(int a, int b)
+    {
+        while (b != 0)
+        {
+            int temp = b;
+            b = a % b;
+            a = temp;
+        }
+        return a;
+    }
+
+    string GetResolutionQualityLabel(int height)
+    {
+        if (height >= 2160) return "[4K]";
+        if (height >= 1440) return "[2K]";
+        if (height >= 1080) return "[Full HD]";
+        if (height >= 720) return "[HD]";
+        return "";
+    }
+
+    int GetCurrentResolutionIndex()
+    {
+        Resolution currentRes = Screen.currentResolution;
+
+        for (int i = 0; i < filteredResolutions.Count; i++)
+        {
+            if (filteredResolutions[i].width == currentRes.width &&
+                filteredResolutions[i].height == currentRes.height)
+            {
+                return i;
+            }
+        }
+
+        return filteredResolutions.Count - 1;
     }
 
     #endregion
@@ -529,9 +916,31 @@ public class UnifiedSettingsManager : MonoBehaviour
         return GetScreenModeName(currentScreenMode);
     }
 
+    public string GetCurrentResolutionName()
+    {
+        if (currentResolutionIndex >= 0 && currentResolutionIndex < filteredResolutions.Count)
+            return GetResolutionDisplayName(filteredResolutions[currentResolutionIndex]);
+        return "Unknown";
+    }
+
     public string GetCurrentFPSName()
     {
         return fpsOptions[currentFPSIndex] + " FPS";
+    }
+
+    public float GetMasterVolume()
+    {
+        return currentMasterVolume;
+    }
+
+    public float GetMusicVolume()
+    {
+        return currentMusicVolume;
+    }
+
+    public float GetSFXVolume()
+    {
+        return currentSFXVolume;
     }
 
     #endregion
@@ -541,7 +950,7 @@ public class UnifiedSettingsManager : MonoBehaviour
         if (hasUnsavedChanges)
         {
             ResetToSavedSettings();
-            Debug.Log("Men� kapat�ld�. Kaydedilmemi� de�i�iklikler geri al�nd�.");
+            Debug.Log("Menü kapatıldı. Kaydedilmemiş değişiklikler geri alındı.");
         }
     }
 
@@ -554,10 +963,18 @@ public class UnifiedSettingsManager : MonoBehaviour
             languageDropdown.onValueChanged.RemoveAllListeners();
         if (screenModeDropdown != null)
             screenModeDropdown.onValueChanged.RemoveAllListeners();
+        if (resolutionDropdown != null)
+            resolutionDropdown.onValueChanged.RemoveAllListeners();
         if (fpsDropdown != null)
             fpsDropdown.onValueChanged.RemoveAllListeners();
         if (vSyncToggle != null)
             vSyncToggle.onValueChanged.RemoveAllListeners();
+        if (masterVolumeSlider != null)
+            masterVolumeSlider.onValueChanged.RemoveAllListeners();
+        if (musicVolumeSlider != null)
+            musicVolumeSlider.onValueChanged.RemoveAllListeners();
+        if (sfxVolumeSlider != null)
+            sfxVolumeSlider.onValueChanged.RemoveAllListeners();
         if (saveButton != null)
             saveButton.onClick.RemoveAllListeners();
         if (backButton != null)
