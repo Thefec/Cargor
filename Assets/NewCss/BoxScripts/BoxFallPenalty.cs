@@ -2,23 +2,64 @@ using UnityEngine;
 
 namespace NewCss
 {
+    [RequireComponent(typeof(AudioSource))]
     public class BoxFallPenalty : MonoBehaviour
     {
         [Header("Penalty Settings")]
         [Tooltip("Money deducted when the box hits the ground")]
         public int dropMoneyPenalty = 10;
-        
+
         [Tooltip("Prestige deducted when the box hits the ground")]
         public float dropPrestigePenalty = 0.01f;
+
+        [Header("Sound Settings")]
+        [Tooltip("Sound to play when box hits the ground")]
+        public AudioClip boxDropSound;
+
+        [Tooltip("Volume of the drop sound (0-1)")]
+        [Range(0f, 1f)]
+        public float soundVolume = 1f;
+
+        [Tooltip("Minimum velocity for sound to play")]
+        public float minVelocityForSound = 2f;
+
+        [Tooltip("Use 2D sound instead of 3D spatial sound")]
+        public bool use2DSound = false;
+
+        [Tooltip("Maximum distance for 3D sound (only if use2DSound is false)")]
+        public float maxSoundDistance = 50f;
 
         private bool hasBeenThrown = false;
         private bool penaltyApplied = false;
         private Rigidbody rb;
-        private float throwVelocityThreshold = 1f; // Minimum velocity to consider as "thrown"
+        private AudioSource audioSource;
+        private float throwVelocityThreshold = 1f;
 
         private void Awake()
         {
             rb = GetComponent<Rigidbody>();
+            audioSource = GetComponent<AudioSource>();
+
+            // AudioSource ayarlarýný yap
+            if (audioSource != null)
+            {
+                audioSource.playOnAwake = false;
+                audioSource.volume = soundVolume;
+
+                if (use2DSound)
+                {
+                    // 2D ses - her yerden ayný þekilde duyulur
+                    audioSource.spatialBlend = 0f;
+                }
+                else
+                {
+                    // 3D ses - uzaklýða göre azalýr
+                    audioSource.spatialBlend = 1f;
+                    audioSource.maxDistance = maxSoundDistance;
+                    audioSource.rolloffMode = AudioRolloffMode.Linear;
+                    audioSource.minDistance = 1f;
+                }
+            }
         }
 
         private void Start()
@@ -61,6 +102,13 @@ namespace NewCss
 
             if (IsGroundCollision(collision))
             {
+                // Çarpma hýzýný al
+                float impactVelocity = collision.relativeVelocity.magnitude;
+
+                // Sesi çal
+                PlayDropSound(impactVelocity);
+
+                // Penaltý uygula
                 ApplyPenalty();
             }
         }
@@ -68,12 +116,38 @@ namespace NewCss
         private bool IsGroundCollision(Collision collision)
         {
             GameObject hitObject = collision.gameObject;
-            
+
             bool isGroundDirect = hitObject.CompareTag("Ground");
             bool isGroundRoot = collision.transform.root.CompareTag("Ground");
             bool isGroundLayer = hitObject.layer == LayerMask.NameToLayer("Ground");
-            
+
             return isGroundDirect || isGroundRoot || isGroundLayer;
+        }
+
+        private void PlayDropSound(float impactVelocity)
+        {
+            // Eðer ses dosyasý atanmýþsa ve minimum hýz aþýlmýþsa
+            if (boxDropSound != null && audioSource != null && impactVelocity >= minVelocityForSound)
+            {
+                // Ses ayarlarýný güncelle
+                if (use2DSound)
+                {
+                    // 2D ses için sabit volume
+                    audioSource.volume = soundVolume;
+                }
+                else
+                {
+                    // 3D ses için çarpma hýzýna göre volume (opsiyonel)
+                    float velocityFactor = Mathf.Clamp01(impactVelocity / 10f);
+                    // Minimum 0.5 volume garantisi
+                    audioSource.volume = Mathf.Max(soundVolume * velocityFactor, soundVolume * 0.5f);
+                }
+
+                // Sesi çal
+                audioSource.PlayOneShot(boxDropSound, soundVolume);
+
+                Debug.Log($"Playing drop sound with velocity: {impactVelocity}, volume: {audioSource.volume}");
+            }
         }
 
         private void ApplyPenalty()
@@ -113,8 +187,7 @@ namespace NewCss
         private void OnPenaltyApplied()
         {
             // Override this method or add events here for visual/audio feedback
-            // Example: Play sound effect, show particle effect, etc.
-            // AudioSource.PlayClipAtPoint(penaltySFX, transform.position);
+            // Example: Play additional sound effect, show particle effect, etc.
         }
 
         public void ResetPenalty()
@@ -125,7 +198,15 @@ namespace NewCss
 
         private void ValidateComponents()
         {
-            // Component validation without logging
+            if (audioSource == null)
+            {
+                Debug.LogWarning($"AudioSource component missing on {gameObject.name}");
+            }
+
+            if (boxDropSound == null)
+            {
+                Debug.LogWarning($"Box drop sound not assigned on {gameObject.name}");
+            }
         }
 
         public void TestPenalty()

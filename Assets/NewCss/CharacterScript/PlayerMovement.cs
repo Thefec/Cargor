@@ -19,7 +19,10 @@ namespace NewCss
         public AudioClip[] walkSounds;
         public AudioClip[] runSounds;
         [Range(0f, 1f)]
-        public float footstepVolume = 0.5f;
+        public float footstepVolume = 0.2f;
+
+        private UnifiedSettingsManager settingsManager;
+
 
         private CharacterController controller;
         private Animator animator;
@@ -60,11 +63,31 @@ namespace NewCss
                 audioSource = gameObject.AddComponent<AudioSource>();
             }
 
-            audioSource.spatialBlend = 1f;
+            audioSource.spatialBlend = 0.5f;
             audioSource.rolloffMode = AudioRolloffMode.Linear;
             audioSource.minDistance = 1f;
             audioSource.maxDistance = 15f;
-            audioSource.volume = footstepVolume;
+
+            // ✨ YENİ: Settings Manager'ı bul
+            settingsManager = FindObjectOfType<UnifiedSettingsManager>();
+
+            // ✨ YENİ: Başlangıç volume'ünü ayarla
+            UpdateAudioVolume();
+        }
+
+        void UpdateAudioVolume()
+        {
+            if (audioSource == null) return;
+
+            float finalVolume = footstepVolume;
+
+            // Settings Manager'dan ses seviyelerini al
+            if (settingsManager != null)
+            {
+                finalVolume *= settingsManager.GetSFXVolume() * settingsManager.GetMasterVolume();
+            }
+
+            audioSource.volume = finalVolume;
         }
 
         void Start()
@@ -135,9 +158,11 @@ namespace NewCss
         {
             if (audioSource == null) return;
 
+            // ✨ YENİ: Her adımda volume'ü güncelle
+            UpdateAudioVolume();
+
             AudioClip[] soundArray;
 
-            // Koşma veya yürüme sesini seç
             if (isSprinting && !isInCooldown)
             {
                 soundArray = runSounds != null && runSounds.Length > 0 ? runSounds : walkSounds;
@@ -153,13 +178,11 @@ namespace NewCss
                 return;
             }
 
-            // Rastgele ses seç ve çal
             AudioClip clip = soundArray[Random.Range(0, soundArray.Length)];
             if (clip != null)
             {
-                audioSource.PlayOneShot(clip, footstepVolume);
-
-                // Network üzerinden de çal
+                // ✨ DEĞİŞTİ: Artık audioSource.volume kullanıyor
+                audioSource.PlayOneShot(clip);
                 PlayFootstepServerRpc();
             }
         }
@@ -175,6 +198,9 @@ namespace NewCss
         {
             if (!IsOwner && audioSource != null)
             {
+                // ✨ YENİ: Diğer oyuncular için de volume güncelle
+                UpdateAudioVolume();
+
                 AudioClip[] soundArray = (isSprinting && !isInCooldown) ?
                     (runSounds != null && runSounds.Length > 0 ? runSounds : walkSounds) : walkSounds;
 
@@ -183,7 +209,7 @@ namespace NewCss
                     AudioClip clip = soundArray[Random.Range(0, soundArray.Length)];
                     if (clip != null)
                     {
-                        audioSource.PlayOneShot(clip, footstepVolume);
+                        audioSource.PlayOneShot(clip);
                     }
                 }
             }

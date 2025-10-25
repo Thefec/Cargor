@@ -4188,7 +4188,7 @@ CharacterController:
   m_StepOffset: 0.05
   m_SkinWidth: 0.0001
   m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 0.963, z: 0}
+  m_Center: {x: 0, y: 0.9, z: 0}
 --- !u!114 &5034844466207838409
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4246,7 +4246,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1896606122
+  GlobalObjectIdHash: 1795602851
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -4279,12 +4279,10 @@ MonoBehaviour:
   sprintCooldown: 3
   staminaRegenRate: 1
   walkSounds:
-  - {fileID: 8300000, guid: 65206bb1380dd3f4ebc9fb78414f1193, type: 3}
-  - {fileID: 8300000, guid: 6cd334d86a4b61346b8acca269e35561, type: 3}
+  - {fileID: 8300000, guid: fdc2329d7bdfb7b4b814352e9e08cd82, type: 3}
   runSounds:
-  - {fileID: 8300000, guid: 65206bb1380dd3f4ebc9fb78414f1193, type: 3}
-  - {fileID: 8300000, guid: 6cd334d86a4b61346b8acca269e35561, type: 3}
-  footstepVolume: 1
+  - {fileID: 8300000, guid: fdc2329d7bdfb7b4b814352e9e08cd82, type: 3}
+  footstepVolume: 0.2
 --- !u!114 &7931745989704240134
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4451,7 +4449,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
