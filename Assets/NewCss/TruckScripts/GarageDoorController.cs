@@ -14,6 +14,26 @@ namespace NewCss
         [Header("Referanslar")]
         public Animator doorAnimator;
 
+        // YENİ EKLENDİ: Animasyon kliplerini buraya sürükleyin
+        [Tooltip("Kapının açılma animasyon klibi")]
+        public AnimationClip openAnimation;
+        [Tooltip("Kapının kapanma animasyon klibi")]
+        public AnimationClip closeAnimation;
+
+        [Header("Motor Sesi")]
+        public AudioClip motorSound; // Motor ses dosyası
+        [Range(0f, 1f)]
+        [Tooltip("0 = 2D (Herkes Duyar), 1 = 3D (Yakındakiler Duyar)")]
+        public float spatialBlend = 0.7f;
+        [Range(0f, 100f)]
+        [Tooltip("3D ses için maksimum duyulma mesafesi")]
+        public float maxHearingDistance = 20f;
+        [Range(0f, 1f)]
+        [Tooltip("Motor ses seviyesi")]
+        public float motorVolume = 0.8f;
+
+        private AudioSource motorAudioSource;
+
         [Header("Debug")]
         [SerializeField] private bool isOpen = false;
         [SerializeField] private bool hasOpenedToday = false;
@@ -23,15 +43,18 @@ namespace NewCss
         // Kapı durumları
         public enum DoorState
         {
-            Closed,    // StartIdle state'inde - kapalı
-            Open,      // Open state'inde - açık durumda kalıyor
-            Closing    // Close animasyonu oynatılıyor
+            Closed,     // StartIdle state'inde - kapalı
+            Open,       // Open state'inde - açık durumda kalıyor
+            Opening,    // Açılma animasyonu oynatılıyor
+            Closing     // Close animasyonu oynatılıyor
         }
 
         // Private değişkenler
         private DayCycleManager dayCycleManager;
         private int lastCheckedDay = 0;
-        private float doorAnimationDuration = 2f; // Animasyon süresi (ayarlanabilir)
+
+        // Bu değişken artık dinamik olarak ayarlanacak (varsayılan değer olarak kalabilir)
+        private float doorAnimationDuration = 2f;
         private float animationTimer = 0f;
 
         void Start()
@@ -41,15 +64,23 @@ namespace NewCss
 
             if (dayCycleManager == null)
             {
-
                 return;
             }
 
             if (doorAnimator == null)
             {
-
                 return;
             }
+
+            // GÜNCELLEME: Animasyon kliplerinin atanıp atanmadığını kontrol edelim
+            if (openAnimation == null || closeAnimation == null)
+            {
+                Debug.LogError("GarageDoorController: Lütfen 'Open Animation' ve 'Close Animation' kliplerini Inspector üzerinden atayın!", this);
+                // Varsayılan süreyi (2f) kullanmaya devam edecek
+            }
+
+            // AudioSource component'ini al veya ekle
+            InitializeAudioSource();
 
             // Yeni gün eventine abone ol
             DayCycleManager.OnNewDay += OnNewDay;
@@ -59,8 +90,6 @@ namespace NewCss
 
             // Başlangıçta kapı kapalı durumda
             InitializeDoorState();
-
-
         }
 
         void Update()
@@ -85,7 +114,6 @@ namespace NewCss
             {
                 StartOpenDoor();
                 hasOpenedToday = true;
-
             }
 
             // Kapanma zamanını kontrol et
@@ -93,24 +121,62 @@ namespace NewCss
             {
                 StartCloseDoor();
                 hasClosedToday = true;
-
             }
+        }
+
+        private void InitializeAudioSource()
+        {
+            motorAudioSource = GetComponent<AudioSource>();
+            if (motorAudioSource == null)
+            {
+                motorAudioSource = gameObject.AddComponent<AudioSource>();
+            }
+
+            // AudioSource ayarları
+            motorAudioSource.playOnAwake = false;
+            motorAudioSource.loop = true; // Loop açık - animasyon boyunca çalacak
+            motorAudioSource.spatialBlend = spatialBlend;
+            motorAudioSource.volume = motorVolume;
+            motorAudioSource.minDistance = 1f;
+            motorAudioSource.maxDistance = maxHearingDistance;
+            motorAudioSource.rolloffMode = AudioRolloffMode.Linear;
+            motorAudioSource.clip = motorSound;
         }
 
         private void UpdateAnimationTimer()
         {
-            if (currentDoorState == DoorState.Closing)
+            // Açılma animasyonu kontrolü
+            if (currentDoorState == DoorState.Opening)
             {
                 animationTimer += Time.deltaTime;
 
-                // Sadece kapanma animasyonu için timer - açılma animasyonu bitince Open state'inde kalacak
+                // GÜNCELLEME: Artık 'doorAnimationDuration' doğru süreyi tutacak
+                if (animationTimer >= doorAnimationDuration)
+                {
+                    // Açılma animasyonu bitti
+                    currentDoorState = DoorState.Open;
+                    isOpen = true;
+                    animationTimer = 0f;
+
+                    // Motor sesini durdur
+                    StopMotorSound();
+                }
+            }
+            // Kapanma animasyonu kontrolü
+            else if (currentDoorState == DoorState.Closing)
+            {
+                animationTimer += Time.deltaTime;
+
+                // GÜNCELLEME: Artık 'doorAnimationDuration' doğru süreyi tutacak
                 if (animationTimer >= doorAnimationDuration)
                 {
                     // Kapanma animasyonu bitti, kapalı duruma geç
                     currentDoorState = DoorState.Closed;
                     isOpen = false;
-
                     animationTimer = 0f;
+
+                    // Motor sesini durdur
+                    StopMotorSound();
                 }
             }
         }
@@ -125,6 +191,9 @@ namespace NewCss
             // Animator'ı StartIdle state'ine zorla (eğer gerekirse)
             doorAnimator.Rebind();
             doorAnimator.Update(0f);
+
+            // Sesi durdur (güvenlik için)
+            StopMotorSound();
         }
 
         private float GetCurrentGameTime()
@@ -144,10 +213,22 @@ namespace NewCss
             if (currentDoorState == DoorState.Closed)
             {
                 doorAnimator.SetTrigger("DoOpen");
-                // Animator DoOpen trigger'ı ile Open state'ine geçecek ve orada kalacak
-                currentDoorState = DoorState.Open;
-                isOpen = true;
+                currentDoorState = DoorState.Opening; // Opening state'ine geç
+                animationTimer = 0f;
 
+                // GÜNCELLEME: Animasyon süresini klipten al
+                if (openAnimation != null)
+                {
+                    doorAnimationDuration = openAnimation.length;
+                }
+                else
+                {
+                    doorAnimationDuration = 2f; // Fallback
+                    Debug.LogWarning("Open Animation klibi atanmamış! Varsayılan süre (2s) kullanılıyor.");
+                }
+
+                // Motor sesini başlat (loop olarak çalacak)
+                PlayMotorSound();
             }
         }
 
@@ -159,6 +240,38 @@ namespace NewCss
                 currentDoorState = DoorState.Closing;
                 animationTimer = 0f;
 
+                // GÜNCELLEME: Animasyon süresini klipten al
+                if (closeAnimation != null)
+                {
+                    doorAnimationDuration = closeAnimation.length;
+                }
+                else
+                {
+                    doorAnimationDuration = 2f; // Fallback
+                    Debug.LogWarning("Close Animation klibi atanmamış! Varsayılan süre (2s) kullanılıyor.");
+                }
+
+                // Motor sesini başlat (loop olarak çalacak)
+                PlayMotorSound();
+            }
+        }
+
+        private void PlayMotorSound()
+        {
+            if (motorAudioSource != null && motorSound != null)
+            {
+                if (!motorAudioSource.isPlaying)
+                {
+                    motorAudioSource.Play();
+                }
+            }
+        }
+
+        private void StopMotorSound()
+        {
+            if (motorAudioSource != null && motorAudioSource.isPlaying)
+            {
+                motorAudioSource.Stop();
             }
         }
 
@@ -171,19 +284,20 @@ namespace NewCss
             if (currentDoorState != DoorState.Closed && currentDoorState != DoorState.Closing)
             {
                 ForceCloseDoor();
-
             }
         }
 
         private void OnNewDay()
         {
             ResetDailyFlags();
-
         }
 
         void OnDestroy()
         {
             DayCycleManager.OnNewDay -= OnNewDay;
+
+            // Sesi durdur
+            StopMotorSound();
         }
 
         // Manuel kontrol metodları (test amaçlı)
@@ -203,12 +317,25 @@ namespace NewCss
             {
                 StartCloseDoor();
             }
-            else if (currentDoorState == DoorState.Open)
+            else if (currentDoorState == DoorState.Opening)
             {
                 // Eğer açılma sırasında kapatma komutu gelirse
                 doorAnimator.SetTrigger("DoClose");
                 currentDoorState = DoorState.Closing;
                 animationTimer = 0f;
+
+                // GÜNCELLEME: Manuel kapatmada da süreyi ayarla
+                if (closeAnimation != null)
+                {
+                    doorAnimationDuration = closeAnimation.length;
+                }
+                else
+                {
+                    doorAnimationDuration = 2f; // Fallback
+                    Debug.LogWarning("Close Animation klibi atanmamış! Varsayılan süre (2s) kullanılıyor.");
+                }
+
+                // Ses zaten çalıyor, devam etsin
             }
         }
 
@@ -220,7 +347,8 @@ namespace NewCss
             if (closeTime < 0) closeTime = 0;
             if (closeTime > 24) closeTime = 24;
 
-            if (doorAnimationDuration < 0.1f) doorAnimationDuration = 0.1f;
+            // Bu satırı silebilir veya bırakabilirsiniz, artık çok kritik değil
+            // if (doorAnimationDuration < 0.1f) doorAnimationDuration = 0.1f;
         }
 
         // Public property'ler (diğer scriptler için)

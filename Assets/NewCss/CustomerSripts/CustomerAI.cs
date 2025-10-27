@@ -32,6 +32,11 @@ namespace NewCss
 
         [Header("Interaction Settings")] public float interactionRange = 2f;
 
+        // Ses ayarları
+        [Header("Interaction Sounds")]
+        public AudioClip[] interactionSounds; // Inspector'dan ses dosyalarını ekleyeceksiniz
+        private AudioSource audioSource;
+
         // Her client kendi playerInRange durumunu takip eder
         private NetworkVariable<ulong> playerInRangeClientId = new NetworkVariable<ulong>(ulong.MaxValue);
 
@@ -115,6 +120,16 @@ namespace NewCss
         {
             navAgent = GetComponent<NavMeshAgent>();
             animator = GetComponent<Animator>();
+
+            // AudioSource component'ini al veya ekle
+            audioSource = GetComponent<AudioSource>();
+            if (audioSource == null)
+            {
+                audioSource = gameObject.AddComponent<AudioSource>();
+            }
+            // AudioSource ayarları
+            audioSource.playOnAwake = false;
+            audioSource.spatialBlend = 1f; // 3D ses için
 
             SphereCollider sc = GetComponent<SphereCollider>();
             sc.isTrigger = true;
@@ -407,6 +422,9 @@ namespace NewCss
             if (waitBar != null)
                 waitBar.StartWaitBar(interactionTime);
 
+            // Rastgele ses çal - Server tüm client'lara gönderir
+            PlayRandomInteractionSound();
+
             // Sadece etkileşime giren oyuncuyu kilitle
             if (interactingPlayerId != ulong.MaxValue)
             {
@@ -414,6 +432,45 @@ namespace NewCss
             }
 
             StartCoroutine(InteractionTimer());
+        }
+
+        // Rastgele ses çalma fonksiyonu
+        private void PlayRandomInteractionSound()
+        {
+            if (interactionSounds == null || interactionSounds.Length == 0)
+            {
+                Debug.LogWarning("CustomerAI: No interaction sounds assigned!");
+                return;
+            }
+
+            // Rastgele bir ses seç
+            int randomIndex = Random.Range(0, interactionSounds.Length);
+            AudioClip selectedClip = interactionSounds[randomIndex];
+
+            if (selectedClip != null)
+            {
+                // Server'da ses çal
+                if (audioSource != null)
+                {
+                    audioSource.PlayOneShot(selectedClip);
+                }
+
+                // Tüm client'larda da çal
+                PlaySoundClientRpc(randomIndex);
+            }
+        }
+
+        [ClientRpc]
+        private void PlaySoundClientRpc(int soundIndex)
+        {
+            // Client'larda sesi çal
+            if (!IsServer && interactionSounds != null && soundIndex >= 0 && soundIndex < interactionSounds.Length)
+            {
+                if (audioSource != null && interactionSounds[soundIndex] != null)
+                {
+                    audioSource.PlayOneShot(interactionSounds[soundIndex]);
+                }
+            }
         }
 
         private IEnumerator InteractionTimer()
@@ -564,8 +621,6 @@ namespace NewCss
             }
             return false;
         }
-
-        // OnTriggerEnter/Exit KALDIRILDI - Artık gerek yok
 
         private GameObject PlaceOnDropOffTableAsChild()
         {
