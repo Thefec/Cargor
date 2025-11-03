@@ -178,6 +178,36 @@ MonoBehaviour:
     m_Localized: "Cont\u0131nue"
     m_Metadata:
       m_Items: []
+  - m_Id: 30567298710810624
+    m_Localized: Host Game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30567344864931840
+    m_Localized: Join Game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30567847749398528
+    m_Localized: Start
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30567978871730176
+    m_Localized: Lobby
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30568446771507200
+    m_Localized: 'Select The Map
+
+      (Coming Soon)'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30568844051787776
+    m_Localized: The Office
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30569701396885504
+    m_Localized: Play Online
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

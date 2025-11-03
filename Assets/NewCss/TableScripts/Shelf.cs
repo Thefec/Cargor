@@ -5,22 +5,24 @@ namespace NewCss
 {
     public class NetworkedShelf : NetworkBehaviour
     {
-        [Header("Item Data")] public ItemData redBoxItemData;
+        [Header("Item Data")] 
+        public ItemData redBoxItemData;
         public ItemData blueBoxItemData;
         public ItemData yellowBoxItemData;
 
         [Header("Box Slots (Positions on the shelf)")]
         public Transform redBoxSlot;
-
         public Transform blueBoxSlot;
         public Transform yellowBoxSlot;
 
-        [Header("Respawn Settings")] [SerializeField]
-        private float respawnDelay = 1f; // Respawn gecikmesi
+        [Header("Respawn Settings")] 
+        [SerializeField] private float respawnDelay = 1f;
+        [SerializeField] private bool enableAutoRespawn = true;
 
-        [SerializeField] private bool enableAutoRespawn = true; // Otomatik respawn açık/kapalı
+        // ✨ YENİ: Bu shelf'e item konulmasını engelle
+        [Header("Shelf Behavior")]
+        [SerializeField] private bool allowPlacingItems = false; // FALSE olarak set et
 
-        // Her slot için network object referanslarını tutuyoruz
         private NetworkVariable<ulong> redBoxNetworkId = new NetworkVariable<ulong>(0,
             NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
@@ -30,7 +32,6 @@ namespace NewCss
         private NetworkVariable<ulong> yellowBoxNetworkId = new NetworkVariable<ulong>(0,
             NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-        // Local referanslar (performans için)
         private NetworkObject redBoxObject;
         private NetworkObject blueBoxObject;
         private NetworkObject yellowBoxObject;
@@ -39,13 +40,11 @@ namespace NewCss
         {
             if (IsServer)
             {
-                // Server başladığında tüm slotları kontrol et ve gerekirse spawn et
                 CheckAndSpawnBox(redBoxSlot, redBoxItemData, BoxType.Red);
                 CheckAndSpawnBox(blueBoxSlot, blueBoxItemData, BoxType.Blue);
                 CheckAndSpawnBox(yellowBoxSlot, yellowBoxItemData, BoxType.Yellow);
             }
 
-            // Network variable değişikliklerini dinle
             redBoxNetworkId.OnValueChanged += OnRedBoxChanged;
             blueBoxNetworkId.OnValueChanged += OnBlueBoxChanged;
             yellowBoxNetworkId.OnValueChanged += OnYellowBoxChanged;
@@ -53,7 +52,6 @@ namespace NewCss
 
         public override void OnNetworkDespawn()
         {
-            // Event'leri temizle
             redBoxNetworkId.OnValueChanged -= OnRedBoxChanged;
             blueBoxNetworkId.OnValueChanged -= OnBlueBoxChanged;
             yellowBoxNetworkId.OnValueChanged -= OnYellowBoxChanged;
@@ -62,8 +60,6 @@ namespace NewCss
         private void Update()
         {
             if (!CanPerformNetworkOperations() || !enableAutoRespawn) return;
-
-            // Sadece server'da çalış ve otomatik respawn aktifse
             CheckAndRespawnIfNeeded();
         }
 
@@ -74,12 +70,10 @@ namespace NewCss
                    NetworkManager.Singleton.IsListening;
         }
 
-
         private void CheckAndRespawnIfNeeded()
         {
             if (!CanPerformNetworkOperations()) return;
 
-            // Her slotu kontrol et, eğer boşsa respawn et
             if (!IsSlotOccupied(redBoxSlot, redBoxObject))
             {
                 redBoxObject = null;
@@ -104,15 +98,12 @@ namespace NewCss
 
         private bool IsSlotOccupied(Transform slot, NetworkObject networkObject)
         {
-            // Network object hala geçerli mi kontrol et
             if (networkObject != null && networkObject.IsSpawned)
             {
-                // Obje hala slota yakın mı kontrol et
                 float distance = Vector3.Distance(networkObject.transform.position, slot.position);
-                return distance < 0.5f; // 0.5 unit tolerans
+                return distance < 0.5f;
             }
 
-            // Slot içinde başka bir NetworkWorldItem var mı kontrol et
             Collider[] colliders = Physics.OverlapSphere(slot.position, 0.3f);
             foreach (var collider in colliders)
             {
@@ -196,7 +187,6 @@ namespace NewCss
 
             try
             {
-                // World prefab'ı spawn et
                 GameObject spawnedBox = Instantiate(itemData.worldPrefab, slot.position, slot.rotation);
                 NetworkObject networkObject = spawnedBox.GetComponent<NetworkObject>();
 
@@ -204,7 +194,6 @@ namespace NewCss
                 {
                     networkObject.Spawn();
 
-                    // NetworkWorldItem component'ini ayarla
                     NetworkWorldItem worldItem = spawnedBox.GetComponent<NetworkWorldItem>();
                     if (worldItem != null)
                     {
@@ -212,7 +201,6 @@ namespace NewCss
                         worldItem.EnablePickup();
                     }
 
-                    // Network variable'ı güncelle ve local referansı sakla
                     switch (boxType)
                     {
                         case BoxType.Red:
@@ -229,21 +217,18 @@ namespace NewCss
                             break;
                     }
 
-                    Debug.Log(
-                        $"Spawned {boxType} box at {slot.name} with NetworkObjectId: {networkObject.NetworkObjectId}");
+                    Debug.Log($"Spawned {boxType} box at {slot.name} with NetworkObjectId: {networkObject.NetworkObjectId}");
                 }
             }
             catch (System.Exception ex)
             {
                 Debug.LogWarning($"Failed to spawn {boxType} box: {ex.Message}");
-                // Hatalı objeyi temizle
                 var failedObject = slot.GetComponentInChildren<NetworkObject>();
                 if (failedObject != null)
                     Destroy(failedObject.gameObject);
             }
         }
 
-        // Network variable değişiklik event'leri
         private void OnRedBoxChanged(ulong previousValue, ulong newValue)
         {
             UpdateLocalReference(BoxType.Red, newValue);
@@ -266,7 +251,6 @@ namespace NewCss
                    IsSpawned &&
                    IsServer;
         }
-
 
         private void UpdateLocalReference(BoxType boxType, ulong networkId)
         {
@@ -291,7 +275,6 @@ namespace NewCss
             }
         }
 
-        // Public metodlar - dışarıdan kullanım için
         public void ForceRespawnAll()
         {
             if (!IsServer) return;
@@ -341,7 +324,12 @@ namespace NewCss
             SpawnBoxAtSlot(slot, itemData, boxType);
         }
 
-        // Box türleri için enum
+        // ✨ YENİ: Item koyma izni kontrolü
+        public bool CanPlaceItems()
+        {
+            return allowPlacingItems;
+        }
+
         public enum BoxType
         {
             Red,
@@ -349,7 +337,6 @@ namespace NewCss
             Yellow
         }
 
-        // Gizmo çizimi (editörde slotları görmek için)
         private void OnDrawGizmosSelected()
         {
             if (redBoxSlot != null)
@@ -371,7 +358,6 @@ namespace NewCss
             }
         }
 
-        // Inspector'da gösterilecek bilgiler
         public bool HasRedBox => redBoxObject != null && redBoxObject.IsSpawned;
         public bool HasBlueBox => blueBoxObject != null && blueBoxObject.IsSpawned;
         public bool HasYellowBox => yellowBoxObject != null && yellowBoxObject.IsSpawned;

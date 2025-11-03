@@ -2294,10 +2294,9 @@ MonoBehaviour:
   hideCanvasUntilTimer: 1
   minWaitTime: 8
   maxWaitTime: 16
-  interactionTime: 4
+  interactionTime: 1.25
   interactionRange: 2
   interactionSounds:
-  - {fileID: 0}
   - {fileID: 8300000, guid: 5a517a2892f655140b922bc242fa8d4d, type: 3}
   - {fileID: 8300000, guid: 9471c2af2468203469f3fac7a6c35d68, type: 3}
   - {fileID: 8300000, guid: 4cb243f01663bc54c9e0bb5df914be1c, type: 3}

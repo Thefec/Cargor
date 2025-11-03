@@ -1,8 +1,10 @@
 using Unity.Netcode;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
 using System.Collections;
+using TMPro; // TextMeshPro için
 
 namespace NewCss
 {
@@ -34,14 +36,26 @@ namespace NewCss
         [Tooltip("Hour when customers stop spawning (24-hour format)")]
         public float spawnEndHour = 14f;
 
+        [Header("UI Settings")]
+        [Tooltip("Kalan müþteri sayýsýný gösterecek TMP Text")]
+        public TextMeshProUGUI remainingCustomersText;
+
+        [Header("Product Assignment Settings")]
+        [Tooltip("How many recently used product indices to remember and avoid repeating")]
+        public int recentProductHistorySize = 3;
+
         private List<CustomerAI> customerQueue = new List<CustomerAI>();
 
         // Daily spawn tracking
         private int todaysTotalCustomers;
         private int customersSpawnedToday;
+        private int customersRemainingToday; // YENI: Kalan müþteri sayýsý
         private List<float> scheduledSpawnTimes = new List<float>();
         private int nextScheduledIndex = 0;
         private bool dayInitialized = false;
+
+        // Recent products history (used to avoid giving same product repeatedly)
+        private Queue<int> recentProductIndices = new Queue<int>();
 
         void Start()
         {
@@ -102,11 +116,15 @@ namespace NewCss
             // Bugün toplam kaç müþteri gelecek
             todaysTotalCustomers = baseCustomersPerDay + ((currentDay - 1) * customerIncreasePerDay);
             customersSpawnedToday = 0;
+            customersRemainingToday = todaysTotalCustomers; // YENI: Baþlangýçta tüm müþteriler kalan
             nextScheduledIndex = 0;
             dayInitialized = true;
 
             // Spawn zamanlarýný hesapla
             CalculateSpawnSchedule();
+
+            // UI'ý güncelle
+            UpdateRemainingCustomersUI();
 
             Debug.Log($"Day {currentDay} - Total customers scheduled: {todaysTotalCustomers}");
             Debug.Log($"Spawn times calculated between {spawnStartHour:F1} and {spawnEndHour:F1}");
@@ -297,7 +315,16 @@ namespace NewCss
         public void NotifyCustomerDone(CustomerAI customer)
         {
             if (customerQueue.Remove(customer))
+            {
+                // YENI: Müþteri çýktýðýnda kalan sayýyý azalt ve UI'ý güncelle
+                customersRemainingToday--;
+                UpdateRemainingCustomersUI();
+                UpdateRemainingCustomersClientRpc(customersRemainingToday);
+
                 AdvanceQueue();
+
+                Debug.Log($"Customer left. Remaining today: {customersRemainingToday}");
+            }
         }
 
         private void AdvanceQueue()
@@ -328,6 +355,27 @@ namespace NewCss
         }
         #endregion
 
+        #region UI Management
+        // YENI: Server'da UI'ý güncelle
+        private void UpdateRemainingCustomersUI()
+        {
+            if (remainingCustomersText != null)
+            {
+                remainingCustomersText.text = $"{customersRemainingToday}";
+            }
+        }
+
+        // YENI: Tüm client'larda UI'ý güncelle
+        [ClientRpc]
+        private void UpdateRemainingCustomersClientRpc(int remainingCount)
+        {
+            if (remainingCustomersText != null)
+            {
+                remainingCustomersText.text = $" {remainingCount}";
+            }
+        }
+        #endregion
+
         #region External Interface
         [ServerRpc(RequireOwnership = false)]
         public void RequestCustomerSpawnServerRpc()
@@ -344,6 +392,47 @@ namespace NewCss
 
         public bool CanSpawnCustomers() => IsWithinSpawningHours();
 
+        // YENI: Kalan müþteri sayýsýný döndür
+        public int GetRemainingCustomers() => customersRemainingToday;
+
+        /// <summary>
+        /// Returns a random product index in range [0, productCount). Attempts to avoid indices
+        /// included in the recent-product history. The chosen index will be added to history.
+        /// </summary>
+        public int GetRandomProductIndexExcludingRecent(int productCount)
+        {
+            if (productCount <= 0) return -1;
+            if (productCount == 1) return 0;
+
+            // Build candidate list excluding recent indices
+            List<int> candidates = new List<int>(productCount);
+            for (int i = 0; i < productCount; i++)
+            {
+                if (!recentProductIndices.Contains(i))
+                    candidates.Add(i);
+            }
+
+            int chosen;
+            if (candidates.Count == 0)
+            {
+                // All indices are in recent history -> pick any index
+                chosen = Random.Range(0, productCount);
+            }
+            else
+            {
+                chosen = candidates[Random.Range(0, candidates.Count)];
+            }
+
+            // Add to history queue
+            recentProductIndices.Enqueue(chosen);
+            while (recentProductIndices.Count > Mathf.Max(1, recentProductHistorySize))
+            {
+                recentProductIndices.Dequeue();
+            }
+
+            return chosen;
+        }
+
         public string GetSpawningStatusInfo()
         {
             if (DayCycleManager.Instance == null)
@@ -356,6 +445,7 @@ namespace NewCss
                    $"Current Time: {currentTime:F2}\n" +
                    $"Spawn Window: {spawnStartHour:F1}-{spawnEndHour:F1}\n" +
                    $"Customers Today: {customersSpawnedToday}/{todaysTotalCustomers}\n" +
+                   $"Remaining: {customersRemainingToday}\n" +
                    $"Can Spawn: {canSpawn}";
         }
         #endregion

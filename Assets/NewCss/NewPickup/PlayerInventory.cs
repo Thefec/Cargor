@@ -1,66 +1,113 @@
+using NewCss;
+using System.Collections;
+using System.Collections.Generic;
 using Unity;
 using Unity.Netcode;
 using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
-using NewCss;
+using UnityEngine.Audio;
 
 public class PlayerInventory : NetworkBehaviour
 {
-    [Header("Range Detection Settings")] [SerializeField]
-    private float detectionRange = 3f;
-
+    [Header("Range Detection Settings")]
+    [SerializeField] private float detectionRange = 3f;
     [SerializeField] private float updateInterval = 0.02f;
     [SerializeField] private LayerMask itemLayerMask = -1;
 
-    [Header("Detection Center Settings")] [SerializeField]
-    private Transform detectionCenter; // Manuel olarak atanabilir
+    [Header("Detection Center Settings")]
+    [SerializeField] private Transform detectionCenter;
+    [SerializeField] private Vector3 detectionOffset = Vector3.up * 1f;
+    [SerializeField] private bool useCustomDetectionCenter = false;
 
-    [SerializeField] private Vector3 detectionOffset = Vector3.up * 1f; // Y ekseni offset'i
-    [SerializeField] private bool useCustomDetectionCenter = false; // Inspector'dan kontrol edilebilir
+    [Header("Cone Detection Settings")]
+    [SerializeField] private bool useConeDetection = true;
+    [SerializeField] private float coneAngle = 45f;
+    [SerializeField] private bool ignoreVerticalAngle = true;
 
+    [Header("Item Priority Settings")]
+    [SerializeField] private bool useItemPriority = true;
+    [SerializeField]
+    private string[] priorityLayers = new string[]
+    {
+        "GroundItem",
+        "TableItem",
+        "ShelfItem"
+    };
 
-    [Header("Outline Settings")] [SerializeField]
-    private Color outlineColor = Color.yellow;
-
+    [Header("Outline Settings")]
+    [SerializeField] private Color outlineColor = Color.yellow;
     [SerializeField] private float outlineWidth = 2f;
     [SerializeField] private Outline.Mode outlineMode = Outline.Mode.OutlineAll;
 
-    [Header("References")] [SerializeField]
-    private Transform holdPosition;
+    [Header("Audio Settings")]
+    [SerializeField] private AudioClip pickupSound;
+    [SerializeField] private AudioClip dropSound;
+    [SerializeField] private AudioClip placeOnTableSound;
+    [SerializeField] private AudioClip placeOnShelfSound;
+    [SerializeField] private AudioClip takeFromTableSound;
+    [SerializeField] private AudioClip takeFromShelfSound;
+    [Range(0f, 1f)]
+    [SerializeField] private float inventorySoundVolume = 0.5f;
 
+    private AudioSource audioSource;
+    private UnifiedSettingsManager settingsManager;
+
+    [Header("References")]
+    [SerializeField] private Transform holdPosition;
     [SerializeField] private string holdPositionName = "HoldPosition";
     [SerializeField] private Animator playerAnimator;
 
-    [Header("Drop Settings")] [SerializeField]
-    private Transform dropPosition;
+    [Header("Drop Settings")]
+    [SerializeField] private Transform dropPosition;
+    [SerializeField] private string dropPositionName = "DropPosition";
+    [SerializeField] private Vector3 defaultDropOffset = Vector3.forward * 1.5f;
 
     private static readonly Dictionary<ulong, float> itemPickupLocks = new Dictionary<ulong, float>();
     private static readonly object itemLock = new object();
     private static bool cleanupStarted = false;
-    private const float PICKUP_LOCK_DURATION = 2f; // mevcut sabitiniz zaten vardı
-
-    [SerializeField] private string dropPositionName = "DropPosition";
-    [SerializeField] private Vector3 defaultDropOffset = Vector3.forward * 1.5f;
+    private const float PICKUP_LOCK_DURATION = 2f;
 
     private NetworkVariable<bool> hasItem = new NetworkVariable<bool>(false);
     private NetworkVariable<int> currentItemID = new NetworkVariable<int>(-1);
 
     private NetworkWorldItem targetedItem;
     private NetworkWorldItem previousTargetedItem;
+
+    // ✨ YENİ: Shelf item sistemi
+    private NetworkWorldItem targetedShelfItem;
+    private NetworkWorldItem previousTargetedShelfItem;
+    private List<NetworkWorldItem> availableShelfItems = new List<NetworkWorldItem>();
+    private int currentShelfItemIndex = 0;
+
     private GameObject heldItemVisual;
     private ItemData currentItemData;
     private bool isAnimating = false;
     private bool isProcessingInteraction = false;
 
     private List<NetworkWorldItem> itemsInRange = new List<NetworkWorldItem>();
-
     private PlayerMovement playerMovement;
 
     private Collider[] colliderBuffer = new Collider[30];
     private HashSet<NetworkWorldItem> previousFrameItems = new HashSet<NetworkWorldItem>();
     private Coroutine rangeUpdateCoroutine;
     private float lastUpdateTime;
+
+    void Awake()
+    {
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+
+        audioSource.spatialBlend = 0.5f;
+        audioSource.rolloffMode = AudioRolloffMode.Linear;
+        audioSource.minDistance = 1f;
+        audioSource.maxDistance = 15f;
+        audioSource.playOnAwake = false;
+
+        settingsManager = FindObjectOfType<UnifiedSettingsManager>();
+        UpdateAudioVolume();
+    }
 
     void Start()
     {
@@ -73,7 +120,6 @@ public class PlayerInventory : NetworkBehaviour
             rangeUpdateCoroutine = StartCoroutine(UpdateRangeDetection());
         }
 
-        // Server ise kilit temizleme coroutine'ini SUNUCU üzerine sadece bir kere başlat
         if (IsServer && !cleanupStarted)
         {
             StartCoroutine(CleanupExpiredLocks());
@@ -108,6 +154,7 @@ public class PlayerInventory : NetworkBehaviour
             }
         }
     }
+
     private bool IsItemLocked(ulong itemNetworkId)
     {
         lock (itemLock)
@@ -124,7 +171,6 @@ public class PlayerInventory : NetworkBehaviour
         }
     }
 
-    // 🆕 YENİ METHOD: Item'ı kilitle
     private bool TryLockItem(ulong itemNetworkId)
     {
         lock (itemLock)
@@ -138,7 +184,6 @@ public class PlayerInventory : NetworkBehaviour
                 }
                 else
                 {
-                    // expired, overwrite
                     itemPickupLocks[itemNetworkId] = Time.time;
                     Debug.Log($"Item {itemNetworkId} lock overwritten at {Time.time}");
                     return true;
@@ -153,7 +198,6 @@ public class PlayerInventory : NetworkBehaviour
         }
     }
 
-
     private void OnDestroy()
     {
         if (rangeUpdateCoroutine != null)
@@ -163,7 +207,6 @@ public class PlayerInventory : NetworkBehaviour
 
         ClearAllOutlines();
 
-        // Server ise kilitleri temizle
         if (IsServer)
         {
             itemPickupLocks.Clear();
@@ -179,16 +222,70 @@ public class PlayerInventory : NetworkBehaviour
         }
     }
 
+    private bool IsPositionInCone(Vector3 targetPosition)
+    {
+        if (!useConeDetection) return true;
+
+        Vector3 detectionPos = GetDetectionCenterPosition();
+        Vector3 toTarget = targetPosition - detectionPos;
+
+        if (ignoreVerticalAngle)
+        {
+            toTarget.y = 0;
+            Vector3 forward = transform.forward;
+            forward.y = 0;
+
+            if (toTarget.sqrMagnitude < 0.001f || forward.sqrMagnitude < 0.001f)
+                return false;
+
+            toTarget.Normalize();
+            forward.Normalize();
+
+            float angle = Vector3.Angle(forward, toTarget);
+            return angle <= (coneAngle / 2f);
+        }
+        else
+        {
+            toTarget.Normalize();
+            float angle = Vector3.Angle(transform.forward, toTarget);
+            return angle <= (coneAngle / 2f);
+        }
+    }
+
+    private bool IsItemInCone(NetworkWorldItem item)
+    {
+        if (item == null) return false;
+        return IsPositionInCone(item.transform.position);
+    }
+
+    private float GetItemPriority(NetworkWorldItem item)
+    {
+        if (!useItemPriority || priorityLayers == null || priorityLayers.Length == 0)
+            return 1f;
+
+        string itemLayerName = LayerMask.LayerToName(item.gameObject.layer);
+
+        for (int i = 0; i < priorityLayers.Length; i++)
+        {
+            if (priorityLayers[i] == itemLayerName)
+            {
+                float priority = 100f / Mathf.Pow(2, i);
+                return priority;
+            }
+        }
+
+        return 1f;
+    }
+
     private void UpdateItemsInRange()
     {
         previousFrameItems.Clear();
         previousFrameItems.UnionWith(itemsInRange);
 
-        // YENİ: Detection center pozisyonunu kullan
         Vector3 detectionPos = GetDetectionCenterPosition();
-        
+
         int hitCount = Physics.OverlapSphereNonAlloc(
-            detectionPos, // transform.position yerine detectionPos kullan
+            detectionPos,
             detectionRange,
             colliderBuffer,
             itemLayerMask
@@ -201,11 +298,12 @@ public class PlayerInventory : NetworkBehaviour
             if (colliderBuffer[i] == null) continue;
 
             NetworkWorldItem worldItem = colliderBuffer[i].GetComponent<NetworkWorldItem>();
-            if (worldItem != null && 
-                worldItem.CanBePickedUp && 
+            if (worldItem != null &&
+                worldItem.CanBePickedUp &&
                 worldItem.NetworkObject != null &&
                 worldItem.NetworkObject.IsSpawned &&
-                worldItem.ItemData != null)
+                worldItem.ItemData != null &&
+                IsItemInCone(worldItem))
             {
                 currentFrameItems.Add(worldItem);
 
@@ -218,9 +316,9 @@ public class PlayerInventory : NetworkBehaviour
 
         foreach (NetworkWorldItem item in previousFrameItems)
         {
-            if (item == null || 
-                !item.CanBePickedUp || 
-                item.NetworkObject == null || 
+            if (item == null ||
+                !item.CanBePickedUp ||
+                item.NetworkObject == null ||
                 !item.NetworkObject.IsSpawned ||
                 !currentFrameItems.Contains(item))
             {
@@ -228,16 +326,117 @@ public class PlayerInventory : NetworkBehaviour
             }
         }
     }
+
+    void UpdateAudioVolume()
+    {
+        if (audioSource == null) return;
+
+        float finalVolume = inventorySoundVolume;
+
+        if (settingsManager != null)
+        {
+            finalVolume *= settingsManager.GetSFXVolume() * settingsManager.GetMasterVolume();
+        }
+
+        audioSource.volume = finalVolume;
+    }
+
+    private void PlayPickupSound()
+    {
+        PlayInventorySound(pickupSound);
+    }
+
+    private void PlayDropSound()
+    {
+        PlayInventorySound(dropSound);
+    }
+
+    private void PlayPlaceOnTableSound()
+    {
+        PlayInventorySound(placeOnTableSound != null ? placeOnTableSound : dropSound);
+    }
+
+    private void PlayPlaceOnShelfSound()
+    {
+        PlayInventorySound(placeOnShelfSound != null ? placeOnShelfSound : dropSound);
+    }
+
+    private void PlayTakeFromTableSound()
+    {
+        PlayInventorySound(takeFromTableSound != null ? takeFromTableSound : pickupSound);
+    }
+
+    private void PlayTakeFromShelfSound()
+    {
+        PlayInventorySound(takeFromShelfSound != null ? takeFromShelfSound : pickupSound);
+    }
+
+    private void PlayInventorySound(AudioClip clip)
+    {
+        if (audioSource == null || clip == null) return;
+
+        UpdateAudioVolume();
+        audioSource.PlayOneShot(clip);
+
+        if (IsOwner)
+        {
+            PlayInventorySoundServerRpc(GetClipIndex(clip));
+        }
+    }
+
+    private int GetClipIndex(AudioClip clip)
+    {
+        if (clip == pickupSound) return 0;
+        if (clip == dropSound) return 1;
+        if (clip == placeOnTableSound) return 2;
+        if (clip == placeOnShelfSound) return 3;
+        if (clip == takeFromTableSound) return 4;
+        if (clip == takeFromShelfSound) return 5;
+        return -1;
+    }
+
+    private AudioClip GetClipFromIndex(int index)
+    {
+        return index switch
+        {
+            0 => pickupSound,
+            1 => dropSound,
+            2 => placeOnTableSound,
+            3 => placeOnShelfSound,
+            4 => takeFromTableSound,
+            5 => takeFromShelfSound,
+            _ => null
+        };
+    }
+
+    [ServerRpc]
+    private void PlayInventorySoundServerRpc(int clipIndex)
+    {
+        PlayInventorySoundClientRpc(clipIndex);
+    }
+
+    [ClientRpc]
+    private void PlayInventorySoundClientRpc(int clipIndex)
+    {
+        if (!IsOwner && audioSource != null)
+        {
+            AudioClip clip = GetClipFromIndex(clipIndex);
+            if (clip != null)
+            {
+                UpdateAudioVolume();
+                audioSource.PlayOneShot(clip);
+            }
+        }
+    }
+
     private Vector3 GetDetectionCenterPosition()
     {
         if (useCustomDetectionCenter && detectionCenter != null)
         {
-            // Manuel olarak atanmış detection center kullan
             return detectionCenter.position;
         }
         else
         {
-            // Transform pozisyonu + offset kullan
             return transform.position + detectionOffset;
         }
     }
@@ -250,7 +449,7 @@ public class PlayerInventory : NetworkBehaviour
             item.CanBePickedUp &&
             item.NetworkObject != null &&
             item.NetworkObject.IsSpawned &&
-            item.ItemData != null && // ÇÖZÜM: ItemData kontrolü ekle
+            item.ItemData != null &&
             !itemsInRange.Contains(item))
         {
             Debug.Log($"Item entered range: {item.ItemData.itemName}");
@@ -283,27 +482,40 @@ public class PlayerInventory : NetworkBehaviour
 
         if (itemsInRange.Count > 0)
         {
-            NetworkWorldItem closestItem = null;
-            float closestDistance = float.MaxValue;
-            
-            // YENİ: Detection center pozisyonunu mesafe hesaplamasında da kullan
             Vector3 detectionPos = GetDetectionCenterPosition();
+            NetworkWorldItem bestItem = null;
+            float bestScore = float.MinValue;
 
             foreach (NetworkWorldItem item in itemsInRange)
             {
-                if (item != null && item.CanBePickedUp && item.NetworkObject != null && item.NetworkObject.IsSpawned)
+                if (item == null || !item.CanBePickedUp || item.NetworkObject == null || !item.NetworkObject.IsSpawned)
+                    continue;
+
+                if (!IsItemInCone(item))
+                    continue;
+
+                Vector3 itemPos = item.transform.position;
+                Vector3 playerPos = detectionPos;
+
+                if (ignoreVerticalAngle)
                 {
-                    float sqrDistance = Vector3.SqrMagnitude(item.transform.position - detectionPos);
-                    if (sqrDistance < closestDistance)
-                    {
-                        closestDistance = sqrDistance;
-                        closestItem = item;
-                    }
+                    itemPos.y = playerPos.y;
+                }
+
+                float distance = Vector3.Distance(itemPos, playerPos);
+                float priority = GetItemPriority(item);
+                float distanceScore = 1f / (distance + 0.1f);
+                float finalScore = (priority * 100f) + distanceScore;
+
+                if (finalScore > bestScore)
+                {
+                    bestScore = finalScore;
+                    bestItem = item;
                 }
             }
 
             previousTargetedItem = targetedItem;
-            targetedItem = closestItem;
+            targetedItem = bestItem;
 
             if (targetedItem != null)
             {
@@ -315,13 +527,170 @@ public class PlayerInventory : NetworkBehaviour
             previousTargetedItem = targetedItem;
             targetedItem = null;
         }
+    }
 
-        UpdateUI();
+    // ✨ YENİ: Shelf itemları güncelle ve mouse tekerleği ile seç
+    // ✨ YENİ: Shelf itemları güncelle ve mouse tekerleği ile seç
+    // ✨ YENİ: Shelf itemları güncelle ve mouse tekerleği ile seç (KONİ KONTROLÜ KALDIRILDI)
+    private void UpdateTargetedShelfItem()
+    {
+        // Önceki outline'ları temizle
+        if (previousTargetedShelfItem != null)
+        {
+            RemoveOutlineFromItem(previousTargetedShelfItem);
+        }
+
+        // Shelf kontrolü
+        ShelfState nearbyShelf = GetNearbyShelf();
+        if (nearbyShelf == null || !nearbyShelf.HasItem() || hasItem.Value)
+        {
+            // Temizlik yap
+            if (targetedShelfItem != null)
+            {
+                RemoveOutlineFromItem(targetedShelfItem);
+            }
+
+            targetedShelfItem = null;
+            previousTargetedShelfItem = null;
+
+            foreach (NetworkWorldItem item in availableShelfItems)
+            {
+                if (item != null)
+                {
+                    RemoveOutlineFromItem(item);
+                }
+            }
+            availableShelfItems.Clear();
+            currentShelfItemIndex = 0;
+            return;
+        }
+
+        // Raftaki tüm itemları al (KONİ FİLTRESİ YOK!)
+        NetworkWorldItem[] shelfItems = nearbyShelf.GetAllShelfItems();
+        if (shelfItems == null || shelfItems.Length == 0)
+        {
+            // Temizlik yap
+            if (targetedShelfItem != null)
+            {
+                RemoveOutlineFromItem(targetedShelfItem);
+            }
+
+            targetedShelfItem = null;
+            previousTargetedShelfItem = null;
+            availableShelfItems.Clear();
+            currentShelfItemIndex = 0;
+            return;
+        }
+
+        // Önceki listedeki itemların outline'larını temizle
+        foreach (NetworkWorldItem item in availableShelfItems)
+        {
+            if (item != null && !System.Array.Exists(shelfItems, x => x == item))
+            {
+                RemoveOutlineFromItem(item);
+            }
+        }
+
+        // Listeyi güncelle - ARTIK TÜM SHELF ITEMLARI (KONİ KONTROLÜ YOK)
+        availableShelfItems.Clear();
+
+        foreach (NetworkWorldItem item in shelfItems)
+        {
+            if (item == null || item.NetworkObject == null || !item.NetworkObject.IsSpawned)
+                continue;
+
+            // ✅ KONİ KONTROLÜ KALDIRILDI - Tüm itemlar ekleniyor
+            availableShelfItems.Add(item);
+        }
+
+        // Hiç item yoksa çık
+        if (availableShelfItems.Count == 0)
+        {
+            if (targetedShelfItem != null)
+            {
+                RemoveOutlineFromItem(targetedShelfItem);
+            }
+
+            targetedShelfItem = null;
+            previousTargetedShelfItem = null;
+            currentShelfItemIndex = 0;
+            return;
+        }
+
+        // Index sınırı kontrolü
+        if (currentShelfItemIndex >= availableShelfItems.Count)
+        {
+            currentShelfItemIndex = 0;
+        }
+        else if (currentShelfItemIndex < 0)
+        {
+            currentShelfItemIndex = availableShelfItems.Count - 1;
+        }
+
+        // Seçili item'ı ayarla
+        previousTargetedShelfItem = targetedShelfItem;
+        targetedShelfItem = availableShelfItems[currentShelfItemIndex];
+
+        // Outline ekle
+        if (targetedShelfItem != null)
+        {
+            AddOutlineToItem(targetedShelfItem);
+            Debug.Log($"✅ Targeted shelf item [{currentShelfItemIndex + 1}/{availableShelfItems.Count}]: {targetedShelfItem.ItemData?.itemName}");
+        }
+    }
+
+    // ✨ YENİ: Mouse tekerleği ile item seçimi
+    // ✨ YENİ: Mouse tekerleği ile item seçimi
+    // ✨ YENİ: Mouse tekerleği ile item seçimi
+    private void HandleMouseWheel()
+    {
+        if (availableShelfItems.Count == 0) return; // Item yoksa çık
+
+        float scroll = Input.GetAxis("Mouse ScrollWheel");
+
+        if (Mathf.Abs(scroll) > 0.01f) // Minimum eşik değeri
+        {
+            // Önceki outline'ı temizle
+            if (targetedShelfItem != null)
+            {
+                RemoveOutlineFromItem(targetedShelfItem);
+            }
+
+            if (scroll > 0f) // Yukarı kaydır
+            {
+                currentShelfItemIndex++;
+                if (currentShelfItemIndex >= availableShelfItems.Count)
+                {
+                    currentShelfItemIndex = 0; // Başa dön
+                }
+                Debug.Log($"🔼 Scrolled UP - Index: {currentShelfItemIndex}/{availableShelfItems.Count}");
+            }
+            else if (scroll < 0f) // Aşağı kaydır
+            {
+                currentShelfItemIndex--;
+                if (currentShelfItemIndex < 0)
+                {
+                    currentShelfItemIndex = availableShelfItems.Count - 1; // Sona dön
+                }
+                Debug.Log($"🔽 Scrolled DOWN - Index: {currentShelfItemIndex}/{availableShelfItems.Count}");
+            }
+
+            // Yeni item'a outline ekle
+            if (currentShelfItemIndex >= 0 && currentShelfItemIndex < availableShelfItems.Count)
+            {
+                targetedShelfItem = availableShelfItems[currentShelfItemIndex];
+                if (targetedShelfItem != null)
+                {
+                    AddOutlineToItem(targetedShelfItem);
+                    Debug.Log($"✅ Selected item: {targetedShelfItem.ItemData?.itemName}");
+                }
+            }
+        }
     }
 
     private void AddOutlineToItem(NetworkWorldItem item)
     {
-        if (item == null || !item.CanBePickedUp || item.NetworkObject == null || !item.NetworkObject.IsSpawned) return;
+        if (item == null || item.NetworkObject == null || !item.NetworkObject.IsSpawned) return;
 
         Outline outline = item.GetComponent<Outline>();
         if (outline == null)
@@ -360,15 +729,18 @@ public class PlayerInventory : NetworkBehaviour
         {
             RemoveOutlineFromItem(targetedItem);
         }
-    }
 
-    private void UpdateUI()
-    {
-        if (targetedItem != null)
+        if (targetedShelfItem != null)
         {
+            RemoveOutlineFromItem(targetedShelfItem);
         }
-        else
+
+        foreach (NetworkWorldItem item in availableShelfItems)
         {
+            if (item != null)
+            {
+                RemoveOutlineFromItem(item);
+            }
         }
     }
 
@@ -376,19 +748,62 @@ public class PlayerInventory : NetworkBehaviour
     {
         if (!IsOwner) return;
 
+        // ✅ Shelf sistem kontrolü - sadece rafın range'indeyken çalışsın (KONİ YOK)
+        ShelfState nearbyShelf = GetNearbyShelf();
+
+        if (nearbyShelf != null && nearbyShelf.HasItem() && !hasItem.Value)
+        {
+            // Shelf itemları güncelle (İLK KEZ)
+            if (availableShelfItems.Count == 0)
+            {
+                UpdateTargetedShelfItem();
+            }
+
+            // Mouse tekerleği kontrolü
+            HandleMouseWheel();
+        }
+        else
+        {
+            // Raftan uzaklaşınca veya item aldığımızda outline'ları temizle
+            if (targetedShelfItem != null)
+            {
+                RemoveOutlineFromItem(targetedShelfItem);
+                targetedShelfItem = null;
+            }
+
+            if (previousTargetedShelfItem != null)
+            {
+                RemoveOutlineFromItem(previousTargetedShelfItem);
+                previousTargetedShelfItem = null;
+            }
+
+            // Listeyi temizle
+            foreach (NetworkWorldItem item in availableShelfItems)
+            {
+                if (item != null)
+                {
+                    RemoveOutlineFromItem(item);
+                }
+            }
+            availableShelfItems.Clear();
+            currentShelfItemIndex = 0;
+        }
+
         HandleInput();
     }
 
+
+
+
     private Table GetNearbyTable()
     {
-        // YENİ: Detection center pozisyonunu kullan
         Vector3 detectionPos = GetDetectionCenterPosition();
         Collider[] colliders = Physics.OverlapSphere(detectionPos, detectionRange);
-        
+
         foreach (var collider in colliders)
         {
             Table table = collider.GetComponent<Table>();
-            if (table != null)
+            if (table != null && IsPositionInCone(table.transform.position))
             {
                 return table;
             }
@@ -396,17 +811,15 @@ public class PlayerInventory : NetworkBehaviour
         return null;
     }
 
-    // Yeni method: Yakındaki shelf'i bul
     private ShelfState GetNearbyShelf()
     {
-        // YENİ: Detection center pozisyonunu kullan
         Vector3 detectionPos = GetDetectionCenterPosition();
         Collider[] colliders = Physics.OverlapSphere(detectionPos, detectionRange);
-        
+
         foreach (var collider in colliders)
         {
             ShelfState shelf = collider.GetComponent<ShelfState>();
-            if (shelf != null)
+            if (shelf != null && IsPositionInCone(shelf.transform.position))
             {
                 return shelf;
             }
@@ -414,12 +827,26 @@ public class PlayerInventory : NetworkBehaviour
         return null;
     }
 
-    // Yeni method: Box tipini kontrol et
+    private NetworkedShelf GetNearbyNetworkedShelf()
+    {
+        Vector3 detectionPos = GetDetectionCenterPosition();
+        Collider[] colliders = Physics.OverlapSphere(detectionPos, detectionRange);
+
+        foreach (var collider in colliders)
+        {
+            NetworkedShelf networkedShelf = collider.GetComponent<NetworkedShelf>();
+            if (networkedShelf != null && IsPositionInCone(networkedShelf.transform.position))
+            {
+                return networkedShelf;
+            }
+        }
+        return null;
+    }
+
     private bool CanPlaceBoxOnShelf(ShelfState shelf)
     {
         if (currentItemData == null) return false;
 
-        // Önce held item visual'dan kontrol et
         if (heldItemVisual != null)
         {
             BoxInfo boxInfo = heldItemVisual.GetComponent<BoxInfo>();
@@ -430,7 +857,6 @@ public class PlayerInventory : NetworkBehaviour
             }
         }
 
-        // Visual yoksa item data'nın prefab'ından kontrol et
         if (currentItemData.visualPrefab != null)
         {
             BoxInfo boxInfo = currentItemData.visualPrefab.GetComponent<BoxInfo>();
@@ -441,7 +867,6 @@ public class PlayerInventory : NetworkBehaviour
             }
         }
 
-        // World prefab'dan da kontrol et
         if (currentItemData.worldPrefab != null)
         {
             BoxInfo boxInfo = currentItemData.worldPrefab.GetComponent<BoxInfo>();
@@ -588,51 +1013,75 @@ public class PlayerInventory : NetworkBehaviour
 
         if (Input.GetKeyDown(KeyCode.E))
         {
-            Debug.Log(
-                $"E pressed. HasItem: {hasItem.Value}, TargetedItem: {(targetedItem != null ? targetedItem.name : "null")}");
+            Debug.Log($"E pressed. HasItem: {hasItem.Value}, TargetedItem: {(targetedItem != null ? targetedItem.name : "null")}, TargetedShelfItem: {(targetedShelfItem != null ? targetedShelfItem.name : "null")}");
 
-            // Önce shelf'den alma kontrolü yap
             if (!hasItem.Value)
             {
-                ShelfState nearbyShelf = GetNearbyShelf();
-                if (nearbyShelf != null && nearbyShelf.HasItem())
+                // ✨ ÖNCELİK 1: Mouse tekerleği ile seçilen shelf item
+                if (targetedShelfItem != null && targetedShelfItem.NetworkObject != null)
                 {
+                    ShelfState nearbyShelf = GetNearbyShelf();
+                    if (nearbyShelf != null)
+                    {
+                        isProcessingInteraction = true;
+                        RequestTakeFromShelfServerRpc(targetedShelfItem.NetworkObject.NetworkObjectId);
+                        PlayTakeFromShelfSound();
+                        return;
+                    }
+                }
+
+                // ÖNCELİK 2: Yerden item alma
+                if (targetedItem != null)
+                {
+                    Debug.Log($"Attempting to pickup targeted item: {targetedItem.name}");
                     isProcessingInteraction = true;
-                    RequestTakeFromShelfServerRpc();
+                    RequestPickupServerRpc(targetedItem.NetworkObjectId);
+                    PlayPickupSound();
                     return;
                 }
             }
 
-            // YENİ ÖNCELIK SIRASI: Önce targeted item kontrolü yap
-            if (!hasItem.Value && targetedItem != null)
-            {
-                Debug.Log($"Attempting to pickup targeted item: {targetedItem.name}");
-                isProcessingInteraction = true;
-                RequestPickupServerRpc(targetedItem.NetworkObjectId);
-                return; // Burada return ekliyoruz ki table kontrolüne geçmesin
-            }
-
-            // Table kontrolü - sadece targeted item yoksa
+            // Masa etkileşimi
             Table nearbyTable = GetNearbyTable();
             if (nearbyTable != null)
             {
                 isProcessingInteraction = true;
+
+                if (hasItem.Value)
+                {
+                    PlayPlaceOnTableSound();
+                }
+                else
+                {
+                    PlayTakeFromTableSound();
+                }
+
                 nearbyTable.InteractWithTable(this);
                 StartCoroutine(ResetInteractionFlag());
+                return;
             }
-            else
-            {
-                Debug.Log("No valid interaction target found");
-            }
+
+            Debug.Log("No valid interaction target found");
         }
 
         if (Input.GetKeyDown(KeyCode.F))
         {
             if (hasItem.Value && !isAnimating)
             {
-                // Debug için shelf kontrolü
                 ShelfState nearbyShelf = GetNearbyShelf();
+                NetworkedShelf networkedShelf = GetNearbyNetworkedShelf();
+
                 Debug.Log($"F pressed - Nearby shelf: {(nearbyShelf != null ? "Found" : "Not found")}");
+                Debug.Log($"F pressed - Nearby networked shelf: {(networkedShelf != null ? "Found" : "Not found")}");
+
+                if (networkedShelf != null && !networkedShelf.CanPlaceItems())
+                {
+                    Debug.Log("Cannot place items on NetworkedShelf - doing normal drop");
+                    isProcessingInteraction = true;
+                    RequestDropServerRpc();
+                    PlayDropSound();
+                    return;
+                }
 
                 if (nearbyShelf != null)
                 {
@@ -642,24 +1091,24 @@ public class PlayerInventory : NetworkBehaviour
                     if (canPlace)
                     {
                         Debug.Log("Attempting to place on shelf...");
-                        // Rafa yerleştir
                         isProcessingInteraction = true;
                         RequestPlaceOnShelfServerRpc();
+                        PlayPlaceOnShelfSound();
                     }
                     else
                     {
                         Debug.Log("Cannot place box - doing normal drop");
-                        // Normal drop
                         isProcessingInteraction = true;
                         RequestDropServerRpc();
+                        PlayDropSound();
                     }
                 }
                 else
                 {
                     Debug.Log("No shelf nearby - doing normal drop");
-                    // Normal drop
                     isProcessingInteraction = true;
                     RequestDropServerRpc();
+                    PlayDropSound();
                 }
             }
         }
@@ -671,18 +1120,19 @@ public class PlayerInventory : NetworkBehaviour
                 Vector3 throwDirection = (transform.forward + Vector3.up * 0.3f).normalized;
                 isProcessingInteraction = true;
                 RequestThrowServerRpc(throwDirection);
+                PlayDropSound();
             }
         }
     }
 
-    // Yeni ServerRpc: Raftan alma
+    // ✨ YENİ: NetworkObjectId ile shelf'ten al
+    // ✨ YENİ: NetworkObjectId ile shelf'ten al
     [ServerRpc]
-    private void RequestTakeFromShelfServerRpc(ServerRpcParams rpcParams = default)
+    private void RequestTakeFromShelfServerRpc(ulong itemNetworkId, ServerRpcParams rpcParams = default)
     {
-        // Gerçek gönderen client ID'yi al
         ulong requesterClientId = rpcParams.Receive.SenderClientId;
 
-        Debug.Log($"RequestTakeFromShelfServerRpc called by client {requesterClientId}");
+        Debug.Log($"RequestTakeFromShelfServerRpc called by client {requesterClientId} for item {itemNetworkId}");
 
         if (hasItem.Value)
         {
@@ -700,9 +1150,8 @@ public class PlayerInventory : NetworkBehaviour
 
         try
         {
-            // İstek yapan client'ın ID'sini gönder
-            Debug.Log($"Requesting item from shelf for client {requesterClientId}");
-            nearbyShelf.TakeItemFromShelfServerRpc(requesterClientId, rpcParams);
+            Debug.Log($"Requesting item {itemNetworkId} from shelf for client {requesterClientId}");
+            nearbyShelf.TakeItemFromShelfServerRpc(requesterClientId, itemNetworkId, rpcParams);
         }
         catch (System.Exception e)
         {
@@ -714,7 +1163,6 @@ public class PlayerInventory : NetworkBehaviour
         }
     }
 
-    // Yeni ServerRpc: Rafa yerleştirme
     [ServerRpc]
     private void RequestPlaceOnShelfServerRpc()
     {
@@ -747,11 +1195,10 @@ public class PlayerInventory : NetworkBehaviour
             return;
         }
 
-        // World item spawn et
         GameObject worldItemPrefab = GetWorldItemPrefab(currentItemData);
         if (worldItemPrefab != null)
         {
-            Vector3 spawnPos = transform.position + Vector3.up * 0.5f; // Geçici pozisyon
+            Vector3 spawnPos = transform.position + Vector3.up * 0.5f;
             GameObject spawnedItem = Instantiate(worldItemPrefab, spawnPos, Quaternion.identity);
             NetworkObject networkObject = spawnedItem.GetComponent<NetworkObject>();
 
@@ -764,7 +1211,6 @@ public class PlayerInventory : NetworkBehaviour
                 {
                     worldItem.SetItemData(currentItemData);
 
-                    // BoxInfo'yu koru
                     BoxInfo worldBoxInfo = spawnedItem.GetComponent<BoxInfo>();
                     if (worldBoxInfo != null && heldItemVisual != null)
                     {
@@ -776,14 +1222,12 @@ public class PlayerInventory : NetworkBehaviour
                         }
                     }
 
-                    worldItem.DisablePickup(); // Rafta olan itemlar alınamaz
+                    worldItem.DisablePickup();
                 }
 
-                // Shelf'e yerleştir - doğru parametreyi gönder
                 Debug.Log("Calling PlaceItemOnShelfServerRpc...");
                 nearbyShelf.PlaceItemOnShelfServerRpc(new NetworkObjectReference(networkObject));
 
-                // Player'dan item'ı kaldır
                 hasItem.Value = false;
                 currentItemID.Value = -1;
 
@@ -813,7 +1257,6 @@ public class PlayerInventory : NetworkBehaviour
     {
         Debug.Log($"RequestPickupServerRpc called for item: {itemNetworkId}");
 
-        // 🔒 ADIM 1: Item zaten kilitli mi kontrol et
         if (IsItemLocked(itemNetworkId))
         {
             Debug.LogWarning($"Item {itemNetworkId} is locked! Cannot pickup.");
@@ -821,7 +1264,6 @@ public class PlayerInventory : NetworkBehaviour
             return;
         }
 
-        // 🔒 ADIM 2: NetworkObject var mı kontrol et
         if (!NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(itemNetworkId, out NetworkObject networkObject))
         {
             Debug.LogError($"NetworkObject not found for ID: {itemNetworkId}");
@@ -829,7 +1271,6 @@ public class PlayerInventory : NetworkBehaviour
             return;
         }
 
-        // 🔒 ADIM 3: Hala spawn durumda mı kontrol et
         if (networkObject == null || !networkObject.IsSpawned)
         {
             Debug.LogWarning($"Item {itemNetworkId} is already despawned!");
@@ -839,7 +1280,6 @@ public class PlayerInventory : NetworkBehaviour
 
         NetworkWorldItem worldItem = networkObject.GetComponent<NetworkWorldItem>();
 
-        // 🔒 ADIM 4: WorldItem ve pickup durumu kontrol et
         if (worldItem == null || !worldItem.CanBePickedUp || hasItem.Value)
         {
             Debug.LogWarning($"Cannot pickup: WorldItem={worldItem != null}, CanPickup={worldItem?.CanBePickedUp}, HasItem={hasItem.Value}");
@@ -847,7 +1287,6 @@ public class PlayerInventory : NetworkBehaviour
             return;
         }
 
-        // 🔒 ADIM 5: Item'ı KİLİTLE - Bu noktadan sonra başka kimse alamaz
         if (!TryLockItem(itemNetworkId))
         {
             Debug.LogWarning($"Failed to lock item {itemNetworkId}");
@@ -855,29 +1294,23 @@ public class PlayerInventory : NetworkBehaviour
             return;
         }
 
-        // ℹ️ NOT: WorldItem.CanBePickedUp read-only olduğu için sadece dictionary ile kilitleme yapıyoruz
         Debug.Log($"✅ Item {itemNetworkId} locked for client {OwnerClientId}");
 
-        // 🔒 ADIM 7: ItemData kontrolü
         ItemData itemData = worldItem.ItemData;
         if (itemData == null)
         {
             Debug.LogError("ItemData is null!");
-            // Kilit açma (hata durumunda) - EnablePickup kullan
             itemPickupLocks.Remove(itemNetworkId);
             worldItem.EnablePickup();
             ResetProcessingInteractionClientRpc();
             return;
         }
 
-        // ✅ ADIM 8: Item'i oyuncuya ver
         hasItem.Value = true;
         currentItemID.Value = GetItemID(itemData);
 
-        // ✅ ADIM 9: Client'lara bildir
         OnItemPickedUpClientRpc(itemNetworkId);
 
-        // ✅ ADIM 10: Despawn işlemi
         StartCoroutine(DelayedDespawnWithUnlock(worldItem, itemData, itemNetworkId));
 
         Debug.Log($"✅ Item picked up successfully: {itemData.itemName}");
@@ -895,23 +1328,10 @@ public class PlayerInventory : NetworkBehaviour
             Debug.Log($"Item {itemNetworkId} despawned");
         }
 
-        // Despawn sonrası kilidi kaldır
         if (itemPickupLocks.ContainsKey(itemNetworkId))
         {
             itemPickupLocks.Remove(itemNetworkId);
             Debug.Log($"Lock removed for item {itemNetworkId} after despawn");
-        }
-
-        StartPickupAnimationClientRpc();
-    }
-
-    private IEnumerator DelayedDespawn(NetworkWorldItem worldItem, ItemData itemData)
-    {
-        yield return new WaitForSeconds(0.1f);
-
-        if (worldItem != null && worldItem.NetworkObject != null && worldItem.NetworkObject.IsSpawned)
-        {
-            worldItem.NetworkObject.Despawn();
         }
 
         StartPickupAnimationClientRpc();
@@ -992,7 +1412,7 @@ public class PlayerInventory : NetworkBehaviour
             var worldItem = networkObject.GetComponent<NetworkWorldItem>();
             if (worldItem != null)
             {
-                worldItem.DisablePickup(); // diğer client'ların CanBePickedUp kontrolünü engelle
+                worldItem.DisablePickup();
             }
         }
     }
@@ -1123,6 +1543,19 @@ public class PlayerInventory : NetworkBehaviour
         currentItemID.OnValueChanged -= OnCurrentItemChanged;
 
         ClearAllOutlines();
+
+        // ✨ Shelf item outline temizleme
+        if (targetedShelfItem != null)
+        {
+            RemoveOutlineFromItem(targetedShelfItem);
+            targetedShelfItem = null;
+        }
+
+        if (previousTargetedShelfItem != null)
+        {
+            RemoveOutlineFromItem(previousTargetedShelfItem);
+            previousTargetedShelfItem = null;
+        }
     }
 
     private void OnCurrentItemChanged(int previousValue, int newValue)
@@ -1239,7 +1672,6 @@ public class PlayerInventory : NetworkBehaviour
                 heldItemVisual.transform.localPosition = Vector3.zero;
                 heldItemVisual.transform.localRotation = Quaternion.identity;
 
-                // BoxInfo durumunu koru
                 PreserveBoxInfo();
 
                 DisablePhysicsComponents(heldItemVisual);
@@ -1249,7 +1681,6 @@ public class PlayerInventory : NetworkBehaviour
         }
     }
 
-    // Yeni method: BoxInfo durumunu koruma
     private void PreserveBoxInfo()
     {
         if (heldItemVisual == null) return;
@@ -1257,10 +1688,6 @@ public class PlayerInventory : NetworkBehaviour
         BoxInfo heldBoxInfo = heldItemVisual.GetComponent<BoxInfo>();
         if (heldBoxInfo != null)
         {
-            // Eğer bu item daha önce rafa konmuşsa, muhtemelen dolu bir box'tı
-            // ItemData'dan veya başka bir kaynaktan bu bilgiyi almaya çalış
-
-            // Geçici çözüm: Eğer item name'inde "Full" geçiyorsa dolu kabul et
             if (currentItemData.itemName.ToLower().Contains("full") ||
                 currentItemData.itemName.ToLower().Contains("dolu"))
             {
@@ -1269,7 +1696,6 @@ public class PlayerInventory : NetworkBehaviour
             }
             else
             {
-                // Varsayılan olarak prefab'daki değeri koru
                 BoxInfo originalBoxInfo = currentItemData.visualPrefab.GetComponent<BoxInfo>();
                 if (originalBoxInfo != null)
                 {
@@ -1358,10 +1784,8 @@ public class PlayerInventory : NetworkBehaviour
                     {
                         worldItem.SetItemData(currentItemData);
 
-                        // BoxInfo durumunu koru
                         PreserveBoxInfoOnWorldItem(worldItem.gameObject);
 
-                        // ÇÖZÜM: Pickup'ı delay ile etkinleştir
                         StartCoroutine(DelayedEnablePickup(worldItem));
 
                         if (force != Vector3.zero)
@@ -1374,10 +1798,8 @@ public class PlayerInventory : NetworkBehaviour
         }
     }
 
-    // 2. YENİ METHOD: Delayed pickup enable
     private IEnumerator DelayedEnablePickup(NetworkWorldItem worldItem)
     {
-        // İtem spawn olduktan sonra kısa bir süre bekle
         yield return new WaitForSeconds(0.2f);
 
         if (worldItem != null && worldItem.NetworkObject != null && worldItem.NetworkObject.IsSpawned)
@@ -1387,7 +1809,6 @@ public class PlayerInventory : NetworkBehaviour
         }
     }
 
-// 3. YENİ METHOD: World item'da box info'yu koruma
     private void PreserveBoxInfoOnWorldItem(GameObject worldItem)
     {
         if (heldItemVisual == null) return;
@@ -1422,6 +1843,7 @@ public class PlayerInventory : NetworkBehaviour
 
         return null;
     }
+
     [ServerRpc(RequireOwnership = false)]
     public void SetInventoryStateServerRpc(bool hasItemValue, int itemID)
     {
@@ -1433,12 +1855,10 @@ public class PlayerInventory : NetworkBehaviour
             playerMovement.SetCarrying(hasItemValue);
         }
 
-        // Eğer item alındıysa pickup animasyonunu başlat
         if (hasItemValue)
         {
             StartPickupAnimationClientRpc();
         }
-        // Eğer item bırakıldıysa visual'ı temizle ve drop animasyonunu başlat
         else
         {
             ClearHeldItemVisualClientRpc();
@@ -1448,23 +1868,20 @@ public class PlayerInventory : NetworkBehaviour
         Debug.Log($"Inventory state set: hasItem={hasItemValue}, itemID={itemID}, starting animation: {(hasItemValue ? "pickup" : "drop")}");
     }
 
-
     [ServerRpc(RequireOwnership = false)]
     public void TriggerDropAnimationServerRpc()
     {
-        // Tüm client'larda drop animasyonunu başlat
         StartDropAnimationClientRpc();
     }
-    
+
     [ServerRpc(RequireOwnership = false)]
     public void GiveItemDirectlyServerRpc(int itemID)
     {
-        if (hasItem.Value) return; // Zaten item var
+        if (hasItem.Value) return;
 
         ItemData itemData = GetItemDataFromID(itemID);
         if (itemData == null) return;
 
-        // Item'ı oyuncuya ver
         hasItem.Value = true;
         currentItemID.Value = itemID;
 
@@ -1473,9 +1890,8 @@ public class PlayerInventory : NetworkBehaviour
             playerMovement.SetCarrying(true);
         }
 
-        // Client'lara animation başlatması için bildir
         StartPickupAnimationClientRpc();
-    
+
         Debug.Log($"Item given directly to player: {itemData.itemName}");
     }
 
@@ -1491,30 +1907,84 @@ public class PlayerInventory : NetworkBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        // YENİ: Detection center'dan gizmo çiz
         Vector3 detectionPos = GetDetectionCenterPosition();
-        
-        Gizmos.color = Color.yellow;
+
+        Gizmos.color = new Color(1f, 1f, 0f, 0.2f);
         Gizmos.DrawWireSphere(detectionPos, detectionRange);
 
-        // Detection center'ı göster
-        Gizmos.color = Color.cyan;
+        if (useConeDetection)
+        {
+            Gizmos.color = Color.cyan;
+
+            Vector3 forward = transform.forward;
+            if (ignoreVerticalAngle)
+            {
+                forward.y = 0;
+                forward.Normalize();
+            }
+
+            float halfAngle = coneAngle / 2f;
+
+            Vector3 leftBoundary = Quaternion.Euler(0, -halfAngle, 0) * forward * detectionRange;
+            Gizmos.DrawLine(detectionPos, detectionPos + leftBoundary);
+
+            Vector3 rightBoundary = Quaternion.Euler(0, halfAngle, 0) * forward * detectionRange;
+            Gizmos.DrawLine(detectionPos, detectionPos + rightBoundary);
+
+            Gizmos.color = Color.green;
+            Gizmos.DrawLine(detectionPos, detectionPos + forward * detectionRange);
+
+            Gizmos.color = Color.cyan;
+            Vector3 previousPoint = detectionPos + leftBoundary;
+            int segments = 15;
+            for (int i = 1; i <= segments; i++)
+            {
+                float angle = -halfAngle + (coneAngle * i / segments);
+                Vector3 direction = Quaternion.Euler(0, angle, 0) * forward * detectionRange;
+                Vector3 point = detectionPos + direction;
+                Gizmos.DrawLine(previousPoint, point);
+                previousPoint = point;
+            }
+        }
+
+        Gizmos.color = Color.red;
         Gizmos.DrawWireCube(detectionPos, Vector3.one * 0.2f);
+
+        if (itemsInRange != null && itemsInRange.Count > 0)
+        {
+            foreach (NetworkWorldItem item in itemsInRange)
+            {
+                if (item == null || !IsItemInCone(item)) continue;
+
+                float priority = GetItemPriority(item);
+
+                if (priority >= 100f)
+                    Gizmos.color = Color.green;
+                else if (priority >= 50f)
+                    Gizmos.color = Color.yellow;
+                else if (priority >= 25f)
+                    Gizmos.color = new Color(1f, 0.5f, 0f);
+                else
+                    Gizmos.color = Color.red;
+
+                Gizmos.DrawWireSphere(item.transform.position, 0.2f);
+            }
+        }
 
         if (targetedItem != null)
         {
-            Gizmos.color = Color.green;
+            float priority = GetItemPriority(targetedItem);
+            Gizmos.color = priority >= 50f ? Color.green : Color.yellow;
             Gizmos.DrawLine(detectionPos, targetedItem.transform.position);
+            Gizmos.DrawWireSphere(targetedItem.transform.position, 0.4f);
         }
 
         if (dropPosition != null)
         {
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireCube(dropPosition.position, Vector3.one * 0.5f);
-            Gizmos.DrawLine(transform.position, dropPosition.position);
+            Gizmos.color = Color.magenta;
+            Gizmos.DrawWireSphere(dropPosition.position, 0.3f);
         }
-        
-        // Detection offset'ini göster
+
         if (!useCustomDetectionCenter)
         {
             Gizmos.color = Color.magenta;

@@ -136,13 +136,13 @@ namespace NewCss
             }
         }
 
-        // DÜZELTME: requesterClientId parametresi eklendi
+        // ✨ YENİ: NetworkObjectId ile spesifik item al
         [ServerRpc(RequireOwnership = false)]
-        public void TakeItemFromShelfServerRpc(ulong requesterClientId, ServerRpcParams rpcParams = default)
+        public void TakeItemFromShelfServerRpc(ulong requesterClientId, ulong itemNetworkId, ServerRpcParams rpcParams = default)
         {
             if (!IsServer) return;
 
-            Debug.Log($"TakeItemFromShelfServerRpc called for client {requesterClientId}");
+            Debug.Log($"TakeItemFromShelfServerRpc called for client {requesterClientId}, item {itemNetworkId}");
 
             try
             {
@@ -168,46 +168,58 @@ namespace NewCss
                     return;
                 }
 
-                // İlk dolu slotu bul ve item'ı al
+                // Belirtilen NetworkObjectId'ye sahip item'ı bul
+                int targetSlotIndex = -1;
                 for (int i = 0; i < _slotItems.Count; i++)
                 {
-                    if (_slotItems[i].TryGet(out NetworkObject networkObj) && networkObj != null)
+                    if (_slotItems[i].TryGet(out NetworkObject networkObj) &&
+                        networkObj != null &&
+                        networkObj.NetworkObjectId == itemNetworkId)
                     {
-                        NetworkWorldItem worldItem = networkObj.GetComponent<NetworkWorldItem>();
-                        if (worldItem == null || worldItem.ItemData == null)
-                        {
-                            Debug.LogError($"WorldItem or ItemData is null in slot {i}!");
-                            continue;
-                        }
+                        targetSlotIndex = i;
+                        break;
+                    }
+                }
 
-                        int itemID = worldItem.ItemData.itemID;
-                        Debug.Log($"Taking item from shelf slot {i}, ItemID: {itemID}, giving to client: {requesterClientId}");
+                if (targetSlotIndex == -1)
+                {
+                    Debug.LogError($"Item with NetworkObjectId {itemNetworkId} not found on shelf!");
+                    return;
+                }
 
-                        // Slot'u temizle
-                        _slotItems[i] = new NetworkObjectReference();
-
-                        // Item'ı despawn et
-                        networkObj.Despawn();
-
-                        // Item'ı player'a ver
-                        playerInventory.SetInventoryStateServerRpc(true, itemID);
-
-                        // Tüm client'lara bildir
-                        TakeItemFromShelfClientRpc(requesterClientId, itemID);
-
-                        Debug.Log($"Item successfully given to player {requesterClientId}");
+                // Item'ı al
+                if (_slotItems[targetSlotIndex].TryGet(out NetworkObject targetNetworkObj) && targetNetworkObj != null)
+                {
+                    NetworkWorldItem worldItem = targetNetworkObj.GetComponent<NetworkWorldItem>();
+                    if (worldItem == null || worldItem.ItemData == null)
+                    {
+                        Debug.LogError($"WorldItem or ItemData is null in slot {targetSlotIndex}!");
                         return;
                     }
+
+                    int itemID = worldItem.ItemData.itemID;
+                    Debug.Log($"✅ Taking item from shelf slot {targetSlotIndex}, ItemID: {itemID}, NetworkObjectId: {itemNetworkId}");
+
+                    // Slot'u temizle
+                    _slotItems[targetSlotIndex] = new NetworkObjectReference();
+
+                    // Item'ı despawn et
+                    targetNetworkObj.Despawn();
+
+                    // Item'ı player'a ver
+                    playerInventory.SetInventoryStateServerRpc(true, itemID);
+
+                    // Tüm client'lara bildir
+                    TakeItemFromShelfClientRpc(requesterClientId, itemID);
+
+                    Debug.Log($"✅ Item successfully given to player {requesterClientId}");
                 }
             }
             catch (System.Exception e)
             {
                 Debug.LogError($"Error in TakeItemFromShelfServerRpc: {e.Message}");
             }
-
-            Debug.Log("No items found on shelf");
         }
-
 
         [ClientRpc]
         private void TakeItemFromShelfClientRpc(ulong targetPlayerClientId, int itemID)
@@ -217,6 +229,26 @@ namespace NewCss
             {
                 Debug.Log($"Client {targetPlayerClientId} received item pickup confirmation");
             }
+        }
+
+        // ✨ YENİ: Raftaki tüm itemları döndür (PlayerInventory için)
+        public NetworkWorldItem[] GetAllShelfItems()
+        {
+            System.Collections.Generic.List<NetworkWorldItem> items = new System.Collections.Generic.List<NetworkWorldItem>();
+
+            for (int i = 0; i < _slotItems.Count; i++)
+            {
+                if (_slotItems[i].TryGet(out NetworkObject networkObj) && networkObj != null)
+                {
+                    NetworkWorldItem worldItem = networkObj.GetComponent<NetworkWorldItem>();
+                    if (worldItem != null)
+                    {
+                        items.Add(worldItem);
+                    }
+                }
+            }
+
+            return items.ToArray();
         }
 
         public bool HasItem()
@@ -238,17 +270,17 @@ namespace NewCss
             }
         }
 
-        // DÜZELTME: Bu metod artık kullanılmamalı, TakeItem(ulong clientId) kullanılmalı
-        [System.Obsolete("Use TakeItem(ulong clientId) instead")]
+        // DÜZELTME: Bu metod artık kullanılmamalı, TakeItem(ulong clientId, ulong itemNetworkId) kullanılmalı
+        [System.Obsolete("Use TakeItem(ulong clientId, ulong itemNetworkId) instead")]
         public void TakeItem()
         {
-            Debug.LogWarning("TakeItem() without clientId is deprecated! Use TakeItem(ulong clientId)");
+            Debug.LogWarning("TakeItem() without clientId is deprecated! Use TakeItem(ulong clientId, ulong itemNetworkId)");
         }
 
-        // YENİ: Client ID parametreli versiyon
-        public void TakeItem(ulong clientId)
+        // YENİ: Client ID ve Item NetworkObjectId parametreli versiyon
+        public void TakeItem(ulong clientId, ulong itemNetworkId)
         {
-            TakeItemFromShelfServerRpc(clientId);
+            TakeItemFromShelfServerRpc(clientId, itemNetworkId);
         }
 
         [ContextMenu("Debug Slot States")]

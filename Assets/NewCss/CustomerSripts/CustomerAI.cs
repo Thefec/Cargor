@@ -34,17 +34,16 @@ namespace NewCss
 
         // Ses ayarları
         [Header("Interaction Sounds")]
-        public AudioClip[] interactionSounds; // Inspector'dan ses dosyalarını ekleyeceksiniz
+        public AudioClip[] interactionSounds;
         private AudioSource audioSource;
 
-        // Her client kendi playerInRange durumunu takip eder
         private NetworkVariable<ulong> playerInRangeClientId = new NetworkVariable<ulong>(ulong.MaxValue);
-
-        // Etkileşime giren oyuncunun ID'sini sakla
         private ulong interactingPlayerId = ulong.MaxValue;
         private PlayerMovement interactingPlayer = null;
 
-        [Header("Products & Table")] public GameObject[] productPrefabs;
+        [Header("Products & Table")]
+        public GameObject[] productPrefabs;
+        private int assignedProductIndex = -1; // Bu müşteriye atanan ürün indexi
 
         [Header("Tables")] public DisplayTable targetTable;
 
@@ -73,6 +72,7 @@ namespace NewCss
         private NetworkVariable<bool> networkShowCanvas = new NetworkVariable<bool>(false);
         private NetworkVariable<float> networkAnimatorSpeed = new NetworkVariable<float>(0f);
         private NetworkVariable<int> networkState = new NetworkVariable<int>(0);
+        private NetworkVariable<int> networkAssignedProductIndex = new NetworkVariable<int>(-1); // Network senkronizasyonu için
 
         private enum State
         {
@@ -98,6 +98,7 @@ namespace NewCss
                 networkShowCanvas.OnValueChanged += OnShowCanvasChanged;
                 networkAnimatorSpeed.OnValueChanged += OnAnimatorSpeedChanged;
                 networkState.OnValueChanged += OnStateChanged;
+                networkAssignedProductIndex.OnValueChanged += OnAssignedProductIndexChanged;
             }
 
             // Initialize components for all clients
@@ -107,6 +108,15 @@ namespace NewCss
             if (IsServer)
             {
                 actualWaitTime = Random.Range(minWaitTime, maxWaitTime);
+
+                // Manager'dan rastgele ürün indexi al
+                if (manager != null && productPrefabs != null && productPrefabs.Length > 0)
+                {
+                    assignedProductIndex = manager.GetRandomProductIndexExcludingRecent(productPrefabs.Length);
+                    networkAssignedProductIndex.Value = assignedProductIndex;
+
+                    Debug.Log($"Customer spawned with product index: {assignedProductIndex} ({productPrefabs[assignedProductIndex].name})");
+                }
             }
         }
 
@@ -121,15 +131,13 @@ namespace NewCss
             navAgent = GetComponent<NavMeshAgent>();
             animator = GetComponent<Animator>();
 
-            // AudioSource component'ini al veya ekle
             audioSource = GetComponent<AudioSource>();
             if (audioSource == null)
             {
                 audioSource = gameObject.AddComponent<AudioSource>();
             }
-            // AudioSource ayarları
             audioSource.playOnAwake = false;
-            audioSource.spatialBlend = 1f; // 3D ses için
+            audioSource.spatialBlend = 1f;
 
             SphereCollider sc = GetComponent<SphereCollider>();
             sc.isTrigger = true;
@@ -168,7 +176,6 @@ namespace NewCss
         {
             if (isPrefabMode) return;
 
-            // Only server handles logic
             if (IsServer)
             {
                 UpdateAnimator();
@@ -184,10 +191,8 @@ namespace NewCss
                 }
             }
 
-            // HER CLIENT kendi input kontrolünü yapar
             if (IsClient && state == State.Service && !hasInteracted)
             {
-                // Local player'ın bu customer'ın range'inde olup olmadığını kontrol et
                 bool isLocalPlayerInRange = CheckIfLocalPlayerInRange();
 
                 if (isLocalPlayerInRange && Input.GetKeyDown(KeyCode.E))
@@ -197,14 +202,12 @@ namespace NewCss
             }
         }
 
-        // Client-side: Local player'ın range içinde olup olmadığını kontrol et
         private bool CheckIfLocalPlayerInRange()
         {
             if (NetworkManager.Singleton == null) return false;
 
             var localClientId = NetworkManager.Singleton.LocalClientId;
 
-            // Local player'ı bul
             foreach (var netObj in FindObjectsOfType<NetworkObject>())
             {
                 if (netObj.OwnerClientId == localClientId && netObj.CompareTag("Character"))
@@ -222,14 +225,12 @@ namespace NewCss
         {
             ulong senderClientId = rpcParams.Receive.SenderClientId;
 
-            // Güvenlik kontrolü
             if (senderClientId != requestingPlayerId)
             {
                 Debug.LogWarning($"Client {senderClientId} tried to interact as {requestingPlayerId}!");
                 return;
             }
 
-            // Server tarafında etkileşimi kontrol et
             if (state == State.Service && !hasInteracted && !isInInteraction)
             {
                 if (ValidatePlayerInRange(senderClientId))
@@ -241,7 +242,6 @@ namespace NewCss
 
         private bool ValidatePlayerInRange(ulong playerId)
         {
-            // Tüm networked player'ları kontrol et
             foreach (var netObj in FindObjectsOfType<NetworkObject>())
             {
                 if (netObj.OwnerClientId == playerId && netObj.CompareTag("Character"))
@@ -250,7 +250,6 @@ namespace NewCss
 
                     if (distance <= interactionRange)
                     {
-                        // PlayerMovement referansını bul ve kaydet
                         interactingPlayer = netObj.GetComponent<PlayerMovement>();
                         if (interactingPlayer == null)
                             interactingPlayer = netObj.GetComponentInChildren<PlayerMovement>();
@@ -288,7 +287,6 @@ namespace NewCss
                 isInInteraction = false;
                 networkIsInInteraction.Value = false;
 
-                // Etkileşimdeki oyuncunun kilidini aç
                 if (interactingPlayerId != ulong.MaxValue)
                 {
                     UnlockSpecificPlayerClientRpc(interactingPlayerId);
@@ -422,10 +420,8 @@ namespace NewCss
             if (waitBar != null)
                 waitBar.StartWaitBar(interactionTime);
 
-            // Rastgele ses çal - Server tüm client'lara gönderir
             PlayRandomInteractionSound();
 
-            // Sadece etkileşime giren oyuncuyu kilitle
             if (interactingPlayerId != ulong.MaxValue)
             {
                 LockSpecificPlayerClientRpc(interactingPlayerId);
@@ -434,7 +430,6 @@ namespace NewCss
             StartCoroutine(InteractionTimer());
         }
 
-        // Rastgele ses çalma fonksiyonu
         private void PlayRandomInteractionSound()
         {
             if (interactionSounds == null || interactionSounds.Length == 0)
@@ -443,19 +438,16 @@ namespace NewCss
                 return;
             }
 
-            // Rastgele bir ses seç
             int randomIndex = Random.Range(0, interactionSounds.Length);
             AudioClip selectedClip = interactionSounds[randomIndex];
 
             if (selectedClip != null)
             {
-                // Server'da ses çal
                 if (audioSource != null)
                 {
                     audioSource.PlayOneShot(selectedClip);
                 }
 
-                // Tüm client'larda da çal
                 PlaySoundClientRpc(randomIndex);
             }
         }
@@ -463,7 +455,6 @@ namespace NewCss
         [ClientRpc]
         private void PlaySoundClientRpc(int soundIndex)
         {
-            // Client'larda sesi çal
             if (!IsServer && interactionSounds != null && soundIndex >= 0 && soundIndex < interactionSounds.Length)
             {
                 if (audioSource != null && interactionSounds[soundIndex] != null)
@@ -512,7 +503,6 @@ namespace NewCss
                 TransitionToExit();
             }
 
-            // Etkileşimdeki oyuncunun kilidini aç
             if (interactingPlayerId != ulong.MaxValue)
             {
                 UnlockSpecificPlayerClientRpc(interactingPlayerId);
@@ -524,10 +514,8 @@ namespace NewCss
         [ClientRpc]
         private void LockSpecificPlayerClientRpc(ulong targetPlayerId)
         {
-            // Sadece hedef client bu kodu çalıştırır
             if (NetworkManager.Singleton.LocalClientId == targetPlayerId)
             {
-                // Kendi local player'ını bul
                 foreach (var netObj in FindObjectsOfType<NetworkObject>())
                 {
                     if (netObj.IsOwner && netObj.CompareTag("Character"))
@@ -551,10 +539,8 @@ namespace NewCss
         [ClientRpc]
         private void UnlockSpecificPlayerClientRpc(ulong targetPlayerId)
         {
-            // Sadece hedef client bu kodu çalıştırır
             if (NetworkManager.Singleton.LocalClientId == targetPlayerId)
             {
-                // Kendi local player'ını bul
                 foreach (var netObj in FindObjectsOfType<NetworkObject>())
                 {
                     if (netObj.IsOwner && netObj.CompareTag("Character"))
@@ -627,7 +613,10 @@ namespace NewCss
             if (dropOffTable == null || productPrefabs == null || productPrefabs.Length == 0)
                 return null;
 
-            int index = Random.Range(0, productPrefabs.Length);
+            // Atanmış ürün indexini kullan, yoksa rastgele seç
+            int index = assignedProductIndex >= 0 && assignedProductIndex < productPrefabs.Length
+                ? assignedProductIndex
+                : Random.Range(0, productPrefabs.Length);
 
             Vector3 spawnPos;
             Quaternion spawnRot;
@@ -662,6 +651,8 @@ namespace NewCss
             }
 
             dropOffTable.PlaceItemInstance(product);
+
+            Debug.Log($"Customer placed product: {productPrefabs[index].name} (index: {index})");
 
             return product;
         }
@@ -747,6 +738,15 @@ namespace NewCss
             }
         }
 
+        private void OnAssignedProductIndexChanged(int previousValue, int newValue)
+        {
+            if (!IsServer)
+            {
+                assignedProductIndex = newValue;
+                Debug.Log($"[Client] Customer received product index: {assignedProductIndex}");
+            }
+        }
+
         void OnDrawGizmosSelected()
         {
             Gizmos.color = Color.yellow;
@@ -756,6 +756,10 @@ namespace NewCss
             if (IsServer)
             {
                 debugInfo += $"\nWait Time: {actualWaitTime:F1}s";
+                if (assignedProductIndex >= 0 && productPrefabs != null && assignedProductIndex < productPrefabs.Length)
+                {
+                    debugInfo += $"\nAssigned Product: {productPrefabs[assignedProductIndex].name} ({assignedProductIndex})";
+                }
                 if (placedProduct != null)
                     debugInfo += $"\nPlaced Product: {placedProduct.name}";
                 if (interactingPlayerId != ulong.MaxValue)

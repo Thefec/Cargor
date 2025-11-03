@@ -9,19 +9,23 @@ namespace NewCss
     public class PhoneCallManager : NetworkBehaviour
     {
         public static PhoneCallManager Instance { get; private set; }
-
+        // Add this field near other settings
         [Header("Phone Call Settings")]
         [SerializeField] private float callChance = 0.5f;
         [SerializeField] private float callDuration = 30f;
         [SerializeField] private float callAnswerDuration = 10f;
         [SerializeField] private float prestigeReward = 0.02f;
         [SerializeField] private float prestigePenalty = 0.05f;
+        [SerializeField] private int startCallingHour = 8; // Yeni: Aramaların başlama saati
+
+       
 
         [Header("UI Elements")]
         [SerializeField] private GameObject phoneCallUI;
         [SerializeField] private Button answerButton;
         [SerializeField] private TextMeshProUGUI callInfoText;
         [SerializeField] private AudioSource phoneRingSound;
+        [SerializeField] private AudioSource conversationSound;
 
         [Header("Wait Bar System")]
         [SerializeField] private PhoneWaitBar phoneWaitBar;
@@ -45,8 +49,9 @@ namespace NewCss
         private NetworkVariable<bool> networkCustomerSupportActive = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
         private NetworkVariable<ulong> networkCurrentCallOwner = new NetworkVariable<ulong>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-        // Local variables
+        // Modify the local variables section
         private bool[] hourlyCallChecked;
+        private int lastCheckedHour = -1; // Yeni: Son kontrol edilen saat
         private Coroutine callCoroutine;
         private bool playerInPhoneArea = false;
         private bool isNetworkReady = false;
@@ -144,28 +149,39 @@ namespace NewCss
         private void OnCallActiveChanged(bool previousValue, bool newValue)
         {
             UpdateUIState();
-            if (newValue && phoneRingSound != null)
+            if (newValue && phoneRingSound != null) // newValue == true (Arama aktif oldu)
             {
-                phoneRingSound.Play();
+                phoneRingSound.Play(); // Sesi başlat
             }
-            else if (!newValue && phoneRingSound != null)
+            else if (!newValue && phoneRingSound != null) // newValue == false (Arama bitti/kaçırıldı)
             {
-                phoneRingSound.Stop();
+                phoneRingSound.Stop(); // Sesi durdur
             }
         }
 
         private void OnCallAnsweredChanged(bool previousValue, bool newValue)
         {
             UpdateUIState();
-            if (newValue && phoneRingSound != null)
+            if (newValue && phoneRingSound != null) // newValue == true (Arama cevaplandı)
             {
-                phoneRingSound.Stop();
+                phoneRingSound.Stop(); // Çalma sesini durdur
+            }
+
+            if (newValue && conversationSound != null) // Konuşma sesi başlat
+            {
+                conversationSound.Play();
             }
         }
 
         private void OnConversationChanged(bool previousValue, bool newValue)
         {
             UpdateUIState();
+
+            // Konuşma bittiğinde sesi durdur
+            if (!newValue && conversationSound != null)
+            {
+                conversationSound.Stop();
+            }
 
             // Handle player locking for the call owner
             if (NetworkManager.Singleton != null &&
@@ -357,6 +373,20 @@ namespace NewCss
 
             if (currentHour < 0 || currentHour >= 24) return;
 
+            // Saat 8'den önce arama yapma
+            if (currentHour < startCallingHour)
+            {
+                Debug.Log($"Phone Call Check - Too early: Hour {currentHour} (calls start at {startCallingHour})");
+                return;
+            }
+
+            // Eğer bu saat zaten kontrol edildiyse, atla
+            if (currentHour == lastCheckedHour) return;
+
+            // Yeni saate geçildi, kontrolü yap
+            lastCheckedHour = currentHour;
+
+            // Eğer bu saat için zaten arama yapıldıysa, atla
             if (hourlyCallChecked[currentHour]) return;
             hourlyCallChecked[currentHour] = true;
 
@@ -368,11 +398,11 @@ namespace NewCss
             }
 
             float randomValue = Random.Range(0f, 1f);
-            Debug.Log($"Phone Call Check - Hour: {currentHour}, Chance: {finalCallChance:F2}, Random: {randomValue:F2}");
+            Debug.Log($"Phone Call Check - Hour: {currentHour}, Chance: {finalCallChance:F2}, Random: {randomValue:F2}, Start Hour: {startCallingHour}");
 
             if (randomValue <= finalCallChance)
             {
-                Debug.Log("Starting phone call!");
+                Debug.Log($"Starting phone call at hour {currentHour}!");
                 StartPhoneCallServer();
             }
         }
@@ -501,6 +531,8 @@ namespace NewCss
                 {
                     hourlyCallChecked[i] = false;
                 }
+
+                lastCheckedHour = -1; // Yeni gün için sıfırla
 
                 if (networkIsCallActive.Value || networkIsInPhoneConversation.Value)
                 {

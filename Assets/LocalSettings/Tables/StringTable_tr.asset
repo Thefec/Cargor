@@ -178,6 +178,34 @@ MonoBehaviour:
     m_Localized: Devam Et
     m_Metadata:
       m_Items: []
+  - m_Id: 30567298710810624
+    m_Localized: Oda Kur
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30567344864931840
+    m_Localized: "Oyuna Kat\u0131l"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30567847749398528
+    m_Localized: "Ba\u015Flat"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30567978871730176
+    m_Localized: Lobi
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30568446771507200
+    m_Localized: "Harita Se\xE7"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30568844051787776
+    m_Localized: Ana Ofis
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30569701396885504
+    m_Localized: "\xC7ok Oyunculu"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
