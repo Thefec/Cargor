@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using Unity.Netcode;
 using System.Collections.Generic;
 using System.Collections;
@@ -346,14 +346,12 @@ namespace NewCss
         {
             var state = tableState.Value;
 
-            // Check if table item can be boxed
             if (state.isItemBoxed)
             {
                 Debug.Log($"Table {tableID}: Item is already boxed");
                 return;
             }
 
-            // Check if player has a suitable box
             ItemData playerItemData = player.CurrentItemData;
             if (playerItemData?.visualPrefab == null)
             {
@@ -368,7 +366,6 @@ namespace NewCss
                 return;
             }
 
-            // Get table item info
             if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(state.itemNetworkId, out NetworkObject tableItemNetObj))
             {
                 Debug.LogError($"Table {tableID}: Table item not found for boxing");
@@ -382,7 +379,6 @@ namespace NewCss
                 return;
             }
 
-            // Check if box and product match
             if (!IsValidBoxProductCombination(playerBox.boxType, tableProduct.productType))
             {
                 Debug.Log($"Table {tableID}: Box type {playerBox.boxType} doesn't match product type {tableProduct.productType}");
@@ -390,8 +386,16 @@ namespace NewCss
                 return;
             }
 
-            // Perform boxing
-            StartCoroutine(PerformBoxingCoroutine(player, playerBox.boxType, tableProduct));
+            // ✨ YENİ: Minigame başlat
+            BoxingMinigameManager minigame = GetComponentInChildren<BoxingMinigameManager>();
+            if (minigame == null)
+            {
+                Debug.LogError($"Table {tableID}: BoxingMinigameManager not found!");
+                return;
+            }
+
+            Debug.Log($"🎮 Starting boxing minigame for {playerBox.boxType} box");
+            minigame.StartMinigame(player, playerBox.boxType, playerItemData);
         }
 
         private IEnumerator PerformBoxingCoroutine(PlayerInventory player, BoxInfo.BoxType boxType, ProductInfo product)
@@ -457,6 +461,58 @@ namespace NewCss
             }
 
             yield return null;
+        }
+        /// <summary>
+        /// ✅ Minigame başarılı - Kutuyu doldur
+        /// </summary>
+        public void CompleteBoxingSuccess(PlayerInventory player, BoxInfo.BoxType boxType)
+        {
+            if (!IsServer) return;
+
+            Debug.Log($"✅ Boxing SUCCESS for {boxType}");
+
+            player.SetInventoryStateServerRpc(false, -1);
+            player.TriggerDropAnimationServerRpc();
+
+            var state = tableState.Value;
+            if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(state.itemNetworkId, out NetworkObject productNetObj))
+            {
+                productNetObj.Despawn(true);
+            }
+
+            StartCoroutine(SpawnBoxedProductAfterMinigame(boxType));
+
+            if (QuestManager.Instance != null && IsServer)
+            {
+                QuestManager.Instance.IncrementQuestProgress(QuestType.PackageBoxes, boxType);
+            }
+        }
+
+        /// <summary>
+        /// ❌ Minigame başarısız - Kutuyu yok et
+        /// </summary>
+        public void CompleteBoxingFailure(PlayerInventory player)
+        {
+            if (!IsServer) return;
+
+            Debug.Log($"❌ Boxing FAILED - Box destroyed!");
+
+            player.SetInventoryStateServerRpc(false, -1);
+            player.TriggerDropAnimationServerRpc();
+
+            NotifyBoxingFailedClientRpc(player.NetworkObjectId);
+        }
+
+        private IEnumerator SpawnBoxedProductAfterMinigame(BoxInfo.BoxType boxType)
+        {
+            yield return new WaitForSeconds(0.3f);
+
+            ItemData boxedProductData = GetBoxedProductData(boxType);
+            if (boxedProductData != null)
+            {
+                yield return StartCoroutine(SpawnBoxedProductCoroutine(boxedProductData));
+                Debug.Log($"✅ Boxed product spawned: {boxedProductData.itemName}");
+            }
         }
 
         #endregion
@@ -563,4 +619,5 @@ namespace NewCss
             serializer.SerializeValue(ref isItemBoxed);
         }
     }
+
 }

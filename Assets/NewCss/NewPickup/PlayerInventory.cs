@@ -1011,6 +1011,13 @@ public class PlayerInventory : NetworkBehaviour
             return;
         }
 
+        // ✅ Minigame aktifken E, F, Mouse0 engellenir
+        if (IsMinigameActive())
+        {
+            Debug.Log("⚠️ Minigame active - E, F, Mouse blocked!");
+            return;
+        }
+
         if (Input.GetKeyDown(KeyCode.E))
         {
             Debug.Log($"E pressed. HasItem: {hasItem.Value}, TargetedItem: {(targetedItem != null ? targetedItem.name : "null")}, TargetedShelfItem: {(targetedShelfItem != null ? targetedShelfItem.name : "null")}");
@@ -1123,6 +1130,22 @@ public class PlayerInventory : NetworkBehaviour
                 PlayDropSound();
             }
         }
+    }
+    /// <summary>
+    /// Yakındaki masada minigame aktif mi kontrol eder
+    /// </summary>
+    private bool IsMinigameActive()
+    {
+        Table nearbyTable = GetNearbyTable();
+        if (nearbyTable != null)
+        {
+            BoxingMinigameManager minigame = nearbyTable.GetComponentInChildren<BoxingMinigameManager>();
+            if (minigame != null && minigame.IsMinigameActive)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     // ✨ YENİ: NetworkObjectId ile shelf'ten al
@@ -1247,6 +1270,10 @@ public class PlayerInventory : NetworkBehaviour
         else
         {
             Debug.LogError("World item prefab is null!");
+        }
+        if (QuestManager.Instance != null)
+        {
+            QuestManager.Instance.IncrementQuestProgress(QuestType.PlaceOnShelf);
         }
 
         ResetProcessingInteractionClientRpc();

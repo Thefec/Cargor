@@ -490,19 +490,30 @@ namespace NewCss
             placedProduct = PlaceOnDropOffTableAsChild();
             if (placedProduct != null)
             {
+                // ✅ Prestige ödülü
                 if (PrestigeManager.Instance != null)
                     PrestigeManager.Instance.ModifyPrestige(0.05f);
 
+                // ✅ QUEST GÜNCELLEMESİ - Müşteri başarıyla hizmet verildi
+                if (QuestManager.Instance != null && Unity.Netcode.NetworkManager.Singleton.IsServer)
+                {
+                    QuestManager.Instance.IncrementQuestProgress(QuestType.ServeCustomers);
+                }
+
+                // Ürün pickup beklemeye başla
                 StartCoroutine(WaitForProductPickupCoroutine());
             }
             else
             {
+                // ❌ Ürün yerleştirilemedi - Prestige cezası
                 if (PrestigeManager.Instance != null)
                     PrestigeManager.Instance.ModifyPrestige(-0.03f);
 
+                // Müşteri ayrılıyor
                 TransitionToExit();
             }
 
+            // Player'ı unlock et
             if (interactingPlayerId != ulong.MaxValue)
             {
                 UnlockSpecificPlayerClientRpc(interactingPlayerId);

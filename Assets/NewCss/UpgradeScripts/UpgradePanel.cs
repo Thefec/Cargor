@@ -28,6 +28,7 @@ namespace NewCss
         public GarageDoorController[] garageDoorControllers; // Her level için garaj kapıları
     }
 
+
     [System.Serializable]
     public struct NetworkPendingUpgrade : INetworkSerializable, IEquatable<NetworkPendingUpgrade>
     {
@@ -75,7 +76,9 @@ namespace NewCss
         {
             return !left.Equals(right);
         }
+
     }
+
 
     public class UpgradePanel : NetworkBehaviour
     {
@@ -89,6 +92,9 @@ namespace NewCss
         [Header("Upgrade Definitions")]
         [SerializeField]
         private List<UpgradeDefinition> upgrades = new();
+
+
+
 
         [Header("Manager References")]
         [SerializeField]
@@ -391,6 +397,21 @@ namespace NewCss
             else if (entry.def.displayName == "Money" && Truck != null)
             {
                 Truck.rewardPerBox = entry.def.TruckValue + (level * 10);
+            }
+            // ✨ YENİ: Quest Tier Upgrade
+            else if (entry.def.displayName == "Quest Tier" && QuestManager.Instance != null)
+            {
+                // Level 0 = Tier 1 (Easy)
+                // Level 1 = Tier 2 (Medium)
+                // Level 2 = Tier 3 (Hard)
+                int targetTier = level + 1;
+
+                // Sadece tier yükseltme gerekiyorsa yükselt
+                if (IsServer && QuestManager.Instance.GetCurrentQuestTier() < targetTier)
+                {
+                    QuestManager.Instance.UpgradeQuestTierServerRpc();
+                    Debug.Log($"✅ Quest Tier upgraded to: Tier {targetTier}");
+                }
             }
         }
 

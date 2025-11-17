@@ -326,12 +326,14 @@ namespace NewCss
         {
             if (controller == null) return;
 
+            // ✅ Movement kilidi varsa TAMAMEN DURDUR
             if (isMovementLocked)
             {
                 ApplyGravityOnly();
                 return;
             }
 
+            // ✅ Normal hareket (sadece kilit yoksa)
             float h = Input.GetAxisRaw("Horizontal");
             float v = Input.GetAxisRaw("Vertical");
 
@@ -384,6 +386,88 @@ namespace NewCss
 
                 UpdateAnimationServerRpc(0f, 0f, false);
             }
+        }
+        /// <summary>
+        /// Yön tuşları engellenmiş mi kontrol et (minigame aktifse)
+        /// </summary>
+        private bool AreArrowKeysBlocked()
+        {
+            // Table yakınında minigame aktif mi kontrol et
+            Table nearbyTable = FindNearbyTable();
+            if (nearbyTable != null)
+            {
+                BoxingMinigameManager minigame = nearbyTable.GetComponentInChildren<BoxingMinigameManager>();
+                if (minigame != null && minigame.IsMinigameActive)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Minigame aktifken sadece WASD ile hareket (yön tuşları yok)
+        /// </summary>
+        private void HandleMovementWithWASDOnly()
+        {
+            if (controller == null) return;
+
+            // ✅ Sadece WASD tuşlarını kontrol et (yön tuşları değil)
+            float h = 0f;
+            float v = 0f;
+
+            if (Input.GetKey(KeyCode.A)) h = -1f;
+            if (Input.GetKey(KeyCode.D)) h = 1f;
+            if (Input.GetKey(KeyCode.W)) v = 1f;
+            if (Input.GetKey(KeyCode.S)) v = -1f;
+
+            Vector3 dir = new Vector3(h, 0, v).normalized;
+
+            float targetSpeed;
+            if (isSprinting && !isInCooldown)
+            {
+                targetSpeed = sprintSpeed;
+            }
+            else if (isInCooldown)
+            {
+                targetSpeed = exhaustedSpeed;
+            }
+            else
+            {
+                targetSpeed = moveSpeed;
+            }
+
+            if (dir.magnitude >= 0.1f)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(dir);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+
+                controller.Move(dir * targetSpeed * Time.deltaTime);
+            }
+
+            if (!controller.isGrounded)
+                velocity.y -= gravity * Time.deltaTime;
+            else
+                velocity.y = -2f;
+
+            controller.Move(velocity * Time.deltaTime);
+        }
+
+        /// <summary>
+        /// Yakındaki masayı bul
+        /// </summary>
+        private Table FindNearbyTable()
+        {
+            Collider[] colliders = Physics.OverlapSphere(transform.position, 5f); // 5 birim mesafe
+            foreach (var collider in colliders)
+            {
+                Table table = collider.GetComponent<Table>();
+                if (table != null)
+                {
+                    return table;
+                }
+            }
+            return null;
         }
     }
 }

@@ -335,6 +335,11 @@ namespace NewCss
 
                 if (deliveredCount.Value >= networkRequiredCargo.Value)
                 {
+                    // Quest güncelle
+                    if (QuestManager.Instance != null)
+                    {
+                        QuestManager.Instance.IncrementQuestProgress(QuestType.DeliverTrucks);
+                    }
                     isComplete.Value = true;
                 }
             }
