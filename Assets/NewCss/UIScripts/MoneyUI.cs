@@ -9,16 +9,14 @@ namespace NewCss
 
         public void Initialize(MoneySystem sys)
         {
-           
             sys.OnMoneyChanged += UpdateText;
             UpdateText(sys.CurrentMoney);
         }
+
         void Start()
         {
-            
             if (MoneySystem.Instance == null)
             {
-                Debug.LogError("MoneySystem not found! Please add a MoneySystem object to the scene.");
                 enabled = false; // Disable the UI script
                 return;
             }

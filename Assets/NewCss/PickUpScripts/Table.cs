@@ -230,7 +230,6 @@ namespace NewCss
         {
             Debug.Log($"Table {tableID}: Starting place item process");
 
-            // Get player's current item data
             ItemData playerItemData = player.CurrentItemData;
             if (playerItemData == null)
             {
@@ -238,12 +237,16 @@ namespace NewCss
                 return;
             }
 
-            // Clear player's item first
             player.SetInventoryStateServerRpc(false, -1);
             player.TriggerDropAnimationServerRpc();
 
-            // Spawn world item on table
             StartCoroutine(SpawnItemOnTableCoroutine(playerItemData));
+
+            // ✅ YENİ: Tutorial'a bildir (PlaceOnTable step'i için)
+            if (TutorialManager.Instance != null)
+            {
+                TutorialManager.Instance.OnTableInteraction(true); // true = place
+            }
         }
 
         private IEnumerator SpawnItemOnTableCoroutine(ItemData itemData)
@@ -317,6 +320,7 @@ namespace NewCss
                 return;
             }
 
+            // ✅ İTEMDATA'YI BURADA TANIMLA (tutorial callback'inden ÖNCE)
             ItemData itemData = worldItem.ItemData;
             if (itemData == null)
             {
@@ -340,6 +344,12 @@ namespace NewCss
             tableState.Value = newState;
 
             Debug.Log($"Table {tableID}: Item {itemData.itemName} taken by player");
+
+            // ✅ Tutorial'a bildir (itemData artık tanımlı)
+            if (TutorialManager.Instance != null)
+            {
+                TutorialManager.Instance.OnTableInteraction(false); // false = take
+            }
         }
 
         private void TryBoxingInteraction(PlayerInventory player)

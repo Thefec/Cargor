@@ -66,7 +66,6 @@ namespace NewCss
 
         private void OnTierChanged(int previousValue, int newValue)
         {
-            Debug.Log($"Quest Tier changed: {previousValue} → {newValue}");
             OnQuestTierChanged?.Invoke(newValue);
         }
 
@@ -78,7 +77,6 @@ namespace NewCss
             ApplyPenaltiesForIncompletedQuests();
 
             // Sonra yeni görevleri oluştur
-            Debug.Log("New day started - Resetting quests");
             GenerateDailyQuests();
         }
 
@@ -88,8 +86,6 @@ namespace NewCss
         private void ApplyPenaltiesForIncompletedQuests()
         {
             if (!IsServer) return;
-
-            Debug.Log("=== CHECKING QUEST PENALTIES ===");
 
             for (int i = 0; i < dailyQuests.Count; i++)
             {
@@ -108,14 +104,12 @@ namespace NewCss
                     if (questData.moneyPenalty > 0 && MoneySystem.Instance != null)
                     {
                         MoneySystem.Instance.SpendMoney(questData.moneyPenalty);
-                        Debug.Log($"💀 Money penalty applied: -{questData.moneyPenalty}$ for quest '{questData.questName}'");
                     }
 
                     // Prestij cezası uygula
                     if (questData.prestigePenalty > 0 && PrestigeManager.Instance != null)
                     {
                         PrestigeManager.Instance.ModifyPrestige(-questData.prestigePenalty);
-                        Debug.Log($"💀 Prestige penalty applied: -{questData.prestigePenalty} for quest '{questData.questName}'");
                     }
 
                     // Ceza uygulandı olarak işaretle
@@ -127,17 +121,11 @@ namespace NewCss
                     NotifyPenaltyAppliedClientRpc(progress.questID, questData.questName, questData.moneyPenalty, questData.prestigePenalty);
                 }
             }
-
-            Debug.Log("=== QUEST PENALTIES DONE ===");
         }
 
         [ClientRpc]
         private void NotifyPenaltyAppliedClientRpc(int questID, string questName, int moneyPenalty, float prestigePenalty)
         {
-            Debug.Log($"⚠️ PENALTY: Quest '{questName}' not completed!");
-            Debug.Log($"💰 Money lost: {moneyPenalty}$");
-            Debug.Log($"⭐ Prestige lost: {prestigePenalty}");
-
             OnQuestPenaltyApplied?.Invoke(questID, moneyPenalty, prestigePenalty);
         }
 
@@ -150,7 +138,6 @@ namespace NewCss
 
             if (allQuests.Count == 0)
             {
-                Debug.LogError("QuestManager: No quests in pool!");
                 return;
             }
 
@@ -160,7 +147,6 @@ namespace NewCss
 
             if (availableQuests.Count == 0)
             {
-                Debug.LogWarning($"No quests available for tier {currentQuestTier.Value}!");
                 return;
             }
 
@@ -180,7 +166,6 @@ namespace NewCss
                 };
 
                 dailyQuests.Add(progress);
-                Debug.Log($"✅ Generated {questData.questTier} quest: {questData.questName}");
             }
 
             OnDailyQuestsGenerated?.Invoke();
@@ -241,7 +226,6 @@ namespace NewCss
         private void NotifyQuestsGeneratedClientRpc()
         {
             OnDailyQuestsGenerated?.Invoke();
-            Debug.Log("Daily quests generated!");
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -250,7 +234,6 @@ namespace NewCss
             if (currentQuestTier.Value < 3)
             {
                 currentQuestTier.Value++;
-                Debug.Log($"✅ Quest Tier upgraded to: {currentQuestTier.Value}");
                 GenerateDailyQuests();
                 NotifyTierUpgradedClientRpc(currentQuestTier.Value);
             }
@@ -259,7 +242,6 @@ namespace NewCss
         [ClientRpc]
         private void NotifyTierUpgradedClientRpc(int newTier)
         {
-            Debug.Log($"🎉 Quest Tier unlocked: Tier {newTier}!");
         }
 
         public int GetCurrentQuestTier()
@@ -278,7 +260,6 @@ namespace NewCss
                     progress.isAccepted = true;
                     dailyQuests[i] = progress;
 
-                    Debug.Log($"Quest {questID} accepted by client {rpcParams.Receive.SenderClientId}");
                     NotifyQuestAcceptedClientRpc(questID);
                     return;
                 }
@@ -288,7 +269,6 @@ namespace NewCss
         [ClientRpc]
         private void NotifyQuestAcceptedClientRpc(int questID)
         {
-            Debug.Log($"Quest {questID} accepted!");
         }
 
         public void IncrementQuestProgress(QuestType questType, BoxInfo.BoxType boxType = BoxInfo.BoxType.Red)
@@ -328,13 +308,10 @@ namespace NewCss
                     if (progress.currentProgress >= progress.requiredAmount)
                     {
                         progress.isCompleted = true;
-                        Debug.Log($"✅ Quest {questData.questName} COMPLETED!");
                     }
 
                     dailyQuests[i] = progress;
                     OnQuestProgressUpdated?.Invoke(progress);
-
-                    Debug.Log($"Quest {questData.questName}: {progress.currentProgress}/{progress.requiredAmount}");
                 }
             }
         }
@@ -350,7 +327,6 @@ namespace NewCss
 
                     if (!progress.isCompleted || progress.isRewardClaimed)
                     {
-                        Debug.LogWarning($"Cannot claim reward for quest {questID}");
                         return;
                     }
 
@@ -366,8 +342,6 @@ namespace NewCss
                     progress.isRewardClaimed = true;
                     dailyQuests[i] = progress;
 
-                    Debug.Log($"✅ Reward claimed for {questData.questName}: {questData.moneyReward}$ + {questData.prestigeReward} prestige");
-
                     OnQuestRewardClaimed?.Invoke(questID, questData.moneyReward, (int)questData.prestigeReward);
                     NotifyRewardClaimedClientRpc(questID, questData.moneyReward, questData.prestigeReward);
                     return;
@@ -378,7 +352,6 @@ namespace NewCss
         [ClientRpc]
         private void NotifyRewardClaimedClientRpc(int questID, int money, float prestige)
         {
-            Debug.Log($"Reward claimed: {money}$ + {prestige} prestige");
             OnQuestRewardClaimed?.Invoke(questID, money, (int)prestige);
         }
 
@@ -415,16 +388,11 @@ namespace NewCss
         [ContextMenu("Debug Quest Status")]
         public void DebugQuestStatus()
         {
-            Debug.Log("=== DAILY QUESTS STATUS ===");
-            Debug.Log($"Current Tier: {currentQuestTier.Value}");
             for (int i = 0; i < dailyQuests.Count; i++)
             {
                 QuestProgress p = dailyQuests[i];
                 QuestData data = GetQuestData(p.questID);
-                Debug.Log($"[{i}] {data?.questName ?? "Unknown"} (Tier {data?.questTier}) - {p.currentProgress}/{p.requiredAmount}");
-                Debug.Log($"    Accepted: {p.isAccepted} | Completed: {p.isCompleted} | Claimed: {p.isRewardClaimed} | Penalty: {p.isPenaltyApplied}");
             }
-            Debug.Log("===========================");
         }
 
         // ✨ YENİ: Manuel ceza testi

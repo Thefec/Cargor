@@ -191,6 +191,8 @@ namespace NewCss
             }
         }
 
+        // BoxingMinigameManager.cs içine EKLE:
+
         private void OnMinigameSuccess()
         {
             Debug.Log("✅ Minigame SUCCESS! All 3 keys pressed correctly!");
@@ -204,12 +206,15 @@ namespace NewCss
                 uiController.HideUI();
             }
 
-            // ✅ KİLİTLERİ AÇ
+            // Kilitleri aç
             if (currentPlayerMovement != null)
             {
                 currentPlayerMovement.LockMovement(false);
                 currentPlayerMovement.LockAllInteractions(false);
             }
+
+            // ✅ YENİ: Tutorial'a bildir
+            NotifyTutorialMinigameComplete();
 
             if (parentTable != null && IsServer)
             {
@@ -220,6 +225,21 @@ namespace NewCss
                 RequestBoxingSuccessServerRpc(currentBoxType);
             }
         }
+
+        // ✅ YENİ METOD EKLE:
+        private void NotifyTutorialMinigameComplete()
+        {
+            if (TutorialManager.Instance != null)
+            {
+                TutorialManager.Instance.OnMinigameCompleted();
+
+                if (showDebugLogs)
+                    Debug.Log("📚 Tutorial notified: Minigame completed!");
+            }
+        }
+
+        [Header("Debug")]
+        [SerializeField] private bool showDebugLogs = true; // Ekle
 
         private void OnMinigameFailed()
         {

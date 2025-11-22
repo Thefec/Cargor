@@ -55,17 +55,7 @@ namespace NewCss
                     break;
                 }
             }
-            
-            // Yöntem 2: Tag kullanarak (alternatif)
-            if (target == null)
-            {
-                GameObject localPlayer = GameObject.FindGameObjectWithTag("LocalPlayer");
-                if (localPlayer != null)
-                {
-                    target = localPlayer.transform;
-                    isTargetSet = true;
-                }
-            }
+           
             
             // Yöntem 3: NetworkManager ile (alternatif)
             if (target == null && NetworkManager.Singleton != null)

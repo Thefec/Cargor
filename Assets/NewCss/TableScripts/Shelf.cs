@@ -5,7 +5,7 @@ namespace NewCss
 {
     public class NetworkedShelf : NetworkBehaviour
     {
-        [Header("Item Data")] 
+        [Header("Item Data")]
         public ItemData redBoxItemData;
         public ItemData blueBoxItemData;
         public ItemData yellowBoxItemData;
@@ -15,13 +15,15 @@ namespace NewCss
         public Transform blueBoxSlot;
         public Transform yellowBoxSlot;
 
-        [Header("Respawn Settings")] 
+        [Header("Respawn Settings")]
         [SerializeField] private float respawnDelay = 1f;
         [SerializeField] private bool enableAutoRespawn = true;
 
-        // ✨ YENİ: Bu shelf'e item konulmasını engelle
         [Header("Shelf Behavior")]
-        [SerializeField] private bool allowPlacingItems = false; // FALSE olarak set et
+        [SerializeField] private bool allowPlacingItems = false;
+
+        [Header("Debug")]
+        [SerializeField] private bool showDebugLogs = true; // ✅ YENİ
 
         private NetworkVariable<ulong> redBoxNetworkId = new NetworkVariable<ulong>(0,
             NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
@@ -36,6 +38,11 @@ namespace NewCss
         private NetworkObject blueBoxObject;
         private NetworkObject yellowBoxObject;
 
+        // ✅ YENİ: Son kutu sayılarını takip et (kutu alındığını anlamak için)
+        private int lastRedBoxCount = 0;
+        private int lastBlueBoxCount = 0;
+        private int lastYellowBoxCount = 0;
+
         public override void OnNetworkSpawn()
         {
             if (IsServer)
@@ -43,6 +50,9 @@ namespace NewCss
                 CheckAndSpawnBox(redBoxSlot, redBoxItemData, BoxType.Red);
                 CheckAndSpawnBox(blueBoxSlot, blueBoxItemData, BoxType.Blue);
                 CheckAndSpawnBox(yellowBoxSlot, yellowBoxItemData, BoxType.Yellow);
+
+                // ✅ Başlangıç sayılarını kaydet
+                UpdateBoxCounts();
             }
 
             redBoxNetworkId.OnValueChanged += OnRedBoxChanged;
@@ -60,7 +70,71 @@ namespace NewCss
         private void Update()
         {
             if (!CanPerformNetworkOperations() || !enableAutoRespawn) return;
+
             CheckAndRespawnIfNeeded();
+
+            // ✅ YENİ: Kutu alınma kontrolü
+            CheckForBoxTaken();
+        }
+
+        // ✅ YENİ: Kutu alınma kontrolü
+        private void CheckForBoxTaken()
+        {
+            int currentRedCount = HasRedBox ? 1 : 0;
+            int currentBlueCount = HasBlueBox ? 1 : 0;
+            int currentYellowCount = HasYellowBox ? 1 : 0;
+
+            // Kırmızı kutu alındı mı?
+            if (lastRedBoxCount > currentRedCount)
+            {
+                if (showDebugLogs)
+                    Debug.Log("📦 Red box taken from shelf!");
+
+                NotifyTutorialBoxTaken(BoxType.Red);
+            }
+
+            // Mavi kutu alındı mı?
+            if (lastBlueBoxCount > currentBlueCount)
+            {
+                if (showDebugLogs)
+                    Debug.Log("📦 Blue box taken from shelf!");
+
+                NotifyTutorialBoxTaken(BoxType.Blue);
+            }
+
+            // Sarı kutu alındı mı?
+            if (lastYellowBoxCount > currentYellowCount)
+            {
+                if (showDebugLogs)
+                    Debug.Log("📦 Yellow box taken from shelf!");
+
+                NotifyTutorialBoxTaken(BoxType.Yellow);
+            }
+
+            // Son sayıları güncelle
+            lastRedBoxCount = currentRedCount;
+            lastBlueBoxCount = currentBlueCount;
+            lastYellowBoxCount = currentYellowCount;
+        }
+
+        // ✅ YENİ: Tutorial'a kutu alındığını bildir
+        private void NotifyTutorialBoxTaken(BoxType boxType)
+        {
+            if (TutorialManager.Instance != null)
+            {
+                TutorialManager.Instance.OnBoxTakenFromShelf(boxType);
+
+                if (showDebugLogs)
+                    Debug.Log($"📚 Tutorial notified: {boxType} box taken from shelf");
+            }
+        }
+
+        // ✅ YENİ: Mevcut kutu sayılarını güncelle
+        private void UpdateBoxCounts()
+        {
+            lastRedBoxCount = HasRedBox ? 1 : 0;
+            lastBlueBoxCount = HasBlueBox ? 1 : 0;
+            lastYellowBoxCount = HasYellowBox ? 1 : 0;
         }
 
         private bool IsNetworkActive()
@@ -217,7 +291,11 @@ namespace NewCss
                             break;
                     }
 
-                    Debug.Log($"Spawned {boxType} box at {slot.name} with NetworkObjectId: {networkObject.NetworkObjectId}");
+                    if (showDebugLogs)
+                        Debug.Log($"Spawned {boxType} box at {slot.name} with NetworkObjectId: {networkObject.NetworkObjectId}");
+
+                    // ✅ Spawn sonrası sayıları güncelle
+                    UpdateBoxCounts();
                 }
             }
             catch (System.Exception ex)
@@ -232,16 +310,19 @@ namespace NewCss
         private void OnRedBoxChanged(ulong previousValue, ulong newValue)
         {
             UpdateLocalReference(BoxType.Red, newValue);
+            UpdateBoxCounts(); // ✅ Değişim olunca güncelle
         }
 
         private void OnBlueBoxChanged(ulong previousValue, ulong newValue)
         {
             UpdateLocalReference(BoxType.Blue, newValue);
+            UpdateBoxCounts(); // ✅ Değişim olunca güncelle
         }
 
         private void OnYellowBoxChanged(ulong previousValue, ulong newValue)
         {
             UpdateLocalReference(BoxType.Yellow, newValue);
+            UpdateBoxCounts(); // ✅ Değişim olunca güncelle
         }
 
         private bool CanPerformNetworkOperations()
@@ -324,7 +405,6 @@ namespace NewCss
             SpawnBoxAtSlot(slot, itemData, boxType);
         }
 
-        // ✨ YENİ: Item koyma izni kontrolü
         public bool CanPlaceItems()
         {
             return allowPlacingItems;

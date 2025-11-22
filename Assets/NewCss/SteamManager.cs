@@ -10,6 +10,7 @@ using Netcode.Transports.Facepunch;
 using Unity.Netcode;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityColor = UnityEngine.Color; // YENİ: Alias ekle
 
 public class SteamManager : MonoBehaviour
 {
@@ -34,9 +35,16 @@ public class SteamManager : MonoBehaviour
     [SerializeField] private Sprite occupiedSlotSprite;
     [SerializeField] private Sprite emptySlotSprite;
 
+    [Header("Loading Screen")]
+    [SerializeField] private GameObject loadingScreen;
+    [SerializeField] private TextMeshProUGUI loadingText;
+    [SerializeField] private Slider loadingProgressBar;
+    [SerializeField] private float minimumLoadTime = 1f;
+
     private const int MAX_PLAYERS = 4;
     private bool isJoiningLobby = false;
     private bool isLobbyJoinValid = false;
+    private bool isLoadingScene = false;
 
     [System.Serializable]
     public class PlayerSlot
@@ -54,6 +62,11 @@ public class SteamManager : MonoBehaviour
         SteamMatchmaking.OnLobbyMemberJoined += OnLobbyMemberJoined;
         SteamMatchmaking.OnLobbyMemberLeave += OnLobbyMemberLeave;
         SceneManager.sceneLoaded += OnSceneLoaded;
+
+        if (NetworkManager.Singleton != null && NetworkManager.Singleton.SceneManager != null)
+        {
+            NetworkManager.Singleton.SceneManager.OnSceneEvent += OnNetworkSceneEvent;
+        }
     }
 
     void OnDisable()
@@ -64,6 +77,59 @@ public class SteamManager : MonoBehaviour
         SteamMatchmaking.OnLobbyMemberJoined -= OnLobbyMemberJoined;
         SteamMatchmaking.OnLobbyMemberLeave -= OnLobbyMemberLeave;
         SceneManager.sceneLoaded -= OnSceneLoaded;
+
+        if (NetworkManager.Singleton != null && NetworkManager.Singleton.SceneManager != null)
+        {
+            NetworkManager.Singleton.SceneManager.OnSceneEvent -= OnNetworkSceneEvent;
+        }
+    }
+
+    void Start()
+    {
+        if (!SteamClient.IsValid)
+        {
+            ShowErrorMessage("Steam bağlantısı yok!");
+        }
+
+        isLobbyJoinValid = false;
+        isLoadingScene = false;
+
+        for (int i = 0; i < MAX_PLAYERS; i++)
+        {
+            SetSlotEmpty(i);
+        }
+
+        if (StartGameButton != null)
+        {
+            StartGameButton.gameObject.SetActive(false);
+        }
+
+        if (ErrorMessageText != null)
+        {
+            ErrorMessageText.gameObject.SetActive(false);
+        }
+
+        if (loadingScreen != null)
+        {
+            loadingScreen.SetActive(false);
+        }
+    }
+
+    private void OnNetworkSceneEvent(SceneEvent sceneEvent)
+    {
+        if (!isLoadingScene) return;
+
+        switch (sceneEvent.SceneEventType)
+        {
+            case SceneEventType.LoadEventCompleted:
+            case SceneEventType.LoadComplete:
+                StartCoroutine(HideLoadingScreenWithDelay());
+                break;
+
+            case SceneEventType.Load:
+                UpdateLoadingProgress(0.2f, "Connecting...");
+                break;
+        }
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -78,6 +144,12 @@ public class SteamManager : MonoBehaviour
         else if (scene.name == "MainMenu")
         {
             wasInMainMenu = true;
+
+            if (loadingScreen != null)
+            {
+                loadingScreen.SetActive(false);
+            }
+            isLoadingScene = false;
         }
     }
 
@@ -199,7 +271,7 @@ public class SteamManager : MonoBehaviour
         {
             playerSlots[slotIndex].playerNameText.text = playerName;
             playerSlots[slotIndex].backgroundImage.sprite = occupiedSlotSprite;
-            playerSlots[slotIndex].backgroundImage.color = UnityEngine.Color.white;
+            playerSlots[slotIndex].backgroundImage.color = UnityColor.white; // DEĞİŞTİ
 
             if (playerSlots[slotIndex].kickButton != null)
             {
@@ -216,7 +288,7 @@ public class SteamManager : MonoBehaviour
         {
             playerSlots[slotIndex].playerNameText.text = "Empty";
             playerSlots[slotIndex].backgroundImage.sprite = emptySlotSprite;
-            playerSlots[slotIndex].backgroundImage.color = UnityEngine.Color.white;
+            playerSlots[slotIndex].backgroundImage.color = UnityColor.white; // DEĞİŞTİ
 
             if (playerSlots[slotIndex].kickButton != null)
             {
@@ -701,31 +773,6 @@ public class SteamManager : MonoBehaviour
         }
     }
 
-    void Start()
-    {
-        if (!SteamClient.IsValid)
-        {
-            ShowErrorMessage("Steam bağlantısı yok!");
-        }
-
-        isLobbyJoinValid = false;
-
-        for (int i = 0; i < MAX_PLAYERS; i++)
-        {
-            SetSlotEmpty(i);
-        }
-
-        if (StartGameButton != null)
-        {
-            StartGameButton.gameObject.SetActive(false);
-        }
-
-        if (ErrorMessageText != null)
-        {
-            ErrorMessageText.gameObject.SetActive(false);
-        }
-    }
-
     public void StartGameServer()
     {
         if (!isLobbyJoinValid || CurrentLobby.Id == 0)
@@ -751,9 +798,71 @@ public class SteamManager : MonoBehaviour
             StartGameButton.interactable = false;
         }
 
+        ShowLoadingScreen();
         NotifyClientsGameStartingClientRpc();
         PrepareManagersForSceneLoad();
         StartCoroutine(DelayedSceneLoad());
+    }
+
+    private void ShowLoadingScreen()
+    {
+        isLoadingScene = true;
+
+        if (loadingScreen != null)
+        {
+            loadingScreen.SetActive(true);
+        }
+
+        UpdateLoadingProgress(0f, "Starting Game");
+        StartCoroutine(AnimateLoadingDots());
+    }
+
+    private System.Collections.IEnumerator AnimateLoadingDots()
+    {
+        int dotCount = 0;
+
+        while (isLoadingScene)
+        {
+            dotCount = (dotCount + 1) % 4;
+            string dots = new string('.', dotCount);
+
+            if (loadingText != null)
+            {
+                string baseText = "Loading";
+                loadingText.text = $"{baseText}{dots}";
+            }
+
+            yield return new WaitForSeconds(0.5f);
+        }
+    }
+
+    private System.Collections.IEnumerator HideLoadingScreenWithDelay()
+    {
+        yield return new WaitForSeconds(minimumLoadTime);
+
+        UpdateLoadingProgress(1f, "Ready!");
+
+        yield return new WaitForSeconds(0.5f);
+
+        if (loadingScreen != null)
+        {
+            loadingScreen.SetActive(false);
+        }
+
+        isLoadingScene = false;
+    }
+
+    private void UpdateLoadingProgress(float progress, string text = null)
+    {
+        if (loadingProgressBar != null)
+        {
+            loadingProgressBar.value = progress;
+        }
+
+        if (loadingText != null && !string.IsNullOrEmpty(text))
+        {
+            loadingText.text = text;
+        }
     }
 
     private void PrepareManagersForSceneLoad()
@@ -768,34 +877,78 @@ public class SteamManager : MonoBehaviour
     private void NotifyClientsGameStartingClientRpc()
     {
         Time.timeScale = 1f;
+        ShowLoadingScreen();
     }
 
     private System.Collections.IEnumerator DelayedSceneLoad()
     {
+        UpdateLoadingProgress(0.2f, "Preparing");
+
         yield return new WaitForSeconds(0.5f);
 
         try
         {
+            UpdateLoadingProgress(0.3f, "Loading Scene");
+
             var sceneLoadStatus = NetworkManager.Singleton.SceneManager.LoadScene("Map1", LoadSceneMode.Single);
 
             if (sceneLoadStatus != SceneEventProgressStatus.Started)
             {
                 ShowErrorMessage("Sahne yüklenemedi!");
 
+                if (loadingScreen != null)
+                {
+                    loadingScreen.SetActive(false);
+                }
+                isLoadingScene = false;
+
                 if (StartGameButton != null)
                 {
                     StartGameButton.interactable = true;
                 }
+            }
+            else
+            {
+                StartCoroutine(TrackLoadingProgress());
             }
         }
         catch (System.Exception ex)
         {
             ShowErrorMessage("Yükleme hatası!");
 
+            if (loadingScreen != null)
+            {
+                loadingScreen.SetActive(false);
+            }
+            isLoadingScene = false;
+
             if (StartGameButton != null)
             {
                 StartGameButton.interactable = true;
             }
+        }
+    }
+
+    private System.Collections.IEnumerator TrackLoadingProgress()
+    {
+        float progress = 0.3f;
+        float timer = 0f;
+
+        while (isLoadingScene && progress < 0.9f)
+        {
+            progress += Time.deltaTime * 0.3f;
+            progress = Mathf.Clamp(progress, 0.3f, 0.9f);
+            timer += Time.deltaTime;
+
+            UpdateLoadingProgress(progress, "Loading");
+
+            yield return null;
+        }
+
+        while (timer < minimumLoadTime && isLoadingScene)
+        {
+            timer += Time.deltaTime;
+            yield return null;
         }
     }
 }

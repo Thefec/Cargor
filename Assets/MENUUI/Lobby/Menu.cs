@@ -1,4 +1,4 @@
-using UnityEngine.UI;
+ï»¿using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
 using UnityEngine;
@@ -6,21 +6,22 @@ using Unity.Netcode;
 
 public class Menu : MonoBehaviour
 {
-    [Header("Ana Menü Butonları")]
+    [Header("Ana MenÃ¼ ButonlarÄ±")]
     public Button playOnlineButton;
     public Button playOfflineButton;
+    public Button tutorialButton;
     public Button settingsButton;
     public Button creditsButton;
     public Button quitButton;
 
-    [Header("Host/Join Menü Butonları")]
+    [Header("Host/Join MenÃ¼ ButonlarÄ±")]
     public Button hostButton;
     public Button joinButton;
     public Button exitHostJoinButton;
 
-    [Header("Sosyal Medya Butonları")]
+    [Header("Sosyal Medya ButonlarÄ±")]
     public Button discordButton;
-    public Button twitterButton;
+    public Button steamPageButton;
     public Button instagramButton;
 
     [Header("UI Panelleri")]
@@ -32,20 +33,16 @@ public class Menu : MonoBehaviour
     [Header("Version Text")]
     public TextMeshProUGUI versionText;
 
-    [Header("Sahne İsimleri")]
-    public string mapSelectionSceneName = "MapSelection";
-    public string onlineRoomSceneName = "OnlineRoom";
-
-    [Header("Settings Panel Butonları")]
+    [Header("Settings Panel ButonlarÄ±")]
     public Button backFromSettingsButton;
     public Button saveSettingsButton;
 
-    [Header("Credits Panel Butonları")]
+    [Header("Credits Panel ButonlarÄ±")]
     public Button backFromCreditsButton;
 
     [Header("Sosyal Medya Linkleri")]
     public string discordURL = "https://discord.gg/yourdiscord";
-    public string twitterURL = "https://twitter.com/youraccount";
+    public string steamPageURL = "https://store.steampowered.com/app/YOURAPPID";
     public string instagramURL = "https://instagram.com/youraccount";
 
     [Header("Audio Sources")]
@@ -59,17 +56,16 @@ public class Menu : MonoBehaviour
     [Range(0f, 1f)]
     public float buttonSoundVolume = 1f;
 
-    [Header("Oyun Ayarları")]
+    [Header("Oyun AyarlarÄ±")]
     public string gameVersion = "v1.0.0";
 
     [Header("Settings Manager")]
     public UnifiedSettingsManager settingsManager;
 
-    // ? YENİ: SteamManager referansı
     [Header("Steam Manager")]
     public SteamManager steamManager;
 
-    // Panel durumlarını takip etmek için
+    // Panel durumlarÄ±nÄ± takip etmek iÃ§in
     private bool isMainMenuActive = true;
     private bool isHostJoinMenuActive = false;
 
@@ -79,7 +75,7 @@ public class Menu : MonoBehaviour
         SetupButtonListeners();
         SetGameVersion();
         FindSettingsManager();
-        FindSteamManager(); // ? YENİ
+        FindSteamManager();
     }
 
     void FindSettingsManager()
@@ -90,7 +86,6 @@ public class Menu : MonoBehaviour
         }
     }
 
-    // ? YENİ: SteamManager'ı otomatik bul
     void FindSteamManager()
     {
         if (steamManager == null)
@@ -99,7 +94,7 @@ public class Menu : MonoBehaviour
 
             if (steamManager == null)
             {
-                Debug.LogWarning("?? SteamManager bulunamadı! Online özellikler çalışmayabilir.");
+                Debug.LogWarning("âš ï¸ SteamManager bulunamadÄ±! Online Ã¶zellikler Ã§alÄ±ÅŸmayabilir.");
             }
         }
     }
@@ -111,12 +106,15 @@ public class Menu : MonoBehaviour
 
     void SetupButtonListeners()
     {
-        // Ana menü butonları
+        // Ana menÃ¼ butonlarÄ±
         if (playOnlineButton != null)
             playOnlineButton.onClick.AddListener(() => { PlayButtonSound(); ShowHostJoinMenu(); });
 
         if (playOfflineButton != null)
             playOfflineButton.onClick.AddListener(() => { PlayButtonSound(); PlayOffline(); });
+
+        if (tutorialButton != null)
+            tutorialButton.onClick.AddListener(() => { PlayButtonSound(); PlayTutorial(); });
 
         if (settingsButton != null)
             settingsButton.onClick.AddListener(() => { PlayButtonSound(); OpenSettings(); });
@@ -127,17 +125,14 @@ public class Menu : MonoBehaviour
         if (quitButton != null)
             quitButton.onClick.AddListener(() => { PlayButtonSound(); QuitGame(); });
 
-        // ? DEĞİŞTİRİLDİ: Host/Join butonları artık köprü metodları çağırıyor
         if (hostButton != null)
         {
-            // Inspector'daki OnClick olaylarını temizle
             hostButton.onClick.RemoveAllListeners();
             hostButton.onClick.AddListener(() => { PlayButtonSound(); CreateLobbyWithSound(); });
         }
 
         if (joinButton != null)
         {
-            // Inspector'daki OnClick olaylarını temizle
             joinButton.onClick.RemoveAllListeners();
             joinButton.onClick.AddListener(() => { PlayButtonSound(); JoinLobbyWithSound(); });
         }
@@ -145,7 +140,7 @@ public class Menu : MonoBehaviour
         if (exitHostJoinButton != null)
             exitHostJoinButton.onClick.AddListener(() => { PlayButtonSound(); ExitHostJoinMenu(); });
 
-        // Settings panel butonları
+        // Settings panel butonlarÄ±
         if (backFromSettingsButton != null)
             backFromSettingsButton.onClick.AddListener(() => { PlayButtonSound(); BackFromSettings(); });
 
@@ -159,51 +154,47 @@ public class Menu : MonoBehaviour
             backFromCreditsButton.onClick.AddListener(() => { PlayButtonSound(); CloseCredits(); });
         }
 
-        // Sosyal medya butonları
+        // Sosyal medya butonlarÄ±
         if (discordButton != null)
             discordButton.onClick.AddListener(() => { PlayButtonSound(); OpenDiscord(); });
 
-        if (twitterButton != null)
-            twitterButton.onClick.AddListener(() => { PlayButtonSound(); OpenTwitter(); });
+        if (steamPageButton != null)
+            steamPageButton.onClick.AddListener(() => { PlayButtonSound(); OpenSteamPage(); });
 
         if (instagramButton != null)
             instagramButton.onClick.AddListener(() => { PlayButtonSound(); OpenInstagram(); });
     }
 
-    // ? YENİ: Ses efekti ile lobi oluşturma
     void CreateLobbyWithSound()
     {
         if (steamManager != null)
         {
-            Debug.Log("?? Host lobi oluşturuluyor (Steam)...");
+            Debug.Log("ğŸ® Host lobi oluÅŸturuluyor (Steam)...");
             steamManager.HostLobby();
         }
         else
         {
-            Debug.LogError("? SteamManager bulunamadı! Lobi oluşturulamıyor.");
+            Debug.LogError("âŒ SteamManager bulunamadÄ±! Lobi oluÅŸturulamÄ±yor.");
         }
     }
 
-    // ? YENİ: Ses efekti ile lobiye katılma
     void JoinLobbyWithSound()
     {
         if (steamManager != null)
         {
-            Debug.Log("?? Lobiye katılma işlemi başlatılıyor (Steam)...");
+            Debug.Log("ğŸ® Lobiye katÄ±lma iÅŸlemi baÅŸlatÄ±lÄ±yor (Steam)...");
             steamManager.JoinLobbyWithID();
         }
         else
         {
-            Debug.LogError("? SteamManager bulunamadı! Lobiye katılınamıyor.");
+            Debug.LogError("âŒ SteamManager bulunamadÄ±! Lobiye katÄ±lÄ±namÄ±yor.");
         }
     }
 
-    // Buton ses efekti metodu
     void PlayButtonSound()
     {
         if (buttonClickSound == null) return;
 
-        // Ses seviyesini hesapla (settingsManager'dan alınacak)
         float finalVolume = buttonSoundVolume;
 
         if (settingsManager != null)
@@ -211,7 +202,6 @@ public class Menu : MonoBehaviour
             finalVolume *= settingsManager.GetSFXVolume() * settingsManager.GetMasterVolume();
         }
 
-        // AudioSource öncelik sırası: uiAudioSource -> sfxAudioSource -> Yeni AudioSource
         if (uiAudioSource != null)
         {
             uiAudioSource.PlayOneShot(buttonClickSound, finalVolume);
@@ -222,17 +212,15 @@ public class Menu : MonoBehaviour
         }
         else
         {
-            // Geçici AudioSource oluştur
             AudioSource.PlayClipAtPoint(buttonClickSound, Camera.main.transform.position, finalVolume);
         }
     }
 
-    // Hover ses efekti metodu (opsiyonel)
     void PlayHoverSound()
     {
         if (buttonHoverSound == null) return;
 
-        float finalVolume = buttonSoundVolume * 0.5f; // Hover sesi daha düşük
+        float finalVolume = buttonSoundVolume * 0.5f;
 
         if (settingsManager != null)
         {
@@ -257,10 +245,10 @@ public class Menu : MonoBehaviour
         }
     }
 
-    // PANEL YÖNETİM SİSTEMİ
+    // PANEL YÃ–NETÄ°M SÄ°STEMÄ°
     void ShowMainMenu()
     {
-        Debug.Log("Ana menü gösteriliyor");
+        Debug.Log("Ana menÃ¼ gÃ¶steriliyor");
 
         if (mainMenuPanel != null)
             mainMenuPanel.SetActive(true);
@@ -276,7 +264,7 @@ public class Menu : MonoBehaviour
 
     void ShowHostJoinMenu()
     {
-        Debug.Log("Host/Join menüsü gösteriliyor");
+        Debug.Log("Host/Join menÃ¼sÃ¼ gÃ¶steriliyor");
 
         if (mainMenuPanel != null)
             mainMenuPanel.SetActive(false);
@@ -292,7 +280,7 @@ public class Menu : MonoBehaviour
 
     public void ExitHostJoinMenu()
     {
-        Debug.Log("Host/Join menüsünden ana menüye dönülüyor");
+        Debug.Log("Host/Join menÃ¼sÃ¼nden ana menÃ¼ye dÃ¶nÃ¼lÃ¼yor");
         ShowMainMenu();
     }
 
@@ -304,7 +292,7 @@ public class Menu : MonoBehaviour
         if (creditsPanel != null)
             creditsPanel.SetActive(false);
 
-        Debug.Log("Ayarlar paneli gösteriliyor");
+        Debug.Log("Ayarlar paneli gÃ¶steriliyor");
     }
 
     void ShowCreditsPanel()
@@ -315,7 +303,7 @@ public class Menu : MonoBehaviour
         if (settingsPanel != null)
             settingsPanel.SetActive(false);
 
-        Debug.Log("Krediler paneli gösteriliyor");
+        Debug.Log("Krediler paneli gÃ¶steriliyor");
     }
 
     void CloseAllOverlayPanels()
@@ -335,7 +323,7 @@ public class Menu : MonoBehaviour
         CloseAllOverlayPanels();
     }
 
-    // Ana Menü Fonksiyonları
+    // Ana MenÃ¼ FonksiyonlarÄ±
     public void PlayOnline()
     {
         ShowHostJoinMenu();
@@ -343,27 +331,25 @@ public class Menu : MonoBehaviour
 
     public void PlayOffline()
     {
-        Debug.Log("Offline oyun başlatılıyor...");
-        if (!string.IsNullOrEmpty(mapSelectionSceneName))
-        {
-            SceneManager.LoadScene(mapSelectionSceneName);
-        }
-        else
-        {
-            Debug.LogWarning("Map Selection sahne ismi belirtilmemiş!");
-        }
+        Debug.Log("Offline oyun baÅŸlatÄ±lÄ±yor...");
+        SceneManager.LoadScene("MapSelection");
     }
 
-    // ?? ESKİ FONKSİYONLAR - Artık kullanılmıyor (geriye dönük uyumluluk için)
+    public void PlayTutorial()
+    {
+        Debug.Log("Tutorial seviyesi yÃ¼kleniyor...");
+        SceneManager.LoadScene("Tutorial");
+    }
+
     public void CreateLobby()
     {
-        Debug.LogWarning("?? CreateLobby() deprecated! CreateLobbyWithSound() kullanılıyor.");
+        Debug.LogWarning("âš ï¸ CreateLobby() deprecated! CreateLobbyWithSound() kullanÄ±lÄ±yor.");
         CreateLobbyWithSound();
     }
 
     public void JoinLobby()
     {
-        Debug.LogWarning("?? JoinLobby() deprecated! JoinLobbyWithSound() kullanılıyor.");
+        Debug.LogWarning("âš ï¸ JoinLobby() deprecated! JoinLobbyWithSound() kullanÄ±lÄ±yor.");
         JoinLobbyWithSound();
     }
 
@@ -379,7 +365,7 @@ public class Menu : MonoBehaviour
 
     public void QuitGame()
     {
-        Debug.Log("Oyundan çıkılıyor...");
+        Debug.Log("Oyundan Ã§Ä±kÄ±lÄ±yor...");
 
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
@@ -388,13 +374,13 @@ public class Menu : MonoBehaviour
 #endif
     }
 
-    // Settings Panel Fonksiyonları
+    // Settings Panel FonksiyonlarÄ±
     public void BackFromSettings()
     {
         if (settingsManager != null && settingsManager.HasUnsavedChanges())
         {
             settingsManager.OnBackButtonPressed();
-            Debug.Log("Ayarlar panelinden çıkış: Kaydedilmemiş değişiklikler geri alındı.");
+            Debug.Log("Ayarlar panelinden Ã§Ä±kÄ±ÅŸ: KaydedilmemiÅŸ deÄŸiÅŸiklikler geri alÄ±ndÄ±.");
         }
 
         if (settingsPanel != null)
@@ -409,17 +395,17 @@ public class Menu : MonoBehaviour
             Debug.Log("Ayarlar kaydedildi.");
         }
 
-        Debug.Log("Tüm ayarlar kaydedildi");
+        Debug.Log("TÃ¼m ayarlar kaydedildi");
     }
 
-    // Credits Panel Fonksiyonları
+    // Credits Panel FonksiyonlarÄ±
     public void CloseCredits()
     {
         if (creditsPanel != null)
             creditsPanel.SetActive(false);
     }
 
-    // ESKI FONKSİYONLAR (Uyumluluk için)
+    // ESKI FONKSÄ°YONLAR (Uyumluluk iÃ§in)
     public void CreateRoom()
     {
         CreateLobbyWithSound();
@@ -435,40 +421,40 @@ public class Menu : MonoBehaviour
         ShowMainMenu();
     }
 
-    // Sosyal Medya Fonksiyonları
+    // Sosyal Medya FonksiyonlarÄ±
     public void OpenDiscord()
     {
-        Debug.Log("Discord açılıyor...");
+        Debug.Log("Discord aÃ§Ä±lÄ±yor...");
         Application.OpenURL(discordURL);
     }
 
-    public void OpenTwitter()
+    public void OpenSteamPage()
     {
-        Debug.Log("Twitter açılıyor...");
-        Application.OpenURL(twitterURL);
+        Debug.Log("Steam sayfasÄ± aÃ§Ä±lÄ±yor...");
+        Application.OpenURL(steamPageURL);
     }
 
     public void OpenInstagram()
     {
-        Debug.Log("Instagram açılıyor...");
+        Debug.Log("Instagram aÃ§Ä±lÄ±yor...");
         Application.OpenURL(instagramURL);
     }
 
-    // Yardımcı Fonksiyonlar
+    // YardÄ±mcÄ± Fonksiyonlar
     public void SetGameVersion(string newVersion)
     {
         gameVersion = newVersion;
         SetGameVersion();
     }
 
-    // ESC tuşu ile panelleri kapatma
+    // ESC tuÅŸu ile panelleri kapatma
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             if (settingsPanel != null && settingsPanel.activeInHierarchy)
             {
-                PlayButtonSound(); // ESC tuşu için de ses
+                PlayButtonSound();
                 BackFromSettings();
             }
             else if (creditsPanel != null && creditsPanel.activeInHierarchy)
@@ -491,6 +477,9 @@ public class Menu : MonoBehaviour
 
         if (playOfflineButton != null)
             playOfflineButton.onClick.RemoveAllListeners();
+
+        if (tutorialButton != null)
+            tutorialButton.onClick.RemoveAllListeners();
 
         if (settingsButton != null)
             settingsButton.onClick.RemoveAllListeners();
@@ -522,8 +511,8 @@ public class Menu : MonoBehaviour
         if (discordButton != null)
             discordButton.onClick.RemoveAllListeners();
 
-        if (twitterButton != null)
-            twitterButton.onClick.RemoveAllListeners();
+        if (steamPageButton != null)
+            steamPageButton.onClick.RemoveAllListeners();
 
         if (instagramButton != null)
             instagramButton.onClick.RemoveAllListeners();
