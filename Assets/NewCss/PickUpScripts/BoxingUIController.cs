@@ -11,7 +11,7 @@ namespace NewCss
         [SerializeField] private GameObject uiPanel;
         [SerializeField] private TextMeshProUGUI promptText;
         [SerializeField] private TextMeshProUGUI feedbackText;
-        [SerializeField] private Image[] progressIndicators; // ✅ 3 TANE OLMALI
+        [SerializeField] private Image[] progressIndicators;
 
         [Header("Arrow Images - RED")]
         [SerializeField] private Image redUpImage;
@@ -34,6 +34,10 @@ namespace NewCss
         private BoxInfo.BoxType currentBoxType;
         private Image currentActiveImage;
 
+        // ✅ YENİ: Dinamik fade süreleri
+        private float fadeInDuration = 0.15f;
+        private float fadeOutDuration = 0.15f;
+
         void Awake()
         {
             if (uiPanel != null)
@@ -43,11 +47,20 @@ namespace NewCss
 
             HideAllArrows();
 
-            // ✅ Progress indicator sayısını kontrol et
             if (progressIndicators != null && progressIndicators.Length != 3)
             {
                 Debug.LogWarning($"Progress indicators count is {progressIndicators.Length}, should be 3!");
             }
+        }
+
+        /// <summary>
+        /// ✅ YENİ: Fade hızlarını dışarıdan ayarla
+        /// </summary>
+        public void SetFadeDurations(float fadeIn, float fadeOut)
+        {
+            fadeInDuration = fadeIn;
+            fadeOutDuration = fadeOut;
+            Debug.Log($"Fade durations set - In: {fadeIn}s, Out: {fadeOut}s");
         }
 
         public void ShowUI(BoxInfo.BoxType boxType)
@@ -61,7 +74,7 @@ namespace NewCss
 
             if (promptText != null)
             {
-                promptText.text = "Yön tuşlarını takip edin! (3 tuş)";
+                promptText.text = "Yön tuşlarını takip edin! (3 FARKLI tuş)";
                 promptText.gameObject.SetActive(true);
             }
 
@@ -86,13 +99,13 @@ namespace NewCss
 
         public void ShowKey(KeyCode key)
         {
-            HideAllArrows();
-
             Image targetImage = GetImageForKey(key, currentBoxType);
             if (targetImage != null)
             {
                 targetImage.gameObject.SetActive(true);
                 currentActiveImage = targetImage;
+
+                StartCoroutine(FadeInImage(targetImage));
             }
         }
 
@@ -100,16 +113,58 @@ namespace NewCss
         {
             if (currentActiveImage != null)
             {
-                currentActiveImage.gameObject.SetActive(false);
+                StartCoroutine(FadeOutImage(currentActiveImage));
                 currentActiveImage = null;
             }
+        }
+
+        private IEnumerator FadeInImage(Image image)
+        {
+            if (image == null) yield break;
+
+            Color color = image.color;
+            color.a = 0f;
+            image.color = color;
+
+            float elapsed = 0f;
+            while (elapsed < fadeInDuration)
+            {
+                elapsed += Time.deltaTime;
+                color.a = Mathf.Lerp(0f, 1f, elapsed / fadeInDuration);
+                image.color = color;
+                yield return null;
+            }
+
+            color.a = 1f;
+            image.color = color;
+        }
+
+        private IEnumerator FadeOutImage(Image image)
+        {
+            if (image == null) yield break;
+
+            Color color = image.color;
+            float startAlpha = color.a;
+
+            float elapsed = 0f;
+            while (elapsed < fadeOutDuration)
+            {
+                elapsed += Time.deltaTime;
+                color.a = Mathf.Lerp(startAlpha, 0f, elapsed / fadeOutDuration);
+                image.color = color;
+                yield return null;
+            }
+
+            color.a = 0f;
+            image.color = color;
+            image.gameObject.SetActive(false);
         }
 
         public void ShowInputPrompt()
         {
             if (promptText != null)
             {
-                promptText.text = "Şimdi sıra sizde! (3 tuş)";
+                promptText.text = "Şimdi sıra sizde! (3 FARKLI tuş)";
             }
         }
 
@@ -121,7 +176,7 @@ namespace NewCss
                 feedbackText.color = isCorrect ? Color.green : Color.red;
                 feedbackText.gameObject.SetActive(true);
 
-                StartCoroutine(HideFeedbackDelayed(0.5f));
+                StartCoroutine(HideFeedbackDelayed(0.3f));
             }
 
             if (isCorrect && progressIndicators != null && stepIndex < progressIndicators.Length)
@@ -210,7 +265,6 @@ namespace NewCss
         {
             if (progressIndicators == null) return;
 
-            // ✅ 3 indicator'ı beyaz yap
             for (int i = 0; i < Mathf.Min(progressIndicators.Length, 3); i++)
             {
                 if (progressIndicators[i] != null)

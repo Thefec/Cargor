@@ -17,7 +17,7 @@ public class TutorialManager : NetworkBehaviour
     [Header("UI References")]
     [SerializeField] private GameObject tutorialUI;
     [SerializeField] private TextMeshProUGUI instructionText;
-    [SerializeField] private CanvasGroup tutorialCanvasGroup; // Opsiyonel - fade için
+    [SerializeField] private CanvasGroup tutorialCanvasGroup;
     [SerializeField] private float fadeSpeed = 2f;
 
     [Header("Typewriter Effect")]
@@ -54,6 +54,9 @@ public class TutorialManager : NetworkBehaviour
     private bool skipTyping = false;
     private Coroutine currentTypewriterCoroutine;
 
+    // ✅ FIX: Table interaction tracking
+    private bool tableInteractionCompleted = false;
+
     // Singleton
     public static TutorialManager Instance { get; private set; }
 
@@ -77,7 +80,6 @@ public class TutorialManager : NetworkBehaviour
             return;
         }
 
-        // Audio source oluştur
         if (typingSound != null && typingSoundSource == null)
         {
             typingSoundSource = gameObject.AddComponent<AudioSource>();
@@ -85,46 +87,53 @@ public class TutorialManager : NetworkBehaviour
             typingSoundSource.volume = typingSoundVolume;
         }
 
-        // ✅ UI'yi baştan aktif yap ama text'i temizle
         InitializeUI();
 
-        // Player'ı otomatik bul
         if (playerInventory == null)
         {
             StartCoroutine(FindLocalPlayer());
         }
 
-        // Tutorial'ı başlat
         StartCoroutine(StartTutorialSequence());
     }
 
     /// <summary>
-    /// UI'yi başlangıçta hazırla
+    /// ✅ FIX: UI text ayarlarını düzelt (overflow + auto-size)
     /// </summary>
     private void InitializeUI()
     {
         if (tutorialUI != null)
         {
-            // UI'yi aktif yap
             tutorialUI.SetActive(true);
         }
 
-        // Canvas Group varsa alpha'yı 1 yap (fade yok)
         if (tutorialCanvasGroup != null)
         {
             tutorialCanvasGroup.alpha = 1f;
         }
 
-        // Text'i boşalt (başlangıçta görünmesin)
         if (instructionText != null)
         {
             instructionText.text = "";
+
+            // ✅ FIX: Text overflow ayarları
+            instructionText.overflowMode = TextOverflowModes.Overflow; // Taşma izin ver (RectTransform içinde kal)
+            instructionText.enableWordWrapping = true; // Kelime kaydırma aktif
+            instructionText.enableAutoSizing = true; // Otomatik boyutlandırma
+            instructionText.fontSizeMin = 18f; // Minimum font boyutu
+            instructionText.fontSizeMax = 36f; // Maksimum font boyutu
+
+            if (showDebugLogs)
+                Debug.Log("✅ Instruction text configured with auto-sizing and word wrapping");
         }
 
-        // Skip hint'i gizle
         if (skipHintText != null)
         {
             skipHintText.gameObject.SetActive(false);
+
+            // ✅ Skip hint için de ayarla
+            skipHintText.enableWordWrapping = true;
+            skipHintText.overflowMode = TextOverflowModes.Overflow;
         }
 
         if (showDebugLogs)
@@ -133,7 +142,6 @@ public class TutorialManager : NetworkBehaviour
 
     private void Update()
     {
-        // Skip tuşu kontrolü
         if (Input.GetKeyDown(skipKey))
         {
             if (isTyping)
@@ -240,6 +248,9 @@ public class TutorialManager : NetworkBehaviour
 
         currentStep.stepStartTime = Time.time;
 
+        // ✅ FIX: Table interaction flag'ini sıfırla
+        tableInteractionCompleted = false;
+
         if (showDebugLogs)
             Debug.Log($"📚 Tutorial Step {stepIndex + 1}/{tutorialSteps.Count}: {currentStep.stepName}");
 
@@ -259,16 +270,12 @@ public class TutorialManager : NetworkBehaviour
     {
         if (instructionText != null)
         {
-            // ✅ FADE YOK - UI zaten açık, sadece text değiştir
-
-            // Skip hint göster (WaitForTime tipindeyse)
             if (showSkipHint && skipHintText != null && currentStep.conditionType == TutorialConditionType.WaitForTime)
             {
                 skipHintText.text = skipHintMessage.Replace("[SPACE]", $"[{skipKey}]");
                 skipHintText.gameObject.SetActive(true);
             }
 
-            // Typewriter efekti
             if (enableTypewriterEffect)
             {
                 if (currentTypewriterCoroutine != null)
@@ -292,12 +299,10 @@ public class TutorialManager : NetworkBehaviour
         isTyping = true;
         skipTyping = false;
 
-        // ✅ Text'i direkt temizle (önceki yazı kalmasın)
         instructionText.text = "";
 
         for (int i = 0; i < fullText.Length; i++)
         {
-            // Skip kontrolü
             if (skipTyping)
             {
                 instructionText.text = fullText;
@@ -306,13 +311,11 @@ public class TutorialManager : NetworkBehaviour
 
             instructionText.text += fullText[i];
 
-            // Yazma sesi çal
             if (typingSound != null && typingSoundSource != null && i % 2 == 0)
             {
                 typingSoundSource.PlayOneShot(typingSound, typingSoundVolume);
             }
 
-            // Noktalama işaretlerinde duraklama
             if (fullText[i] == '.' || fullText[i] == '!' || fullText[i] == '?')
             {
                 yield return new WaitForSeconds(typewriterSpeed * 8f);
@@ -340,15 +343,11 @@ public class TutorialManager : NetworkBehaviour
 
     private IEnumerator HideInstruction()
     {
-        // ✅ FADE YOK - Sadece text'i temizle
-
-        // Skip hint'i gizle
         if (skipHintText != null)
         {
             skipHintText.gameObject.SetActive(false);
         }
 
-        // Text'i temizle (kısa süre için)
         if (instructionText != null)
         {
             instructionText.text = "";
@@ -367,6 +366,9 @@ public class TutorialManager : NetworkBehaviour
         CompleteCurrentStep();
     }
 
+    /// <summary>
+    /// ✅ FIX: PlaceOnTable ve TakeFromTable condition'ları eklendi
+    /// </summary>
     private bool IsStepConditionMet()
     {
         if (currentStep == null || playerInventory == null)
@@ -390,6 +392,14 @@ public class TutorialManager : NetworkBehaviour
             case TutorialConditionType.DropItem:
                 return !playerInventory.HasItem;
 
+            // ✅ FIX: Masaya koyma kontrolü
+            case TutorialConditionType.PlaceOnTable:
+                return tableInteractionCompleted;
+
+            // ✅ FIX: Masadan alma kontrolü
+            case TutorialConditionType.TakeFromTable:
+                return tableInteractionCompleted;
+
             case TutorialConditionType.WaitForTime:
                 float elapsedTime = Time.time - currentStep.stepStartTime;
                 bool timeComplete = elapsedTime >= currentStep.waitDuration;
@@ -398,6 +408,10 @@ public class TutorialManager : NetworkBehaviour
                     Debug.Log($"⏰ Wait time completed: {elapsedTime:F1}s / {currentStep.waitDuration}s");
 
                 return timeComplete;
+
+            // ✅ FIX: Minigame completion
+            case TutorialConditionType.CompleteMinigame:
+                return currentStep.isCompleted;
 
             case TutorialConditionType.Custom:
                 return false;
@@ -422,7 +436,6 @@ public class TutorialManager : NetworkBehaviour
 
         RemoveHighlight();
 
-        // Kapıları kontrol et
         NotifyDoorsOfStepCompletion(currentStepIndex);
 
         StartCoroutine(TransitionToNextStep());
@@ -441,10 +454,9 @@ public class TutorialManager : NetworkBehaviour
 
     private IEnumerator TransitionToNextStep()
     {
-        // ✅ Fade yok, sadece kısa bekleme
         yield return StartCoroutine(HideInstruction());
 
-        yield return new WaitForSeconds(0.3f); // Kısa geçiş
+        yield return new WaitForSeconds(0.3f);
 
         isTransitioning = false;
 
@@ -456,13 +468,11 @@ public class TutorialManager : NetworkBehaviour
         if (showDebugLogs)
             Debug.Log("🎉 Tutorial completed!");
 
-        // ✅ Tutorial bitince text'i temizle
         if (instructionText != null)
         {
             instructionText.text = "Tutorial tamamlandı!";
         }
 
-        // Skip hint'i gizle
         if (skipHintText != null)
         {
             skipHintText.gameObject.SetActive(false);
@@ -514,10 +524,9 @@ public class TutorialManager : NetworkBehaviour
         RemoveHighlight();
         StartStep(stepIndex);
     }
-    // TutorialManager.cs içine EKLE (CompleteCurrentStep metodundan ÖNCE):
 
     /// <summary>
-    /// ✅ Minigame tamamlandığında BoxingMinigameManager tarafından çağrılır
+    /// ✅ FIX: Minigame tamamlandığında BoxingMinigameManager tarafından çağrılır
     /// </summary>
     public void OnMinigameCompleted()
     {
@@ -526,18 +535,14 @@ public class TutorialManager : NetworkBehaviour
             if (showDebugLogs)
                 Debug.Log("✅ Minigame completed - marking step as done");
 
-            // Step'i tamamlanmış olarak işaretle
             currentStep.isCompleted = true;
 
-            // Bir sonraki frame'de step'i tamamla
             StartCoroutine(CompleteStepNextFrame());
         }
     }
 
-    // TutorialManager.cs içine EKLE:
-
     /// <summary>
-    /// Masa etkileşimi olduğunda Table tarafından çağrılır
+    /// ✅ FIX: Table etkileşimi düzeltildi - flag kullanılıyor
     /// </summary>
     public void OnTableInteraction(bool isPlacing)
     {
@@ -546,12 +551,16 @@ public class TutorialManager : NetworkBehaviour
         if (isPlacing && currentStep.conditionType == TutorialConditionType.PlaceOnTable)
         {
             if (showDebugLogs)
-                Debug.Log("📦 Item placed on table - step will complete");
+                Debug.Log("📦 Item placed on table - marking step for completion");
+
+            tableInteractionCompleted = true;
         }
         else if (!isPlacing && currentStep.conditionType == TutorialConditionType.TakeFromTable)
         {
             if (showDebugLogs)
-                Debug.Log("📦 Item taken from table - step will complete");
+                Debug.Log("📦 Item taken from table - marking step for completion");
+
+            tableInteractionCompleted = true;
         }
     }
 
@@ -561,7 +570,6 @@ public class TutorialManager : NetworkBehaviour
 
         if (currentStep.conditionType == TutorialConditionType.PickupItem)
         {
-            // "Box" kelimesi içeren item alındı mı kontrol et
             if (currentStep.requiresItemPickup &&
                 !string.IsNullOrEmpty(currentStep.requiredItemName) &&
                 currentStep.requiredItemName.Contains("Box"))
@@ -574,7 +582,7 @@ public class TutorialManager : NetworkBehaviour
 
     private IEnumerator CompleteStepNextFrame()
     {
-        yield return null; // Bir frame bekle
+        yield return null;
 
         if (currentStep != null && currentStep.isCompleted)
         {

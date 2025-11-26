@@ -19,6 +19,12 @@ namespace NewCss
         [Header("Settings")]
         public string defaultPlayerName = "Player";
 
+        [Header("Player List Display - BREAK ROOM")]
+        [Tooltip("Break Room için oyuncu listesini gösteren Text elementi")]
+        public TextMeshProUGUI playerListDisplay; // Break Room oyuncu listesi
+        [Tooltip("Oyuncu listesinin gösterileceği panel (opsiyonel)")]
+        public GameObject playerListPanel; // Oyuncu listesi paneli (opsiyonel)
+
         void Start()
         {
             // Başlangıçta UI'ı güncelle
@@ -71,7 +77,7 @@ namespace NewCss
         /// </summary>
         private void SetupCursor()
         {
-            
+
         }
 
         public void UpdateNextDayUI()
@@ -166,7 +172,7 @@ namespace NewCss
                 nextDayPanel.SetActive(false);
             }
 
-        
+
 
             // Örnek: Oyun sahnesine geç
             // SceneManager.LoadScene("GameScene");
@@ -192,6 +198,114 @@ namespace NewCss
             return count;
         }
 
-        
+        // ============================================
+        // BREAK ROOM İÇİN OYUNCU LİSTESİ FONKSİYONU
+        // ============================================
+
+        /// <summary>
+        /// Break Room için oyuncu listesini UI'da gösterir
+        /// BreakRoomManager tarafından çağrılır
+        /// </summary>
+        /// <param name="playerNames">Lobideki oyuncu isimleri</param>
+        public void ShowPlayers(List<string> playerNames)
+        {
+            if (playerNames == null || playerNames.Count == 0)
+            {
+                Debug.LogWarning("[NextDayUI] Oyuncu listesi boş!");
+
+                if (playerListDisplay != null)
+                {
+                    playerListDisplay.text = "❌ Oyuncu bulunamadı";
+                }
+
+                // Panel varsa gizle
+                if (playerListPanel != null)
+                {
+                    playerListPanel.SetActive(false);
+                }
+
+                return;
+            }
+
+            // Oyuncu listesini oluştur
+            string displayText = "🎮 <b>Lobideki Oyuncular</b>\n\n";
+
+            for (int i = 0; i < playerNames.Count; i++)
+            {
+                // Her oyuncu için numara ve isim
+                displayText += $"<color=#4CAF50>►</color> <b>{i + 1}.</b> {playerNames[i]}\n";
+            }
+
+            displayText += $"\n<color=#FFC107>━━━━━━━━━━━━━━━━━</color>";
+            displayText += $"\n<b>Toplam:</b> <color=#2196F3>{playerNames.Count}</color> oyuncu";
+
+            // UI'da göster
+            if (playerListDisplay != null)
+            {
+                playerListDisplay.text = displayText;
+            }
+            else
+            {
+                Debug.LogWarning("[NextDayUI] playerListDisplay atanmamış! Inspector'dan TextMeshProUGUI ekleyin.");
+            }
+
+            // Panel varsa aktif et
+            if (playerListPanel != null)
+            {
+                playerListPanel.SetActive(true);
+            }
+
+            Debug.Log($"[NextDayUI] ✅ Oyuncu listesi güncellendi: {playerNames.Count} oyuncu");
+
+            // Debug için oyuncu isimlerini de logla
+            string debugList = string.Join(", ", playerNames);
+            Debug.Log($"[NextDayUI] Oyuncular: {debugList}");
+        }
+
+        /// <summary>
+        /// Oyuncu listesini gizler
+        /// </summary>
+        public void HidePlayerList()
+        {
+            if (playerListPanel != null)
+            {
+                playerListPanel.SetActive(false);
+            }
+
+            if (playerListDisplay != null)
+            {
+                playerListDisplay.text = "";
+            }
+        }
+
+        /// <summary>
+        /// Break Room durumunu gösterir (kaç kişi içerde)
+        /// </summary>
+        /// <param name="playersInRoom">Break Room'da olan oyuncu sayısı</param>
+        /// <param name="requiredPlayers">Gerekli oyuncu sayısı</param>
+        public void UpdateBreakRoomStatus(int playersInRoom, int requiredPlayers)
+        {
+            if (playerListDisplay == null) return;
+
+            string statusText = playerListDisplay.text;
+
+            // Mevcut metne durum bilgisi ekle
+            statusText += $"\n\n<color=#FF5722>━━━━━━━━━━━━━━━━━</color>";
+            statusText += $"\n<b>Break Room Durumu:</b>";
+            statusText += $"\n<color=#4CAF50>►</color> İçeride: <b>{playersInRoom}</b> / <b>{requiredPlayers}</b> oyuncu";
+
+            // Eğer herkes içerdeyse
+            if (playersInRoom >= requiredPlayers)
+            {
+                statusText += $"\n<color=#4CAF50>✓ Herkes hazır! 🎉</color>";
+            }
+            else
+            {
+                int waiting = requiredPlayers - playersInRoom;
+                statusText += $"\n<color=#FFC107>⏳ {waiting} oyuncu bekleniyor...</color>";
+            }
+
+            playerListDisplay.text = statusText;
+        }
     }
 }

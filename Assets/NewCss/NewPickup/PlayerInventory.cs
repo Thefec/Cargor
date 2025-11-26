@@ -816,15 +816,28 @@ public class PlayerInventory : NetworkBehaviour
         Vector3 detectionPos = GetDetectionCenterPosition();
         Collider[] colliders = Physics.OverlapSphere(detectionPos, detectionRange);
 
+        ShelfState closestShelf = null;
+        float closestDistance = float.MaxValue;
+
         foreach (var collider in colliders)
         {
             ShelfState shelf = collider.GetComponent<ShelfState>();
-            if (shelf != null && IsPositionInCone(shelf.transform.position))
+            if (shelf != null)
             {
-                return shelf;
+                // Shelf'in kendi range kontrolünü kullan
+                if (shelf.IsPlayerInRange(transform))
+                {
+                    float distance = Vector3.Distance(transform.position, shelf.transform.position);
+                    if (distance < closestDistance)
+                    {
+                        closestDistance = distance;
+                        closestShelf = shelf;
+                    }
+                }
             }
         }
-        return null;
+
+        return closestShelf;
     }
 
     private NetworkedShelf GetNearbyNetworkedShelf()
@@ -1081,15 +1094,18 @@ public class PlayerInventory : NetworkBehaviour
                 Debug.Log($"F pressed - Nearby shelf: {(nearbyShelf != null ? "Found" : "Not found")}");
                 Debug.Log($"F pressed - Nearby networked shelf: {(networkedShelf != null ? "Found" : "Not found")}");
 
+                // ✅ NetworkedShelf kontrolü (priority 1)
                 if (networkedShelf != null && !networkedShelf.CanPlaceItems())
                 {
                     Debug.Log("Cannot place items on NetworkedShelf - doing normal drop");
                     isProcessingInteraction = true;
                     RequestDropServerRpc();
                     PlayDropSound();
+                    StartCoroutine(ResetInteractionFlag());
                     return;
                 }
 
+                // ✅ ShelfState kontrolü (priority 2)
                 if (nearbyShelf != null)
                 {
                     bool canPlace = CanPlaceBoxOnShelf(nearbyShelf);
@@ -1097,10 +1113,12 @@ public class PlayerInventory : NetworkBehaviour
 
                     if (canPlace)
                     {
-                        Debug.Log("Attempting to place on shelf...");
+                        Debug.Log($"✅ CLIENT: Calling RequestPlaceOnShelfServerRpc (ItemID: {currentItemID.Value})");
                         isProcessingInteraction = true;
                         RequestPlaceOnShelfServerRpc();
                         PlayPlaceOnShelfSound();
+                        StartCoroutine(ResetInteractionFlag());
+                        return;
                     }
                     else
                     {
@@ -1108,15 +1126,17 @@ public class PlayerInventory : NetworkBehaviour
                         isProcessingInteraction = true;
                         RequestDropServerRpc();
                         PlayDropSound();
+                        StartCoroutine(ResetInteractionFlag());
+                        return;
                     }
                 }
-                else
-                {
-                    Debug.Log("No shelf nearby - doing normal drop");
-                    isProcessingInteraction = true;
-                    RequestDropServerRpc();
-                    PlayDropSound();
-                }
+
+                // ✅ Normal drop (shelf yok)
+                Debug.Log("No shelf nearby - doing normal drop");
+                isProcessingInteraction = true;
+                RequestDropServerRpc();
+                PlayDropSound();
+                StartCoroutine(ResetInteractionFlag());
             }
         }
 
@@ -1150,35 +1170,64 @@ public class PlayerInventory : NetworkBehaviour
 
     // ✨ YENİ: NetworkObjectId ile shelf'ten al
     // ✨ YENİ: NetworkObjectId ile shelf'ten al
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     private void RequestTakeFromShelfServerRpc(ulong itemNetworkId, ServerRpcParams rpcParams = default)
     {
         ulong requesterClientId = rpcParams.Receive.SenderClientId;
 
-        Debug.Log($"RequestTakeFromShelfServerRpc called by client {requesterClientId} for item {itemNetworkId}");
+        Debug.Log($"📥 SERVER: Client {requesterClientId} wants to take item {itemNetworkId} from shelf");
 
         if (hasItem.Value)
         {
+            Debug.LogWarning($"⚠️ Client {requesterClientId} already has an item!");
             ResetProcessingInteractionClientRpc();
             return;
         }
 
-        ShelfState nearbyShelf = GetNearbyShelf();
-        if (nearbyShelf == null || !nearbyShelf.HasItem())
+        // ✅ CLIENT'IN PLAYER OBJECT'INI BUL
+        if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(requesterClientId, out var client))
         {
-            Debug.Log("No shelf nearby or shelf is empty!");
+            Debug.LogError($"❌ Client {requesterClientId} not found in ConnectedClients!");
             ResetProcessingInteractionClientRpc();
             return;
         }
 
+        if (client.PlayerObject == null)
+        {
+            Debug.LogError($"❌ PlayerObject is null for client {requesterClientId}!");
+            ResetProcessingInteractionClientRpc();
+            return;
+        }
+
+        Transform playerTransform = client.PlayerObject.transform;
+        Debug.Log($"✅ SERVER: Found player transform for client {requesterClientId} at {playerTransform.position}");
+
+        // ✅ SHELF BUL
+        ShelfState nearbyShelf = GetNearbyShelfForTransform(playerTransform);
+        if (nearbyShelf == null)
+        {
+            Debug.LogError($"❌ No shelf found near client {requesterClientId}!");
+            ResetProcessingInteractionClientRpc();
+            return;
+        }
+
+        if (!nearbyShelf.HasItem())
+        {
+            Debug.LogWarning($"⚠️ Shelf is empty!");
+            ResetProcessingInteractionClientRpc();
+            return;
+        }
+
+        Debug.Log($"✅ SERVER: Calling ShelfState.TakeItemFromShelfServerRpc");
+
+        // ✅ ShelfState'in kendi ServerRpc'sini çağır
         try
         {
-            Debug.Log($"Requesting item {itemNetworkId} from shelf for client {requesterClientId}");
             nearbyShelf.TakeItemFromShelfServerRpc(requesterClientId, itemNetworkId, rpcParams);
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"Error in RequestTakeFromShelfServerRpc: {e.Message}");
+            Debug.LogError($"❌ Error in TakeItemFromShelfServerRpc: {e.Message}\n{e.StackTrace}");
         }
         finally
         {
@@ -1186,97 +1235,210 @@ public class PlayerInventory : NetworkBehaviour
         }
     }
 
-    [ServerRpc]
-    private void RequestPlaceOnShelfServerRpc()
+    [ServerRpc(RequireOwnership = false)]
+    private void RequestPlaceOnShelfServerRpc(ServerRpcParams rpcParams = default)
     {
+        ulong requesterClientId = rpcParams.Receive.SenderClientId;
+
+        Debug.Log($"📤 SERVER: RequestPlaceOnShelfServerRpc - Client {requesterClientId}");
+
         if (!hasItem.Value)
         {
-            Debug.Log("No item to place on shelf!");
+            Debug.Log($"❌ SERVER: Client {requesterClientId} has no item to place!");
             ResetProcessingInteractionClientRpc();
             return;
         }
 
-        ShelfState nearbyShelf = GetNearbyShelf();
+        // ✅ CLIENT'IN PLAYER OBJECT'INI BUL
+        if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(requesterClientId, out var client) ||
+            client.PlayerObject == null)
+        {
+            Debug.LogError($"❌ SERVER: Player object not found for client {requesterClientId}");
+            ResetProcessingInteractionClientRpc();
+            return;
+        }
+
+        Transform playerTransform = client.PlayerObject.transform;
+        Debug.Log($"✅ SERVER: Found player at position {playerTransform.position}");
+
+        // ✅ SHELF'İ BUL (PLAYER TRANSFORM İLE)
+        ShelfState nearbyShelf = FindNearbyShelfForPosition(playerTransform.position, detectionRange);
+
         if (nearbyShelf == null)
         {
-            Debug.Log("No nearby shelf found!");
+            Debug.LogError($"❌ SERVER: No shelf found near client {requesterClientId}!");
             ResetProcessingInteractionClientRpc();
             return;
         }
 
+        Debug.Log($"✅ SERVER: Found shelf: {nearbyShelf.name}");
+
+        // ✅ RANGE KONTROLÜ
+        if (!nearbyShelf.IsPlayerInRange(playerTransform))
+        {
+            Debug.LogWarning($"❌ SERVER: Client {requesterClientId} NOT in shelf range! Distance: {Vector3.Distance(playerTransform.position, nearbyShelf.transform.position):F2}");
+            ResetProcessingInteractionClientRpc();
+            return;
+        }
+
+        // ✅ SHELF DOLU MU?
         if (nearbyShelf.IsFull())
         {
-            Debug.Log("Shelf is full!");
+            Debug.Log($"❌ SERVER: Shelf is FULL!");
             ResetProcessingInteractionClientRpc();
             return;
         }
 
+        // ✅ BOX KONTROLÜ
         if (!CanPlaceBoxOnShelf(nearbyShelf))
         {
-            Debug.Log("Can only place full boxes on shelf!");
+            Debug.Log($"❌ SERVER: Can only place FULL boxes on shelf!");
             ResetProcessingInteractionClientRpc();
             return;
         }
 
+        // ✅ WORLD ITEM SPAWN ET
         GameObject worldItemPrefab = GetWorldItemPrefab(currentItemData);
-        if (worldItemPrefab != null)
+        if (worldItemPrefab == null)
         {
-            Vector3 spawnPos = transform.position + Vector3.up * 0.5f;
-            GameObject spawnedItem = Instantiate(worldItemPrefab, spawnPos, Quaternion.identity);
-            NetworkObject networkObject = spawnedItem.GetComponent<NetworkObject>();
-
-            if (networkObject != null)
-            {
-                networkObject.Spawn();
-
-                NetworkWorldItem worldItem = spawnedItem.GetComponent<NetworkWorldItem>();
-                if (worldItem != null)
-                {
-                    worldItem.SetItemData(currentItemData);
-
-                    BoxInfo worldBoxInfo = spawnedItem.GetComponent<BoxInfo>();
-                    if (worldBoxInfo != null && heldItemVisual != null)
-                    {
-                        BoxInfo heldBoxInfo = heldItemVisual.GetComponent<BoxInfo>();
-                        if (heldBoxInfo != null)
-                        {
-                            worldBoxInfo.isFull = heldBoxInfo.isFull;
-                            worldBoxInfo.boxType = heldBoxInfo.boxType;
-                        }
-                    }
-
-                    worldItem.DisablePickup();
-                }
-
-                Debug.Log("Calling PlaceItemOnShelfServerRpc...");
-                nearbyShelf.PlaceItemOnShelfServerRpc(new NetworkObjectReference(networkObject));
-
-                hasItem.Value = false;
-                currentItemID.Value = -1;
-
-                if (playerMovement != null)
-                {
-                    playerMovement.SetCarrying(false);
-                }
-
-                StartDropAnimationClientRpc();
-                Debug.Log("Item placed on shelf successfully!");
-            }
-            else
-            {
-                Debug.LogError("Failed to get NetworkObject component!");
-            }
+            Debug.LogError($"❌ SERVER: World item prefab is NULL!");
+            ResetProcessingInteractionClientRpc();
+            return;
         }
-        else
+
+        Vector3 spawnPos = playerTransform.position + Vector3.up * 0.5f;
+        GameObject spawnedItem = Instantiate(worldItemPrefab, spawnPos, Quaternion.identity);
+        NetworkObject networkObject = spawnedItem.GetComponent<NetworkObject>();
+
+        if (networkObject == null)
         {
-            Debug.LogError("World item prefab is null!");
+            Debug.LogError($"❌ SERVER: NetworkObject component missing!");
+            Destroy(spawnedItem);
+            ResetProcessingInteractionClientRpc();
+            return;
         }
+
+
+        // ✅ NETWORK SPAWN
+        networkObject.Spawn();
+
+        // ✅ ITEM DATA AYARLA
+        NetworkWorldItem worldItem = spawnedItem.GetComponent<NetworkWorldItem>();
+        if (worldItem != null)
+        {
+            worldItem.SetItemData(currentItemData);
+
+            // ✅ BoxInfo kopyala
+            BoxInfo worldBoxInfo = spawnedItem.GetComponent<BoxInfo>();
+            if (worldBoxInfo != null && heldItemVisual != null)
+            {
+                BoxInfo heldBoxInfo = heldItemVisual.GetComponent<BoxInfo>();
+                if (heldBoxInfo != null)
+                {
+                    worldBoxInfo.isFull = heldBoxInfo.isFull;
+                    worldBoxInfo.boxType = heldBoxInfo.boxType;
+                    Debug.Log($"✅ SERVER: BoxInfo copied - isFull: {worldBoxInfo.isFull}, type: {worldBoxInfo.boxType}");
+                }
+            }
+
+            worldItem.DisablePickup();
+        }
+
+        Debug.Log($"✅ SERVER: Calling ShelfState.PlaceItemOnShelfServerRpc");
+
+        // ✅ SHELF'E YERLEŞTİR
+        nearbyShelf.PlaceItemOnShelfServerRpc(new NetworkObjectReference(networkObject), rpcParams);
+
+        // ✅ PLAYER'DAN ITEM'I KALDIR
+        hasItem.Value = false;
+        currentItemID.Value = -1;
+
+        if (playerMovement != null)
+        {
+            playerMovement.SetCarrying(false);
+        }
+
+        StartDropAnimationClientRpc();
+
+        // ✅ QUEST GÜNCELLE
         if (QuestManager.Instance != null)
         {
             QuestManager.Instance.IncrementQuestProgress(QuestType.PlaceOnShelf);
         }
 
+        Debug.Log($"✅ SERVER: Item placed on shelf successfully by client {requesterClientId}!");
+
         ResetProcessingInteractionClientRpc();
+    }
+    /// <summary>
+    /// ✅ YENİ: Pozisyon bazlı shelf bulma (hem host hem client için çalışır)
+    /// </summary>
+    private ShelfState FindNearbyShelfForPosition(Vector3 position, float range)
+    {
+        Collider[] colliders = Physics.OverlapSphere(position, range);
+
+        ShelfState closestShelf = null;
+        float closestDistance = float.MaxValue;
+
+        foreach (var collider in colliders)
+        {
+            ShelfState shelf = collider.GetComponent<ShelfState>();
+            if (shelf != null)
+            {
+                float distance = Vector3.Distance(position, shelf.transform.position);
+                if (distance < closestDistance)
+                {
+                    closestDistance = distance;
+                    closestShelf = shelf;
+                }
+            }
+        }
+
+        if (closestShelf != null)
+        {
+            Debug.Log($"✅ Found shelf at distance: {closestDistance:F2}");
+        }
+
+        return closestShelf;
+    }
+
+    private ShelfState GetNearbyShelfForTransform(Transform playerTransform)
+    {
+        if (playerTransform == null) return null;
+
+        Collider[] colliders = Physics.OverlapSphere(playerTransform.position, detectionRange);
+
+        ShelfState closestShelf = null;
+        float closestDistance = float.MaxValue;
+
+        foreach (var collider in colliders)
+        {
+            ShelfState shelf = collider.GetComponent<ShelfState>();
+            if (shelf != null)
+            {
+                // Shelf'in kendi range kontrolünü kullan
+                if (shelf.IsPlayerInRange(playerTransform))
+                {
+                    float distance = Vector3.Distance(playerTransform.position, shelf.transform.position);
+                    if (distance < closestDistance)
+                    {
+                        closestDistance = distance;
+                        closestShelf = shelf;
+                    }
+                }
+            }
+        }
+
+        if (closestShelf != null)
+        {
+            Debug.Log($"✅ Found nearby shelf for player at {playerTransform.position}, distance: {closestDistance:F2}");
+        }
+        else
+        {
+            Debug.Log($"❌ No nearby shelf found for player at {playerTransform.position}");
+        }
+
+        return closestShelf;
     }
 
     [ServerRpc]

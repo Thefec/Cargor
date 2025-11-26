@@ -190,6 +190,7 @@ public class SteamManager : MonoBehaviour
 
         UpdatePlayerSlots();
         UpdateStartButtonVisibility();
+        NotifyBreakRoomManagerCurrentPlayers();
     }
 
     private void OnLobbyMemberLeave(Lobby lobby, Friend friend)
@@ -201,6 +202,7 @@ public class SteamManager : MonoBehaviour
 
         UpdatePlayerSlots();
         UpdateStartButtonVisibility();
+        NotifyBreakRoomManagerCurrentPlayers();
     }
 
     private void UpdateStartButtonVisibility()
@@ -263,6 +265,7 @@ public class SteamManager : MonoBehaviour
         {
             InvalidateLobby();
         }
+        NotifyBreakRoomManagerCurrentPlayers();
     }
 
     private void SetSlotOccupied(int slotIndex, string playerName, bool showKickButton, ulong steamId)
@@ -488,6 +491,7 @@ public class SteamManager : MonoBehaviour
         InLobbyMenu.SetActive(true);
         UpdatePlayerSlots();
         UpdateStartButtonVisibility();
+        NotifyBreakRoomManagerCurrentPlayers();
     }
 
     public async void HostLobby()
@@ -926,6 +930,33 @@ public class SteamManager : MonoBehaviour
             {
                 StartGameButton.interactable = true;
             }
+        }
+    }
+
+    private void NotifyBreakRoomManagerCurrentPlayers()
+    {
+        if (!isLobbyJoinValid || CurrentLobby.Id == 0)
+        {
+            return;
+        }
+
+        try
+        {
+            var members = CurrentLobby.Members?.ToArray();
+            if (members != null && members.Length > 0)
+            {
+                List<string> playerNames = members.Select(m => m.Name).ToList();
+
+                // BreakRoomManager'a bildir
+                if (NewCss.BreakRoomManager.Instance != null)
+                {
+                    NewCss.BreakRoomManager.Instance.UpdateLobbyPlayers(playerNames);
+                }
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"[SteamManager] BreakRoom'a bildirim hatası: {ex.Message}");
         }
     }
 

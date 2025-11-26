@@ -9,16 +9,14 @@ namespace NewCss
     public class PhoneCallManager : NetworkBehaviour
     {
         public static PhoneCallManager Instance { get; private set; }
-        // Add this field near other settings
+
         [Header("Phone Call Settings")]
         [SerializeField] private float callChance = 0.5f;
         [SerializeField] private float callDuration = 30f;
         [SerializeField] private float callAnswerDuration = 10f;
         [SerializeField] private float prestigeReward = 0.02f;
         [SerializeField] private float prestigePenalty = 0.05f;
-        [SerializeField] private int startCallingHour = 8; // Yeni: Aramaların başlama saati
-
-       
+        [SerializeField] private int startCallingHour = 8;
 
         [Header("UI Elements")]
         [SerializeField] private GameObject phoneCallUI;
@@ -35,9 +33,6 @@ namespace NewCss
         [Header("Customer Support Event Modifier")]
         [SerializeField] private float customerSupportModifier = 1.3f;
 
-        [Header("Player Reference")]
-        [SerializeField] private PlayerMovement cachedPlayerMovement;
-
         [Header("Interaction Settings")]
         [SerializeField] private Collider phoneCollider;
         [SerializeField] private string playerTag = "Character";
@@ -49,9 +44,8 @@ namespace NewCss
         private NetworkVariable<bool> networkCustomerSupportActive = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
         private NetworkVariable<ulong> networkCurrentCallOwner = new NetworkVariable<ulong>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-        // Modify the local variables section
         private bool[] hourlyCallChecked;
-        private int lastCheckedHour = -1; // Yeni: Son kontrol edilen saat
+        private int lastCheckedHour = -1;
         private Coroutine callCoroutine;
         private bool playerInPhoneArea = false;
         private bool isNetworkReady = false;
@@ -60,15 +54,12 @@ namespace NewCss
         {
             base.OnNetworkSpawn();
 
-            // Singleton pattern - NetworkBehaviour için düzeltildi
             if (Instance == null)
             {
                 Instance = this;
-                // NetworkBehaviour için DontDestroyOnLoad kullanmayın!
             }
             else if (Instance != this)
             {
-                // Eğer başka bir instance varsa, bu objeyi yok et
                 if (IsServer)
                     GetComponent<NetworkObject>().Despawn();
                 return;
@@ -76,19 +67,14 @@ namespace NewCss
 
             isNetworkReady = true;
 
-            // Subscribe to network variable changes
             networkIsCallActive.OnValueChanged += OnCallActiveChanged;
             networkIsCallAnswered.OnValueChanged += OnCallAnsweredChanged;
             networkIsInPhoneConversation.OnValueChanged += OnConversationChanged;
             networkCustomerSupportActive.OnValueChanged += OnCustomerSupportChanged;
             networkCurrentCallOwner.OnValueChanged += OnCallOwnerChanged;
 
-            // Update UI based on current network state
             UpdateUIState();
-
-            // Initialize system after network spawn
             InitializeSystem();
-            CachePlayerMovement();
             SetupPhoneCollider();
         }
 
@@ -96,7 +82,6 @@ namespace NewCss
         {
             isNetworkReady = false;
 
-            // Unsubscribe from network variable changes
             if (networkIsCallActive != null)
                 networkIsCallActive.OnValueChanged -= OnCallActiveChanged;
             if (networkIsCallAnswered != null)
@@ -108,7 +93,6 @@ namespace NewCss
             if (networkCurrentCallOwner != null)
                 networkCurrentCallOwner.OnValueChanged -= OnCallOwnerChanged;
 
-            // Clear instance if this is the current instance
             if (Instance == this)
             {
                 Instance = null;
@@ -119,7 +103,6 @@ namespace NewCss
 
         void Awake()
         {
-            // Singleton logic moved to OnNetworkSpawn for NetworkBehaviour
         }
 
         void Start()
@@ -127,17 +110,16 @@ namespace NewCss
             var netObj = GetComponent<NetworkObject>();
             if (netObj != null && IsServer && !netObj.IsSpawned)
             {
-                netObj.Spawn(true); // true -> destroyWithScene (opsiyonel)
+                netObj.Spawn(true);
             }
-            DayCycleManager.OnNewDay -= OnNewDay; // Önce çıkar
-            DayCycleManager.OnNewDay += OnNewDay; // Sonra ekle
+            DayCycleManager.OnNewDay -= OnNewDay;
+            DayCycleManager.OnNewDay += OnNewDay;
         }
 
         void OnDestroy()
         {
             DayCycleManager.OnNewDay -= OnNewDay;
 
-            // Clear instance if this is the current instance
             if (Instance == this)
             {
                 Instance = null;
@@ -149,45 +131,56 @@ namespace NewCss
         private void OnCallActiveChanged(bool previousValue, bool newValue)
         {
             UpdateUIState();
-            if (newValue && phoneRingSound != null) // newValue == true (Arama aktif oldu)
+            if (newValue && phoneRingSound != null)
             {
-                phoneRingSound.Play(); // Sesi başlat
+                phoneRingSound.Play();
             }
-            else if (!newValue && phoneRingSound != null) // newValue == false (Arama bitti/kaçırıldı)
+            else if (!newValue && phoneRingSound != null)
             {
-                phoneRingSound.Stop(); // Sesi durdur
+                phoneRingSound.Stop();
             }
         }
 
         private void OnCallAnsweredChanged(bool previousValue, bool newValue)
         {
             UpdateUIState();
-            if (newValue && phoneRingSound != null) // newValue == true (Arama cevaplandı)
+            if (newValue && phoneRingSound != null)
             {
-                phoneRingSound.Stop(); // Çalma sesini durdur
+                phoneRingSound.Stop();
             }
 
-            if (newValue && conversationSound != null) // Konuşma sesi başlat
+            if (newValue && conversationSound != null)
             {
                 conversationSound.Play();
             }
         }
 
+        /// <summary>
+        /// ✅ FIX: CustomerAI pattern - Sadece telefonu cevaplayan client lock'lanır
+        /// </summary>
         private void OnConversationChanged(bool previousValue, bool newValue)
         {
             UpdateUIState();
 
-            // Konuşma bittiğinde sesi durdur
             if (!newValue && conversationSound != null)
             {
                 conversationSound.Stop();
             }
 
-            // Handle player locking for the call owner
-            if (NetworkManager.Singleton != null &&
-                (IsOwner || networkCurrentCallOwner.Value == NetworkManager.Singleton.LocalClientId))
+            // ✅ FIX: Sadece telefonu cevaplayan client lock'lanır
+            if (NetworkManager.Singleton == null) return;
+
+            ulong localClientId = NetworkManager.Singleton.LocalClientId;
+            ulong callOwner = networkCurrentCallOwner.Value;
+
+            Debug.Log($"[PhoneCall] Client {localClientId} - Conversation: {newValue}, CallOwner: {callOwner}");
+
+            // ✅ SADECE telefonu cevaplayan oyuncu için lock/unlock
+            if (callOwner == localClientId)
             {
-                LockPlayer(newValue);
+                // ✅ newValue = true → LOCK, false → UNLOCK
+                LockLocalPlayerMovement(newValue);
+                Debug.Log($"[PhoneCall] Client {localClientId} - Movement locked: {newValue}");
             }
         }
 
@@ -199,6 +192,43 @@ namespace NewCss
         private void OnCallOwnerChanged(ulong previousValue, ulong newValue)
         {
             UpdateUIState();
+        }
+
+        #endregion
+
+        #region Player Movement Lock (CustomerAI Pattern)
+
+        /// <summary>
+        /// ✅ YENİ: Her client kendi player'ını bulup lock'lar (CustomerAI pattern)
+        /// </summary>
+        private void LockLocalPlayerMovement(bool locked)
+        {
+            if (NetworkManager.Singleton == null) return;
+
+            ulong localClientId = NetworkManager.Singleton.LocalClientId;
+
+            // ✅ Local player'ı bul
+            foreach (var netObj in FindObjectsOfType<NetworkObject>())
+            {
+                if (netObj.IsOwner && netObj.OwnerClientId == localClientId && netObj.CompareTag(playerTag))
+                {
+                    var playerMovement = netObj.GetComponent<PlayerMovement>();
+                    if (playerMovement == null)
+                        playerMovement = netObj.GetComponentInChildren<PlayerMovement>();
+                    if (playerMovement == null)
+                        playerMovement = netObj.GetComponentInParent<PlayerMovement>();
+
+                    if (playerMovement != null)
+                    {
+                        Debug.Log($"[PhoneCall] Client {localClientId} - Locking movement: {locked}");
+                        playerMovement.LockMovement(locked);
+                        playerMovement.LockAllInteractions(locked);
+                        return;
+                    }
+                }
+            }
+
+            Debug.LogWarning($"[PhoneCall] Client {localClientId} - Could not find local player!");
         }
 
         #endregion
@@ -215,19 +245,16 @@ namespace NewCss
             bool isCallOwner = NetworkManager.Singleton != null &&
                               networkCurrentCallOwner.Value == NetworkManager.Singleton.LocalClientId;
 
-            // Update canvas visibility
             if (hideCanvasUntilCall && phoneCanvas != null)
             {
                 phoneCanvas.gameObject.SetActive(isCallActive || isInConversation);
             }
 
-            // Update phone call UI
             if (phoneCallUI != null)
             {
                 phoneCallUI.SetActive(isCallActive || isInConversation);
             }
 
-            // Update call info text
             if (callInfoText != null)
             {
                 if (isInConversation)
@@ -311,30 +338,15 @@ namespace NewCss
                 phoneCanvas = GetComponentInChildren<Canvas>();
         }
 
-        private void CachePlayerMovement()
-        {
-            if (cachedPlayerMovement != null) return;
-
-            var playerObject = GameObject.FindWithTag("Character");
-            if (playerObject == null) return;
-
-            cachedPlayerMovement = playerObject.GetComponent<PlayerMovement>() ??
-                                   playerObject.GetComponentInChildren<PlayerMovement>() ??
-                                   playerObject.GetComponentInParent<PlayerMovement>() ??
-                                   FindObjectOfType<PlayerMovement>();
-        }
-
         void Update()
         {
             if (!isNetworkReady) return;
 
-            // Only server manages call logic
             if (IsServer)
             {
                 ServerUpdate();
             }
 
-            // Client input handling
             ClientUpdate();
         }
 
@@ -373,20 +385,16 @@ namespace NewCss
 
             if (currentHour < 0 || currentHour >= 24) return;
 
-            // Saat 8'den önce arama yapma
             if (currentHour < startCallingHour)
             {
                 Debug.Log($"Phone Call Check - Too early: Hour {currentHour} (calls start at {startCallingHour})");
                 return;
             }
 
-            // Eğer bu saat zaten kontrol edildiyse, atla
             if (currentHour == lastCheckedHour) return;
 
-            // Yeni saate geçildi, kontrolü yap
             lastCheckedHour = currentHour;
 
-            // Eğer bu saat için zaten arama yapıldıysa, atla
             if (hourlyCallChecked[currentHour]) return;
             hourlyCallChecked[currentHour] = true;
 
@@ -422,7 +430,6 @@ namespace NewCss
             if (phoneWaitBar != null)
                 phoneWaitBar.StartWaitBar(callDuration);
 
-            // Notify all clients that a call started
             OnCallStartedClientRpc();
         }
 
@@ -464,7 +471,6 @@ namespace NewCss
             if (phoneWaitBar != null)
                 phoneWaitBar.StartWaitBar(callAnswerDuration);
 
-            // Notify all clients that call was answered
             OnCallAnsweredClientRpc(clientId);
         }
 
@@ -472,7 +478,6 @@ namespace NewCss
         {
             if (!networkIsInPhoneConversation.Value) return;
 
-            // Give prestige reward to the player who answered
             if (PrestigeManager.Instance != null && networkCurrentCallOwner.Value != 0)
             {
                 GivePrestigeToPlayerClientRpc(networkCurrentCallOwner.Value, prestigeReward);
@@ -481,23 +486,10 @@ namespace NewCss
             EndCallServer(false);
         }
 
-        private void LockPlayer(bool locked)
-        {
-            if (cachedPlayerMovement == null)
-                CachePlayerMovement();
-
-            if (cachedPlayerMovement != null)
-            {
-                cachedPlayerMovement.LockMovement(locked);
-                cachedPlayerMovement.LockAllInteractions(locked);
-            }
-        }
-
         void MissedCallServer()
         {
             if (networkIsCallAnswered.Value) return;
 
-            // Apply penalty to all players
             ApplyMissedCallPenaltyClientRpc();
 
             EndCallServer(true);
@@ -519,7 +511,6 @@ namespace NewCss
                 callCoroutine = null;
             }
 
-            // Notify all clients that call ended
             OnCallEndedClientRpc(wasMissed);
         }
 
@@ -532,7 +523,7 @@ namespace NewCss
                     hourlyCallChecked[i] = false;
                 }
 
-                lastCheckedHour = -1; // Yeni gün için sıfırla
+                lastCheckedHour = -1;
 
                 if (networkIsCallActive.Value || networkIsInPhoneConversation.Value)
                 {
@@ -559,7 +550,18 @@ namespace NewCss
         private void OnCallEndedClientRpc(bool wasMissed)
         {
             Debug.Log($"Phone call ended - Missed: {wasMissed}");
-            LockPlayer(false);
+
+            // ✅ SADECE telefonu cevaplayan client unlock edilir
+            if (NetworkManager.Singleton == null) return;
+
+            ulong localClientId = NetworkManager.Singleton.LocalClientId;
+            ulong callOwner = networkCurrentCallOwner.Value;
+
+            if (callOwner == localClientId)
+            {
+                Debug.Log($"[PhoneCall] Client {localClientId} - Unlocking movement after call end");
+                LockLocalPlayerMovement(false);
+            }
         }
 
         [ClientRpc]
@@ -641,7 +643,6 @@ namespace NewCss
         public void SetCallAnswerDuration(float newDuration) => callAnswerDuration = Mathf.Max(1f, newDuration);
         public void SetPrestigeReward(float newReward) => prestigeReward = Mathf.Max(0, newReward);
         public void SetPrestigePenalty(float newPenalty) => prestigePenalty = Mathf.Max(0, newPenalty);
-        public void SetPlayerMovement(PlayerMovement playerMovement) => cachedPlayerMovement = playerMovement;
         public bool IsPlayerInPhoneArea() => playerInPhoneArea;
         public bool IsCallActive() => isNetworkReady && networkIsCallActive.Value;
         public bool IsCallAnswered() => isNetworkReady && networkIsCallAnswered.Value;

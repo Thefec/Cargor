@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using Unity.Netcode;
 using TMPro;
 using System.Collections;
@@ -16,6 +16,10 @@ namespace NewCss
         private NetworkVariable<int> networkRequiredCargo = new NetworkVariable<int>(1);
         private NetworkVariable<bool> isComplete = new NetworkVariable<bool>(false);
         private NetworkVariable<bool> isEntering = new NetworkVariable<bool>(true);
+
+        // ✅ YENİ: Animator state'lerini network-sync için
+        private NetworkVariable<bool> isPlayingExitAnimation = new NetworkVariable<bool>(false);
+        private NetworkVariable<bool> isPlayingEnterAnimation = new NetworkVariable<bool>(false);
 
         [Header("UI")]
         public TextMeshProUGUI truckText;
@@ -78,6 +82,10 @@ namespace NewCss
             isComplete.OnValueChanged += OnIsCompleteChanged;
             isEntering.OnValueChanged += OnIsEnteringChanged;
 
+            // ✅ YENİ: Animator state değişikliklerini dinle
+            isPlayingExitAnimation.OnValueChanged += OnExitAnimationChanged;
+            isPlayingEnterAnimation.OnValueChanged += OnEnterAnimationChanged;
+
             SetupTriggerCollider();
             AutoFindAudioSources();
 
@@ -111,6 +119,8 @@ namespace NewCss
             networkRequiredCargo.OnValueChanged -= OnRequiredCargoChanged;
             isComplete.OnValueChanged -= OnIsCompleteChanged;
             isEntering.OnValueChanged -= OnIsEnteringChanged;
+            isPlayingExitAnimation.OnValueChanged -= OnExitAnimationChanged;
+            isPlayingEnterAnimation.OnValueChanged -= OnEnterAnimationChanged;
         }
 
         [ServerRpc]
@@ -171,6 +181,42 @@ namespace NewCss
         {
         }
 
+        /// <summary>
+        /// ✅ YENİ: Enter animation değişikliğini tüm client'larda uygula
+        /// </summary>
+        private void OnEnterAnimationChanged(bool previousValue, bool newValue)
+        {
+            if (newValue && truckAnimator != null)
+            {
+                Debug.Log($"🚚 CLIENT {(IsServer ? "SERVER" : NetworkManager.Singleton.LocalClientId.ToString())}: Enter animation başlatılıyor");
+                truckAnimator.SetBool("DoExit", false);
+
+                // Client'ta da coroutine başlat (sadece görsel için)
+                if (!IsServer)
+                {
+                    StartCoroutine(WaitForEnterAnimationComplete());
+                }
+            }
+        }
+
+        /// <summary>
+        /// ✅ YENİ: Exit animation değişikliğini tüm client'larda uygula
+        /// </summary>
+        private void OnExitAnimationChanged(bool previousValue, bool newValue)
+        {
+            if (newValue && truckAnimator != null)
+            {
+                Debug.Log($"🚚 CLIENT {(IsServer ? "SERVER" : NetworkManager.Singleton.LocalClientId.ToString())}: Exit animation başlatılıyor");
+                truckAnimator.SetBool("DoExit", true);
+
+                // Client'ta da coroutine başlat (sadece görsel için)
+                if (!IsServer)
+                {
+                    StartCoroutine(WaitForExitAnimationComplete());
+                }
+            }
+        }
+
         private void SetupTriggerCollider()
         {
             GameObject colliderObj = triggerColliderObject != null ? triggerColliderObject : gameObject;
@@ -192,12 +238,18 @@ namespace NewCss
             trigger.mainTruck = this;
         }
 
+        /// <summary>
+        /// ✅ FIX: Enter animation'ı server'da başlat ve network-sync yap
+        /// </summary>
         private void StartEnterAnimation()
         {
-            if (IsServer)
-            {
-                PlayEnterAnimationSoundClientRpc();
-            }
+            if (!IsServer) return;
+
+            Debug.Log("🚚 SERVER: Enter animation başlatılıyor");
+
+            // ✅ Tüm client'lara bildir
+            isPlayingEnterAnimation.Value = true;
+            PlayEnterAnimationSoundClientRpc();
 
             if (truckAnimator != null)
             {
@@ -207,6 +259,7 @@ namespace NewCss
             else
             {
                 isEntering.Value = false;
+                isPlayingEnterAnimation.Value = false;
             }
         }
 
@@ -226,6 +279,8 @@ namespace NewCss
             if (IsServer)
             {
                 isEntering.Value = false;
+                isPlayingEnterAnimation.Value = false;
+                Debug.Log("🚚 SERVER: Enter animation tamamlandı");
             }
         }
 
@@ -273,24 +328,15 @@ namespace NewCss
             }
         }
 
-        /// <summary>
-        /// Calculate total reward including prestige bonus
-        /// Formula: baseReward + (prestigeLevel * bonusPerTier)
-        /// Example: 50 base + (5 tiers * 5 bonus) = 75 total
-        /// </summary>
         private int CalculateRewardWithPrestige()
         {
             int baseReward = rewardPerBox;
 
-            // Get prestige from PrestigeManager
             if (PrestigeManager.Instance != null)
             {
                 float currentPrestige = PrestigeManager.Instance.GetPrestige();
-
-                // Calculate prestige bonus tiers
                 int prestigeTiers = Mathf.FloorToInt(currentPrestige / prestigePerBonus);
                 int prestigeBonus = prestigeTiers * bonusPerTier;
-
                 int totalReward = baseReward + prestigeBonus;
 
                 Debug.Log($"[Truck] Base: {baseReward}, Prestige: {currentPrestige:F1}, Tiers: {prestigeTiers}, Bonus: {prestigeBonus}, Total: {totalReward}");
@@ -301,9 +347,6 @@ namespace NewCss
             return baseReward;
         }
 
-        /// <summary>
-        /// Get the current prestige bonus amount for display purposes
-        /// </summary>
         public int GetCurrentPrestigeBonus()
         {
             if (PrestigeManager.Instance != null)
@@ -325,7 +368,6 @@ namespace NewCss
             {
                 deliveredCount.Value++;
 
-                // Calculate reward with prestige bonus
                 int totalReward = CalculateRewardWithPrestige();
 
                 if (MoneySystem.Instance != null)
@@ -335,7 +377,6 @@ namespace NewCss
 
                 if (deliveredCount.Value >= networkRequiredCargo.Value)
                 {
-                    // Quest g�ncelle
                     if (QuestManager.Instance != null)
                     {
                         QuestManager.Instance.IncrementQuestProgress(QuestType.DeliverTrucks);
@@ -366,6 +407,8 @@ namespace NewCss
 
         private IEnumerator ExitSequence()
         {
+            Debug.Log("🚚 SERVER: Exit sequence başladı");
+
             if (IsServer)
             {
                 PlayExitDelaySoundClientRpc();
@@ -376,13 +419,23 @@ namespace NewCss
             StartExitAnimation();
         }
 
+        /// <summary>
+        /// ✅ FIX: Exit animation'ı server'da başlat ve network-sync yap
+        /// </summary>
         private void StartExitAnimation()
         {
-            if (IsServer)
-            {
-                StopExitDelaySoundClientRpc();
-                PlayExitAnimationSoundClientRpc();
-            }
+            if (!IsServer) return;
+
+            Debug.Log("🚚 SERVER: Exit animation başlatılıyor");
+
+            // ✅ Önce sesi durdur
+            StopExitDelaySoundClientRpc();
+
+            // ✅ Exit animation sesini çal
+            PlayExitAnimationSoundClientRpc();
+
+            // ✅ Tüm client'lara animation başladığını bildir
+            isPlayingExitAnimation.Value = true;
 
             if (truckAnimator != null)
             {
@@ -408,20 +461,28 @@ namespace NewCss
                 }
             }
 
-            CompleteTruckExit();
+            // ✅ Sadece server despawn etsin
+            if (IsServer)
+            {
+                Debug.Log("🚚 SERVER: Exit animation tamamlandı - Despawn ediliyor");
+                CompleteTruckExit();
+            }
+            else
+            {
+                Debug.Log($"🚚 CLIENT {NetworkManager.Singleton.LocalClientId}: Exit animation tamamlandı");
+            }
         }
 
         private void CompleteTruckExit()
         {
-            if (IsServer)
-            {
-                if (TruckSpawner.Instance != null)
-                {
-                    TruckSpawner.Instance.OnTruckDestroyed(hangarIndex);
-                }
+            if (!IsServer) return;
 
-                GetComponent<NetworkObject>().Despawn();
+            if (TruckSpawner.Instance != null)
+            {
+                TruckSpawner.Instance.OnTruckDestroyed(hangarIndex);
             }
+
+            GetComponent<NetworkObject>().Despawn();
         }
 
         [ClientRpc]
@@ -430,6 +491,7 @@ namespace NewCss
             if (enterAudioSource != null && enterAnimationClip != null)
             {
                 enterAudioSource.PlayOneShot(enterAnimationClip);
+                Debug.Log($"🔊 CLIENT {(IsServer ? "SERVER" : NetworkManager.Singleton.LocalClientId.ToString())}: Enter sound çalınıyor");
             }
         }
 
@@ -441,6 +503,7 @@ namespace NewCss
                 exitDelayAudioSource.clip = exitDelayClip;
                 exitDelayAudioSource.loop = true;
                 exitDelayAudioSource.Play();
+                Debug.Log($"🔊 CLIENT {(IsServer ? "SERVER" : NetworkManager.Singleton.LocalClientId.ToString())}: Exit delay sound çalınıyor");
             }
         }
 
@@ -450,6 +513,7 @@ namespace NewCss
             if (exitDelayAudioSource != null && exitDelayAudioSource.isPlaying)
             {
                 exitDelayAudioSource.Stop();
+                Debug.Log($"🔊 CLIENT {(IsServer ? "SERVER" : NetworkManager.Singleton.LocalClientId.ToString())}: Exit delay sound durduruluyor");
             }
         }
 
@@ -459,6 +523,7 @@ namespace NewCss
             if (exitAudioSource != null && exitAnimationClip != null)
             {
                 exitAudioSource.PlayOneShot(exitAnimationClip);
+                Debug.Log($"🔊 CLIENT {(IsServer ? "SERVER" : NetworkManager.Singleton.LocalClientId.ToString())}: Exit animation sound çalınıyor");
             }
         }
 

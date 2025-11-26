@@ -451,8 +451,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.1817252, y: 0.086134985, z: 0.0026319823}
-  m_Center: {x: 0.013498784, y: -0.00020880811, z: 0.000000006810295}
+  m_Size: {x: 0.28075206, y: 0.086134985, z: 0.16265398}
+  m_Center: {x: -0.036014646, y: -0.00020880732, z: 0.080011}
 --- !u!1 &100560471 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -989529725001320064, guid: 2fed2c9befacd4543b11da2568f1cbdb, type: 3}
@@ -986,6 +986,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 9205349660182007544, guid: 2fed2c9befacd4543b11da2568f1cbdb, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1483395916}
+    - targetCorrespondingSourceObject: {fileID: 9205349660182007544, guid: 2fed2c9befacd4543b11da2568f1cbdb, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1483395917}
     - targetCorrespondingSourceObject: {fileID: -989529725001320064, guid: 2fed2c9befacd4543b11da2568f1cbdb, type: 3}
       insertIndex: -1
       addedObject: {fileID: 57063230}
@@ -1058,6 +1061,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NewCss.BoxingMinigameManager
   ShowTopMostFoldoutHeaderGroup: 1
   sequenceLength: 3
+  keyDisplayDelay: 1
+  keyFadeInDuration: 0.15
+  keyFadeOutDuration: 0.15
+  feedbackDisplayTime: 0.3
   correctSound: {fileID: 0}
   wrongSound: {fileID: 0}
   successSound: {fileID: 0}
@@ -1108,7 +1115,9 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   tableID: 101
   itemPlacePoint: {fileID: 0}
-  interactionRange: 1.3
+  interactionBoxSize: {x: 2, y: 2, z: 2}
+  interactionBoxOffset: {x: 0, y: 0, z: 0}
+  showInteractionRange: 1
 --- !u!114 &404143635
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1362,7 +1371,7 @@ MonoBehaviour:
     stepIndex: 4
     instructionText: "E\u015Fyay\u0131 masaya koydu\u011Fumuza g\xF6re hadi bunu
       kargolanmaya haz\u0131r hale getirelim rafa git ve uygun renkteki kutuyu al."
-    conditionType: 0
+    conditionType: 4
     waitDuration: 3
     requiresItemPickup: 1
     requiredItemName: Box
@@ -2082,8 +2091,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.1817252, y: 0.086134985, z: 0.0026319823}
-  m_Center: {x: 0.013498788, y: -0.00020880811, z: 0.000000006810295}
+  m_Size: {x: 0.44198525, y: 0.086134985, z: 0.26410207}
+  m_Center: {x: 0.114413425, y: -0.00020880732, z: 0.13073502}
 --- !u!1 &706812081 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -4590334849682627571, guid: 2fed2c9befacd4543b11da2568f1cbdb, type: 3}
@@ -2108,8 +2117,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.1792939, y: 0.086134985, z: 0.0026319828}
-  m_Center: {x: 0.0122830905, y: -0.00020880811, z: -0.000000007858034}
+  m_Size: {x: 0.2434059, y: 0.086134985, z: 0.10384707}
+  m_Center: {x: 0.044339247, y: -0.00020880731, z: -0.050607607}
 --- !u!1 &712212778
 GameObject:
   m_ObjectHideFlags: 0
@@ -2298,8 +2307,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.17902529, y: 0.043067515, z: 0.0026319823}
-  m_Center: {x: 0.012150912, y: -0.021742545, z: 0.000000036729034}
+  m_Size: {x: 0.1790253, y: 0.13134095, z: 0.17303787}
+  m_Center: {x: 0.012150901, y: 0.02239414, z: -0.0852029}
 --- !u!1 &782708278
 GameObject:
   m_ObjectHideFlags: 0
@@ -4988,8 +4997,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.17902529, y: 0.043067515, z: 0.0026319823}
-  m_Center: {x: 0.012150912, y: -0.021742545, z: 0.000000036729034}
+  m_Size: {x: 0.43958536, y: 0.094873644, z: 0.10165065}
+  m_Center: {x: 0.14243095, y: 0.0041604824, z: -0.049509324}
 --- !u!1 &1421397576
 GameObject:
   m_ObjectHideFlags: 0
@@ -5089,8 +5098,29 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.17659405, y: 0.043067515, z: 0.0026319828}
-  m_Center: {x: 0.01606438, y: -0.021742549, z: 0.000000010535587}
+  m_Size: {x: 0.15678787, y: 0.043067522, z: 0.008981739}
+  m_Center: {x: 0.04819932, y: -0.021742549, z: -0.00032052863}
+--- !u!65 &1483395917
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1483395912}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.025067875, y: 0.043067522, z: 0.007050778}
+  m_Center: {x: -0.059698474, y: -0.02174255, z: -0.0005366237}
 --- !u!1 &1542276020
 GameObject:
   m_ObjectHideFlags: 0
@@ -6393,7 +6423,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: -159.2207, y: -5.8652344, z: -295.7002, w: -17.57965}
+  m_margin: {x: -159.2207, y: -5.8652344, z: -251.36984, w: -17.57965}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
