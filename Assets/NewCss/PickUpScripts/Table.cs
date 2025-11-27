@@ -420,7 +420,7 @@ namespace NewCss
                 return;
             }
 
-            // Host'ta doğrudan çağrılırsa, player.OwnerClientId kullan
+            // When called directly on Host, use player.OwnerClientId
             ProcessTableInteraction(player, player.OwnerClientId);
         }
 
@@ -440,7 +440,7 @@ namespace NewCss
                 return;
             }
 
-            // requesterClientId'yi kullan (rpcParams'tan alınan doğru client ID)
+            // Use requesterClientId (correct client ID obtained from rpcParams)
             ProcessTableInteraction(player, requesterClientId);
         }
 
@@ -686,7 +686,7 @@ namespace NewCss
                 return;
             }
 
-            // Start minigame - requesterClientId kullan (doğru client ID)
+            // Start minigame - use requesterClientId (correct client ID)
             ItemData playerItemData = player.CurrentItemData;
             LogDebug($"🎮 Starting minigame for client {requesterClientId}");
             StartMinigameClientRpc(requesterClientId, player.NetworkObjectId, (int)playerBox.boxType, playerItemData.itemID);

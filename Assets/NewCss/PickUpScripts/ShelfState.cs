@@ -494,8 +494,8 @@ namespace NewCss
         }
 
         /// <summary>
-        /// Server tarafından çağrılan, validation atlanabilen versiyon.
-        /// PlayerInventory zaten validation yaptıysa bu metod kullanılır.
+        /// Server-side version that bypasses validation.
+        /// Used when PlayerInventory has already performed validation.
         /// </summary>
         public void PlaceItemOnShelfFromServer(NetworkObjectReference itemRef, ulong requesterClientId)
         {
