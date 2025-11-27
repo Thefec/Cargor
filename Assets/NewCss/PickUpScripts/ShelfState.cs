@@ -493,6 +493,28 @@ namespace NewCss
             PlaceItemInSlot(itemRef, slotIndex, requesterClientId);
         }
 
+        /// <summary>
+        /// Server-side version that bypasses validation.
+        /// Used when PlayerInventory has already performed validation.
+        /// </summary>
+        public void PlaceItemOnShelfFromServer(NetworkObjectReference itemRef, ulong requesterClientId)
+        {
+            if (!IsServer) return;
+
+            Debug.Log($"{LOG_PREFIX} 📥 PlaceItemOnShelfFromServer - Client {requesterClientId}");
+
+            // Boş slot bul
+            int slotIndex = FindEmptySlotIndex();
+            if (slotIndex == -1)
+            {
+                Debug.LogWarning($"{LOG_PREFIX} ❌ Shelf is FULL!");
+                return;
+            }
+
+            // Item'ı yerleştir
+            PlaceItemInSlot(itemRef, slotIndex, requesterClientId);
+        }
+
         private bool ValidatePlaceItemRequest(ulong clientId, out Transform playerTransform)
         {
             playerTransform = null;

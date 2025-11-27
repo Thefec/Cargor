@@ -1589,8 +1589,8 @@ public class PlayerInventory : NetworkBehaviour
             worldItem.DisablePickup();
         }
 
-        Debug.Log("[PlayerInventory] ✅ Calling ShelfState.PlaceItemOnShelfServerRpc");
-        nearbyShelf.PlaceItemOnShelfServerRpc(new NetworkObjectReference(networkObject), rpcParams);
+        Debug.Log("[PlayerInventory] ✅ Calling ShelfState.PlaceItemOnShelfFromServer");
+        nearbyShelf.PlaceItemOnShelfFromServer(new NetworkObjectReference(networkObject), requesterClientId);
 
         // Player inventory temizle
         ClearInventoryState();

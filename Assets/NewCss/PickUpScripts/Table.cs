@@ -420,7 +420,8 @@ namespace NewCss
                 return;
             }
 
-            ProcessTableInteraction(player);
+            // When called directly on Host, use player.OwnerClientId
+            ProcessTableInteraction(player, player.OwnerClientId);
         }
 
         #endregion
@@ -439,7 +440,8 @@ namespace NewCss
                 return;
             }
 
-            ProcessTableInteraction(player);
+            // Use requesterClientId (correct client ID obtained from rpcParams)
+            ProcessTableInteraction(player, requesterClientId);
         }
 
         private bool ValidateInteractionRequest(ulong clientId, ulong playerNetworkId, out PlayerInventory player)
@@ -482,13 +484,13 @@ namespace NewCss
 
         #region Interaction Processing
 
-        private void ProcessTableInteraction(PlayerInventory player)
+        private void ProcessTableInteraction(PlayerInventory player, ulong requesterClientId)
         {
             LogDebug($"Processing interaction - Player has item: {player.HasItem}, Table has item: {HasItem}");
 
             if (player.HasItem)
             {
-                ProcessPlayerHasItem(player);
+                ProcessPlayerHasItem(player, requesterClientId);
             }
             else
             {
@@ -496,17 +498,17 @@ namespace NewCss
             }
         }
 
-        private void ProcessPlayerHasItem(PlayerInventory player)
+        private void ProcessPlayerHasItem(PlayerInventory player, ulong requesterClientId)
         {
             if (CanPlaceItem)
             {
-                LogDebug($"✅ Placing item from player {player.OwnerClientId}");
+                LogDebug($"✅ Placing item from player {requesterClientId}");
                 PlaceItemOnTable(player);
             }
             else
             {
-                LogDebug($"🎮 Attempting boxing for player {player.OwnerClientId}");
-                TryBoxingInteraction(player);
+                LogDebug($"🎮 Attempting boxing for player {requesterClientId}");
+                TryBoxingInteraction(player, requesterClientId);
             }
         }
 
@@ -658,7 +660,7 @@ namespace NewCss
 
         #region Boxing Interaction
 
-        private void TryBoxingInteraction(PlayerInventory player)
+        private void TryBoxingInteraction(PlayerInventory player, ulong requesterClientId)
         {
             var state = _tableState.Value;
 
@@ -672,7 +674,7 @@ namespace NewCss
             if (!IsValidBoxProductCombination(playerBox.boxType, tableProduct.productType))
             {
                 LogDebug($"❌ Box type {playerBox.boxType} doesn't match product type {tableProduct.productType}");
-                NotifyBoxingFailedClientRpc(player.OwnerClientId);
+                NotifyBoxingFailedClientRpc(requesterClientId);
                 return;
             }
 
@@ -684,10 +686,10 @@ namespace NewCss
                 return;
             }
 
-            // Start minigame
+            // Start minigame - use requesterClientId (correct client ID)
             ItemData playerItemData = player.CurrentItemData;
-            LogDebug($"🎮 Starting minigame for client {player.OwnerClientId}");
-            StartMinigameClientRpc(player.OwnerClientId, player.NetworkObjectId, (int)playerBox.boxType, playerItemData.itemID);
+            LogDebug($"🎮 Starting minigame for client {requesterClientId}");
+            StartMinigameClientRpc(requesterClientId, player.NetworkObjectId, (int)playerBox.boxType, playerItemData.itemID);
         }
 
         private bool ValidateBoxingRequest(PlayerInventory player, TableState state, out BoxInfo playerBox, out ProductInfo tableProduct)
