@@ -1,35 +1,66 @@
-using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Netcode;
-using System;
+using TMPro;
 using Unity.Collections;
+using Unity.Netcode;
+using UnityEngine;
+using UnityEngine.Animations.Rigging;
+using UnityEngine.UI;
 
 namespace NewCss
 {
-    [System.Serializable]
+    #region Data Classes
+
+    /// <summary>
+    /// Upgrade tanımı - her upgrade'in özelliklerini içerir
+    /// </summary>
+    [Serializable]
     public class UpgradeDefinition
     {
-        public string displayName; // "Storage Capacity"
-        public int starterValue = 0;
-        public int StaminaValue = 1;
-        public int TruckValue = 20;
-        public int maxLevel;
-        public int WaitTime;
-        public int baseCost; // e.g. 100
-        public int costStep; // e.g. 100
-        public string contentText;
-        public GameObject[] levelObjects; // Scene objects like Level0..Level3
+        [Header("=== BASIC INFO ===")]
+        [Tooltip("Görünen isim")]
+        public string displayName;
 
-        [Header("Garage Door Controllers (for Truck upgrade only)")]
-        [Tooltip("Her level için hangi garaj kapılarının açılacağını belirler")]
-        public GarageDoorController[] garageDoorControllers; // Her level için garaj kapıları
+        [Tooltip("Açıklama metni")]
+        public string contentText;
+
+        [Header("=== VALUES ===")]
+        [Tooltip("Başlangıç değeri")]
+        public int starterValue;
+
+        [Tooltip("Stamina değeri")]
+        public int StaminaValue = 1;
+
+        [Tooltip("Kamyon değeri")]
+        public int TruckValue = 20;
+
+        [Tooltip("Bekleme süresi")]
+        public int WaitTime;
+
+        [Header("=== COST & LEVELS ===")]
+        [Tooltip("Maksimum seviye")]
+        public int maxLevel;
+
+        [Tooltip("Temel maliyet")]
+        public int baseCost;
+
+        [Tooltip("Seviye başına maliyet artışı")]
+        public int costStep;
+
+        [Header("=== LEVEL OBJECTS ===")]
+        [Tooltip("Seviye objeleri (Level0, Level1, Level2...)")]
+        public GameObject[] levelObjects;
+
+        [Header("=== GARAGE DOORS (Truck Only) ===")]
+        [Tooltip("Her seviye için garaj kapı kontrolcüleri")]
+        public GarageDoorController[] garageDoorControllers;
     }
 
-
-    [System.Serializable]
+    /// <summary>
+    /// Network senkronizasyonu için bekleyen upgrade struct'ı
+    /// </summary>
+    [Serializable]
     public struct NetworkPendingUpgrade : INetworkSerializable, IEquatable<NetworkPendingUpgrade>
     {
         public FixedString64Bytes upgradeName;
@@ -57,182 +88,313 @@ namespace NewCss
                    dayPurchased == other.dayPurchased;
         }
 
-        public override bool Equals(object obj)
-        {
-            return obj is NetworkPendingUpgrade other && Equals(other);
-        }
-
-        public override int GetHashCode()
-        {
-            return System.HashCode.Combine(upgradeName.GetHashCode(), levelToBecomeActive, dayPurchased);
-        }
-
-        public static bool operator ==(NetworkPendingUpgrade left, NetworkPendingUpgrade right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(NetworkPendingUpgrade left, NetworkPendingUpgrade right)
-        {
-            return !left.Equals(right);
-        }
-
+        public override bool Equals(object obj) => obj is NetworkPendingUpgrade other && Equals(other);
+        public override int GetHashCode() => HashCode.Combine(upgradeName.GetHashCode(), levelToBecomeActive, dayPurchased);
+        public static bool operator==(NetworkPendingUpgrade left, NetworkPendingUpgrade right) => left.Equals(right);
+        public static bool operator !=(NetworkPendingUpgrade left, NetworkPendingUpgrade right) => !left.Equals(right);
     }
 
+    #endregion
 
+    /// <summary>
+    /// Upgrade panel yöneticisi - upgrade satın alma, network senkronizasyonu ve UI yönetimini sağlar. 
+    /// </summary>
     public class UpgradePanel : NetworkBehaviour
     {
-        [Header("UI References")]
-        [SerializeField]
-        private GameObject panel;
+        #region Constants
 
-        [SerializeField] private Transform contentParent;
-        [SerializeField] private GameObject entryPrefab;
+        private const string LOG_PREFIX = "[UpgradePanel]";
+        private const int PANEL_OPEN_HOUR = 10;
 
-        [Header("Upgrade Definitions")]
-        [SerializeField]
-        private List<UpgradeDefinition> upgrades = new();
+        // Upgrade Names
+        private const string UPGRADE_QUEUE = "Queue";
+        private const string UPGRADE_STAMINA = "Stamina";
+        private const string UPGRADE_MONEY = "Money";
+        private const string UPGRADE_TRUCK = "Truck";
+        private const string UPGRADE_QUEST_TIER = "Quest Tier";
 
+        // UI Element Names
+        private const string UI_NAME_TEXT = "NameText";
+        private const string UI_LEVEL_TEXT = "LevelText";
+        private const string UI_COST_TEXT = "CostText";
+        private const string UI_CONTENT_TEXT = "ContentText";
+        private const string UI_BUY_BUTTON = "BuyButton";
+        private const string UI_BUTTON_TEXT = "Text";
+        private const string UI_BUTTON_TEXT_TMP = "Text (TMP)";
 
+        #endregion
 
-
-        [Header("Manager References")]
-        [SerializeField]
-        private CustomerManager CustomerManager;
-
-        [SerializeField] private PlayerMovement PlayerMovement;
-        [SerializeField] private Truck Truck;
-        [SerializeField] private CustomerAI CustomerAI;
-        [SerializeField] private EventEffectManager eventEffectManager; // For Opportunity Day
-
-        // Network Variables for synchronization
-        private NetworkList<int> upgradeLevels;
-        private NetworkList<int> visualUpgradeLevels; // Current visual levels (purchased but not yet active)
-        private NetworkList<NetworkPendingUpgrade> pendingUpgrades;
-        private NetworkVariable<bool> isPanelOpen = new NetworkVariable<bool>(false);
+        #region Nested Classes
 
         private class EntryUI
         {
-            public UpgradeDefinition def;
-            public int upgradeIndex; // Index in the upgrades list
-            public TMP_Text levelText, costText, contentText;
-            public Button buyButton;
+            public UpgradeDefinition Definition;
+            public int UpgradeIndex;
+            public TMP_Text LevelText;
+            public TMP_Text CostText;
+            public TMP_Text ContentText;
+            public Button BuyButton;
         }
 
-        private List<EntryUI> _entries = new();
+        #endregion
+
+        #region Serialized Fields - UI
+
+        [Header("=== UI REFERENCES ===")]
+        [SerializeField, Tooltip("Ana panel")]
+        private GameObject panel;
+
+        [SerializeField, Tooltip("Content parent transform")]
+        private Transform contentParent;
+
+        [SerializeField, Tooltip("Entry prefab'ı")]
+        private GameObject entryPrefab;
+
+        #endregion
+
+        #region Serialized Fields - Upgrades
+
+        [Header("=== UPGRADE DEFINITIONS ===")]
+        [SerializeField, Tooltip("Tüm upgrade tanımları")]
+        private List<UpgradeDefinition> upgrades = new();
+
+        #endregion
+
+        #region Serialized Fields - Manager References
+
+        [Header("=== MANAGER REFERENCES ===")]
+        [SerializeField] private CustomerManager CustomerManager;
+        [SerializeField] private PlayerMovement PlayerMovement;
+        [SerializeField] private Truck Truck;
+        [SerializeField] private CustomerAI CustomerAI;
+        [SerializeField] private EventEffectManager eventEffectManager;
+
+        #endregion
+
+        #region Network Variables
+
+        private NetworkList<int> _upgradeLevels;
+        private NetworkList<int> _visualUpgradeLevels;
+        private NetworkList<NetworkPendingUpgrade> _pendingUpgrades;
+        private readonly NetworkVariable<bool> _isPanelOpen = new(false);
+
+        #endregion
+
+        #region Private Fields
+
+        private readonly List<EntryUI> _entries = new();
+
+        #endregion
+
+        #region Public Properties
+
+        /// <summary>
+        /// Panel açık mı? 
+        /// </summary>
+        public bool IsPanelOpen => _isPanelOpen.Value;
+
+        /// <summary>
+        /// Upgrade sayısı
+        /// </summary>
+        public int UpgradeCount => upgrades.Count;
+
+        #endregion
+
+        #region Unity Lifecycle
+
+        private void Awake()
+        {
+            InitializeNetworkLists();
+        }
+
+        #endregion
+
+        #region Network Lifecycle
 
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
 
-            // Initialize NetworkLists
             if (IsServer)
             {
-                // Initialize upgrade levels to 0
-                for (int i = 0; i < upgrades.Count; i++)
-                {
-                    upgradeLevels.Add(0);
-                    visualUpgradeLevels.Add(0);
-                }
+                InitializeUpgradeLevels();
             }
 
-            // Subscribe to network variable changes
-            upgradeLevels.OnListChanged += OnUpgradeLevelsChanged;
-            visualUpgradeLevels.OnListChanged += OnVisualUpgradeLevelsChanged;
-            pendingUpgrades.OnListChanged += OnPendingUpgradesChanged;
-            isPanelOpen.OnValueChanged += OnPanelStateChanged;
-
-            panel.SetActive(false);
+            SubscribeToNetworkEvents();
+            InitializePanel();
             BuildEntries();
-
-            // Show Level 0 objects initially if hidden
-            foreach (var e in _entries)
-            {
-                if (e.def.levelObjects.Length > 0)
-                {
-                    e.def.levelObjects[0].SetActive(true);
-                }
-            }
-
-            // Initialize base values
+            InitializeLevelObjects();
             InitializeBaseValues();
-
-            // Subscribe to new day event
-            DayCycleManager.OnNewDay += OnNewDay;
-        }
-
-        void Awake()
-        {
-            // Initialize NetworkLists in Awake
-            upgradeLevels = new NetworkList<int>();
-            visualUpgradeLevels = new NetworkList<int>();
-            pendingUpgrades = new NetworkList<NetworkPendingUpgrade>();
+            SubscribeToDayCycleEvents();
         }
 
         public override void OnNetworkDespawn()
         {
+            UnsubscribeFromNetworkEvents();
+            UnsubscribeFromDayCycleEvents();
+
             base.OnNetworkDespawn();
-
-            // Unsubscribe from network events
-            if (upgradeLevels != null)
-                upgradeLevels.OnListChanged -= OnUpgradeLevelsChanged;
-            if (visualUpgradeLevels != null)
-                visualUpgradeLevels.OnListChanged -= OnVisualUpgradeLevelsChanged;
-            if (pendingUpgrades != null)
-                pendingUpgrades.OnListChanged -= OnPendingUpgradesChanged;
-
-            isPanelOpen.OnValueChanged -= OnPanelStateChanged;
-
-            // Unsubscribe to prevent memory leaks
-            DayCycleManager.OnNewDay -= OnNewDay;
         }
 
-        private void OnUpgradeLevelsChanged(NetworkListEvent<int> changeEvent)
+        #endregion
+
+        #region Initialization
+
+        private void InitializeNetworkLists()
         {
-            // Only apply upgrade effects when actual levels change (not visual levels)
-            if (changeEvent.Type == NetworkListEvent<int>.EventType.Value)
+            _upgradeLevels = new NetworkList<int>();
+            _visualUpgradeLevels = new NetworkList<int>();
+            _pendingUpgrades = new NetworkList<NetworkPendingUpgrade>();
+        }
+
+        private void InitializeUpgradeLevels()
+        {
+            for (int i = 0; i < upgrades.Count; i++)
             {
-                int upgradeIndex = changeEvent.Index;
-                int newLevel = changeEvent.Value;
+                _upgradeLevels.Add(0);
+                _visualUpgradeLevels.Add(0);
+            }
+        }
 
-                if (upgradeIndex < _entries.Count)
+        private void InitializePanel()
+        {
+            panel.SetActive(false);
+        }
+
+        private void InitializeLevelObjects()
+        {
+            foreach (var entry in _entries)
+            {
+                if (entry.Definition.levelObjects.Length > 0)
                 {
-                    var entry = _entries[upgradeIndex];
-                    ApplyUpgradeEffect(entry, newLevel);
-
-                    // Update level objects - show all levels up to current level
-                    UpdateLevelObjects(entry, newLevel);
-
-                    // Special handling for Truck upgrade - update garage doors AND spawner
-                    if (entry.def.displayName == "Truck")
-                    {
-                        UpdateGarageDoorControllers(entry, newLevel);
-
-                        // TruckSpawner'a yeni seviyeyi bildir
-                        if (TruckSpawner.Instance != null && IsServer)
-                        {
-                            TruckSpawner.Instance.SetTruckUpgradeLevel(newLevel);
-                        }
-                    }
+                    entry.Definition.levelObjects[0].SetActive(true);
                 }
             }
-
-            RefreshAllUpgradeUI();
         }
 
-        private void OnVisualUpgradeLevelsChanged(NetworkListEvent<int> changeEvent)
+        private void InitializeBaseValues()
         {
-            // Update UI when visual levels change (for purchased but not yet active upgrades)
-            RefreshAllUpgradeUI();
+            InitializeStaminaBaseValue();
+            InitializeMoneyBaseValue();
+            InitializeQueueBaseValue();
+            InitializeTruckUpgrade();
         }
 
-        private void OnPendingUpgradesChanged(NetworkListEvent<NetworkPendingUpgrade> changeEvent)
+        private void InitializeStaminaBaseValue()
         {
-            // Handle pending upgrades changes if needed
+            if (PlayerMovement == null) return;
+
+            var staminaUpgrade = FindEntryByName(UPGRADE_STAMINA);
+            if (staminaUpgrade != null)
+            {
+                PlayerMovement.staminaRegenRate = staminaUpgrade.Definition.StaminaValue;
+            }
+        }
+
+        private void InitializeMoneyBaseValue()
+        {
+            if (Truck == null) return;
+
+            var moneyUpgrade = FindEntryByName(UPGRADE_MONEY);
+            if (moneyUpgrade != null)
+            {
+                Truck.rewardPerBox = moneyUpgrade.Definition.TruckValue;
+            }
+        }
+
+        private void InitializeQueueBaseValue()
+        {
+            if (CustomerManager == null) return;
+
+            var queueUpgrade = FindEntryByName(UPGRADE_QUEUE);
+            if (queueUpgrade != null)
+            {
+                CustomerManager.maxQueueSize = queueUpgrade.Definition.starterValue;
+            }
+        }
+
+        private void InitializeTruckUpgrade()
+        {
+            var truckEntry = FindEntryByName(UPGRADE_TRUCK);
+            if (truckEntry == null) return;
+
+            // İlk hangar aktif
+            if (truckEntry.Definition.levelObjects.Length > 0)
+            {
+                truckEntry.Definition.levelObjects[0].SetActive(true);
+            }
+
+            // Diğer hangarlar kapalı
+            for (int i = 1; i < truckEntry.Definition.levelObjects.Length; i++)
+            {
+                truckEntry.Definition.levelObjects[i].SetActive(false);
+            }
+
+            UpdateGarageDoorControllers(truckEntry, 0);
+        }
+
+        #endregion
+
+        #region Event Subscriptions
+
+        private void SubscribeToNetworkEvents()
+        {
+            _upgradeLevels.OnListChanged += HandleUpgradeLevelsChanged;
+            _visualUpgradeLevels.OnListChanged += HandleVisualUpgradeLevelsChanged;
+            _pendingUpgrades.OnListChanged += HandlePendingUpgradesChanged;
+            _isPanelOpen.OnValueChanged += HandlePanelStateChanged;
+        }
+
+        private void UnsubscribeFromNetworkEvents()
+        {
+            _upgradeLevels.OnListChanged -= HandleUpgradeLevelsChanged;
+            _visualUpgradeLevels.OnListChanged -= HandleVisualUpgradeLevelsChanged;
+            _pendingUpgrades.OnListChanged -= HandlePendingUpgradesChanged;
+            _isPanelOpen.OnValueChanged -= HandlePanelStateChanged;
+        }
+
+        private void SubscribeToDayCycleEvents()
+        {
+            DayCycleManager.OnNewDay += HandleNewDay;
+        }
+
+        private void UnsubscribeFromDayCycleEvents()
+        {
+            DayCycleManager.OnNewDay -= HandleNewDay;
+        }
+
+        #endregion
+
+        #region Network Event Handlers
+
+        private void HandleUpgradeLevelsChanged(NetworkListEvent<int> changeEvent)
+        {
+            if (changeEvent.Type != NetworkListEvent<int>.EventType.Value) return;
+
+            int upgradeIndex = changeEvent.Index;
+            int newLevel = changeEvent.Value;
+
+            if (upgradeIndex >= _entries.Count) return;
+
+            var entry = _entries[upgradeIndex];
+            ApplyUpgradeEffect(entry, newLevel);
+            UpdateLevelObjects(entry, newLevel);
+            HandleSpecialUpgrades(entry, newLevel);
+
             RefreshAllUpgradeUI();
         }
 
-        private void OnPanelStateChanged(bool previousValue, bool newValue)
+        private void HandleVisualUpgradeLevelsChanged(NetworkListEvent<int> changeEvent)
+        {
+            RefreshAllUpgradeUI();
+        }
+
+        private void HandlePendingUpgradesChanged(NetworkListEvent<NetworkPendingUpgrade> changeEvent)
+        {
+            RefreshAllUpgradeUI();
+        }
+
+        private void HandlePanelStateChanged(bool previousValue, bool newValue)
         {
             panel.SetActive(newValue);
 
@@ -242,98 +404,134 @@ namespace NewCss
             }
         }
 
-        private void UpdateLevelObjects(EntryUI entry, int currentLevel)
-        {
-            // Show all level objects up to and including current level
-            for (int i = 0; i < entry.def.levelObjects.Length; i++)
-            {
-                entry.def.levelObjects[i].SetActive(i <= currentLevel);
-            }
-        }
-
-        private void InitializeBaseValues()
-        {
-            if (PlayerMovement != null)
-            {
-                var staminaUpgrade = _entries.FirstOrDefault(e => e.def.displayName == "Stamina");
-                if (staminaUpgrade != null)
-                    PlayerMovement.staminaRegenRate = staminaUpgrade.def.StaminaValue;
-            }
-
-            if (Truck != null)
-            {
-                var moneyUpgrade = _entries.FirstOrDefault(e => e.def.displayName == "Money");
-                if (moneyUpgrade != null)
-                    Truck.rewardPerBox = moneyUpgrade.def.TruckValue;
-            }
-
-            if (CustomerManager != null)
-            {
-                var queueUpgrade = _entries.FirstOrDefault(e => e.def.displayName == "Queue");
-                if (queueUpgrade != null)
-                    CustomerManager.maxQueueSize = queueUpgrade.def.starterValue;
-            }
-
-            var TruckUpgrade = _entries.FirstOrDefault(e => e.def.displayName == "Truck");
-            if (TruckUpgrade != null)
-            {
-                InitializeTruckUpgrade(TruckUpgrade);
-            }
-        }
-
-        private void InitializeTruckUpgrade(EntryUI truckEntry)
-        {
-            // İlk hangar aktif olsun (Level 0 objesi)
-            if (truckEntry.def.levelObjects.Length > 0)
-            {
-                truckEntry.def.levelObjects[0].SetActive(true);
-            }
-
-            // Diğer hangarlar kapalı olsun
-            for (int i = 1; i < truckEntry.def.levelObjects.Length; i++)
-            {
-                truckEntry.def.levelObjects[i].SetActive(false);
-            }
-
-            // Garaj kapılarını kontrol et - sadece Level 0 için aktif
-            UpdateGarageDoorControllers(truckEntry, 0);
-        }
-
-        private void UpdateGarageDoorControllers(EntryUI truckEntry, int currentLevel)
-        {
-            if (truckEntry.def.garageDoorControllers == null || truckEntry.def.garageDoorControllers.Length == 0)
-            {
-                return;
-            }
-
-            // Tüm garaj kapılarını önce deaktif et
-            for (int i = 0; i < truckEntry.def.garageDoorControllers.Length; i++)
-            {
-                if (truckEntry.def.garageDoorControllers[i] != null)
-                {
-                    // Garaj kapısını deaktif et (çalışmayı durdur)
-                    truckEntry.def.garageDoorControllers[i].enabled = false;
-                }
-            }
-
-            // Sadece mevcut seviye ve altındaki garaj kapılarını aktif et
-            for (int i = 0; i <= currentLevel && i < truckEntry.def.garageDoorControllers.Length; i++)
-            {
-                if (truckEntry.def.garageDoorControllers[i] != null)
-                {
-                    // Garaj kapısını aktif et
-                    truckEntry.def.garageDoorControllers[i].enabled = true;
-                }
-            }
-        }
-
-        private void OnNewDay()
+        private void HandleNewDay()
         {
             if (IsServer)
             {
                 ActivatePendingUpgradesServerRpc();
             }
         }
+
+        #endregion
+
+        #region Special Upgrade Handling
+
+        private void HandleSpecialUpgrades(EntryUI entry, int newLevel)
+        {
+            if (entry.Definition.displayName != UPGRADE_TRUCK) return;
+
+            UpdateGarageDoorControllers(entry, newLevel);
+
+            if (TruckSpawner.Instance != null && IsServer)
+            {
+                TruckSpawner.Instance.SetTruckUpgradeLevel(newLevel);
+            }
+        }
+
+        #endregion
+
+        #region Level Objects Management
+
+        private void UpdateLevelObjects(EntryUI entry, int currentLevel)
+        {
+            for (int i = 0; i < entry.Definition.levelObjects.Length; i++)
+            {
+                entry.Definition.levelObjects[i].SetActive(i <= currentLevel);
+            }
+        }
+
+        private void UpdateGarageDoorControllers(EntryUI truckEntry, int currentLevel)
+        {
+            var controllers = truckEntry.Definition.garageDoorControllers;
+            if (controllers == null || controllers.Length == 0) return;
+
+            // Tüm kapıları deaktif et
+            foreach (var controller in controllers)
+            {
+                if (controller != null)
+                {
+                    controller.enabled = false;
+                }
+            }
+
+            // Mevcut seviye ve altındakileri aktif et
+            for (int i = 0; i <= currentLevel && i < controllers.Length; i++)
+            {
+                if (controllers[i] != null)
+                {
+                    controllers[i].enabled = true;
+                }
+            }
+        }
+
+        #endregion
+
+        #region Upgrade Effects
+
+        private void ApplyUpgradeEffect(EntryUI entry, int level)
+        {
+            string upgradeName = entry.Definition.displayName;
+
+            switch (upgradeName)
+            {
+                case UPGRADE_QUEUE:
+                    ApplyQueueUpgrade(entry, level);
+                    break;
+
+                case UPGRADE_STAMINA:
+                    ApplyStaminaUpgrade(entry, level);
+                    break;
+
+                case UPGRADE_MONEY:
+                    ApplyMoneyUpgrade(entry, level);
+                    break;
+
+                case UPGRADE_QUEST_TIER:
+                    ApplyQuestTierUpgrade(level);
+                    break;
+            }
+        }
+
+        private void ApplyQueueUpgrade(EntryUI entry, int level)
+        {
+            if (CustomerManager != null)
+            {
+                CustomerManager.maxQueueSize = entry.Definition.starterValue + level;
+            }
+        }
+
+        private void ApplyStaminaUpgrade(EntryUI entry, int level)
+        {
+            if (PlayerMovement != null)
+            {
+                PlayerMovement.staminaRegenRate = entry.Definition.StaminaValue + (level * 0.5f);
+            }
+        }
+
+        private void ApplyMoneyUpgrade(EntryUI entry, int level)
+        {
+            if (Truck != null)
+            {
+                Truck.rewardPerBox = entry.Definition.TruckValue + (level * 10);
+            }
+        }
+
+        private void ApplyQuestTierUpgrade(int level)
+        {
+            if (QuestManager.Instance == null) return;
+
+            int targetTier = level + 1;
+
+            if (IsServer && QuestManager.Instance.GetCurrentQuestTier() < targetTier)
+            {
+                QuestManager.Instance.UpgradeQuestTierServerRpc();
+                LogDebug($"Quest Tier upgraded to: Tier {targetTier}");
+            }
+        }
+
+        #endregion
+
+        #region Pending Upgrades
 
         [ServerRpc(RequireOwnership = false)]
         private void ActivatePendingUpgradesServerRpc()
@@ -342,312 +540,94 @@ namespace NewCss
 
             int currentDay = DayCycleManager.Instance.currentDay;
 
-            // Get upgrades that should be activated today (purchased previous day)
             var upgradesToActivate = new List<NetworkPendingUpgrade>();
             var upgradesToKeep = new List<NetworkPendingUpgrade>();
 
-            for (int i = 0; i < pendingUpgrades.Count; i++)
+            // Categorize pending upgrades
+            for (int i = 0; i < _pendingUpgrades.Count; i++)
             {
-                if (pendingUpgrades[i].dayPurchased < currentDay)
+                var pending = _pendingUpgrades[i];
+                if (pending.dayPurchased < currentDay)
                 {
-                    upgradesToActivate.Add(pendingUpgrades[i]);
+                    upgradesToActivate.Add(pending);
                 }
                 else
                 {
-                    upgradesToKeep.Add(pendingUpgrades[i]);
+                    upgradesToKeep.Add(pending);
                 }
             }
 
-            // Apply upgrades - update actual levels to match visual levels
+            // Apply upgrades
             foreach (var pendingUpgrade in upgradesToActivate)
             {
-                int upgradeIndex = upgrades.FindIndex(u => u.displayName == pendingUpgrade.upgradeName.ToString());
-                if (upgradeIndex >= 0 && upgradeIndex < upgradeLevels.Count)
+                int upgradeIndex = FindUpgradeIndex(pendingUpgrade.upgradeName.ToString());
+
+                if (upgradeIndex >= 0 && upgradeIndex < _upgradeLevels.Count)
                 {
-                    upgradeLevels[upgradeIndex] = pendingUpgrade.levelToBecomeActive;
+                    _upgradeLevels[upgradeIndex] = pendingUpgrade.levelToBecomeActive;
                 }
             }
 
-            // Update pending upgrades list
-            pendingUpgrades.Clear();
+            // Update pending list
+            _pendingUpgrades.Clear();
             foreach (var upgrade in upgradesToKeep)
             {
-                pendingUpgrades.Add(upgrade);
+                _pendingUpgrades.Add(upgrade);
             }
 
             RefreshUpgradePricesClientRpc();
         }
 
-        [ClientRpc]
-        private void RefreshUpgradePricesClientRpc()
+        private int FindUpgradeIndex(string upgradeName)
         {
-            RefreshAllUpgradeUI();
+            return upgrades.FindIndex(u => u.displayName == upgradeName);
         }
 
-        private void ApplyUpgradeEffect(EntryUI entry, int level)
-        {
-            if (entry.def.displayName == "Queue" && CustomerManager != null)
-            {
-                CustomerManager.maxQueueSize = entry.def.starterValue + level;
-            }
-            else if (entry.def.displayName == "Stamina" && PlayerMovement != null)
-            {
-                PlayerMovement.staminaRegenRate = entry.def.StaminaValue + (level * 0.5f);
-            }
-            else if (entry.def.displayName == "Money" && Truck != null)
-            {
-                Truck.rewardPerBox = entry.def.TruckValue + (level * 10);
-            }
-            // ✨ YENİ: Quest Tier Upgrade
-            else if (entry.def.displayName == "Quest Tier" && QuestManager.Instance != null)
-            {
-                // Level 0 = Tier 1 (Easy)
-                // Level 1 = Tier 2 (Medium)
-                // Level 2 = Tier 3 (Hard)
-                int targetTier = level + 1;
+        #endregion
 
-                // Sadece tier yükseltme gerekiyorsa yükselt
-                if (IsServer && QuestManager.Instance.GetCurrentQuestTier() < targetTier)
-                {
-                    QuestManager.Instance.UpgradeQuestTierServerRpc();
-                    Debug.Log($"✅ Quest Tier upgraded to: Tier {targetTier}");
-                }
-            }
-        }
+        #region Panel Toggle
 
+        /// <summary>
+        /// Paneli toggle eder
+        /// </summary>
         public void TogglePanel()
         {
-            if (DayCycleManager.Instance.CurrentHour >= 10)
-            {
-                TogglePanelServerRpc();
-            }
+            if (GetCurrentHour() < PANEL_OPEN_HOUR) return;
+
+            TogglePanelServerRpc();
         }
 
         [ServerRpc(RequireOwnership = false)]
         private void TogglePanelServerRpc()
         {
-            isPanelOpen.Value = !isPanelOpen.Value;
+            _isPanelOpen.Value = !_isPanelOpen.Value;
         }
 
-        private void BuildEntries()
-        {
-            foreach (Transform c in contentParent) Destroy(c.gameObject);
-            _entries.Clear();
+        #endregion
 
-            Debug.Log($"Total upgrades to build: {upgrades.Count}");
-
-            for (int i = 0; i < upgrades.Count; i++)
-            {
-                var def = upgrades[i];
-                Debug.Log($"Building entry for: {def.displayName}");
-
-                try
-                {
-                    // Prefab'ı kontrol et
-                    if (entryPrefab == null)
-                    {
-                        Debug.LogError("entryPrefab is null!");
-                        continue;
-                    }
-
-                    var go = Instantiate(entryPrefab, contentParent);
-                    if (go == null)
-                    {
-                        Debug.LogError($"Failed to instantiate prefab for {def.displayName}");
-                        continue;
-                    }
-
-                    Debug.Log($"Prefab instantiated for: {def.displayName}");
-
-                    var e = new EntryUI { def = def, upgradeIndex = i };
-
-                    // Prefab'ın tüm çocuklarını listele (debug için)
-                    Debug.Log($"Prefab children for {def.displayName}:");
-                    foreach (Transform child in go.transform)
-                    {
-                        Debug.Log($"  Child: {child.name}");
-                    }
-
-                    // Name Text - daha güvenli bulma
-                    var nameTextTransform = FindChildRecursive(go.transform, "NameText");
-                    if (nameTextTransform == null)
-                    {
-                        Debug.LogError($"NameText not found in prefab for {def.displayName}");
-                        LogAllChildren(go.transform, "Available children:");
-                        Destroy(go);
-                        continue;
-                    }
-
-                    var nameTextComponent = nameTextTransform.GetComponent<TMP_Text>();
-                    if (nameTextComponent == null)
-                    {
-                        Debug.LogError($"TMP_Text component not found on NameText for {def.displayName}");
-                        Destroy(go);
-                        continue;
-                    }
-
-                    nameTextComponent.text = def.displayName;
-
-                    // Level Text
-                    var levelTextTransform = FindChildRecursive(go.transform, "LevelText");
-                    if (levelTextTransform == null)
-                    {
-                        Debug.LogError($"LevelText not found in prefab for {def.displayName}");
-                        Destroy(go);
-                        continue;
-                    }
-
-                    e.levelText = levelTextTransform.GetComponent<TMP_Text>();
-                    if (e.levelText == null)
-                    {
-                        Debug.LogError($"TMP_Text component not found on LevelText for {def.displayName}");
-                        Destroy(go);
-                        continue;
-                    }
-
-                    // Cost Text
-                    var costTextTransform = FindChildRecursive(go.transform, "CostText");
-                    if (costTextTransform == null)
-                    {
-                        Debug.LogError($"CostText not found in prefab for {def.displayName}");
-                        Destroy(go);
-                        continue;
-                    }
-
-                    e.costText = costTextTransform.GetComponent<TMP_Text>();
-                    if (e.costText == null)
-                    {
-                        Debug.LogError($"TMP_Text component not found on CostText for {def.displayName}");
-                        Destroy(go);
-                        continue;
-                    }
-
-                    // Content Text
-                    var contentTextTransform = FindChildRecursive(go.transform, "ContentText");
-                    if (contentTextTransform == null)
-                    {
-                        Debug.LogError($"ContentText not found in prefab for {def.displayName}");
-                        Destroy(go);
-                        continue;
-                    }
-
-                    e.contentText = contentTextTransform.GetComponent<TMP_Text>();
-                    if (e.contentText == null)
-                    {
-                        Debug.LogError($"TMP_Text component not found on ContentText for {def.displayName}");
-                        Destroy(go);
-                        continue;
-                    }
-
-                    // Buy Button
-                    var buyButtonTransform = FindChildRecursive(go.transform, "BuyButton");
-                    if (buyButtonTransform == null)
-                    {
-                        Debug.LogError($"BuyButton not found in prefab for {def.displayName}");
-                        Destroy(go);
-                        continue;
-                    }
-
-                    e.buyButton = buyButtonTransform.GetComponent<Button>();
-                    if (e.buyButton == null)
-                    {
-                        Debug.LogError($"Button component not found on BuyButton for {def.displayName}");
-                        Destroy(go);
-                        continue;
-                    }
-
-                    // Button Text - alternatif yollar dene
-                    Transform buttonTextTransform = null;
-
-                    // Önce "Text" isimli çocuk ara
-                    buttonTextTransform = FindChildRecursive(buyButtonTransform, "Text");
-
-                    // Bulamazsa "Text (TMP)" ara
-                    if (buttonTextTransform == null)
-                        buttonTextTransform = FindChildRecursive(buyButtonTransform, "Text (TMP)");
-
-                    // Hala bulamazsa button'ın ilk TMP_Text component'ını ara
-                    if (buttonTextTransform == null)
-                    {
-                        var tmpText = buyButtonTransform.GetComponentInChildren<TMP_Text>();
-                        if (tmpText != null)
-                            buttonTextTransform = tmpText.transform;
-                    }
-
-                    if (buttonTextTransform == null)
-                    {
-                        Debug.LogError($"Button Text not found in BuyButton for {def.displayName}");
-                        LogAllChildren(buyButtonTransform, "BuyButton children:");
-                        Destroy(go);
-                        continue;
-                    }
-
-                    // Button click event - capture the index for the lambda
-                    int upgradeIndex = i;
-                    e.buyButton.onClick.AddListener(() => OnBuy(upgradeIndex));
-
-                    _entries.Add(e);
-                    Debug.Log($"Successfully added entry for: {def.displayName}");
-
-                    UpdateEntryUI(e);
-                }
-                catch (System.Exception ex)
-                {
-                    Debug.LogError($"Error building entry for {def.displayName}: {ex.Message}");
-                    Debug.LogError($"Stack trace: {ex.StackTrace}");
-                }
-            }
-
-            Debug.Log($"Total entries built: {_entries.Count}");
-        }
-
-        private Transform FindChildRecursive(Transform parent, string childName)
-        {
-            // Önce direkt çocukları kontrol et
-            foreach (Transform child in parent)
-            {
-                if (child.name == childName)
-                    return child;
-            }
-
-            // Sonra recursive olarak alt çocukları kontrol et
-            foreach (Transform child in parent)
-            {
-                Transform found = FindChildRecursive(child, childName);
-                if (found != null)
-                    return found;
-            }
-
-            return null;
-        }
-
-        private void LogAllChildren(Transform parent, string prefix = "")
-        {
-            Debug.Log($"{prefix} {parent.name}");
-            foreach (Transform child in parent)
-            {
-                LogAllChildren(child, prefix + "  ");
-            }
-        }
+        #region Purchase System
 
         private void OnBuy(int upgradeIndex)
         {
-            if (upgradeIndex < 0 || upgradeIndex >= upgrades.Count) return;
+            if (!ValidatePurchase(upgradeIndex, out int finalCost)) return;
+
+            PurchaseUpgradeServerRpc(upgradeIndex, finalCost);
+        }
+
+        private bool ValidatePurchase(int upgradeIndex, out int finalCost)
+        {
+            finalCost = 0;
+
+            if (upgradeIndex < 0 || upgradeIndex >= upgrades.Count) return false;
 
             var upgrade = upgrades[upgradeIndex];
-            int currentVisualLevel = visualUpgradeLevels.Count > upgradeIndex ? visualUpgradeLevels[upgradeIndex] : 0;
+            int currentVisualLevel = GetVisualLevel(upgradeIndex);
 
-            if (currentVisualLevel >= upgrade.maxLevel) return;
+            if (currentVisualLevel >= upgrade.maxLevel) return false;
 
-            // Apply Opportunity Day multiplier
-            float costMultiplier = eventEffectManager != null ? eventEffectManager.GetUpgradeCostMultiplier() : 1f;
-            int baseCost = upgrade.baseCost + currentVisualLevel * upgrade.costStep;
-            int finalCost = Mathf.RoundToInt(baseCost * costMultiplier);
+            finalCost = CalculateFinalCost(upgrade, currentVisualLevel);
 
-            if (MoneySystem.Instance.CurrentMoney < finalCost) return;
-
-            // Send purchase request to server
-            PurchaseUpgradeServerRpc(upgradeIndex, finalCost);
+            return MoneySystem.Instance.CurrentMoney >= finalCost;
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -656,26 +636,190 @@ namespace NewCss
             if (upgradeIndex < 0 || upgradeIndex >= upgrades.Count) return;
 
             var upgrade = upgrades[upgradeIndex];
-            int currentVisualLevel = visualUpgradeLevels.Count > upgradeIndex ? visualUpgradeLevels[upgradeIndex] : 0;
+            int currentVisualLevel = GetVisualLevel(upgradeIndex);
 
             if (currentVisualLevel >= upgrade.maxLevel) return;
             if (MoneySystem.Instance.CurrentMoney < cost) return;
 
-            // Spend money
+            // Process purchase
             MoneySystem.Instance.SpendMoney(cost);
 
-            // Increase visual level immediately (this shows in UI)
-            if (upgradeIndex < visualUpgradeLevels.Count)
+            if (upgradeIndex < _visualUpgradeLevels.Count)
             {
-                visualUpgradeLevels[upgradeIndex] = currentVisualLevel + 1;
+                _visualUpgradeLevels[upgradeIndex] = currentVisualLevel + 1;
             }
 
-            // Add to pending upgrades (will be activated next day)
+            // Add pending upgrade
             int currentDay = DayCycleManager.Instance.currentDay;
-            pendingUpgrades.Add(new NetworkPendingUpgrade(upgrade.displayName, currentVisualLevel + 1, currentDay));
+            _pendingUpgrades.Add(new NetworkPendingUpgrade(upgrade.displayName, currentVisualLevel + 1, currentDay));
 
-            // Refresh UI for all clients
             RefreshUpgradePricesClientRpc();
+        }
+
+        #endregion
+
+        #region Cost Calculation
+
+        private int CalculateFinalCost(UpgradeDefinition upgrade, int currentLevel)
+        {
+            float costMultiplier = GetCostMultiplier();
+            int baseCost = upgrade.baseCost + currentLevel * upgrade.costStep;
+            return Mathf.RoundToInt(baseCost * costMultiplier);
+        }
+
+        private float GetCostMultiplier()
+        {
+            return eventEffectManager != null ? eventEffectManager.GetUpgradeCostMultiplier() : 1f;
+        }
+
+        #endregion
+
+        #region UI Building
+
+        private void BuildEntries()
+        {
+            ClearEntries();
+
+            LogDebug($"Building {upgrades.Count} upgrade entries");
+
+            for (int i = 0; i < upgrades.Count; i++)
+            {
+                try
+                {
+                    BuildSingleEntry(i);
+                }
+                catch (Exception ex)
+                {
+                    LogError($"Error building entry for {upgrades[i].displayName}: {ex.Message}");
+                }
+            }
+
+            LogDebug($"Successfully built {_entries.Count} entries");
+        }
+
+        private void ClearEntries()
+        {
+            foreach (Transform c in contentParent)
+            {
+                Destroy(c.gameObject);
+            }
+            _entries.Clear();
+        }
+
+        private void BuildSingleEntry(int index)
+        {
+            var def = upgrades[index];
+
+            if (entryPrefab == null)
+            {
+                LogError("entryPrefab is null!");
+                return;
+            }
+
+            var go = Instantiate(entryPrefab, contentParent);
+            if (go == null)
+            {
+                LogError($"Failed to instantiate prefab for {def.displayName}");
+                return;
+            }
+
+            var entry = new EntryUI
+            {
+                Definition = def,
+                UpgradeIndex = index
+            };
+
+            if (!TrySetupEntryUI(go, entry, def))
+            {
+                Destroy(go);
+                return;
+            }
+
+            // Button click event
+            int upgradeIndex = index;
+            entry.BuyButton.onClick.AddListener(() => OnBuy(upgradeIndex));
+
+            _entries.Add(entry);
+            UpdateEntryUI(entry);
+        }
+
+        private bool TrySetupEntryUI(GameObject go, EntryUI entry, UpgradeDefinition def)
+        {
+            // Name Text
+            if (!TrySetTextComponent(go, UI_NAME_TEXT, def.displayName))
+            {
+                LogError($"NameText not found for {def.displayName}");
+                return false;
+            }
+
+            // Level Text
+            entry.LevelText = FindTextComponent(go, UI_LEVEL_TEXT);
+            if (entry.LevelText == null)
+            {
+                LogError($"LevelText not found for {def.displayName}");
+                return false;
+            }
+
+            // Cost Text
+            entry.CostText = FindTextComponent(go, UI_COST_TEXT);
+            if (entry.CostText == null)
+            {
+                LogError($"CostText not found for {def.displayName}");
+                return false;
+            }
+
+            // Content Text
+            entry.ContentText = FindTextComponent(go, UI_CONTENT_TEXT);
+            if (entry.ContentText == null)
+            {
+                LogError($"ContentText not found for {def.displayName}");
+                return false;
+            }
+
+            // Buy Button
+            var buyButtonTransform = FindChildRecursive(go.transform, UI_BUY_BUTTON);
+            if (buyButtonTransform == null)
+            {
+                LogError($"BuyButton not found for {def.displayName}");
+                return false;
+            }
+
+            entry.BuyButton = buyButtonTransform.GetComponent<Button>();
+            if (entry.BuyButton == null)
+            {
+                LogError($"Button component not found for {def.displayName}");
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool TrySetTextComponent(GameObject go, string elementName, string text)
+        {
+            var transform = FindChildRecursive(go.transform, elementName);
+            if (transform == null) return false;
+
+            var tmpText = transform.GetComponent<TMP_Text>();
+            if (tmpText == null) return false;
+
+            tmpText.text = text;
+            return true;
+        }
+
+        private TMP_Text FindTextComponent(GameObject go, string elementName)
+        {
+            var transform = FindChildRecursive(go.transform, elementName);
+            return transform?.GetComponent<TMP_Text>();
+        }
+
+        #endregion
+
+        #region UI Update
+
+        [ClientRpc]
+        private void RefreshUpgradePricesClientRpc()
+        {
+            RefreshAllUpgradeUI();
         }
 
         private void RefreshAllUpgradeUI()
@@ -686,60 +830,127 @@ namespace NewCss
             }
         }
 
-        private void UpdateEntryUI(EntryUI e)
+        private void UpdateEntryUI(EntryUI entry)
         {
-            // Get current visual level (purchased level) from network variable
-            int currentVisualLevel = e.upgradeIndex < visualUpgradeLevels.Count ? visualUpgradeLevels[e.upgradeIndex] : 0;
+            int currentVisualLevel = GetVisualLevel(entry.UpgradeIndex);
 
-            // Show current visual level
-            e.levelText.text = $"Level: {currentVisualLevel}";
-            e.contentText.text = e.def.contentText;
+            entry.LevelText.text = $"Level: {currentVisualLevel}";
+            entry.ContentText.text = entry.Definition.contentText;
 
-            if (currentVisualLevel < e.def.maxLevel)
+            if (currentVisualLevel < entry.Definition.maxLevel)
             {
-                // Apply Opportunity Day multiplier - always get fresh multiplier
-                float costMultiplier = eventEffectManager != null ? eventEffectManager.GetUpgradeCostMultiplier() : 1f;
-                int baseCost = e.def.baseCost + currentVisualLevel * e.def.costStep;
-                int finalCost = Mathf.RoundToInt(baseCost * costMultiplier);
-
-                // Show discounted cost with colors if multiplier < 1
-                if (costMultiplier < 1f)
-                {
-                    e.costText.text = $"<color=green>Cost: {finalCost}</color> <color=red><s>{baseCost}</s></color>";
-                }
-                else
-                {
-                    e.costText.text = $"Cost: {finalCost}";
-                }
-
-                e.buyButton.interactable = MoneySystem.Instance.CurrentMoney >= finalCost;
-
-                var buttonText = e.buyButton.transform.Find("Text")?.GetComponent<TMP_Text>();
-                if (buttonText == null)
-                    buttonText = e.buyButton.GetComponentInChildren<TMP_Text>();
-
-                if (buttonText != null)
-                    buttonText.text = "Buy";
+                UpdateEntryUIForPurchasable(entry, currentVisualLevel);
             }
             else
             {
-                e.costText.text = "Max";
-                e.buyButton.interactable = false;
-
-                var buttonText = e.buyButton.transform.Find("Text")?.GetComponent<TMP_Text>();
-                if (buttonText == null)
-                    buttonText = e.buyButton.GetComponentInChildren<TMP_Text>();
-
-                if (buttonText != null)
-                    buttonText.text = "Max";
+                UpdateEntryUIForMaxLevel(entry);
             }
         }
 
-        // Test metodları
-        [ContextMenu("Test Truck Level 0")]
-        public void TestTruckLevel0()
+        private void UpdateEntryUIForPurchasable(EntryUI entry, int currentVisualLevel)
         {
-            var truckEntry = _entries.FirstOrDefault(e => e.def.displayName == "Truck");
+            float costMultiplier = GetCostMultiplier();
+            int baseCost = entry.Definition.baseCost + currentVisualLevel * entry.Definition.costStep;
+            int finalCost = Mathf.RoundToInt(baseCost * costMultiplier);
+
+            // Show cost with discount if applicable
+            if (costMultiplier < 1f)
+            {
+                entry.CostText.text = $"<color=green>Cost: {finalCost}</color> <color=red><s>{baseCost}</s></color>";
+            }
+            else
+            {
+                entry.CostText.text = $"Cost: {finalCost}";
+            }
+
+            entry.BuyButton.interactable = MoneySystem.Instance.CurrentMoney >= finalCost;
+            SetButtonText(entry.BuyButton, "Buy");
+        }
+
+        private void UpdateEntryUIForMaxLevel(EntryUI entry)
+        {
+            entry.CostText.text = "Max";
+            entry.BuyButton.interactable = false;
+            SetButtonText(entry.BuyButton, "Max");
+        }
+
+        private void SetButtonText(Button button, string text)
+        {
+            var buttonText = FindButtonText(button);
+            if (buttonText != null)
+            {
+                buttonText.text = text;
+            }
+        }
+
+        private TMP_Text FindButtonText(Button button)
+        {
+            var textTransform = button.transform.Find(UI_BUTTON_TEXT);
+            if (textTransform != null)
+            {
+                return textTransform.GetComponent<TMP_Text>();
+            }
+
+            return button.GetComponentInChildren<TMP_Text>();
+        }
+
+        #endregion
+
+        #region Utility Methods
+
+        private int GetVisualLevel(int upgradeIndex)
+        {
+            return upgradeIndex < _visualUpgradeLevels.Count ? _visualUpgradeLevels[upgradeIndex] : 0;
+        }
+
+        private int GetCurrentHour()
+        {
+            return DayCycleManager.Instance?.CurrentHour ?? 0;
+        }
+
+        private EntryUI FindEntryByName(string displayName)
+        {
+            return _entries.FirstOrDefault(e => e.Definition.displayName == displayName);
+        }
+
+        private Transform FindChildRecursive(Transform parent, string childName)
+        {
+            foreach (Transform child in parent)
+            {
+                if (child.name == childName)
+                    return child;
+
+                Transform found = FindChildRecursive(child, childName);
+                if (found != null)
+                    return found;
+            }
+
+            return null;
+        }
+
+        #endregion
+
+        #region Logging
+
+        private void LogDebug(string message)
+        {
+            Debug.Log($"{LOG_PREFIX} {message}");
+        }
+
+        private void LogError(string message)
+        {
+            Debug.LogError($"{LOG_PREFIX} {message}");
+        }
+
+        #endregion
+
+        #region Editor Debug
+
+#if UNITY_EDITOR
+        [ContextMenu("Test Truck Level 0")]
+        private void DebugTestTruckLevel0()
+        {
+            var truckEntry = FindEntryByName(UPGRADE_TRUCK);
             if (truckEntry != null)
             {
                 UpdateGarageDoorControllers(truckEntry, 0);
@@ -747,9 +958,9 @@ namespace NewCss
         }
 
         [ContextMenu("Test Truck Level 1")]
-        public void TestTruckLevel1()
+        private void DebugTestTruckLevel1()
         {
-            var truckEntry = _entries.FirstOrDefault(e => e.def.displayName == "Truck");
+            var truckEntry = FindEntryByName(UPGRADE_TRUCK);
             if (truckEntry != null)
             {
                 UpdateGarageDoorControllers(truckEntry, 1);
@@ -757,13 +968,61 @@ namespace NewCss
         }
 
         [ContextMenu("Test Truck Level 2")]
-        public void TestTruckLevel2()
+        private void DebugTestTruckLevel2()
         {
-            var truckEntry = _entries.FirstOrDefault(e => e.def.displayName == "Truck");
+            var truckEntry = FindEntryByName(UPGRADE_TRUCK);
             if (truckEntry != null)
             {
                 UpdateGarageDoorControllers(truckEntry, 2);
             }
         }
+
+        [ContextMenu("Toggle Panel")]
+        private void DebugTogglePanel()
+        {
+            TogglePanel();
+        }
+
+        [ContextMenu("Refresh UI")]
+        private void DebugRefreshUI()
+        {
+            RefreshAllUpgradeUI();
+        }
+
+        [ContextMenu("Debug: Print State")]
+        private void DebugPrintState()
+        {
+            Debug.Log($"{LOG_PREFIX} === UPGRADE PANEL STATE ===");
+            Debug.Log($"Is Panel Open: {_isPanelOpen.Value}");
+            Debug.Log($"Total Upgrades: {upgrades.Count}");
+            Debug.Log($"Built Entries: {_entries.Count}");
+            Debug.Log($"Pending Upgrades: {_pendingUpgrades.Count}");
+            Debug.Log($"Cost Multiplier: {GetCostMultiplier()}");
+
+            for (int i = 0; i < _entries.Count; i++)
+            {
+                var entry = _entries[i];
+                int actualLevel = i < _upgradeLevels.Count ? _upgradeLevels[i] : 0;
+                int visualLevel = GetVisualLevel(i);
+
+                Debug.Log($"  [{i}] {entry.Definition.displayName}: " +
+                         $"Actual={actualLevel}, Visual={visualLevel}, Max={entry.Definition.maxLevel}");
+            }
+        }
+
+        [ContextMenu("Debug: Print Pending Upgrades")]
+        private void DebugPrintPendingUpgrades()
+        {
+            Debug.Log($"{LOG_PREFIX} === PENDING UPGRADES ===");
+
+            for (int i = 0; i < _pendingUpgrades.Count; i++)
+            {
+                var pending = _pendingUpgrades[i];
+                Debug.Log($"  [{i}] {pending.upgradeName}: Level {pending.levelToBecomeActive}, Day {pending.dayPurchased}");
+            }
+        }
+#endif
+
+        #endregion
     }
 }

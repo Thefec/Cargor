@@ -1,96 +1,285 @@
-using UnityEngine;
-using TMPro;
 using System;
+using System.Collections.Generic;
 using Unity.Netcode;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using TMPro;
 
 namespace NewCss
 {
+    /// <summary>
+    /// Oyun içi gün/gece döngüsünü, haftalık kira ödemelerini ve zaman yönetimini kontrol eder. 
+    /// Network senkronizasyonu ile tüm oyuncularda tutarlı zaman akışı sağlar.
+    /// </summary>
     public class DayCycleManager : NetworkBehaviour
     {
+        #region Singleton
+
         public static DayCycleManager Instance { get; private set; }
+
+        #endregion
+
+        #region Events
+
+        /// <summary>
+        /// Yeni gün başladığında tetiklenir (tüm client'larda)
+        /// </summary>
         public static event Action OnNewDay;
 
-        [Header("Weekly Cost Settings")]
-        private int initialWeeklyCost = 1000;
-        private int minWeeklyIncrease = 200;
-        private int maxWeeklyIncrease = 600;
-        private int weeklyCost;
+        /// <summary>
+        /// Haftalık kira ödemesi yapıldığında tetiklenir (her 6 günde bir)
+        /// </summary>
+        public static event Action OnWeeklyEvent;
 
-        [Header("Time Settings")]
+        #endregion
+
+        #region Constants
+
+        private const int INITIAL_WEEKLY_COST = 1000;
+        private const int MIN_WEEKLY_INCREASE = 200;
+        private const int MAX_WEEKLY_INCREASE = 600;
+        private const float WEEKLY_COST_MULTIPLIER = 1.2f;
+        private const int DAYS_PER_WEEK = 6;
+        private const int DYNAMIC_DURATION_START_DAY = 3;
+        private const float PERIODIC_CHECK_WINDOW = 0.5f;
+        private const string LOG_PREFIX = "[DayCycleManager]";
+
+        #endregion
+
+        #region Serialized Fields
+
+        [Header("=== TIME SETTINGS ===")]
+        [Tooltip("Bir günün gerçek süre karşılığı (saniye)")]
         public float realDurationInSeconds = 160f;
 
-        [Header("Dynamic Duration Settings")]
-        [Tooltip("Duration increase per day after day 3")]
-        public float dailyDurationIncrease = 10f;
+        [SerializeField, Tooltip("3.  günden sonra her gün eklenen ekstra süre (saniye)")]
+        private float dailyDurationIncrease = 10f;
 
-        [Header("UI Elements")]
+        [Tooltip("Oyun içi başlangıç saati")]
+        public int startHour = 7;
+
+        [Tooltip("Oyun içi bitiş saati")]
+        public int endHour = 15;
+
+        [Header("=== UI REFERENCES ===")]
+        [SerializeField, Tooltip("Gün ve saat bilgisini gösteren text")]
         public TextMeshProUGUI dayTimeText;
+
+        [SerializeField, Tooltip("Gün sonu ekranı")]
         public GameObject dayEndScreen;
 
-        // Network Variables
-        private NetworkVariable<float> networkElapsedTime = new NetworkVariable<float>(0f);
-        private NetworkVariable<int> networkCurrentDay = new NetworkVariable<int>(1);
-        private NetworkVariable<bool> networkIsDayOver = new NetworkVariable<bool>(false);
-        private NetworkVariable<bool> networkIsBreakRoomReady = new NetworkVariable<bool>(false);
-        private NetworkVariable<int> networkWeeklyCost = new NetworkVariable<int>(1000);
+        #endregion
 
-        // Public properties
-        public bool IsDayOver => networkIsDayOver.Value;
+        #region Network Variables
+
+        private readonly NetworkVariable<float> _networkElapsedTime = new(0f);
+        private readonly NetworkVariable<int> _networkCurrentDay = new(1);
+        private readonly NetworkVariable<bool> _networkIsDayOver = new(false);
+        private readonly NetworkVariable<bool> _networkIsBreakRoomReady = new(false);
+        private readonly NetworkVariable<int> _networkWeeklyCost = new(INITIAL_WEEKLY_COST);
+
+        #endregion
+
+        #region Private Fields
+
+        private int _localWeeklyCost;
+        private int _currentHour;
+        private bool _lunchNotified;
+        private bool _moneyCheckCompleted;
+
+        // Periyodik kontrol flag'leri
+        private PeriodicCheckState _periodicChecks;
+
+        #endregion
+
+        #region Nested Types
+
+        /// <summary>
+        /// Gün içi periyodik kontrollerin durumunu tutar
+        /// </summary>
+        private struct PeriodicCheckState
+        {
+            public bool DayStartChecked;
+            public bool DayMiddleChecked;
+            public bool DayEndChecked;
+
+            public void Reset()
+            {
+                DayStartChecked = false;
+                DayMiddleChecked = false;
+                DayEndChecked = false;
+            }
+        }
+
+        #endregion
+
+        #region Public Properties - BACKWARD COMPATIBLE
+
+        /// <summary>
+        /// Gün bitmiş mi?
+        /// </summary>
+        public bool IsDayOver => _networkIsDayOver.Value;
+
+        /// <summary>
+        /// Break room'a geçiş için hazır mı?  (lowercase - backward compatibility)
+        /// </summary>
         public bool isBreakRoomReady
         {
-            get => networkIsBreakRoomReady.Value;
+            get => _networkIsBreakRoomReady.Value;
             set
             {
                 if (IsServer)
-                    networkIsBreakRoomReady.Value = value;
+                {
+                    _networkIsBreakRoomReady.Value = value;
+                }
                 else
+                {
                     SetBreakRoomReadyServerRpc(value);
+                }
             }
         }
-        public float elapsedTime => networkElapsedTime.Value;
-        public int currentDay => networkCurrentDay.Value;
-        public int WeeklyCost => networkWeeklyCost.Value;
-        public int GetCurrentWeeklyCost()
-        {
-            return networkWeeklyCost.Value;
-        }
 
-        private int currentHour;
-        private bool lunchNotified;
-        private bool moneyCheckDone = false;
+        /// <summary>
+        /// Günün başından beri geçen süre - saniye (lowercase - backward compatibility)
+        /// </summary>
+        public float elapsedTime => _networkElapsedTime.Value;
 
-        // ============================================
-        // PERİYODİK KONTROL FLAG'LERİ - YENİ EKLENEN
-        // ============================================
-        private bool dayStartChecked = false;
-        private bool dayMiddleChecked = false;
-        private bool dayEndChecked = false;
+        /// <summary>
+        /// Mevcut gün numarası - 1'den başlar (lowercase - backward compatibility)
+        /// </summary>
+        public int currentDay => _networkCurrentDay.Value;
 
-        public static event Action OnWeeklyEvent;
-        public int CurrentHour => currentHour;
+        /// <summary>
+        /// Mevcut haftalık kira maliyeti
+        /// </summary>
+        public int WeeklyCost => _networkWeeklyCost.Value;
 
-        [Tooltip("Start and end hours calculated only for UI")]
-        public int startHour = 7, endHour = 15;
+        /// <summary>
+        /// Oyun içi mevcut saat (7-15 arası)
+        /// </summary>
+        public int CurrentHour => _currentHour;
 
+        /// <summary>
+        /// Mevcut günün toplam süresi (dinamik olarak artar)
+        /// </summary>
         public float CurrentDayDuration
         {
             get
             {
-                if (networkCurrentDay.Value <= 3)
+                int day = _networkCurrentDay.Value;
+
+                if (day <= DYNAMIC_DURATION_START_DAY)
                 {
                     return realDurationInSeconds;
                 }
-                else
-                {
-                    int extraDays = networkCurrentDay.Value - 3;
-                    return realDurationInSeconds + (extraDays * dailyDurationIncrease);
-                }
+
+                int extraDays = day - DYNAMIC_DURATION_START_DAY;
+                return realDurationInSeconds + (extraDays * dailyDurationIncrease);
             }
         }
 
-        public bool IsTimeUp => networkElapsedTime.Value >= CurrentDayDuration;
+        /// <summary>
+        /// Günün süresi dolmuş mu?
+        /// </summary>
+        public bool IsTimeUp => _networkElapsedTime.Value >= CurrentDayDuration;
 
-        void Awake()
+        /// <summary>
+        /// Oyun içi mevcut zaman (float olarak, örn: 7.5 = 07:30)
+        /// </summary>
+        public float CurrentTime
+        {
+            get
+            {
+                float progress = Mathf.Clamp01(_networkElapsedTime.Value / CurrentDayDuration);
+                float totalHours = endHour - startHour;
+                return startHour + (progress * totalHours);
+            }
+        }
+
+        #endregion
+
+        #region Unity Lifecycle
+
+        private void Awake()
+        {
+            InitializeSingleton();
+        }
+
+        private void OnDestroy()
+        {
+            CleanupSingleton();
+        }
+
+        private void OnEnable()
+        {
+            SceneManager.sceneLoaded += HandleSceneLoaded;
+        }
+
+        private void OnDisable()
+        {
+            SceneManager.sceneLoaded -= HandleSceneLoaded;
+        }
+
+        private void Start()
+        {
+            Debug.Log($"{LOG_PREFIX} Start - IsServer: {IsServer}");
+
+            if (IsServer)
+            {
+                ResetDayCycle();
+                Debug.Log($"{LOG_PREFIX} Server initialized day cycle variables");
+            }
+
+            UpdateUI();
+            SetDayEndScreenActive(false);
+        }
+
+        private void Update()
+        {
+            UpdateUI();
+
+            if (!IsSpawned || !IsServer || _networkIsDayOver.Value)
+            {
+                return;
+            }
+
+            AdvanceTime();
+            ProcessPeriodicChecks();
+            ProcessDayEnd();
+        }
+
+        #endregion
+
+        #region Network Lifecycle
+
+        public override void OnNetworkSpawn()
+        {
+            Debug.Log($"{LOG_PREFIX} OnNetworkSpawn - IsServer: {IsServer}, IsHost: {NetworkManager.Singleton.IsHost}");
+
+            base.OnNetworkSpawn();
+
+            if (IsServer)
+            {
+                InitializeServerState();
+            }
+
+            SubscribeToNetworkEvents();
+            ResetDayCycle();
+
+            Debug.Log($"{LOG_PREFIX} Network spawn completed");
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            UnsubscribeFromNetworkEvents();
+            base.OnNetworkDespawn();
+        }
+
+        #endregion
+
+        #region Initialization
+
+        private void InitializeSingleton()
         {
             if (Instance == null)
             {
@@ -98,11 +287,12 @@ namespace NewCss
             }
             else
             {
+                Debug.LogWarning($"{LOG_PREFIX} Duplicate instance detected, destroying.. .");
                 Destroy(gameObject);
             }
         }
 
-        void OnDestroy()
+        private void CleanupSingleton()
         {
             if (Instance == this)
             {
@@ -110,126 +300,112 @@ namespace NewCss
             }
         }
 
-        public float CurrentTime
+        private void InitializeServerState()
         {
-            get
-            {
-                float progress = Mathf.Clamp01(networkElapsedTime.Value / CurrentDayDuration);
-                float totalHours = endHour - startHour;
-                return startHour + (progress * totalHours);
-            }
+            _networkWeeklyCost.Value = INITIAL_WEEKLY_COST;
+            _localWeeklyCost = INITIAL_WEEKLY_COST;
+            Debug.Log($"{LOG_PREFIX} Server: Weekly cost initialized to {INITIAL_WEEKLY_COST}");
         }
 
+        private void SubscribeToNetworkEvents()
+        {
+            _networkElapsedTime.OnValueChanged += HandleElapsedTimeChanged;
+            _networkCurrentDay.OnValueChanged += HandleCurrentDayChanged;
+            _networkIsDayOver.OnValueChanged += HandleDayOverChanged;
+            _networkIsBreakRoomReady.OnValueChanged += HandleBreakRoomReadyChanged;
+        }
+
+        private void UnsubscribeFromNetworkEvents()
+        {
+            _networkElapsedTime.OnValueChanged -= HandleElapsedTimeChanged;
+            _networkCurrentDay.OnValueChanged -= HandleCurrentDayChanged;
+            _networkIsDayOver.OnValueChanged -= HandleDayOverChanged;
+            _networkIsBreakRoomReady.OnValueChanged -= HandleBreakRoomReadyChanged;
+        }
+
+        #endregion
+
+        #region Day Cycle Core Logic
+
+        /// <summary>
+        /// Gün döngüsünü sıfırlar (yeni oyun başlatırken)
+        /// </summary>
         public void ResetDayCycle()
         {
-            Debug.Log("=== RESETTING DAY CYCLE ===");
+            Debug.Log($"{LOG_PREFIX} === RESETTING DAY CYCLE ===");
 
             if (IsServer)
             {
-                networkElapsedTime.Value = 0f;
-                networkCurrentDay.Value = 1;
-                networkIsDayOver.Value = false;
-                networkIsBreakRoomReady.Value = false;
-                networkWeeklyCost.Value = initialWeeklyCost;
+                ResetNetworkVariables();
             }
 
-            weeklyCost = initialWeeklyCost;
-            currentHour = startHour;
-            lunchNotified = false;
-            moneyCheckDone = false;
+            ResetLocalState();
+            UpdateUI();
+            SetDayEndScreenActive(false);
 
-            // Periyodik kontrol flag'lerini resetle
-            dayStartChecked = false;
-            dayMiddleChecked = false;
-            dayEndChecked = false;
-
-            UpdateDayTimeUI();
-            if (dayEndScreen != null)
-                dayEndScreen.SetActive(false);
-
-            Debug.Log("Day cycle reset completed");
+            Debug.Log($"{LOG_PREFIX} Day cycle reset completed");
         }
 
-        public override void OnNetworkSpawn()
+        private void ResetNetworkVariables()
         {
-            Debug.Log($"DayCycleManager OnNetworkSpawn - IsServer: {IsServer}, IsHost: {NetworkManager.Singleton.IsHost}");
+            _networkElapsedTime.Value = 0f;
+            _networkCurrentDay.Value = 1;
+            _networkIsDayOver.Value = false;
+            _networkIsBreakRoomReady.Value = false;
+            _networkWeeklyCost.Value = INITIAL_WEEKLY_COST;
+        }
 
-            base.OnNetworkSpawn();
+        private void ResetLocalState()
+        {
+            _localWeeklyCost = INITIAL_WEEKLY_COST;
+            _currentHour = startHour;
+            _lunchNotified = false;
+            _moneyCheckCompleted = false;
+            _periodicChecks.Reset();
+        }
 
-            if (IsServer)
+        private void AdvanceTime()
+        {
+            _networkElapsedTime.Value += Time.deltaTime;
+        }
+
+        #endregion
+
+        #region Periodic Player Checks
+
+        private void ProcessPeriodicChecks()
+        {
+            float elapsed = _networkElapsedTime.Value;
+            float duration = CurrentDayDuration;
+
+            // Gün başlangıcı kontrolü
+            if (!_periodicChecks.DayStartChecked && elapsed <= PERIODIC_CHECK_WINDOW)
             {
-                networkWeeklyCost.Value = initialWeeklyCost;
-                weeklyCost = initialWeeklyCost;
-                Debug.Log("Server: Weekly cost initialized");
+                PerformPlayerCheck("Gün başladı");
+                _periodicChecks.DayStartChecked = true;
             }
 
-            networkElapsedTime.OnValueChanged += OnElapsedTimeChanged;
-            networkCurrentDay.OnValueChanged += OnCurrentDayChanged;
-            networkIsDayOver.OnValueChanged += OnDayOverChanged;
-            networkIsBreakRoomReady.OnValueChanged += OnBreakRoomReadyChanged;
-
-            ResetDayCycle();
-
-            Debug.Log("DayCycleManager network spawn completed");
-        }
-
-        public override void OnNetworkDespawn()
-        {
-            networkElapsedTime.OnValueChanged -= OnElapsedTimeChanged;
-            networkCurrentDay.OnValueChanged -= OnCurrentDayChanged;
-            networkIsDayOver.OnValueChanged -= OnDayOverChanged;
-            networkIsBreakRoomReady.OnValueChanged -= OnBreakRoomReadyChanged;
-
-            base.OnNetworkDespawn();
-        }
-
-        void Start()
-        {
-            Debug.Log($"DayCycleManager Start - IsServer: {IsServer}");
-
-            if (IsServer)
+            // Gün ortası kontrolü
+            float halfDuration = duration * 0.5f;
+            if (!_periodicChecks.DayMiddleChecked &&
+                elapsed >= halfDuration &&
+                elapsed < halfDuration + PERIODIC_CHECK_WINDOW)
             {
-                ResetDayCycle();
-                Debug.Log("Server initialized day cycle variables");
+                PerformPlayerCheck("Gün ortası");
+                _periodicChecks.DayMiddleChecked = true;
             }
 
-            UpdateDayTimeUI();
-            if (dayEndScreen != null)
-                dayEndScreen.SetActive(false);
-        }
-
-        void OnEnable()
-        {
-            UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
-        }
-
-        void OnDisable()
-        {
-            UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
-        }
-
-        private void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
-        {
-            if (scene.name != "MainMenu" && scene.name.Contains("Game"))
+            // Gün sonu kontrolü
+            if (!_periodicChecks.DayEndChecked && elapsed >= duration)
             {
-                Debug.Log($"Game scene {scene.name} loaded, resetting day cycle");
-                if (IsServer)
-                {
-                    ResetDayCycle();
-                }
+                PerformPlayerCheck("Gün bitti");
+                _periodicChecks.DayEndChecked = true;
             }
         }
 
-        // ============================================
-        // PERİYODİK OYUNCU KONTROLÜ FONKSİYONLARI - YENİ
-        // ============================================
-
-        /// <summary>
-        /// Gün başında oyuncu sayısını kontrol et
-        /// </summary>
-        private void CheckPlayersOnDayStart()
+        private void PerformPlayerCheck(string checkPoint)
         {
-            Debug.Log("[DayCycle] ⏰ Gün başladı - Oyuncu sayısı kontrol ediliyor");
+            Debug.Log($"{LOG_PREFIX} ⏰ {checkPoint} - Oyuncu sayısı kontrol ediliyor");
 
             if (BreakRoomManager.Instance != null)
             {
@@ -237,159 +413,88 @@ namespace NewCss
             }
             else
             {
-                Debug.LogWarning("[DayCycle] BreakRoomManager.Instance bulunamadı!");
+                Debug.LogWarning($"{LOG_PREFIX} BreakRoomManager. Instance bulunamadı!");
             }
         }
 
-        /// <summary>
-        /// Gün ortasında oyuncu sayısını kontrol et
-        /// </summary>
-        private void CheckPlayersOnDayMiddle()
+        #endregion
+
+        #region Day End Processing
+
+        private void ProcessDayEnd()
         {
-            Debug.Log("[DayCycle] ⏰ Gün ortası - Oyuncu sayısı kontrol ediliyor");
-
-            if (BreakRoomManager.Instance != null)
+            // Gün henüz bitmedi
+            if (_networkElapsedTime.Value < CurrentDayDuration)
             {
-                BreakRoomManager.Instance.CheckAndUpdateLobbyPlayers();
-            }
-            else
-            {
-                Debug.LogWarning("[DayCycle] BreakRoomManager.Instance bulunamadı!");
-            }
-        }
-
-        /// <summary>
-        /// Gün sonunda oyuncu sayısını kontrol et
-        /// </summary>
-        private void CheckPlayersOnDayEnd()
-        {
-            Debug.Log("[DayCycle] ⏰ Gün bitti - Oyuncu sayısı kontrol ediliyor");
-
-            if (BreakRoomManager.Instance != null)
-            {
-                BreakRoomManager.Instance.CheckAndUpdateLobbyPlayers();
-            }
-            else
-            {
-                Debug.LogWarning("[DayCycle] BreakRoomManager.Instance bulunamadı!");
-            }
-        }
-
-        void Update()
-        {
-            UpdateDayTimeUI();
-
-            if (!IsSpawned) return;
-            if (!IsServer) return;
-            if (networkIsDayOver.Value) return;
-
-            networkElapsedTime.Value += Time.deltaTime;
-
-            // ========================================
-            // PERİYODİK OYUNCU SAYISI KONTROLLERI - YENİ
-            // ========================================
-
-            // Gün başlangıcı kontrolü (ilk 0.5 saniye)
-            if (networkElapsedTime.Value <= 0.5f && !dayStartChecked)
-            {
-                CheckPlayersOnDayStart();
-                dayStartChecked = true;
-            }
-
-            // Gün ortası kontrolü (günün yarısında)
-            float halfDuration = CurrentDayDuration / 2f;
-            if (networkElapsedTime.Value >= halfDuration &&
-                networkElapsedTime.Value < (halfDuration + 0.5f) &&
-                !dayMiddleChecked)
-            {
-                CheckPlayersOnDayMiddle();
-                dayMiddleChecked = true;
-            }
-
-            // Gün sonu kontrolü (gün bittiğinde)
-            if (networkElapsedTime.Value >= CurrentDayDuration && !dayEndChecked)
-            {
-                CheckPlayersOnDayEnd();
-                dayEndChecked = true;
-            }
-
-            // ========================================
-            // MEVCUT GÜN SONU LOJİĞİ
-            // ========================================
-
-            if (networkElapsedTime.Value < CurrentDayDuration)
-            {
-                moneyCheckDone = false;
+                _moneyCheckCompleted = false;
                 return;
             }
 
-            if (!moneyCheckDone && GameStateManager.Instance != null)
+            // Para kontrolü yap
+            if (!_moneyCheckCompleted)
             {
-                if (!GameStateManager.Instance.IsDayOver)
+                if (!TryProcessMoneyCheck())
                 {
-                    GameStateManager.Instance.CheckMoneyAtDayEnd();
-                    moneyCheckDone = true;
-
-                    if (GameStateManager.Instance.IsDayOver)
-                    {
-                        Debug.Log("Game ended after money check - stopping day cycle");
-                        return;
-                    }
-                }
-                else
-                {
-                    Debug.Log("Game already ended - skipping money check");
-                    moneyCheckDone = true;
                     return;
                 }
             }
 
-            if (!networkIsBreakRoomReady.Value)
+            // Break room hazır değil
+            if (!_networkIsBreakRoomReady.Value)
             {
                 UpdateWarningTextClientRpc();
                 return;
             }
 
-            networkIsDayOver.Value = true;
+            // Günü bitir
+            _networkIsDayOver.Value = true;
             ShowDayEndScreenClientRpc();
         }
 
-        void UpdateDayTimeUI()
+        private bool TryProcessMoneyCheck()
         {
-            float currentElapsedTime = networkElapsedTime.Value;
-            float progress = Mathf.Clamp01(currentElapsedTime / CurrentDayDuration);
-            float totalMinutes = (endHour - startHour) * 60f;
-            float currentMinutes = progress * totalMinutes;
-
-            currentHour = startHour + Mathf.FloorToInt(currentMinutes / 60f);
-            int minute = Mathf.FloorToInt(currentMinutes % 60f);
-
-            currentHour = Mathf.Clamp(currentHour, startHour, endHour);
-
-            if (dayTimeText != null)
+            if (GameStateManager.Instance == null)
             {
-                dayTimeText.text = $"Day {networkCurrentDay.Value}  {currentHour:D2}:{minute:D2} ({CurrentDayDuration}s)";
+                _moneyCheckCompleted = true;
+                return true;
             }
+
+            if (GameStateManager.Instance.IsDayOver)
+            {
+                Debug.Log($"{LOG_PREFIX} Game already ended - skipping money check");
+                _moneyCheckCompleted = true;
+                return false;
+            }
+
+            GameStateManager.Instance.CheckMoneyAtDayEnd();
+            _moneyCheckCompleted = true;
+
+            if (GameStateManager.Instance.IsDayOver)
+            {
+                Debug.Log($"{LOG_PREFIX} Game ended after money check - stopping day cycle");
+                return false;
+            }
+
+            return true;
         }
 
-        [ServerRpc(RequireOwnership = false)]
-        void SetBreakRoomReadyServerRpc(bool ready)
-        {
-            networkIsBreakRoomReady.Value = ready;
-        }
+        #endregion
 
-        [ClientRpc]
-        void UpdateWarningTextClientRpc()
-        {
-            if (dayTimeText != null)
-                dayTimeText.text = "Day Over. Go to Break Room.";
-        }
+        #region Next Day Logic
 
-        [ClientRpc]
-        void ShowDayEndScreenClientRpc()
+        /// <summary>
+        /// Bir sonraki güne geçiş yapar (public API)
+        /// </summary>
+        public void CallNextDay()
         {
-            if (dayEndScreen != null)
-                dayEndScreen.SetActive(true);
+            if (IsServer)
+            {
+                NextDay();
+            }
+            else
+            {
+                NextDayServerRpc();
+            }
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -398,123 +503,259 @@ namespace NewCss
             NextDay();
         }
 
+        /// <summary>
+        /// Bir sonraki güne geçiş yapar (backward compatibility için public)
+        /// </summary>
         public void NextDay()
         {
             if (!IsServer) return;
 
-            networkElapsedTime.Value = 0f;
-            networkCurrentDay.Value++;
+            // Zaman ve gün sayacını güncelle
+            _networkElapsedTime.Value = 0f;
+            _networkCurrentDay.Value++;
 
-            // ========================================
-            // PERİYODİK KONTROL FLAG'LERİNİ RESETLE - YENİ
-            // ========================================
-            dayStartChecked = false;
-            dayMiddleChecked = false;
-            dayEndChecked = false;
+            // Periyodik kontrolleri sıfırla
+            _periodicChecks.Reset();
 
-            Debug.Log($"Day {networkCurrentDay.Value} started - Duration: {CurrentDayDuration} seconds");
+            Debug.Log($"{LOG_PREFIX} Day {_networkCurrentDay.Value} started - Duration: {CurrentDayDuration} seconds");
 
-            if (networkCurrentDay.Value % 6 == 0)
-            {
-                int delta = UnityEngine.Random.Range(minWeeklyIncrease, maxWeeklyIncrease + 1);
-                weeklyCost = Mathf.RoundToInt(weeklyCost * 1.2f);
-                weeklyCost += delta;
-                networkWeeklyCost.Value = weeklyCost;
+            // Haftalık kira kontrolü
+            ProcessWeeklyRentIfNeeded();
 
-                if (MoneySystem.Instance != null)
-                {
-                    MoneySystem.Instance.SpendMoney(weeklyCost);
-                    Debug.Log($"RENT DAY {networkCurrentDay.Value}: Rent paid - {weeklyCost} coins");
-                    Debug.Log($"Remaining money: {MoneySystem.Instance.CurrentMoney}");
-                }
+            // Gün durumlarını sıfırla
+            _networkIsDayOver.Value = false;
+            _networkIsBreakRoomReady.Value = false;
 
-                Debug.Log($"▶ Weekly Rent Event: Day {networkCurrentDay.Value}\n" +
-                          $"- Cost increase: +{delta}\n" +
-                          $"- New weekly cost: {weeklyCost}\n" +
-                          $"- This is rent payment #{networkCurrentDay.Value / 6} of 5");
-
-                TriggerWeeklyEventClientRpc();
-
-                Debug.Log("Calling GameStateManager.CheckGameState after rent payment");
-                if (GameStateManager.Instance != null)
-                {
-                    Debug.Log("GameStateManager.Instance found, calling CheckGameState");
-                    GameStateManager.Instance.CheckGameState();
-                }
-                else
-                {
-                    Debug.LogError("GameStateManager.Instance is NULL! GameStateManager not found in scene!");
-                }
-            }
-
-            Debug.Log($"Day {networkCurrentDay.Value} started (server)");
-
-            networkIsDayOver.Value = false;
-            networkIsBreakRoomReady.Value = false;
-
+            // Event'leri tetikle
             OnNewDay?.Invoke();
             TriggerNewDayEventClientRpc();
 
-            UpdateDayTimeUI();
+            // UI güncelle
+            UpdateUI();
             HideDayEndScreenClientRpc();
 
-            // ========================================
-            // YENİ GÜN BAŞLARKEN OYUNCU SAYISINI GÜNCELLE - YENİ
-            // ========================================
-            var breakRoomManager = FindObjectOfType<NewCss.BreakRoomManager>();
+            // Break room oyuncu sayısını güncelle
+            UpdateBreakRoomPlayerCount();
+        }
+
+        private void ProcessWeeklyRentIfNeeded()
+        {
+            int day = _networkCurrentDay.Value;
+
+            if (day % DAYS_PER_WEEK != 0)
+            {
+                return;
+            }
+
+            // Kira artışı hesapla
+            int randomIncrease = UnityEngine.Random.Range(MIN_WEEKLY_INCREASE, MAX_WEEKLY_INCREASE + 1);
+            _localWeeklyCost = Mathf.RoundToInt(_localWeeklyCost * WEEKLY_COST_MULTIPLIER);
+            _localWeeklyCost += randomIncrease;
+            _networkWeeklyCost.Value = _localWeeklyCost;
+
+            // Kirayı öde
+            if (MoneySystem.Instance != null)
+            {
+                MoneySystem.Instance.SpendMoney(_localWeeklyCost);
+                Debug.Log($"{LOG_PREFIX} RENT DAY {day}: Rent paid - {_localWeeklyCost} coins");
+                Debug.Log($"{LOG_PREFIX} Remaining money: {MoneySystem.Instance.CurrentMoney}");
+            }
+
+            int rentPaymentNumber = day / DAYS_PER_WEEK;
+            Debug.Log($"{LOG_PREFIX} ▶ Weekly Rent Event: Day {day}\n" +
+                      $"- Cost increase: +{randomIncrease}\n" +
+                      $"- New weekly cost: {_localWeeklyCost}\n" +
+                      $"- This is rent payment #{rentPaymentNumber} of 5");
+
+            // Haftalık event'i tetikle
+            TriggerWeeklyEventClientRpc();
+
+            // Oyun durumunu kontrol et
+            CheckGameStateAfterRent();
+        }
+
+        private void CheckGameStateAfterRent()
+        {
+            Debug.Log($"{LOG_PREFIX} Calling GameStateManager.CheckGameState after rent payment");
+
+            if (GameStateManager.Instance != null)
+            {
+                Debug.Log($"{LOG_PREFIX} GameStateManager.Instance found, calling CheckGameState");
+                GameStateManager.Instance.CheckGameState();
+            }
+            else
+            {
+                Debug.LogError($"{LOG_PREFIX} GameStateManager. Instance is NULL!");
+            }
+        }
+
+        private void UpdateBreakRoomPlayerCount()
+        {
+            var breakRoomManager = FindObjectOfType<BreakRoomManager>();
+
             if (breakRoomManager != null)
             {
                 breakRoomManager.requiredPlayers = breakRoomManager.GetSteamLobbyPlayerCount();
-                Debug.Log($"BreakRoomManager.requiredPlayers güncellendi: {breakRoomManager.requiredPlayers}");
+                Debug.Log($"{LOG_PREFIX} BreakRoomManager.requiredPlayers updated: {breakRoomManager.requiredPlayers}");
+            }
+        }
+
+        #endregion
+
+        #region UI Management
+
+        private void UpdateUI()
+        {
+            UpdateDayTimeUI();
+        }
+
+        /// <summary>
+        /// UI'ı günceller (backward compatibility için public olarak da erişilebilir)
+        /// </summary>
+        private void UpdateDayTimeUI()
+        {
+            if (dayTimeText == null) return;
+
+            var timeInfo = CalculateDisplayTime();
+            dayTimeText.text = FormatTimeDisplay(timeInfo);
+        }
+
+        private (int hour, int minute) CalculateDisplayTime()
+        {
+            float progress = Mathf.Clamp01(_networkElapsedTime.Value / CurrentDayDuration);
+            float totalMinutes = (endHour - startHour) * 60f;
+            float currentMinutes = progress * totalMinutes;
+
+            int hour = startHour + Mathf.FloorToInt(currentMinutes / 60f);
+            int minute = Mathf.FloorToInt(currentMinutes % 60f);
+
+            hour = Mathf.Clamp(hour, startHour, endHour);
+            _currentHour = hour;
+
+            return (hour, minute);
+        }
+
+        private string FormatTimeDisplay((int hour, int minute) timeInfo)
+        {
+            return $"Day {_networkCurrentDay.Value}  {timeInfo.hour:D2}:{timeInfo.minute:D2} ({CurrentDayDuration}s)";
+        }
+
+        private void SetDayEndScreenActive(bool active)
+        {
+            if (dayEndScreen != null)
+            {
+                dayEndScreen.SetActive(active);
+            }
+        }
+
+        #endregion
+
+        #region Server RPCs
+
+        [ServerRpc(RequireOwnership = false)]
+        private void SetBreakRoomReadyServerRpc(bool ready)
+        {
+            _networkIsBreakRoomReady.Value = ready;
+        }
+
+        #endregion
+
+        #region Client RPCs
+
+        [ClientRpc]
+        private void UpdateWarningTextClientRpc()
+        {
+            if (dayTimeText != null)
+            {
+                dayTimeText.text = "Day Over.  Go to Break Room. ";
             }
         }
 
         [ClientRpc]
-        void TriggerWeeklyEventClientRpc()
+        private void ShowDayEndScreenClientRpc()
+        {
+            SetDayEndScreenActive(true);
+        }
+
+        [ClientRpc]
+        private void HideDayEndScreenClientRpc()
+        {
+            SetDayEndScreenActive(false);
+        }
+
+        [ClientRpc]
+        private void TriggerWeeklyEventClientRpc()
         {
             OnWeeklyEvent?.Invoke();
         }
 
         [ClientRpc]
-        void TriggerNewDayEventClientRpc()
+        private void TriggerNewDayEventClientRpc()
         {
             OnNewDay?.Invoke();
         }
 
-        [ClientRpc]
-        void HideDayEndScreenClientRpc()
+        #endregion
+
+        #region Network Event Handlers
+
+        private void HandleElapsedTimeChanged(float previousValue, float newValue)
         {
-            if (dayEndScreen != null)
-                dayEndScreen.SetActive(false);
+            UpdateUI();
         }
 
-        private void OnElapsedTimeChanged(float previousValue, float newValue)
+        private void HandleCurrentDayChanged(int previousValue, int newValue)
         {
-            UpdateDayTimeUI();
+            UpdateUI();
         }
 
-        private void OnCurrentDayChanged(int previousValue, int newValue)
+        private void HandleDayOverChanged(bool previousValue, bool newValue)
         {
-            UpdateDayTimeUI();
+            SetDayEndScreenActive(newValue);
         }
 
-        private void OnDayOverChanged(bool previousValue, bool newValue)
+        private void HandleBreakRoomReadyChanged(bool previousValue, bool newValue)
         {
-            if (dayEndScreen != null)
-                dayEndScreen.SetActive(newValue);
+            // Gerekirse burada ek işlem yapılabilir
         }
 
-        private void OnBreakRoomReadyChanged(bool previousValue, bool newValue)
+        #endregion
+
+        #region Scene Management
+
+        private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
         {
+            if (IsGameScene(scene.name))
+            {
+                Debug.Log($"{LOG_PREFIX} Game scene {scene.name} loaded, resetting day cycle");
+
+                if (IsServer)
+                {
+                    ResetDayCycle();
+                }
+            }
         }
 
-        public void CallNextDay()
+        private static bool IsGameScene(string sceneName)
         {
-            if (IsServer)
-                NextDay();
-            else
-                NextDayServerRpc();
+            return sceneName != "MainMenu" && sceneName.Contains("Game");
         }
+
+        #endregion
+
+        #region Public API - Backward Compatibility
+
+        /// <summary>
+        /// Mevcut haftalık kira maliyetini döndürür
+        /// </summary>
+        public int GetCurrentWeeklyCost()
+        {
+            return _networkWeeklyCost.Value;
+        }
+
+        #endregion
+
+        #region Editor & Debug
 
         [ContextMenu("Force Next Day")]
         public void ForceNextDay()
@@ -527,8 +768,8 @@ namespace NewCss
         {
             if (IsServer)
             {
-                networkElapsedTime.Value = CurrentDayDuration;
-                networkIsBreakRoomReady.Value = true;
+                _networkElapsedTime.Value = CurrentDayDuration;
+                _networkIsBreakRoomReady.Value = true;
             }
         }
 
@@ -537,9 +778,9 @@ namespace NewCss
         {
             if (IsServer)
             {
-                networkElapsedTime.Value = 0f;
-                networkIsDayOver.Value = false;
-                networkIsBreakRoomReady.Value = false;
+                _networkElapsedTime.Value = 0f;
+                _networkIsDayOver.Value = false;
+                _networkIsBreakRoomReady.Value = false;
             }
         }
 
@@ -548,5 +789,21 @@ namespace NewCss
         {
             ResetDayCycle();
         }
+
+#if UNITY_EDITOR
+        [ContextMenu("Debug: Print State")]
+        public void DebugPrintState()
+        {
+            Debug.Log($"{LOG_PREFIX} === DEBUG STATE ===\n" +
+                      $"Current Day: {_networkCurrentDay.Value}\n" +
+                      $"Elapsed Time: {_networkElapsedTime.Value:F2}s / {CurrentDayDuration}s\n" +
+                      $"Is Day Over: {_networkIsDayOver.Value}\n" +
+                      $"Is Break Room Ready: {_networkIsBreakRoomReady.Value}\n" +
+                      $"Weekly Cost: {_networkWeeklyCost.Value}\n" +
+                      $"Current Hour: {_currentHour}");
+        }
+#endif
+
+        #endregion
     }
 }

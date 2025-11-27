@@ -1,418 +1,676 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
-using Unity.Netcode;
 
+/// <summary>
+/// Network destekli bekleme çubuðu - telefon çaðrýlarý ve diðer zamanlayýcýlar için kullanýlýr.  
+/// Server-authoritative tasarým ile tüm client'larda senkronize çalýþýr.
+/// </summary>
 public class PhoneWaitBar : NetworkBehaviour
 {
-    [Header("Wait Bar Settings")]
-    public Image waitBarImage; // UI Image component for the wait bar
-    public float maxWaitTime = 15.0f; // Maximum wait time
-    
-    // Network variables for synchronization
-    private NetworkVariable<float> networkCurrentWaitTime = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-    private NetworkVariable<float> networkMaxWaitTime = new NetworkVariable<float>(15f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-    private NetworkVariable<bool> networkIsActive = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-    private NetworkVariable<bool> networkIsDecreasing = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-    
-    // Local variables
-    private float localCurrentWaitTime;
-    private bool wasActive = false;
-    
+    #region Constants
+
+    private const string LOG_PREFIX = "[PhoneWaitBar]";
+    private const float MIN_WAIT_TIME = 0.1f;
+
+    #endregion
+
+    #region Serialized Fields
+
+    [Header("=== WAIT BAR SETTINGS ===")]
+    [SerializeField, Tooltip("Bekleme çubuðu Image component")]
+    public Image waitBarImage;
+
+    [SerializeField, Tooltip("Maksimum bekleme süresi")]
+    public float maxWaitTime = 15.0f;
+
+    [Header("=== VISUAL SETTINGS ===")]
+    [SerializeField, Tooltip("Baþlangýçta gizli mi? ")]
+    private bool startHidden = true;
+
+    [SerializeField, Tooltip("Süre bittiðinde otomatik gizle")]
+    private bool autoHideOnComplete = false;
+
+    #endregion
+
+    #region Network Variables
+
+    private readonly NetworkVariable<float> _networkCurrentWaitTime = new(0f,
+        NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+    private readonly NetworkVariable<float> _networkMaxWaitTime = new(15f,
+        NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+    private readonly NetworkVariable<bool> _networkIsActive = new(false,
+        NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+    private readonly NetworkVariable<bool> _networkIsDecreasing = new(false,
+        NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+    #endregion
+
+    #region Events
+
+    /// <summary>
+    /// Süre bittiðinde tetiklenir
+    /// </summary>
+    public event Action OnTimeUpEvent;
+
+    /// <summary>
+    /// Çubuk baþlatýldýðýnda tetiklenir
+    /// </summary>
+    public event Action<float> OnBarStartedEvent;
+
+    /// <summary>
+    /// Çubuk gizlendiðinde tetiklenir
+    /// </summary>
+    public event Action OnBarHiddenEvent;
+
+    #endregion
+
+    #region Private Fields
+
+    private float _localCurrentWaitTime;
+    private bool _wasActive;
+
+    #endregion
+
+    #region Public Properties
+
+    /// <summary>
+    /// Kalan süre
+    /// </summary>
+    public float RemainingTime => _networkCurrentWaitTime.Value;
+
+    /// <summary>
+    /// Kalan süre yüzdesi (0-1)
+    /// </summary>
+    public float RemainingTimePercentage
+    {
+        get
+        {
+            if (_networkMaxWaitTime.Value <= 0) return 0f;
+            return _networkCurrentWaitTime.Value / _networkMaxWaitTime.Value;
+        }
+    }
+
+    /// <summary>
+    /// Çubuk aktif mi?
+    /// </summary>
+    public bool IsActive => _networkIsActive.Value;
+
+    /// <summary>
+    /// Geri sayým devam ediyor mu?
+    /// </summary>
+    public bool IsCountingDown => _networkIsDecreasing.Value;
+
+    /// <summary>
+    /// Süre bitti mi?
+    /// </summary>
+    public bool IsTimeUp => _networkCurrentWaitTime.Value <= 0 && _networkIsActive.Value;
+
+    /// <summary>
+    /// Maksimum bekleme süresi
+    /// </summary>
+    public float MaxWaitTime => _networkMaxWaitTime.Value;
+
+    #endregion
+
+    #region Unity Lifecycle
+
+    private void Start()
+    {
+        InitializeBar();
+    }
+
+    private void Update()
+    {
+        if (IsServer)
+        {
+            ServerUpdate();
+        }
+    }
+
+    #endregion
+
+    #region Network Lifecycle
+
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-        
-        // Subscribe to network variable changes
-        networkCurrentWaitTime.OnValueChanged += OnCurrentWaitTimeChanged;
-        networkMaxWaitTime.OnValueChanged += OnMaxWaitTimeChanged;
-        networkIsActive.OnValueChanged += OnIsActiveChanged;
-        networkIsDecreasing.OnValueChanged += OnIsDecreasingChanged;
-        
-        // Initialize UI based on current network values
-        UpdateUI();
-    }
-    
-    public override void OnNetworkDespawn()
-    {
-        // Unsubscribe from network variable changes
-        networkCurrentWaitTime.OnValueChanged -= OnCurrentWaitTimeChanged;
-        networkMaxWaitTime.OnValueChanged -= OnMaxWaitTimeChanged;
-        networkIsActive.OnValueChanged -= OnIsActiveChanged;
-        networkIsDecreasing.OnValueChanged -= OnIsDecreasingChanged;
-        
-        base.OnNetworkDespawn();
-    }
-    
-    void Start()
-    {
-        // Initialize the bar as full but hidden
-        if (waitBarImage != null)
-        {
-            waitBarImage.fillAmount = 1f;
-            waitBarImage.gameObject.SetActive(false); // Start hidden
-        }
-        
-        // If this is the server, initialize network variables
+
+        SubscribeToNetworkEvents();
+
         if (IsServer)
         {
-            networkCurrentWaitTime.Value = maxWaitTime;
-            networkMaxWaitTime.Value = maxWaitTime;
-            networkIsActive.Value = false;
-            networkIsDecreasing.Value = false;
+            InitializeNetworkVariables();
         }
-    }
-    
-    void Update()
-    {
-        // Only server updates the timer
-        if (IsServer && networkIsActive.Value && networkIsDecreasing.Value && networkCurrentWaitTime.Value > 0)
-        {
-            // Decrease the current wait time
-            float newTime = networkCurrentWaitTime.Value - Time.deltaTime;
-            networkCurrentWaitTime.Value = Mathf.Max(0f, newTime);
-            
-            // Check if time is up
-            if (networkCurrentWaitTime.Value <= 0)
-            {
-                OnTimeUpServerRpc();
-            }
-        }
-    }
-    
-    #region Network Variable Change Handlers
-    
-    private void OnCurrentWaitTimeChanged(float previousValue, float newValue)
-    {
-        localCurrentWaitTime = newValue;
+
         UpdateUI();
     }
-    
-    private void OnMaxWaitTimeChanged(float previousValue, float newValue)
+
+    public override void OnNetworkDespawn()
+    {
+        UnsubscribeFromNetworkEvents();
+        base.OnNetworkDespawn();
+    }
+
+    #endregion
+
+    #region Initialization
+
+    private void InitializeBar()
+    {
+        if (waitBarImage == null) return;
+
+        waitBarImage.fillAmount = 1f;
+
+        if (startHidden)
+        {
+            waitBarImage.gameObject.SetActive(false);
+        }
+    }
+
+    private void InitializeNetworkVariables()
+    {
+        _networkCurrentWaitTime.Value = maxWaitTime;
+        _networkMaxWaitTime.Value = maxWaitTime;
+        _networkIsActive.Value = false;
+        _networkIsDecreasing.Value = false;
+    }
+
+    #endregion
+
+    #region Event Subscriptions
+
+    private void SubscribeToNetworkEvents()
+    {
+        _networkCurrentWaitTime.OnValueChanged += HandleCurrentWaitTimeChanged;
+        _networkMaxWaitTime.OnValueChanged += HandleMaxWaitTimeChanged;
+        _networkIsActive.OnValueChanged += HandleIsActiveChanged;
+        _networkIsDecreasing.OnValueChanged += HandleIsDecreasingChanged;
+    }
+
+    private void UnsubscribeFromNetworkEvents()
+    {
+        _networkCurrentWaitTime.OnValueChanged -= HandleCurrentWaitTimeChanged;
+        _networkMaxWaitTime.OnValueChanged -= HandleMaxWaitTimeChanged;
+        _networkIsActive.OnValueChanged -= HandleIsActiveChanged;
+        _networkIsDecreasing.OnValueChanged -= HandleIsDecreasingChanged;
+    }
+
+    #endregion
+
+    #region Network Event Handlers
+
+    private void HandleCurrentWaitTimeChanged(float previousValue, float newValue)
+    {
+        _localCurrentWaitTime = newValue;
+        UpdateUI();
+    }
+
+    private void HandleMaxWaitTimeChanged(float previousValue, float newValue)
     {
         maxWaitTime = newValue;
         UpdateUI();
     }
-    
-    private void OnIsActiveChanged(bool previousValue, bool newValue)
+
+    private void HandleIsActiveChanged(bool previousValue, bool newValue)
     {
-        wasActive = newValue;
+        _wasActive = newValue;
         UpdateUI();
     }
-    
-    private void OnIsDecreasingChanged(bool previousValue, bool newValue)
+
+    private void HandleIsDecreasingChanged(bool previousValue, bool newValue)
     {
         UpdateUI();
     }
-    
+
     #endregion
-    
-    #region UI Update
-    
-    private void UpdateUI()
+
+    #region Server Update
+
+    private void ServerUpdate()
     {
-        if (waitBarImage != null)
+        if (!ShouldUpdateTimer()) return;
+
+        UpdateTimer();
+        CheckTimeUp();
+    }
+
+    private bool ShouldUpdateTimer()
+    {
+        return _networkIsActive.Value &&
+               _networkIsDecreasing.Value &&
+               _networkCurrentWaitTime.Value > 0;
+    }
+
+    private void UpdateTimer()
+    {
+        float newTime = _networkCurrentWaitTime.Value - Time.deltaTime;
+        _networkCurrentWaitTime.Value = Mathf.Max(0f, newTime);
+    }
+
+    private void CheckTimeUp()
+    {
+        if (_networkCurrentWaitTime.Value <= 0)
         {
-            // Update fill amount
-            if (networkMaxWaitTime.Value > 0)
-            {
-                waitBarImage.fillAmount = Mathf.Max(0f, networkCurrentWaitTime.Value / networkMaxWaitTime.Value);
-            }
-            
-            // Update visibility
-            waitBarImage.gameObject.SetActive(networkIsActive.Value);
+            HandleTimeUpServer();
         }
     }
-    
+
     #endregion
-    
-    #region Public Methods (Client can call these)
-    
-    /// <summary>
-    /// Starts the wait bar with specified wait time
-    /// </summary>
-    /// <param name="waitTime">Total wait time</param>
-    public void StartWaitBar(float waitTime)
+
+    #region UI Update
+
+    private void UpdateUI()
     {
-        if (IsServer)
+        if (waitBarImage == null) return;
+
+        UpdateFillAmount();
+        UpdateVisibility();
+    }
+
+    private void UpdateFillAmount()
+    {
+        if (_networkMaxWaitTime.Value > 0)
         {
-            StartWaitBarServer(waitTime);
+            waitBarImage.fillAmount = Mathf.Max(0f, _networkCurrentWaitTime.Value / _networkMaxWaitTime.Value);
         }
         else
         {
-            StartWaitBarServerRpc(waitTime);
+            waitBarImage.fillAmount = 0f;
         }
     }
-    
+
+    private void UpdateVisibility()
+    {
+        waitBarImage.gameObject.SetActive(_networkIsActive.Value);
+    }
+
+    #endregion
+
+    #region Public API
+
     /// <summary>
-    /// Stops the wait bar countdown (but keeps it visible)
+    /// Bekleme çubuðunu baþlatýr
+    /// </summary>
+    /// <param name="waitTime">Toplam bekleme süresi</param>
+    public void StartWaitBar(float waitTime)
+    {
+        float clampedWaitTime = Mathf.Max(MIN_WAIT_TIME, waitTime);
+
+        if (IsServer)
+        {
+            ExecuteStartWaitBar(clampedWaitTime);
+        }
+        else
+        {
+            StartWaitBarServerRpc(clampedWaitTime);
+        }
+    }
+
+    /// <summary>
+    /// Geri sayýmý durdurur (çubuk görünür kalýr)
     /// </summary>
     public void StopCountdown()
     {
         if (IsServer)
         {
-            StopCountdownServer();
+            ExecuteStopCountdown();
         }
         else
         {
             StopCountdownServerRpc();
         }
     }
-    
+
     /// <summary>
-    /// Resumes the wait bar countdown
+    /// Geri sayýmý devam ettirir
     /// </summary>
     public void ResumeCountdown()
     {
         if (IsServer)
         {
-            ResumeCountdownServer();
+            ExecuteResumeCountdown();
         }
         else
         {
             ResumeCountdownServerRpc();
         }
     }
-    
+
     /// <summary>
-    /// Hides and deactivates the wait bar
+    /// Çubuðu gizler ve deaktif eder
     /// </summary>
     public void HideBar()
     {
         if (IsServer)
         {
-            HideBarServer();
+            ExecuteHideBar();
         }
         else
         {
             HideBarServerRpc();
         }
     }
-    
+
     /// <summary>
-    /// Resets the wait bar to full
+    /// Çubuðu yeni süre ile sýfýrlar
     /// </summary>
+    /// <param name="newWaitTime">Yeni bekleme süresi</param>
     public void ResetBar(float newWaitTime)
     {
+        float clampedWaitTime = Mathf.Max(MIN_WAIT_TIME, newWaitTime);
+
         if (IsServer)
         {
-            ResetBarServer(newWaitTime);
+            ExecuteResetBar(clampedWaitTime);
         }
         else
         {
-            ResetBarServerRpc(newWaitTime);
+            ResetBarServerRpc(clampedWaitTime);
         }
     }
-    
+
     /// <summary>
-    /// Force complete the wait bar
+    /// Çubuðu zorla tamamlar
     /// </summary>
     public void ForceComplete()
     {
         if (IsServer)
         {
-            ForceCompleteServer();
+            ExecuteForceComplete();
         }
         else
         {
             ForceCompleteServerRpc();
         }
     }
-    
+
     /// <summary>
-    /// Add or remove time from current wait time
+    /// Süreyi deðiþtirir
     /// </summary>
-    /// <param name="timeToAdd">Time to add (negative to subtract)</param>
+    /// <param name="timeToAdd">Eklenecek süre (negatif = çýkarma)</param>
     public void ModifyTime(float timeToAdd)
     {
         if (IsServer)
         {
-            ModifyTimeServer(timeToAdd);
+            ExecuteModifyTime(timeToAdd);
         }
         else
         {
             ModifyTimeServerRpc(timeToAdd);
         }
     }
-    
+
     #endregion
-    
-    #region Server Methods
-    
-    private void StartWaitBarServer(float waitTime)
+
+    #region Public Getters (Backward Compatibility)
+
+    /// <summary>
+    /// Kalan süreyi döndürür
+    /// </summary>
+    public float GetRemainingTime() => RemainingTime;
+
+    /// <summary>
+    /// Kalan süre yüzdesini döndürür (0-1)
+    /// </summary>
+    public float GetRemainingTimePercentage() => RemainingTimePercentage;
+
+    /// <summary>
+    /// Aktif mi kontrolü
+    /// </summary>
+    public bool IsActiveCheck() => IsActive;
+
+    /// <summary>
+    /// Geri sayým devam ediyor mu kontrolü
+    /// </summary>
+    public bool IsCountingDownCheck() => IsCountingDown;
+
+    /// <summary>
+    /// Süre bitti mi kontrolü
+    /// </summary>
+    public bool IsTimeUpCheck() => IsTimeUp;
+
+    #endregion
+
+    #region Server Execution Methods
+
+    private void ExecuteStartWaitBar(float waitTime)
     {
-        networkMaxWaitTime.Value = waitTime;
-        networkCurrentWaitTime.Value = waitTime;
-        networkIsActive.Value = true;
-        networkIsDecreasing.Value = true;
+        _networkMaxWaitTime.Value = waitTime;
+        _networkCurrentWaitTime.Value = waitTime;
+        _networkIsActive.Value = true;
+        _networkIsDecreasing.Value = true;
+
+        NotifyBarStartedClientRpc(waitTime);
     }
-    
-    private void StopCountdownServer()
+
+    private void ExecuteStopCountdown()
     {
-        networkIsDecreasing.Value = false;
+        _networkIsDecreasing.Value = false;
     }
-    
-    private void ResumeCountdownServer()
+
+    private void ExecuteResumeCountdown()
     {
-        if (networkIsActive.Value)
+        if (_networkIsActive.Value)
         {
-            networkIsDecreasing.Value = true;
+            _networkIsDecreasing.Value = true;
         }
     }
-    
-    private void HideBarServer()
+
+    private void ExecuteHideBar()
     {
-        networkIsActive.Value = false;
-        networkIsDecreasing.Value = false;
+        _networkIsActive.Value = false;
+        _networkIsDecreasing.Value = false;
+
+        NotifyBarHiddenClientRpc();
     }
-    
-    private void ResetBarServer(float newWaitTime)
+
+    private void ExecuteResetBar(float newWaitTime)
     {
-        networkMaxWaitTime.Value = newWaitTime;
-        networkCurrentWaitTime.Value = newWaitTime;
+        _networkMaxWaitTime.Value = newWaitTime;
+        _networkCurrentWaitTime.Value = newWaitTime;
     }
-    
-    private void ForceCompleteServer()
+
+    private void ExecuteForceComplete()
     {
-        networkCurrentWaitTime.Value = 0;
-        OnTimeUpServer();
+        _networkCurrentWaitTime.Value = 0;
+        HandleTimeUpServer();
     }
-    
-    private void ModifyTimeServer(float timeToAdd)
+
+    private void ExecuteModifyTime(float timeToAdd)
     {
-        networkCurrentWaitTime.Value = Mathf.Max(0, networkCurrentWaitTime.Value + timeToAdd);
+        float newTime = _networkCurrentWaitTime.Value + timeToAdd;
+        _networkCurrentWaitTime.Value = Mathf.Max(0, newTime);
     }
-    
-    private void OnTimeUpServer()
+
+    private void HandleTimeUpServer()
     {
-        networkIsDecreasing.Value = false;
-        
-        // Notify all clients that time is up
-        OnTimeUpClientRpc();
+        _networkIsDecreasing.Value = false;
+
+        if (autoHideOnComplete)
+        {
+            ExecuteHideBar();
+        }
+
+        NotifyTimeUpClientRpc();
     }
-    
+
     #endregion
-    
+
     #region Server RPCs
-    
+
     [ServerRpc(RequireOwnership = false)]
     private void StartWaitBarServerRpc(float waitTime)
     {
-        StartWaitBarServer(waitTime);
+        ExecuteStartWaitBar(waitTime);
     }
-    
+
     [ServerRpc(RequireOwnership = false)]
     private void StopCountdownServerRpc()
     {
-        StopCountdownServer();
+        ExecuteStopCountdown();
     }
-    
+
     [ServerRpc(RequireOwnership = false)]
     private void ResumeCountdownServerRpc()
     {
-        ResumeCountdownServer();
+        ExecuteResumeCountdown();
     }
-    
+
     [ServerRpc(RequireOwnership = false)]
     private void HideBarServerRpc()
     {
-        HideBarServer();
+        ExecuteHideBar();
     }
-    
+
     [ServerRpc(RequireOwnership = false)]
     private void ResetBarServerRpc(float newWaitTime)
     {
-        ResetBarServer(newWaitTime);
+        ExecuteResetBar(newWaitTime);
     }
-    
+
     [ServerRpc(RequireOwnership = false)]
     private void ForceCompleteServerRpc()
     {
-        ForceCompleteServer();
+        ExecuteForceComplete();
     }
-    
+
     [ServerRpc(RequireOwnership = false)]
     private void ModifyTimeServerRpc(float timeToAdd)
     {
-        ModifyTimeServer(timeToAdd);
+        ExecuteModifyTime(timeToAdd);
     }
-    
-    [ServerRpc(RequireOwnership = false)]
-    private void OnTimeUpServerRpc()
-    {
-        OnTimeUpServer();
-    }
-    
+
     #endregion
-    
+
     #region Client RPCs
-    
+
     [ClientRpc]
-    private void OnTimeUpClientRpc()
+    private void NotifyTimeUpClientRpc()
     {
-        // Handle time up event on all clients
-        // You can add custom logic here or use events
         OnTimeUp();
+        OnTimeUpEvent?.Invoke();
     }
-    
+
+    [ClientRpc]
+    private void NotifyBarStartedClientRpc(float waitTime)
+    {
+        OnBarStartedEvent?.Invoke(waitTime);
+    }
+
+    [ClientRpc]
+    private void NotifyBarHiddenClientRpc()
+    {
+        OnBarHiddenEvent?.Invoke();
+    }
+
     #endregion
-    
-    #region Public Getters
-    
+
+    #region Virtual Methods
+
     /// <summary>
-    /// Returns current remaining time
-    /// </summary>
-    public float GetRemainingTime()
-    {
-        return networkCurrentWaitTime.Value;
-    }
-    
-    /// <summary>
-    /// Returns remaining time as percentage (0-1)
-    /// </summary>
-    public float GetRemainingTimePercentage()
-    {
-        if (networkMaxWaitTime.Value <= 0) return 0f;
-        return networkCurrentWaitTime.Value / networkMaxWaitTime.Value;
-    }
-    
-    /// <summary>
-    /// Returns whether the wait bar is currently active
-    /// </summary>
-    public bool IsActive()
-    {
-        return networkIsActive.Value;
-    }
-    
-    /// <summary>
-    /// Returns whether the countdown is currently running
-    /// </summary>
-    public bool IsCountingDown()
-    {
-        return networkIsDecreasing.Value;
-    }
-    
-    /// <summary>
-    /// Returns whether time has run out
-    /// </summary>
-    public bool IsTimeUp()
-    {
-        return networkCurrentWaitTime.Value <= 0 && networkIsActive.Value;
-    }
-    
-    #endregion
-    
-    #region Events
-    
-    /// <summary>
-    /// Called when time runs out - override this or subscribe to handle timeout
+    /// Süre bittiðinde çaðrýlýr - override edilebilir
     /// </summary>
     protected virtual void OnTimeUp()
     {
         // PhoneCallManager will handle the timeout
-        // You can also add UnityEvents here for Inspector assignment
+        // Override this for custom behavior
     }
-    
+
+    #endregion
+
+    #region Editor Debug
+
+#if UNITY_EDITOR
+    [ContextMenu("Test: Start Bar (10s)")]
+    private void DebugStartBar10s()
+    {
+        StartWaitBar(10f);
+    }
+
+    [ContextMenu("Test: Start Bar (30s)")]
+    private void DebugStartBar30s()
+    {
+        StartWaitBar(30f);
+    }
+
+    [ContextMenu("Test: Stop Countdown")]
+    private void DebugStopCountdown()
+    {
+        StopCountdown();
+    }
+
+    [ContextMenu("Test: Resume Countdown")]
+    private void DebugResumeCountdown()
+    {
+        ResumeCountdown();
+    }
+
+    [ContextMenu("Test: Hide Bar")]
+    private void DebugHideBar()
+    {
+        HideBar();
+    }
+
+    [ContextMenu("Test: Force Complete")]
+    private void DebugForceComplete()
+    {
+        ForceComplete();
+    }
+
+    [ContextMenu("Test: Add 5 Seconds")]
+    private void DebugAdd5Seconds()
+    {
+        ModifyTime(5f);
+    }
+
+    [ContextMenu("Test: Remove 5 Seconds")]
+    private void DebugRemove5Seconds()
+    {
+        ModifyTime(-5f);
+    }
+
+    [ContextMenu("Debug: Print State")]
+    private void DebugPrintState()
+    {
+        Debug.Log($"{LOG_PREFIX} === WAIT BAR STATE ===");
+        Debug.Log($"Is Active: {IsActive}");
+        Debug.Log($"Is Counting Down: {IsCountingDown}");
+        Debug.Log($"Is Time Up: {IsTimeUp}");
+        Debug.Log($"Remaining Time: {RemainingTime:F2}s");
+        Debug.Log($"Remaining Percentage: {RemainingTimePercentage:P0}");
+        Debug.Log($"Max Wait Time: {MaxWaitTime:F2}s");
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        if (!Application.isPlaying) return;
+
+        // Draw progress indicator
+        DrawProgressGizmo();
+    }
+
+    private void DrawProgressGizmo()
+    {
+        Vector3 position = transform.position + Vector3.up * 2f;
+
+        // Draw background
+        Gizmos.color = new Color(0.3f, 0.3f, 0.3f, 0.8f);
+        Gizmos.DrawCube(position, new Vector3(2f, 0.2f, 0.1f));
+
+        // Draw progress
+        if (IsActive)
+        {
+            float progress = RemainingTimePercentage;
+            Gizmos.color = progress > 0.3f ? Color.green : (progress > 0.1f ? Color.yellow : Color.red);
+            Gizmos.DrawCube(position - Vector3.right * (1f - progress), new Vector3(2f * progress, 0.2f, 0.1f));
+        }
+    }
+#endif
+
     #endregion
 }

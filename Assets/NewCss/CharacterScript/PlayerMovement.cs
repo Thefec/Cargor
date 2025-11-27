@@ -3,127 +3,201 @@ using UnityEngine;
 
 namespace NewCss
 {
+    /// <summary>
+    /// Oyuncu hareket sistemi - network destekli karakter hareketi, sprint, stamina ve ses yönetimini sağlar. 
+    /// </summary>
     public class PlayerMovement : NetworkBehaviour
     {
-        [Header("Movement Settings")]
+        #region Constants
+
+        private const string LOG_PREFIX = "[PlayerMovement]";
+        private const float DEFAULT_GRAVITY = 9.81f;
+        private const float GROUNDED_VELOCITY = -2f;
+        private const float ANIMATION_DAMP_TIME = 0.05f;
+        private const float MOVEMENT_THRESHOLD = 0.1f;
+        private const float TABLE_DETECTION_RADIUS = 5f;
+
+        // Animator Parameters
+        private const string ANIM_PARAM_X = "X";
+        private const string ANIM_PARAM_Z = "Z";
+        private const string ANIM_PARAM_IS_RUN = "IsRun";
+        private const string ANIM_PARAM_IS_PICKUP = "IsPickup";
+
+        #endregion
+
+        #region Serialized Fields - Movement
+
+        [Header("=== MOVEMENT SETTINGS ===")]
+        [SerializeField, Tooltip("Normal hareket hızı")]
         public float moveSpeed = 5f;
+
+        [SerializeField, Tooltip("Sprint hızı")]
         public float sprintSpeed = 7f;
+
+        [SerializeField, Tooltip("Yorgunluk hızı")]
         public float exhaustedSpeed = 3f;
 
-        [Header("Sprint Settings")]
+        [SerializeField, Tooltip("Dönme hızı")]
+        private float rotationSpeed = 10f;
+
+        [SerializeField, Tooltip("Yerçekimi")]
+        private float gravity = DEFAULT_GRAVITY;
+
+        #endregion
+
+        #region Serialized Fields - Sprint
+
+        [Header("=== SPRINT SETTINGS ===")]
+        [SerializeField, Tooltip("Sprint süresi")]
         public float sprintDuration = 3f;
+
+        [SerializeField, Tooltip("Sprint bekleme süresi")]
         public float sprintCooldown = 3f;
+
+        [SerializeField, Tooltip("Stamina yenilenme hızı")]
         public float staminaRegenRate = 1f;
 
-        [Header("Audio Settings")]
+        #endregion
+
+        #region Serialized Fields - Audio
+
+        [Header("=== AUDIO SETTINGS ===")]
+        [SerializeField, Tooltip("Yürüme sesleri")]
         public AudioClip[] walkSounds;
+
+        [SerializeField, Tooltip("Koşma sesleri")]
         public AudioClip[] runSounds;
-        [Range(0f, 1f)]
+
+        [SerializeField, Range(0f, 1f), Tooltip("Adım sesi seviyesi")]
         public float footstepVolume = 0.2f;
 
-        private UnifiedSettingsManager settingsManager;
+        #endregion
 
+        #region Private Fields - Components
 
-        private CharacterController controller;
-        private Animator animator;
-        private AudioSource audioSource;
+        private CharacterController _controller;
+        private Animator _animator;
+        private AudioSource _audioSource;
+        private UnifiedSettingsManager _settingsManager;
 
-        private float currentStamina;
-        private float cooldownTimer = 0f;
+        #endregion
 
-        private bool isSprinting = false;
-        private bool isInCooldown = false;
-        private bool isMovementLocked = false;
+        #region Private Fields - State
 
-        private Vector3 velocity;
-        private float rotationSpeed = 10f;
-        private float gravity = 9.81f;
+        private float _currentStamina;
+        private float _cooldownTimer;
+        private bool _isSprinting;
+        private bool _isInCooldown;
+        private bool _isMovementLocked;
+        private bool _isCarrying;
+        private bool _interactionsLocked;
+        private Vector3 _velocity;
 
-        public float CurrentStamina => currentStamina;
+        #endregion
+
+        #region Network Variables
+
+        private readonly NetworkVariable<float> _networkX = new();
+        private readonly NetworkVariable<float> _networkZ = new();
+        private readonly NetworkVariable<bool> _networkIsRunning = new();
+        private readonly NetworkVariable<bool> _networkIsCarrying = new();
+
+        #endregion
+
+        #region Public Properties - Stamina
+
+        /// <summary>
+        /// Mevcut stamina
+        /// </summary>
+        public float CurrentStamina => _currentStamina;
+
+        /// <summary>
+        /// Maksimum stamina
+        /// </summary>
         public float MaxStamina => sprintDuration;
-        public float CooldownTime => cooldownTimer;
+
+        /// <summary>
+        /// Stamina yüzdesi (0-1)
+        /// </summary>
+        public float StaminaPercent => _currentStamina / sprintDuration;
+
+        #endregion
+
+        #region Public Properties - Cooldown
+
+        /// <summary>
+        /// Mevcut bekleme süresi
+        /// </summary>
+        public float CooldownTime => _cooldownTimer;
+
+        /// <summary>
+        /// Maksimum bekleme süresi
+        /// </summary>
         public float MaxCooldown => sprintCooldown;
-        public bool IsInCooldown => isInCooldown;
-        private bool isCarrying = false;
-        private bool interactionsLocked = false;
 
-        private NetworkVariable<float> networkX = new NetworkVariable<float>();
-        private NetworkVariable<float> networkZ = new NetworkVariable<float>();
-        private NetworkVariable<bool> networkIsRunning = new NetworkVariable<bool>();
-        private NetworkVariable<bool> networkIsCarrying = new NetworkVariable<bool>();
+        /// <summary>
+        /// Bekleme süresinde mi? 
+        /// </summary>
+        public bool IsInCooldown => _isInCooldown;
 
-        void Awake()
+        /// <summary>
+        /// Cooldown yüzdesi (0-1)
+        /// </summary>
+        public float CooldownPercent => _isInCooldown ? _cooldownTimer / sprintCooldown : 0f;
+
+        #endregion
+
+        #region Public Properties - State
+
+        /// <summary>
+        /// Sprint yapıyor mu?
+        /// </summary>
+        public bool IsSprinting => _isSprinting;
+
+        /// <summary>
+        /// Hareket kilitli mi?
+        /// </summary>
+        public bool IsMovementLocked => _isMovementLocked;
+
+        /// <summary>
+        /// Taşıyor mu?
+        /// </summary>
+        public bool IsCarrying => _isCarrying;
+
+        /// <summary>
+        /// Etkileşimler kilitli mi?
+        /// </summary>
+        public bool InteractionsLocked => _interactionsLocked;
+
+        /// <summary>
+        /// Hareket ediyor mu?
+        /// </summary>
+        public bool IsMoving => GetMovementInput().magnitude >= MOVEMENT_THRESHOLD;
+
+        #endregion
+
+        #region Unity Lifecycle
+
+        private void Awake()
         {
-            controller = GetComponent<CharacterController>();
-            animator = GetComponent<Animator>();
-
-            audioSource = GetComponent<AudioSource>();
-            if (audioSource == null)
-            {
-                audioSource = gameObject.AddComponent<AudioSource>();
-            }
-
-            audioSource.spatialBlend = 0.5f;
-            audioSource.rolloffMode = AudioRolloffMode.Linear;
-            audioSource.minDistance = 1f;
-            audioSource.maxDistance = 15f;
-
-            // ✨ YENİ: Settings Manager'ı bul
-            settingsManager = FindObjectOfType<UnifiedSettingsManager>();
-
-            // ✨ YENİ: Başlangıç volume'ünü ayarla
+            InitializeComponents();
+            InitializeAudioSource();
+            FindSettingsManager();
             UpdateAudioVolume();
         }
 
-        void UpdateAudioVolume()
+        private void Start()
         {
-            if (audioSource == null) return;
-
-            float finalVolume = footstepVolume;
-
-            // Settings Manager'dan ses seviyelerini al
-            if (settingsManager != null)
-            {
-                finalVolume *= settingsManager.GetSFXVolume() * settingsManager.GetMasterVolume();
-            }
-
-            audioSource.volume = finalVolume;
+            _currentStamina = sprintDuration;
         }
 
-        void Start()
-        {
-            currentStamina = sprintDuration;
-        }
-
-        public override void OnNetworkSpawn()
-        {
-            if (IsOwner)
-            {
-                CameraFollow cameraScript = FindObjectOfType<CameraFollow>();
-                if (cameraScript != null)
-                {
-                    cameraScript.SetTarget(this.transform);
-                }
-            }
-        }
-
-        void Update()
+        private void Update()
         {
             if (!IsOwner) return;
 
-            if (isMovementLocked)
+            if (_isMovementLocked)
             {
-                isSprinting = false;
-
-                if (animator != null)
-                {
-                    animator.SetFloat("X", 0f);
-                    animator.SetFloat("Z", 0f);
-                    animator.SetBool("IsRun", false);
-                }
-
-                UpdateAnimationServerRpc(0f, 0f, false);
-                ApplyGravityOnly();
+                HandleLockedState();
                 return;
             }
 
@@ -132,287 +206,295 @@ namespace NewCss
             UpdateAnimator();
         }
 
-        private void ApplyGravityOnly()
+        #endregion
+
+        #region Network Lifecycle
+
+        public override void OnNetworkSpawn()
         {
-            if (controller == null) return;
+            base.OnNetworkSpawn();
 
-            if (!controller.isGrounded)
-                velocity.y -= gravity * Time.deltaTime;
-            else
-                velocity.y = -2f;
-
-            controller.Move(velocity * Time.deltaTime);
+            if (IsOwner)
+            {
+                SetupCamera();
+            }
         }
 
-        // ═══════════════════════════════════════════════════════
-        // 🔊 ANIMATION EVENT - Animasyon tarafından çağrılır
-        // ═══════════════════════════════════════════════════════
+        #endregion
+
+        #region Initialization
+
+        private void InitializeComponents()
+        {
+            _controller = GetComponent<CharacterController>();
+            _animator = GetComponent<Animator>();
+
+            if (_controller == null)
+            {
+                Debug.LogError($"{LOG_PREFIX} CharacterController not found!");
+            }
+        }
+
+        private void InitializeAudioSource()
+        {
+            _audioSource = GetComponent<AudioSource>();
+
+            if (_audioSource == null)
+            {
+                _audioSource = gameObject.AddComponent<AudioSource>();
+            }
+
+            ConfigureAudioSource();
+        }
+
+        private void ConfigureAudioSource()
+        {
+            _audioSource.spatialBlend = 0.5f;
+            _audioSource.rolloffMode = AudioRolloffMode.Linear;
+            _audioSource.minDistance = 1f;
+            _audioSource.maxDistance = 15f;
+        }
+
+        private void FindSettingsManager()
+        {
+            _settingsManager = FindObjectOfType<UnifiedSettingsManager>();
+        }
+
+        private void SetupCamera()
+        {
+            CameraFollow cameraScript = FindObjectOfType<CameraFollow>();
+
+            if (cameraScript != null)
+            {
+                cameraScript.SetTarget(transform);
+            }
+        }
+
+        #endregion
+
+        #region Audio Management
+
+        private void UpdateAudioVolume()
+        {
+            if (_audioSource == null) return;
+
+            float finalVolume = CalculateFinalVolume();
+            _audioSource.volume = finalVolume;
+        }
+
+        private float CalculateFinalVolume()
+        {
+            float volume = footstepVolume;
+
+            if (_settingsManager != null)
+            {
+                volume *= _settingsManager.GetSFXVolume() * _settingsManager.GetMasterVolume();
+            }
+
+            return volume;
+        }
+
+        /// <summary>
+        /// Animation Event - Adım sesi çal
+        /// </summary>
         public void OnFootstep()
         {
-            if (!IsOwner || isMovementLocked) return;
+            if (!IsOwner || _isMovementLocked) return;
 
             PlayFootstepSound();
         }
 
-        void PlayFootstepSound()
+        private void PlayFootstepSound()
         {
-            if (audioSource == null) return;
+            if (_audioSource == null) return;
 
-            // ✨ YENİ: Her adımda volume'ü güncelle
             UpdateAudioVolume();
 
-            AudioClip[] soundArray;
-
-            if (isSprinting && !isInCooldown)
-            {
-                soundArray = runSounds != null && runSounds.Length > 0 ? runSounds : walkSounds;
-            }
-            else
-            {
-                soundArray = walkSounds;
-            }
+            AudioClip[] soundArray = GetFootstepSoundArray();
 
             if (soundArray == null || soundArray.Length == 0)
             {
-                Debug.LogWarning("Ses dizisi boş! Walk Sounds veya Run Sounds ekleyin.");
+                Debug.LogWarning($"{LOG_PREFIX} Sound array is empty!  Add Walk Sounds or Run Sounds.");
                 return;
             }
 
-            AudioClip clip = soundArray[Random.Range(0, soundArray.Length)];
+            AudioClip clip = GetRandomClip(soundArray);
+
             if (clip != null)
             {
-                // ✨ DEĞİŞTİ: Artık audioSource.volume kullanıyor
-                audioSource.PlayOneShot(clip);
+                _audioSource.PlayOneShot(clip);
                 PlayFootstepServerRpc();
             }
         }
 
+        private AudioClip[] GetFootstepSoundArray()
+        {
+            if (_isSprinting && !_isInCooldown)
+            {
+                return runSounds != null && runSounds.Length > 0 ? runSounds : walkSounds;
+            }
+
+            return walkSounds;
+        }
+
+        private AudioClip GetRandomClip(AudioClip[] clips)
+        {
+            if (clips == null || clips.Length == 0) return null;
+
+            return clips[Random.Range(0, clips.Length)];
+        }
+
         [ServerRpc]
-        void PlayFootstepServerRpc()
+        private void PlayFootstepServerRpc()
         {
             PlayFootstepClientRpc();
         }
 
         [ClientRpc]
-        void PlayFootstepClientRpc()
+        private void PlayFootstepClientRpc()
         {
-            if (!IsOwner && audioSource != null)
+            if (IsOwner) return;
+            if (_audioSource == null) return;
+
+            UpdateAudioVolume();
+
+            AudioClip[] soundArray = GetFootstepSoundArray();
+            AudioClip clip = GetRandomClip(soundArray);
+
+            if (clip != null)
             {
-                // ✨ YENİ: Diğer oyuncular için de volume güncelle
-                UpdateAudioVolume();
-
-                AudioClip[] soundArray = (isSprinting && !isInCooldown) ?
-                    (runSounds != null && runSounds.Length > 0 ? runSounds : walkSounds) : walkSounds;
-
-                if (soundArray != null && soundArray.Length > 0)
-                {
-                    AudioClip clip = soundArray[Random.Range(0, soundArray.Length)];
-                    if (clip != null)
-                    {
-                        audioSource.PlayOneShot(clip);
-                    }
-                }
+                _audioSource.PlayOneShot(clip);
             }
         }
 
-        public void SetCarrying(bool carry)
+        #endregion
+
+        #region Movement
+
+        private void MoveCharacter()
         {
-            isCarrying = carry;
-            if (IsOwner)
-            {
-                SetCarryingServerRpc(carry);
-            }
-        }
+            if (_controller == null) return;
 
-        [ServerRpc]
-        void SetCarryingServerRpc(bool carry)
-        {
-            SetCarryingClientRpc(carry);
-        }
-
-        [ClientRpc]
-        void SetCarryingClientRpc(bool carry)
-        {
-            if (animator != null)
-            {
-                animator.SetBool("IsPickup", carry);
-            }
-        }
-
-        void UpdateAnimator()
-        {
-            if (!IsOwner) return;
-
-            float h = Input.GetAxisRaw("Horizontal");
-            float v = Input.GetAxisRaw("Vertical");
-
-            UpdateAnimationServerRpc(h, v, isSprinting);
-        }
-
-        [ServerRpc]
-        void UpdateAnimationServerRpc(float x, float z, bool isRunning)
-        {
-            UpdateAnimationClientRpc(x, z, isRunning);
-        }
-
-        [ClientRpc]
-        void UpdateAnimationClientRpc(float x, float z, bool isRunning)
-        {
-            if (animator != null)
-            {
-                animator.SetFloat("X", x, 0.05f, Time.deltaTime);
-                animator.SetFloat("Z", z, 0.05f, Time.deltaTime);
-                animator.SetBool("IsRun", isRunning);
-            }
-        }
-
-        public void LockAllInteractions(bool locked)
-        {
-            interactionsLocked = locked;
-        }
-
-        void HandleInteractionInput()
-        {
-            if (interactionsLocked)
-                return;
-        }
-
-        void HandleStamina()
-        {
-            if (isMovementLocked)
-            {
-                isSprinting = false;
-                return;
-            }
-
-            if (isInCooldown)
-            {
-                isSprinting = false;
-                cooldownTimer -= Time.deltaTime;
-                if (cooldownTimer <= 0f)
-                {
-                    isInCooldown = false;
-                    currentStamina = sprintDuration;
-                }
-            }
-            else
-            {
-                float h = Input.GetAxisRaw("Horizontal");
-                float v = Input.GetAxisRaw("Vertical");
-                bool isMoving = Mathf.Abs(h) > 0.1f || Mathf.Abs(v) > 0.1f;
-
-                if (Input.GetKey(KeyCode.LeftShift) && currentStamina > 0f && isMoving)
-                {
-                    isSprinting = true;
-                    currentStamina -= Time.deltaTime;
-                    if (currentStamina <= 0f)
-                    {
-                        currentStamina = 0f;
-                        isInCooldown = true;
-                        cooldownTimer = sprintCooldown;
-                    }
-                }
-                else
-                {
-                    isSprinting = false;
-                    currentStamina += Time.deltaTime * staminaRegenRate;
-                    if (currentStamina > sprintDuration)
-                        currentStamina = sprintDuration;
-                }
-            }
-        }
-
-        void MoveCharacter()
-        {
-            if (controller == null) return;
-
-            // ✅ Movement kilidi varsa TAMAMEN DURDUR
-            if (isMovementLocked)
+            if (_isMovementLocked)
             {
                 ApplyGravityOnly();
                 return;
             }
 
-            // ✅ Normal hareket (sadece kilit yoksa)
+            Vector2 input = GetMovementInput();
+            Vector3 direction = new Vector3(input.x, 0, input.y).normalized;
+
+            float targetSpeed = GetCurrentSpeed();
+
+            if (direction.magnitude >= MOVEMENT_THRESHOLD)
+            {
+                RotateTowardsDirection(direction);
+                _controller.Move(direction * targetSpeed * Time.deltaTime);
+            }
+
+            ApplyGravity();
+        }
+
+        private Vector2 GetMovementInput()
+        {
             float h = Input.GetAxisRaw("Horizontal");
             float v = Input.GetAxisRaw("Vertical");
+            return new Vector2(h, v);
+        }
 
-            Vector3 dir = new Vector3(h, 0, v).normalized;
-
-            float targetSpeed;
-            if (isSprinting && !isInCooldown)
+        private float GetCurrentSpeed()
+        {
+            if (_isSprinting && !_isInCooldown)
             {
-                targetSpeed = sprintSpeed;
+                return sprintSpeed;
             }
-            else if (isInCooldown)
+
+            if (_isInCooldown)
             {
-                targetSpeed = exhaustedSpeed;
+                return exhaustedSpeed;
+            }
+
+            return moveSpeed;
+        }
+
+        private void RotateTowardsDirection(Vector3 direction)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(direction);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+        }
+
+        private void ApplyGravity()
+        {
+            if (!_controller.isGrounded)
+            {
+                _velocity.y -= gravity * Time.deltaTime;
             }
             else
             {
-                targetSpeed = moveSpeed;
+                _velocity.y = GROUNDED_VELOCITY;
             }
 
-            if (dir.magnitude >= 0.1f)
+            _controller.Move(_velocity * Time.deltaTime);
+        }
+
+        private void ApplyGravityOnly()
+        {
+            if (_controller == null) return;
+
+            if (!_controller.isGrounded)
             {
-                Quaternion targetRotation = Quaternion.LookRotation(dir);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
-
-                controller.Move(dir * targetSpeed * Time.deltaTime);
+                _velocity.y -= gravity * Time.deltaTime;
             }
-
-            if (!controller.isGrounded)
-                velocity.y -= gravity * Time.deltaTime;
             else
-                velocity.y = -2f;
-
-            controller.Move(velocity * Time.deltaTime);
-        }
-
-        public void LockMovement(bool locked)
-        {
-            isMovementLocked = locked;
-
-            if (locked && IsOwner)
             {
-                isSprinting = false;
-
-                if (animator != null)
-                {
-                    animator.SetFloat("X", 0f);
-                    animator.SetFloat("Z", 0f);
-                    animator.SetBool("IsRun", false);
-                }
-
-                UpdateAnimationServerRpc(0f, 0f, false);
+                _velocity.y = GROUNDED_VELOCITY;
             }
+
+            _controller.Move(_velocity * Time.deltaTime);
         }
-        /// <summary>
-        /// Yön tuşları engellenmiş mi kontrol et (minigame aktifse)
-        /// </summary>
-        private bool AreArrowKeysBlocked()
+
+        private void HandleLockedState()
         {
-            // Table yakınında minigame aktif mi kontrol et
-            Table nearbyTable = FindNearbyTable();
-            if (nearbyTable != null)
+            _isSprinting = false;
+
+            if (_animator != null)
             {
-                BoxingMinigameManager minigame = nearbyTable.GetComponentInChildren<BoxingMinigameManager>();
-                if (minigame != null && minigame.IsMinigameActive)
-                {
-                    return true;
-                }
+                _animator.SetFloat(ANIM_PARAM_X, 0f);
+                _animator.SetFloat(ANIM_PARAM_Z, 0f);
+                _animator.SetBool(ANIM_PARAM_IS_RUN, false);
             }
-            return false;
+
+            UpdateAnimationServerRpc(0f, 0f, false);
+            ApplyGravityOnly();
         }
+
+        #endregion
+
+        #region WASD Only Movement (Minigame)
 
         /// <summary>
         /// Minigame aktifken sadece WASD ile hareket (yön tuşları yok)
         /// </summary>
         private void HandleMovementWithWASDOnly()
         {
-            if (controller == null) return;
+            if (_controller == null) return;
 
-            // ✅ Sadece WASD tuşlarını kontrol et (yön tuşları değil)
+            Vector2 input = GetWASDInput();
+            Vector3 direction = new Vector3(input.x, 0, input.y).normalized;
+
+            float targetSpeed = GetCurrentSpeed();
+
+            if (direction.magnitude >= MOVEMENT_THRESHOLD)
+            {
+                RotateTowardsDirection(direction);
+                _controller.Move(direction * targetSpeed * Time.deltaTime);
+            }
+
+            ApplyGravity();
+        }
+
+        private Vector2 GetWASDInput()
+        {
             float h = 0f;
             float v = 0f;
 
@@ -421,36 +503,21 @@ namespace NewCss
             if (Input.GetKey(KeyCode.W)) v = 1f;
             if (Input.GetKey(KeyCode.S)) v = -1f;
 
-            Vector3 dir = new Vector3(h, 0, v).normalized;
+            return new Vector2(h, v);
+        }
 
-            float targetSpeed;
-            if (isSprinting && !isInCooldown)
-            {
-                targetSpeed = sprintSpeed;
-            }
-            else if (isInCooldown)
-            {
-                targetSpeed = exhaustedSpeed;
-            }
-            else
-            {
-                targetSpeed = moveSpeed;
-            }
+        /// <summary>
+        /// Yön tuşları engellenmiş mi kontrol et
+        /// </summary>
+        private bool AreArrowKeysBlocked()
+        {
+            Table nearbyTable = FindNearbyTable();
 
-            if (dir.magnitude >= 0.1f)
-            {
-                Quaternion targetRotation = Quaternion.LookRotation(dir);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+            if (nearbyTable == null) return false;
 
-                controller.Move(dir * targetSpeed * Time.deltaTime);
-            }
+            BoxingMinigameManager minigame = nearbyTable.GetComponentInChildren<BoxingMinigameManager>();
 
-            if (!controller.isGrounded)
-                velocity.y -= gravity * Time.deltaTime;
-            else
-                velocity.y = -2f;
-
-            controller.Move(velocity * Time.deltaTime);
+            return minigame != null && minigame.IsMinigameActive;
         }
 
         /// <summary>
@@ -458,7 +525,8 @@ namespace NewCss
         /// </summary>
         private Table FindNearbyTable()
         {
-            Collider[] colliders = Physics.OverlapSphere(transform.position, 5f); // 5 birim mesafe
+            Collider[] colliders = Physics.OverlapSphere(transform.position, TABLE_DETECTION_RADIUS);
+
             foreach (var collider in colliders)
             {
                 Table table = collider.GetComponent<Table>();
@@ -467,7 +535,308 @@ namespace NewCss
                     return table;
                 }
             }
+
             return null;
         }
+
+        #endregion
+
+        #region Stamina Management
+
+        private void HandleStamina()
+        {
+            if (_isMovementLocked)
+            {
+                _isSprinting = false;
+                return;
+            }
+
+            if (_isInCooldown)
+            {
+                HandleCooldownState();
+            }
+            else
+            {
+                HandleNormalStaminaState();
+            }
+        }
+
+        private void HandleCooldownState()
+        {
+            _isSprinting = false;
+            _cooldownTimer -= Time.deltaTime;
+
+            if (_cooldownTimer <= 0f)
+            {
+                ExitCooldown();
+            }
+        }
+
+        private void HandleNormalStaminaState()
+        {
+            bool isMoving = IsMoving;
+            bool wantsSprint = Input.GetKey(KeyCode.LeftShift);
+
+            if (wantsSprint && _currentStamina > 0f && isMoving)
+            {
+                ConsumeStamina();
+            }
+            else
+            {
+                RegenerateStamina();
+            }
+        }
+
+        private void ConsumeStamina()
+        {
+            _isSprinting = true;
+            _currentStamina -= Time.deltaTime;
+
+            if (_currentStamina <= 0f)
+            {
+                EnterCooldown();
+            }
+        }
+
+        private void RegenerateStamina()
+        {
+            _isSprinting = false;
+            _currentStamina += Time.deltaTime * staminaRegenRate;
+
+            if (_currentStamina > sprintDuration)
+            {
+                _currentStamina = sprintDuration;
+            }
+        }
+
+        private void EnterCooldown()
+        {
+            _currentStamina = 0f;
+            _isInCooldown = true;
+            _cooldownTimer = sprintCooldown;
+        }
+
+        private void ExitCooldown()
+        {
+            _isInCooldown = false;
+            _currentStamina = sprintDuration;
+        }
+
+        #endregion
+
+        #region Animation
+
+        private void UpdateAnimator()
+        {
+            if (!IsOwner) return;
+
+            Vector2 input = GetMovementInput();
+            UpdateAnimationServerRpc(input.x, input.y, _isSprinting);
+        }
+
+        [ServerRpc]
+        private void UpdateAnimationServerRpc(float x, float z, bool isRunning)
+        {
+            UpdateAnimationClientRpc(x, z, isRunning);
+        }
+
+        [ClientRpc]
+        private void UpdateAnimationClientRpc(float x, float z, bool isRunning)
+        {
+            if (_animator == null) return;
+
+            _animator.SetFloat(ANIM_PARAM_X, x, ANIMATION_DAMP_TIME, Time.deltaTime);
+            _animator.SetFloat(ANIM_PARAM_Z, z, ANIMATION_DAMP_TIME, Time.deltaTime);
+            _animator.SetBool(ANIM_PARAM_IS_RUN, isRunning);
+        }
+
+        #endregion
+
+        #region Carrying State
+
+        /// <summary>
+        /// Taşıma durumunu ayarlar
+        /// </summary>
+        public void SetCarrying(bool carry)
+        {
+            _isCarrying = carry;
+
+            if (IsOwner)
+            {
+                SetCarryingServerRpc(carry);
+            }
+        }
+
+        [ServerRpc]
+        private void SetCarryingServerRpc(bool carry)
+        {
+            SetCarryingClientRpc(carry);
+        }
+
+        [ClientRpc]
+        private void SetCarryingClientRpc(bool carry)
+        {
+            if (_animator != null)
+            {
+                _animator.SetBool(ANIM_PARAM_IS_PICKUP, carry);
+            }
+        }
+
+        #endregion
+
+        #region Public API - Locking
+
+        /// <summary>
+        /// Hareketi kilitler/açar
+        /// </summary>
+        public void LockMovement(bool locked)
+        {
+            _isMovementLocked = locked;
+
+            if (locked && IsOwner)
+            {
+                ResetMovementState();
+            }
+        }
+
+        /// <summary>
+        /// Tüm etkileşimleri kilitler/açar
+        /// </summary>
+        public void LockAllInteractions(bool locked)
+        {
+            _interactionsLocked = locked;
+        }
+
+        private void ResetMovementState()
+        {
+            _isSprinting = false;
+
+            if (_animator != null)
+            {
+                _animator.SetFloat(ANIM_PARAM_X, 0f);
+                _animator.SetFloat(ANIM_PARAM_Z, 0f);
+                _animator.SetBool(ANIM_PARAM_IS_RUN, false);
+            }
+
+            UpdateAnimationServerRpc(0f, 0f, false);
+        }
+
+        #endregion
+
+        #region Public API - Stamina
+
+        /// <summary>
+        /// Staminayı belirli bir miktara ayarlar
+        /// </summary>
+        public void SetStamina(float amount)
+        {
+            _currentStamina = Mathf.Clamp(amount, 0f, sprintDuration);
+        }
+
+        /// <summary>
+        /// Staminayı tamamen doldurur
+        /// </summary>
+        public void RefillStamina()
+        {
+            _currentStamina = sprintDuration;
+            _isInCooldown = false;
+            _cooldownTimer = 0f;
+        }
+
+        /// <summary>
+        /// Staminayı tamamen boşaltır
+        /// </summary>
+        public void DrainStamina()
+        {
+            EnterCooldown();
+        }
+
+        #endregion
+
+        #region Editor Debug
+
+#if UNITY_EDITOR
+        [ContextMenu("Refill Stamina")]
+        private void DebugRefillStamina()
+        {
+            RefillStamina();
+        }
+
+        [ContextMenu("Drain Stamina")]
+        private void DebugDrainStamina()
+        {
+            DrainStamina();
+        }
+
+        [ContextMenu("Lock Movement")]
+        private void DebugLockMovement()
+        {
+            LockMovement(true);
+        }
+
+        [ContextMenu("Unlock Movement")]
+        private void DebugUnlockMovement()
+        {
+            LockMovement(false);
+        }
+
+        [ContextMenu("Toggle Carrying")]
+        private void DebugToggleCarrying()
+        {
+            SetCarrying(!_isCarrying);
+        }
+
+        [ContextMenu("Debug: Print State")]
+        private void DebugPrintState()
+        {
+            Debug.Log($"{LOG_PREFIX} === PLAYER MOVEMENT STATE ===");
+            Debug.Log($"Is Owner: {IsOwner}");
+            Debug.Log($"Is Movement Locked: {_isMovementLocked}");
+            Debug.Log($"Is Interactions Locked: {_interactionsLocked}");
+            Debug.Log($"Is Sprinting: {_isSprinting}");
+            Debug.Log($"Is In Cooldown: {_isInCooldown}");
+            Debug.Log($"Is Carrying: {_isCarrying}");
+            Debug.Log($"Is Moving: {IsMoving}");
+            Debug.Log($"Current Stamina: {_currentStamina:F2}/{sprintDuration}");
+            Debug.Log($"Stamina Percent: {StaminaPercent:P0}");
+            Debug.Log($"Cooldown Timer: {_cooldownTimer:F2}/{sprintCooldown}");
+            Debug.Log($"Current Speed: {GetCurrentSpeed():F2}");
+            Debug.Log($"Has Controller: {_controller != null}");
+            Debug.Log($"Has Animator: {_animator != null}");
+            Debug.Log($"Has Audio Source: {_audioSource != null}");
+        }
+
+        [ContextMenu("Debug: Print Speed Info")]
+        private void DebugPrintSpeedInfo()
+        {
+            Debug.Log($"{LOG_PREFIX} === SPEED INFO ===");
+            Debug.Log($"Move Speed: {moveSpeed}");
+            Debug.Log($"Sprint Speed: {sprintSpeed}");
+            Debug.Log($"Exhausted Speed: {exhaustedSpeed}");
+            Debug.Log($"Current Speed: {GetCurrentSpeed()}");
+            Debug.Log($"Rotation Speed: {rotationSpeed}");
+        }
+
+        private void OnDrawGizmosSelected()
+        {
+            // Table detection radius
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireSphere(transform.position, TABLE_DETECTION_RADIUS);
+
+            // Movement direction
+            if (Application.isPlaying && IsOwner)
+            {
+                Vector2 input = GetMovementInput();
+                if (input.magnitude > MOVEMENT_THRESHOLD)
+                {
+                    Gizmos.color = _isSprinting ? Color.red : Color.green;
+                    Vector3 dir = new Vector3(input.x, 0, input.y).normalized;
+                    Gizmos.DrawRay(transform.position + Vector3.up, dir * 2f);
+                }
+            }
+        }
+#endif
+
+        #endregion
     }
 }

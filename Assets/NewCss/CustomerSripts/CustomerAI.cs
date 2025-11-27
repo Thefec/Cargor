@@ -1,157 +1,284 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
-using System.Collections;
-using System.Linq;
-using Unity.Netcode;
 using Random = UnityEngine.Random;
 
 namespace NewCss
 {
+    /// <summary>
+    /// Müşteri AI davranışlarını yöneten sınıf. 
+    /// Kuyruk yönetimi, oyuncu etkileşimi, ürün yerleştirme ve çıkış işlemlerini kontrol eder. 
+    /// Network senkronizasyonu ile multiplayer desteği sağlar.
+    /// </summary>
     [RequireComponent(typeof(NavMeshAgent))]
     [RequireComponent(typeof(SphereCollider))]
     public class CustomerAI : NetworkBehaviour
     {
-        [Header("Player Reference")] public PlayerMovement cachedPlayerMovement;
+        #region Constants
 
-        [Header("Prefab Mode")] public bool isPrefabMode = false;
+        private const string LOG_PREFIX = "[CustomerAI]";
+        private const string PLAYER_TAG = "Character";
+        private const string ANIMATOR_SPEED_PARAM = "Speed";
+        private const float DESTINATION_THRESHOLD = 0.1f;
+        private const float PICKUP_CHECK_INTERVAL = 0.1f;
 
-        private Animator animator;
+        #endregion
 
-        [Header("Wait Bar")] public WaitBar waitBar;
+        #region Enums
 
-        [Header("Canvas Settings")] public Canvas waitCanvas;
-        public bool hideCanvasUntilTimer = true;
-
-        [Header("Wait Time Settings")]
-        public float minWaitTime = 10f;
-        public float maxWaitTime = 20f;
-        private float actualWaitTime;
-
-        public float interactionTime = 5f;
-
-        [Header("Interaction Settings")] public float interactionRange = 2f;
-
-        // Ses ayarları
-        [Header("Interaction Sounds")]
-        public AudioClip[] interactionSounds;
-        private AudioSource audioSource;
-
-        private NetworkVariable<ulong> playerInRangeClientId = new NetworkVariable<ulong>(ulong.MaxValue);
-        private ulong interactingPlayerId = ulong.MaxValue;
-        private PlayerMovement interactingPlayer = null;
-
-        [Header("Products & Table")]
-        public GameObject[] productPrefabs;
-        private int assignedProductIndex = -1; // Bu müşteriye atanan ürün indexi
-
-        [Header("Tables")] public DisplayTable targetTable;
-
-        private NavMeshAgent navAgent;
-        private Vector3 queueTarget;
-        private int targetQueueIndex = -1;
-        private bool hasInteracted = false;
-        private GameObject placedProduct;
-        private bool isInInteraction = false;
-        private bool hasTimedOut = false;
-        private bool waitTimeStarted = false;
-
-        [Header("Item Detection")]
-        public LayerMask itemLayerMask = -1;
-        public float detectionRadius = 1.5f;
-
-        [Header("Manager & Points")] public CustomerManager manager;
-        public Transform exitPoint;
-        [Header("Tables")] public DisplayTable[] targetTables;
-        public DisplayTable dropOffTable;
-
-        // Network Variables for synchronization
-        private NetworkVariable<bool> networkWaitTimeStarted = new NetworkVariable<bool>(false);
-        private NetworkVariable<bool> networkIsInInteraction = new NetworkVariable<bool>(false);
-        private NetworkVariable<float> networkWaitBarTime = new NetworkVariable<float>(0f);
-        private NetworkVariable<bool> networkShowCanvas = new NetworkVariable<bool>(false);
-        private NetworkVariable<float> networkAnimatorSpeed = new NetworkVariable<float>(0f);
-        private NetworkVariable<int> networkState = new NetworkVariable<int>(0);
-        private NetworkVariable<int> networkAssignedProductIndex = new NetworkVariable<int>(-1); // Network senkronizasyonu için
-
-        private enum State
+        private enum CustomerState
         {
-            MovingToQueue,
-            WaitingInQueue,
-            Service,
-            WaitingForPickup,
-            Exiting
+            MovingToQueue = 0,
+            WaitingInQueue = 1,
+            Service = 2,
+            WaitingForPickup = 3,
+            Exiting = 4
         }
 
-        private State state = State.MovingToQueue;
+        #endregion
+
+        #region Serialized Fields
+
+        [Header("=== PLAYER REFERENCE ===")]
+        [SerializeField, Tooltip("Cache'lenmiş player movement referansı")]
+        public PlayerMovement cachedPlayerMovement;
+
+        [Header("=== PREFAB MODE ===")]
+        [SerializeField, Tooltip("Prefab modunda mı?  (AI devre dışı)")]
+        public bool isPrefabMode = false;
+
+        [Header("=== WAIT BAR ===")]
+        [SerializeField, Tooltip("Bekleme çubuğu referansı")]
+        public WaitBar waitBar;
+
+        [Header("=== CANVAS SETTINGS ===")]
+        [SerializeField, Tooltip("Bekleme canvas'ı")]
+        public Canvas waitCanvas;
+
+        [SerializeField, Tooltip("Timer başlayana kadar canvas'ı gizle")]
+        public bool hideCanvasUntilTimer = true;
+
+        [Header("=== WAIT TIME SETTINGS ===")]
+        [SerializeField, Tooltip("Minimum bekleme süresi")]
+        public float minWaitTime = 10f;
+
+        [SerializeField, Tooltip("Maximum bekleme süresi")]
+        public float maxWaitTime = 20f;
+
+        [SerializeField, Tooltip("Etkileşim süresi")]
+        public float interactionTime = 5f;
+
+        [Header("=== INTERACTION SETTINGS ===")]
+        [SerializeField, Tooltip("Etkileşim menzili")]
+        public float interactionRange = 2f;
+
+        [Header("=== INTERACTION SOUNDS ===")]
+        [SerializeField, Tooltip("Etkileşim sesleri")]
+        public AudioClip[] interactionSounds;
+
+        [Header("=== PRODUCTS ===")]
+        [SerializeField, Tooltip("Ürün prefab'ları")]
+        public GameObject[] productPrefabs;
+
+        [Header("=== ITEM DETECTION ===")]
+        [SerializeField, Tooltip("Item algılama layer mask'i")]
+        public LayerMask itemLayerMask = -1;
+
+        [SerializeField, Tooltip("Algılama yarıçapı")]
+        public float detectionRadius = 1.5f;
+
+        [Header("=== MANAGER & POINTS ===")]
+        [SerializeField, Tooltip("Müşteri yöneticisi")]
+        public CustomerManager manager;
+
+        [SerializeField, Tooltip("Çıkış noktası")]
+        public Transform exitPoint;
+
+        [Header("=== TABLES ===")]
+        [SerializeField, Tooltip("Hedef masalar")]
+        public DisplayTable[] targetTables;
+
+        [SerializeField, Tooltip("Ana hedef masa (legacy)")]
+        public DisplayTable targetTable;
+
+        [SerializeField, Tooltip("Ürün bırakma masası")]
+        public DisplayTable dropOffTable;
+
+        #endregion
+
+        #region Network Variables
+
+        private readonly NetworkVariable<ulong> _networkPlayerInRangeClientId = new(ulong.MaxValue);
+        private readonly NetworkVariable<bool> _networkWaitTimeStarted = new(false);
+        private readonly NetworkVariable<bool> _networkIsInInteraction = new(false);
+        private readonly NetworkVariable<float> _networkWaitBarTime = new(0f);
+        private readonly NetworkVariable<bool> _networkShowCanvas = new(false);
+        private readonly NetworkVariable<float> _networkAnimatorSpeed = new(0f);
+        private readonly NetworkVariable<int> _networkState = new(0);
+        private readonly NetworkVariable<int> _networkAssignedProductIndex = new(-1);
+
+        #endregion
+
+        #region Private Fields
+
+        // Components
+        private NavMeshAgent _navAgent;
+        private Animator _animator;
+        private AudioSource _audioSource;
+        private SphereCollider _interactionCollider;
+
+        // State
+        private CustomerState _state = CustomerState.MovingToQueue;
+        private Vector3 _queueTarget;
+        private int _targetQueueIndex = -1;
+        private int _assignedProductIndex = -1;
+
+        // Interaction
+        private bool _hasInteracted;
+        private bool _isInInteraction;
+        private bool _hasTimedOut;
+        private bool _waitTimeStarted;
+        private float _actualWaitTime;
+
+        // Player tracking
+        private ulong _interactingPlayerId = ulong.MaxValue;
+        private PlayerMovement _interactingPlayer;
+
+        // Product
+        private GameObject _placedProduct;
+
+        #endregion
+
+        #region Public Properties
+
+        /// <summary>
+        /// Hedef kuyruk index'i
+        /// </summary>
+        public int TargetQueueIndex => _targetQueueIndex;
+
+        /// <summary>
+        /// Etkileşim tamamlandı mı?
+        /// </summary>
+        public bool HasInteracted => _hasInteracted;
+
+        /// <summary>
+        /// Mevcut durum
+        /// </summary>
+        public int CurrentState => (int)_state;
+
+        #endregion
+
+        #region Network Lifecycle
 
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
 
-            // Subscribe to network variable changes on clients
             if (!IsServer)
             {
-                networkWaitTimeStarted.OnValueChanged += OnWaitTimeStartedChanged;
-                networkIsInInteraction.OnValueChanged += OnInteractionStateChanged;
-                networkWaitBarTime.OnValueChanged += OnWaitBarTimeChanged;
-                networkShowCanvas.OnValueChanged += OnShowCanvasChanged;
-                networkAnimatorSpeed.OnValueChanged += OnAnimatorSpeedChanged;
-                networkState.OnValueChanged += OnStateChanged;
-                networkAssignedProductIndex.OnValueChanged += OnAssignedProductIndexChanged;
+                SubscribeToNetworkEvents();
             }
 
-            // Initialize components for all clients
             InitializeComponents();
 
-            // Initialize random values on server
             if (IsServer)
             {
-                actualWaitTime = Random.Range(minWaitTime, maxWaitTime);
-
-                // Manager'dan rastgele ürün indexi al
-                if (manager != null && productPrefabs != null && productPrefabs.Length > 0)
-                {
-                    assignedProductIndex = manager.GetRandomProductIndexExcludingRecent(productPrefabs.Length);
-                    networkAssignedProductIndex.Value = assignedProductIndex;
-
-                    Debug.Log($"Customer spawned with product index: {assignedProductIndex} ({productPrefabs[assignedProductIndex].name})");
-                }
+                InitializeServerState();
             }
         }
 
-        void Start()
+        public override void OnNetworkDespawn()
+        {
+            if (!IsServer)
+            {
+                UnsubscribeFromNetworkEvents();
+            }
+
+            base.OnNetworkDespawn();
+        }
+
+        #endregion
+
+        #region Unity Lifecycle
+
+        private void Start()
         {
             if (!IsSpawned) return;
             InitializeComponents();
         }
 
+        private void Update()
+        {
+            if (isPrefabMode) return;
+
+            if (IsServer)
+            {
+                ServerUpdate();
+            }
+
+            if (IsClient)
+            {
+                ClientUpdate();
+            }
+        }
+
+        #endregion
+
+        #region Initialization
+
         private void InitializeComponents()
         {
-            navAgent = GetComponent<NavMeshAgent>();
-            animator = GetComponent<Animator>();
+            _navAgent = GetComponent<NavMeshAgent>();
+            _animator = GetComponent<Animator>();
 
-            audioSource = GetComponent<AudioSource>();
-            if (audioSource == null)
+            InitializeAudioSource();
+            InitializeInteractionCollider();
+            InitializeWaitBar();
+            InitializeCanvas();
+
+            if (isPrefabMode)
             {
-                audioSource = gameObject.AddComponent<AudioSource>();
+                SetPrefabModeComponents(true);
             }
-            audioSource.playOnAwake = false;
-            audioSource.spatialBlend = 1f;
+        }
 
-            SphereCollider sc = GetComponent<SphereCollider>();
-            sc.isTrigger = true;
-            sc.radius = interactionRange;
+        private void InitializeAudioSource()
+        {
+            _audioSource = GetComponent<AudioSource>();
+            if (_audioSource == null)
+            {
+                _audioSource = gameObject.AddComponent<AudioSource>();
+            }
 
+            _audioSource.playOnAwake = false;
+            _audioSource.spatialBlend = 1f;
+        }
+
+        private void InitializeInteractionCollider()
+        {
+            _interactionCollider = GetComponent<SphereCollider>();
+            _interactionCollider.isTrigger = true;
+            _interactionCollider.radius = interactionRange;
+        }
+
+        private void InitializeWaitBar()
+        {
             if (waitBar == null)
             {
                 waitBar = GetComponentInChildren<WaitBar>();
-                if (waitBar == null)
-                {
-                    waitBar = GetComponent<WaitBar>();
-                }
             }
 
+            if (waitBar == null)
+            {
+                waitBar = GetComponent<WaitBar>();
+            }
+        }
+
+        private void InitializeCanvas()
+        {
             if (waitCanvas == null)
             {
                 waitCanvas = GetComponentInChildren<Canvas>();
@@ -161,44 +288,122 @@ namespace NewCss
             {
                 waitCanvas.gameObject.SetActive(false);
             }
+        }
 
-            if (isPrefabMode)
+        private void InitializeServerState()
+        {
+            _actualWaitTime = Random.Range(minWaitTime, maxWaitTime);
+
+            if (manager != null && HasValidProductPrefabs())
             {
-                if (navAgent != null)
-                    navAgent.enabled = false;
-                if (waitCanvas != null)
-                    waitCanvas.gameObject.SetActive(false);
-                return;
+                _assignedProductIndex = manager.GetRandomProductIndexExcludingRecent(productPrefabs.Length);
+                _networkAssignedProductIndex.Value = _assignedProductIndex;
+
+                Debug.Log($"{LOG_PREFIX} Spawned with product index: {_assignedProductIndex} ({productPrefabs[_assignedProductIndex].name})");
             }
         }
 
-        void Update()
+        private bool HasValidProductPrefabs()
         {
-            if (isPrefabMode) return;
+            return productPrefabs != null && productPrefabs.Length > 0;
+        }
 
-            if (IsServer)
+        #endregion
+
+        #region Network Event Subscriptions
+
+        private void SubscribeToNetworkEvents()
+        {
+            _networkWaitTimeStarted.OnValueChanged += HandleWaitTimeStartedChanged;
+            _networkIsInInteraction.OnValueChanged += HandleInteractionStateChanged;
+            _networkWaitBarTime.OnValueChanged += HandleWaitBarTimeChanged;
+            _networkShowCanvas.OnValueChanged += HandleShowCanvasChanged;
+            _networkAnimatorSpeed.OnValueChanged += HandleAnimatorSpeedChanged;
+            _networkState.OnValueChanged += HandleStateChanged;
+            _networkAssignedProductIndex.OnValueChanged += HandleAssignedProductIndexChanged;
+        }
+
+        private void UnsubscribeFromNetworkEvents()
+        {
+            _networkWaitTimeStarted.OnValueChanged -= HandleWaitTimeStartedChanged;
+            _networkIsInInteraction.OnValueChanged -= HandleInteractionStateChanged;
+            _networkWaitBarTime.OnValueChanged -= HandleWaitBarTimeChanged;
+            _networkShowCanvas.OnValueChanged -= HandleShowCanvasChanged;
+            _networkAnimatorSpeed.OnValueChanged -= HandleAnimatorSpeedChanged;
+            _networkState.OnValueChanged -= HandleStateChanged;
+            _networkAssignedProductIndex.OnValueChanged -= HandleAssignedProductIndexChanged;
+        }
+
+        #endregion
+
+        #region Server Update
+
+        private void ServerUpdate()
+        {
+            UpdateAnimator();
+            CheckWaitTimeExpired();
+            ProcessCurrentState();
+        }
+
+        private void ProcessCurrentState()
+        {
+            switch (_state)
             {
-                UpdateAnimator();
-                CheckWaitTimeExpired();
+                case CustomerState.MovingToQueue:
+                    ProcessMovingToQueue();
+                    break;
+                case CustomerState.WaitingInQueue:
+                    ProcessWaitingInQueue();
+                    break;
+                case CustomerState.Service:
+                    // Server sadece state'i yönetir
+                    break;
+                case CustomerState.WaitingForPickup:
+                    // Coroutine ile yönetiliyor
+                    break;
+                case CustomerState.Exiting:
+                    ProcessExiting();
+                    break;
+            }
+        }
 
-                switch (state)
-                {
-                    case State.MovingToQueue: MoveToQueue(); break;
-                    case State.WaitingInQueue: CheckServiceStart(); break;
-                    case State.Service: HandleService(); break;
-                    case State.WaitingForPickup: break;
-                    case State.Exiting: ExitScene(); break;
-                }
+        private void UpdateAnimator()
+        {
+            float targetSpeed = 0f;
+
+            if (_state == CustomerState.MovingToQueue || _state == CustomerState.Exiting)
+            {
+                targetSpeed = _navAgent.velocity.magnitude;
             }
 
-            if (IsClient && state == State.Service && !hasInteracted)
-            {
-                bool isLocalPlayerInRange = CheckIfLocalPlayerInRange();
+            float normalizedSpeed = _navAgent.speed > 0f ? targetSpeed / _navAgent.speed : 0f;
+            _networkAnimatorSpeed.Value = normalizedSpeed;
 
-                if (isLocalPlayerInRange && Input.GetKeyDown(KeyCode.E))
-                {
-                    RequestInteractionServerRpc(NetworkManager.Singleton.LocalClientId);
-                }
+            if (_animator != null)
+            {
+                _animator.SetFloat(ANIMATOR_SPEED_PARAM, normalizedSpeed);
+            }
+        }
+
+        #endregion
+
+        #region Client Update
+
+        private void ClientUpdate()
+        {
+            if (_state == CustomerState.Service && !_hasInteracted)
+            {
+                CheckForInteractionInput();
+            }
+        }
+
+        private void CheckForInteractionInput()
+        {
+            if (!CheckIfLocalPlayerInRange()) return;
+
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                RequestInteractionServerRpc(NetworkManager.Singleton.LocalClientId);
             }
         }
 
@@ -207,17 +412,184 @@ namespace NewCss
             if (NetworkManager.Singleton == null) return false;
 
             var localClientId = NetworkManager.Singleton.LocalClientId;
+            var playerTransform = FindPlayerTransform(localClientId);
 
+            if (playerTransform == null) return false;
+
+            float distance = Vector3.Distance(transform.position, playerTransform.position);
+            return distance <= interactionRange;
+        }
+
+        private Transform FindPlayerTransform(ulong clientId)
+        {
             foreach (var netObj in FindObjectsOfType<NetworkObject>())
             {
-                if (netObj.OwnerClientId == localClientId && netObj.CompareTag("Character"))
+                if (netObj.OwnerClientId == clientId && netObj.CompareTag(PLAYER_TAG))
                 {
-                    float distance = Vector3.Distance(transform.position, netObj.transform.position);
-                    return distance <= interactionRange;
+                    return netObj.transform;
                 }
             }
 
-            return false;
+            return null;
+        }
+
+        #endregion
+
+        #region Queue Management
+
+        public void SetQueueTarget(Vector3 target, int queueIndex)
+        {
+            if (isPrefabMode) return;
+
+            _queueTarget = target;
+            _targetQueueIndex = queueIndex;
+
+            if (_navAgent == null)
+            {
+                _navAgent = GetComponent<NavMeshAgent>();
+            }
+
+            _navAgent.SetDestination(_queueTarget);
+            SetState(CustomerState.MovingToQueue);
+        }
+
+        private void ProcessMovingToQueue()
+        {
+            if (HasReachedDestination())
+            {
+                SetState(CustomerState.WaitingInQueue);
+
+                if (!_waitTimeStarted)
+                {
+                    StartWaitTime();
+                }
+            }
+        }
+
+        private void ProcessWaitingInQueue()
+        {
+            if (manager != null && manager.IsFirstInQueue(this))
+            {
+                BeginService();
+            }
+        }
+
+        private bool HasReachedDestination()
+        {
+            return !_navAgent.pathPending &&
+                   _navAgent.remainingDistance <= _navAgent.stoppingDistance + DESTINATION_THRESHOLD;
+        }
+
+        public int GetTargetQueueIndex() => _targetQueueIndex;
+
+        #endregion
+
+        #region Wait Time Management
+
+        private void StartWaitTime()
+        {
+            _waitTimeStarted = true;
+            _hasTimedOut = false;
+            _hasInteracted = false;
+            _isInInteraction = false;
+
+            // Network sync
+            _networkWaitTimeStarted.Value = true;
+            _networkShowCanvas.Value = true;
+            _networkWaitBarTime.Value = _actualWaitTime;
+            _networkIsInInteraction.Value = false;
+
+            // UI
+            if (hideCanvasUntilTimer && waitCanvas != null)
+            {
+                waitCanvas.gameObject.SetActive(true);
+            }
+
+            if (waitBar != null)
+            {
+                waitBar.StartWaitBar(_actualWaitTime);
+            }
+        }
+
+        private void CheckWaitTimeExpired()
+        {
+            if (_isInInteraction || _hasTimedOut || _state == CustomerState.Exiting ||
+                _hasInteracted || _state == CustomerState.WaitingForPickup)
+            {
+                return;
+            }
+
+            if (_waitTimeStarted && waitBar != null && waitBar.GetRemainingTime() <= 0)
+            {
+                HandleTimeUp();
+            }
+        }
+
+        private void HandleTimeUp()
+        {
+            if (_hasTimedOut || _state == CustomerState.Exiting) return;
+
+            _hasTimedOut = true;
+
+            // Etkileşimi iptal et
+            if (_isInInteraction)
+            {
+                CancelCurrentInteraction();
+            }
+
+            // UI gizle
+            HideWaitUI();
+
+            // Prestige cezası
+            ApplyPrestigePenalty();
+
+            // Çıkışa geç
+            TransitionToExit();
+        }
+
+        private void CancelCurrentInteraction()
+        {
+            StopAllCoroutines();
+            _isInInteraction = false;
+            _networkIsInInteraction.Value = false;
+
+            if (_interactingPlayerId != ulong.MaxValue)
+            {
+                UnlockSpecificPlayerClientRpc(_interactingPlayerId);
+                ClearInteractingPlayer();
+            }
+        }
+
+        private void HideWaitUI()
+        {
+            _networkShowCanvas.Value = false;
+
+            if (waitBar != null)
+            {
+                waitBar.HideBar();
+            }
+
+            if (waitCanvas != null)
+            {
+                waitCanvas.gameObject.SetActive(false);
+            }
+        }
+
+        private void ApplyPrestigePenalty()
+        {
+            if (!_hasInteracted && PrestigeManager.Instance != null)
+            {
+                PrestigeManager.Instance.ModifyPrestige(-0.03f);
+            }
+        }
+
+        #endregion
+
+        #region Service & Interaction
+
+        private void BeginService()
+        {
+            SetState(CustomerState.Service);
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -225,18 +597,23 @@ namespace NewCss
         {
             ulong senderClientId = rpcParams.Receive.SenderClientId;
 
+            // Güvenlik kontrolü
             if (senderClientId != requestingPlayerId)
             {
-                Debug.LogWarning($"Client {senderClientId} tried to interact as {requestingPlayerId}!");
+                Debug.LogWarning($"{LOG_PREFIX} Client {senderClientId} tried to interact as {requestingPlayerId}!");
                 return;
             }
 
-            if (state == State.Service && !hasInteracted && !isInInteraction)
+            // State kontrolü
+            if (_state != CustomerState.Service || _hasInteracted || _isInInteraction)
             {
-                if (ValidatePlayerInRange(senderClientId))
-                {
-                    StartInteraction(senderClientId);
-                }
+                return;
+            }
+
+            // Range kontrolü
+            if (ValidatePlayerInRange(senderClientId))
+            {
+                StartInteraction(senderClientId);
             }
         }
 
@@ -244,227 +621,75 @@ namespace NewCss
         {
             foreach (var netObj in FindObjectsOfType<NetworkObject>())
             {
-                if (netObj.OwnerClientId == playerId && netObj.CompareTag("Character"))
+                if (netObj.OwnerClientId != playerId || !netObj.CompareTag(PLAYER_TAG))
                 {
-                    float distance = Vector3.Distance(transform.position, netObj.transform.position);
+                    continue;
+                }
 
-                    if (distance <= interactionRange)
-                    {
-                        interactingPlayer = netObj.GetComponent<PlayerMovement>();
-                        if (interactingPlayer == null)
-                            interactingPlayer = netObj.GetComponentInChildren<PlayerMovement>();
-                        if (interactingPlayer == null)
-                            interactingPlayer = netObj.GetComponentInParent<PlayerMovement>();
-
-                        return true;
-                    }
+                float distance = Vector3.Distance(transform.position, netObj.transform.position);
+                if (distance <= interactionRange)
+                {
+                    _interactingPlayer = GetPlayerMovement(netObj);
+                    return true;
                 }
             }
 
             return false;
         }
 
-        private void CheckWaitTimeExpired()
+        private PlayerMovement GetPlayerMovement(NetworkObject netObj)
         {
-            if (isInInteraction || hasTimedOut || state == State.Exiting || hasInteracted || state == State.WaitingForPickup)
-                return;
+            var playerMovement = netObj.GetComponent<PlayerMovement>();
 
-            if (waitTimeStarted && waitBar != null && waitBar.GetRemainingTime() <= 0)
+            if (playerMovement == null)
             {
-                TimeUp();
-            }
-        }
-
-        private void TimeUp()
-        {
-            if (hasTimedOut || state == State.Exiting) return;
-
-            hasTimedOut = true;
-
-            if (isInInteraction)
-            {
-                StopAllCoroutines();
-                isInInteraction = false;
-                networkIsInInteraction.Value = false;
-
-                if (interactingPlayerId != ulong.MaxValue)
-                {
-                    UnlockSpecificPlayerClientRpc(interactingPlayerId);
-                    interactingPlayerId = ulong.MaxValue;
-                    interactingPlayer = null;
-                }
+                playerMovement = netObj.GetComponentInChildren<PlayerMovement>();
             }
 
-            networkShowCanvas.Value = false;
-            if (waitBar != null) waitBar.HideBar();
-            if (waitCanvas != null) waitCanvas.gameObject.SetActive(false);
-
-            if (!hasInteracted && PrestigeManager.Instance != null)
-                PrestigeManager.Instance.ModifyPrestige(-0.03f);
-
-            TransitionToExit();
-        }
-
-        private void TransitionToExit()
-        {
-            StopAllCoroutines();
-
-            state = State.Exiting;
-            networkState.Value = (int)State.Exiting;
-
-            if (manager != null)
-                manager.NotifyCustomerDone(this);
-
-            if (navAgent != null && exitPoint != null)
-                navAgent.SetDestination(exitPoint.position);
-        }
-
-        private void UpdateAnimator()
-        {
-            float targetSpeed = 0f;
-            if (state == State.MovingToQueue || state == State.Exiting)
-                targetSpeed = navAgent.velocity.magnitude;
-
-            float normalized = navAgent.speed > 0f ? targetSpeed / navAgent.speed : 0f;
-
-            networkAnimatorSpeed.Value = normalized;
-
-            if (animator != null)
-                animator.SetFloat("Speed", normalized);
-        }
-
-        public void SetQueueTarget(Vector3 target, int queueIndex)
-        {
-            if (isPrefabMode) return;
-
-            queueTarget = target;
-            targetQueueIndex = queueIndex;
-            if (navAgent == null) navAgent = GetComponent<NavMeshAgent>();
-            navAgent.SetDestination(queueTarget);
-
-            state = State.MovingToQueue;
-            networkState.Value = (int)State.MovingToQueue;
-        }
-
-        private void MoveToQueue()
-        {
-            if (!navAgent.pathPending && navAgent.remainingDistance <= navAgent.stoppingDistance + 0.1f)
+            if (playerMovement == null)
             {
-                state = State.WaitingInQueue;
-                networkState.Value = (int)State.WaitingInQueue;
-
-                if (!waitTimeStarted)
-                    StartWaitTime();
-            }
-        }
-
-        private void StartWaitTime()
-        {
-            waitTimeStarted = true;
-            hasTimedOut = false;
-            hasInteracted = false;
-            isInInteraction = false;
-
-            networkWaitTimeStarted.Value = true;
-            networkShowCanvas.Value = true;
-            networkWaitBarTime.Value = actualWaitTime;
-            networkIsInInteraction.Value = false;
-
-            if (hideCanvasUntilTimer && waitCanvas != null)
-                waitCanvas.gameObject.SetActive(true);
-            if (waitBar != null)
-                waitBar.StartWaitBar(actualWaitTime);
-        }
-
-        private void CheckServiceStart()
-        {
-            bool canStartService = false;
-
-            if (manager != null && manager.IsFirstInQueue(this))
-            {
-                canStartService = true;
+                playerMovement = netObj.GetComponentInParent<PlayerMovement>();
             }
 
-            if (canStartService)
-            {
-                BeginService();
-            }
-        }
-
-        private void BeginService()
-        {
-            state = State.Service;
-            networkState.Value = (int)State.Service;
-        }
-
-        private void HandleService()
-        {
-            // Server sadece state'i yönetir
+            return playerMovement;
         }
 
         private void StartInteraction(ulong playerId = ulong.MaxValue)
         {
-            if (hasInteracted || isInInteraction) return;
+            if (_hasInteracted || _isInInteraction) return;
 
             if (playerId != ulong.MaxValue)
             {
-                interactingPlayerId = playerId;
+                _interactingPlayerId = playerId;
             }
 
-            hasInteracted = true;
-            isInInteraction = true;
+            _hasInteracted = true;
+            _isInInteraction = true;
 
-            networkIsInInteraction.Value = true;
-            networkWaitBarTime.Value = interactionTime;
+            // Network sync
+            _networkIsInInteraction.Value = true;
+            _networkWaitBarTime.Value = interactionTime;
 
+            // UI
             if (waitBar != null)
+            {
                 waitBar.StartWaitBar(interactionTime);
+            }
 
+            // Ses
             PlayRandomInteractionSound();
 
-            if (interactingPlayerId != ulong.MaxValue)
+            // Player'ı kilitle
+            if (_interactingPlayerId != ulong.MaxValue)
             {
-                LockSpecificPlayerClientRpc(interactingPlayerId);
+                LockSpecificPlayerClientRpc(_interactingPlayerId);
             }
 
-            StartCoroutine(InteractionTimer());
+            // Timer başlat
+            StartCoroutine(InteractionTimerCoroutine());
         }
 
-        private void PlayRandomInteractionSound()
-        {
-            if (interactionSounds == null || interactionSounds.Length == 0)
-            {
-                Debug.LogWarning("CustomerAI: No interaction sounds assigned!");
-                return;
-            }
-
-            int randomIndex = Random.Range(0, interactionSounds.Length);
-            AudioClip selectedClip = interactionSounds[randomIndex];
-
-            if (selectedClip != null)
-            {
-                if (audioSource != null)
-                {
-                    audioSource.PlayOneShot(selectedClip);
-                }
-
-                PlaySoundClientRpc(randomIndex);
-            }
-        }
-
-        [ClientRpc]
-        private void PlaySoundClientRpc(int soundIndex)
-        {
-            if (!IsServer && interactionSounds != null && soundIndex >= 0 && soundIndex < interactionSounds.Length)
-            {
-                if (audioSource != null && interactionSounds[soundIndex] != null)
-                {
-                    audioSource.PlayOneShot(interactionSounds[soundIndex]);
-                }
-            }
-        }
-
-        private IEnumerator InteractionTimer()
+        private IEnumerator InteractionTimerCoroutine()
         {
             yield return new WaitForSeconds(interactionTime);
             CompleteInteraction();
@@ -472,314 +697,495 @@ namespace NewCss
 
         private void CompleteInteraction()
         {
-            if (hasTimedOut) return;
+            if (_hasTimedOut) return;
 
-            isInInteraction = false;
-            networkIsInInteraction.Value = false;
-            networkShowCanvas.Value = false;
+            _isInInteraction = false;
+            _networkIsInInteraction.Value = false;
 
-            if (waitBar != null)
+            // UI gizle
+            HideWaitUI();
+
+            _waitTimeStarted = false;
+            _networkWaitTimeStarted.Value = false;
+
+            // Ürün yerleştir
+            _placedProduct = PlaceProductOnDropOffTable();
+
+            if (_placedProduct != null)
             {
-                waitBar.HideBar();
-            }
-            if (waitCanvas != null) waitCanvas.gameObject.SetActive(false);
-
-            waitTimeStarted = false;
-            networkWaitTimeStarted.Value = false;
-
-            placedProduct = PlaceOnDropOffTableAsChild();
-            if (placedProduct != null)
-            {
-                // ✅ Prestige ödülü
-                if (PrestigeManager.Instance != null)
-                    PrestigeManager.Instance.ModifyPrestige(0.05f);
-
-                // ✅ QUEST GÜNCELLEMESİ - Müşteri başarıyla hizmet verildi
-                if (QuestManager.Instance != null && Unity.Netcode.NetworkManager.Singleton.IsServer)
-                {
-                    QuestManager.Instance.IncrementQuestProgress(QuestType.ServeCustomers);
-                }
-
-                // Ürün pickup beklemeye başla
+                HandleSuccessfulInteraction();
                 StartCoroutine(WaitForProductPickupCoroutine());
             }
             else
             {
-                // ❌ Ürün yerleştirilemedi - Prestige cezası
-                if (PrestigeManager.Instance != null)
-                    PrestigeManager.Instance.ModifyPrestige(-0.03f);
-
-                // Müşteri ayrılıyor
+                HandleFailedInteraction();
                 TransitionToExit();
             }
 
             // Player'ı unlock et
-            if (interactingPlayerId != ulong.MaxValue)
+            UnlockInteractingPlayer();
+        }
+
+        private void HandleSuccessfulInteraction()
+        {
+            // Prestige ödülü
+            if (PrestigeManager.Instance != null)
             {
-                UnlockSpecificPlayerClientRpc(interactingPlayerId);
-                interactingPlayerId = ulong.MaxValue;
-                interactingPlayer = null;
+                PrestigeManager.Instance.ModifyPrestige(0.05f);
+            }
+
+            // Quest güncelleme
+            if (QuestManager.Instance != null && NetworkManager.Singleton.IsServer)
+            {
+                QuestManager.Instance.IncrementQuestProgress(QuestType.ServeCustomers);
             }
         }
 
-        [ClientRpc]
-        private void LockSpecificPlayerClientRpc(ulong targetPlayerId)
+        private void HandleFailedInteraction()
         {
-            if (NetworkManager.Singleton.LocalClientId == targetPlayerId)
+            if (PrestigeManager.Instance != null)
             {
-                foreach (var netObj in FindObjectsOfType<NetworkObject>())
-                {
-                    if (netObj.IsOwner && netObj.CompareTag("Character"))
-                    {
-                        var playerMovement = netObj.GetComponent<PlayerMovement>();
-                        if (playerMovement == null)
-                            playerMovement = netObj.GetComponentInChildren<PlayerMovement>();
-
-                        if (playerMovement != null)
-                        {
-                            Debug.Log($"[Client {targetPlayerId}] Locking movement");
-                            playerMovement.LockMovement(true);
-                            playerMovement.LockAllInteractions(true);
-                        }
-                        break;
-                    }
-                }
+                PrestigeManager.Instance.ModifyPrestige(-0.03f);
             }
         }
 
-        [ClientRpc]
-        private void UnlockSpecificPlayerClientRpc(ulong targetPlayerId)
+        private void UnlockInteractingPlayer()
         {
-            if (NetworkManager.Singleton.LocalClientId == targetPlayerId)
+            if (_interactingPlayerId != ulong.MaxValue)
             {
-                foreach (var netObj in FindObjectsOfType<NetworkObject>())
-                {
-                    if (netObj.IsOwner && netObj.CompareTag("Character"))
-                    {
-                        var playerMovement = netObj.GetComponent<PlayerMovement>();
-                        if (playerMovement == null)
-                            playerMovement = netObj.GetComponentInChildren<PlayerMovement>();
+                UnlockSpecificPlayerClientRpc(_interactingPlayerId);
+                ClearInteractingPlayer();
+            }
+        }
 
-                        if (playerMovement != null)
-                        {
-                            Debug.Log($"[Client {targetPlayerId}] Unlocking movement");
-                            playerMovement.LockMovement(false);
-                            playerMovement.LockAllInteractions(false);
-                        }
-                        break;
-                    }
-                }
+        private void ClearInteractingPlayer()
+        {
+            _interactingPlayerId = ulong.MaxValue;
+            _interactingPlayer = null;
+        }
+
+        #endregion
+
+        #region Product Placement
+
+        private GameObject PlaceProductOnDropOffTable()
+        {
+            if (dropOffTable == null || !HasValidProductPrefabs())
+            {
+                Debug.LogWarning($"{LOG_PREFIX} Cannot place product: dropOffTable or productPrefabs is null");
+                return null;
+            }
+
+            int productIndex = GetProductIndex();
+            var spawnTransform = GetProductSpawnTransform();
+
+            var product = Instantiate(productPrefabs[productIndex], spawnTransform.position, spawnTransform.rotation);
+
+            // Network spawn
+            var networkObject = product.GetComponent<NetworkObject>();
+            if (networkObject != null)
+            {
+                networkObject.Spawn();
+            }
+
+            // Parent ayarla
+            SetProductParent(product);
+
+            // DisplayTable'a kaydet
+            dropOffTable.PlaceItemInstance(product);
+
+            Debug.Log($"{LOG_PREFIX} Placed product: {productPrefabs[productIndex].name} (index: {productIndex})");
+
+            return product;
+        }
+
+        private int GetProductIndex()
+        {
+            if (_assignedProductIndex >= 0 && _assignedProductIndex < productPrefabs.Length)
+            {
+                return _assignedProductIndex;
+            }
+
+            return Random.Range(0, productPrefabs.Length);
+        }
+
+        private (Vector3 position, Quaternion rotation) GetProductSpawnTransform()
+        {
+            // SlotPoints property'sini kullan (DisplayTable'dan)
+            var slotPoints = dropOffTable.SlotPoints;
+
+            if (slotPoints != null && slotPoints.Length > dropOffTable.ItemCount)
+            {
+                var targetSlot = slotPoints[dropOffTable.ItemCount];
+                return (targetSlot.position, targetSlot.rotation);
+            }
+
+            return (dropOffTable.transform.position + Vector3.up * 0.5f, Quaternion.identity);
+        }
+
+        private void SetProductParent(GameObject product)
+        {
+            // SlotPoints property'sini kullan
+            var slotPoints = dropOffTable.SlotPoints;
+
+            if (slotPoints != null && slotPoints.Length > dropOffTable.ItemCount)
+            {
+                product.transform.SetParent(slotPoints[dropOffTable.ItemCount], true);
+            }
+            else
+            {
+                product.transform.SetParent(dropOffTable.transform, true);
             }
         }
 
         private IEnumerator WaitForProductPickupCoroutine()
         {
-            state = State.WaitingForPickup;
-            networkState.Value = (int)State.WaitingForPickup;
+            SetState(CustomerState.WaitingForPickup);
 
             yield return null;
 
-            while (placedProduct != null && !hasTimedOut)
+            while (_placedProduct != null && !_hasTimedOut)
             {
-                if (placedProduct == null)
+                if (_placedProduct == null)
                 {
                     break;
                 }
 
-                if (placedProduct.transform.parent == null ||
-                    (dropOffTable != null && !IsChildOfDropOffTable(placedProduct)))
+                if (!IsProductStillOnTable())
                 {
-                    placedProduct = null;
+                    _placedProduct = null;
                     break;
                 }
 
-                yield return new WaitForSeconds(0.1f);
+                yield return new WaitForSeconds(PICKUP_CHECK_INTERVAL);
             }
 
             TransitionToExit();
+        }
+
+        private bool IsProductStillOnTable()
+        {
+            if (_placedProduct == null || _placedProduct.transform.parent == null)
+            {
+                return false;
+            }
+
+            if (dropOffTable == null)
+            {
+                return false;
+            }
+
+            return IsChildOfDropOffTable(_placedProduct);
         }
 
         private bool IsChildOfDropOffTable(GameObject product)
         {
             if (dropOffTable == null || product == null) return false;
 
-            Transform parent = product.transform.parent;
+            var parent = product.transform.parent;
+
             while (parent != null)
             {
-                if (parent == dropOffTable.transform) return true;
-                if (dropOffTable.slotPoints != null)
+                if (parent == dropOffTable.transform)
                 {
-                    foreach (Transform slot in dropOffTable.slotPoints)
+                    return true;
+                }
+
+                // SlotPoints property'sini kullan
+                var slotPoints = dropOffTable.SlotPoints;
+                if (slotPoints != null)
+                {
+                    foreach (var slot in slotPoints)
                     {
-                        if (parent == slot) return true;
+                        if (parent == slot)
+                        {
+                            return true;
+                        }
                     }
                 }
+
                 parent = parent.parent;
             }
+
             return false;
         }
 
-        private GameObject PlaceOnDropOffTableAsChild()
+        #endregion
+
+        #region Exit Management
+
+        private void TransitionToExit()
         {
-            if (dropOffTable == null || productPrefabs == null || productPrefabs.Length == 0)
-                return null;
+            StopAllCoroutines();
+            SetState(CustomerState.Exiting);
 
-            // Atanmış ürün indexini kullan, yoksa rastgele seç
-            int index = assignedProductIndex >= 0 && assignedProductIndex < productPrefabs.Length
-                ? assignedProductIndex
-                : Random.Range(0, productPrefabs.Length);
-
-            Vector3 spawnPos;
-            Quaternion spawnRot;
-
-            if (dropOffTable.slotPoints != null && dropOffTable.slotPoints.Length > dropOffTable.ItemCount)
+            if (manager != null)
             {
-                Transform targetSlot = dropOffTable.slotPoints[dropOffTable.ItemCount];
-                spawnPos = targetSlot.position;
-                spawnRot = targetSlot.rotation;
-            }
-            else
-            {
-                spawnPos = dropOffTable.transform.position + Vector3.up * 0.5f;
-                spawnRot = Quaternion.identity;
+                manager.NotifyCustomerDone(this);
             }
 
-            var product = Instantiate(productPrefabs[index], spawnPos, spawnRot);
-
-            NetworkObject networkObject = product.GetComponent<NetworkObject>();
-            if (networkObject != null)
+            if (_navAgent != null && exitPoint != null)
             {
-                networkObject.Spawn();
-            }
-
-            if (dropOffTable.slotPoints != null && dropOffTable.slotPoints.Length > dropOffTable.ItemCount)
-            {
-                product.transform.SetParent(dropOffTable.slotPoints[dropOffTable.ItemCount], true);
-            }
-            else
-            {
-                product.transform.SetParent(dropOffTable.transform, true);
-            }
-
-            dropOffTable.PlaceItemInstance(product);
-
-            Debug.Log($"Customer placed product: {productPrefabs[index].name} (index: {index})");
-
-            return product;
-        }
-
-        private void ExitScene()
-        {
-            if (!navAgent.pathPending && navAgent.remainingDistance <= navAgent.stoppingDistance + 0.1f)
-            {
-                if (IsServer && NetworkObject != null)
-                    NetworkObject.Despawn();
-                else
-                    Destroy(gameObject);
+                _navAgent.SetDestination(exitPoint.position);
             }
         }
 
-        public int GetTargetQueueIndex() => targetQueueIndex;
+        private void ProcessExiting()
+        {
+            if (HasReachedDestination())
+            {
+                DespawnCustomer();
+            }
+        }
+
+        private void DespawnCustomer()
+        {
+            if (IsServer && NetworkObject != null)
+            {
+                NetworkObject.Despawn();
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
+        }
+
+        #endregion
+
+        #region State Management
+
+        private void SetState(CustomerState newState)
+        {
+            _state = newState;
+            _networkState.Value = (int)newState;
+        }
+
+        #endregion
+
+        #region Audio
+
+        private void PlayRandomInteractionSound()
+        {
+            if (interactionSounds == null || interactionSounds.Length == 0)
+            {
+                Debug.LogWarning($"{LOG_PREFIX} No interaction sounds assigned!");
+                return;
+            }
+
+            int randomIndex = Random.Range(0, interactionSounds.Length);
+            var selectedClip = interactionSounds[randomIndex];
+
+            if (selectedClip == null) return;
+
+            if (_audioSource != null)
+            {
+                _audioSource.PlayOneShot(selectedClip);
+            }
+
+            PlaySoundClientRpc(randomIndex);
+        }
+
+        [ClientRpc]
+        private void PlaySoundClientRpc(int soundIndex)
+        {
+            if (IsServer) return;
+
+            if (interactionSounds == null || soundIndex < 0 || soundIndex >= interactionSounds.Length)
+            {
+                return;
+            }
+
+            if (_audioSource != null && interactionSounds[soundIndex] != null)
+            {
+                _audioSource.PlayOneShot(interactionSounds[soundIndex]);
+            }
+        }
+
+        #endregion
+
+        #region Player Lock/Unlock
+
+        [ClientRpc]
+        private void LockSpecificPlayerClientRpc(ulong targetPlayerId)
+        {
+            if (NetworkManager.Singleton.LocalClientId != targetPlayerId) return;
+
+            var playerMovement = FindLocalPlayerMovement();
+            if (playerMovement != null)
+            {
+                Debug.Log($"{LOG_PREFIX} [Client {targetPlayerId}] Locking movement");
+                playerMovement.LockMovement(true);
+                playerMovement.LockAllInteractions(true);
+            }
+        }
+
+        [ClientRpc]
+        private void UnlockSpecificPlayerClientRpc(ulong targetPlayerId)
+        {
+            if (NetworkManager.Singleton.LocalClientId != targetPlayerId) return;
+
+            var playerMovement = FindLocalPlayerMovement();
+            if (playerMovement != null)
+            {
+                Debug.Log($"{LOG_PREFIX} [Client {targetPlayerId}] Unlocking movement");
+                playerMovement.LockMovement(false);
+                playerMovement.LockAllInteractions(false);
+            }
+        }
+
+        private PlayerMovement FindLocalPlayerMovement()
+        {
+            foreach (var netObj in FindObjectsOfType<NetworkObject>())
+            {
+                if (netObj.IsOwner && netObj.CompareTag(PLAYER_TAG))
+                {
+                    return GetPlayerMovement(netObj);
+                }
+            }
+
+            return null;
+        }
+
+        #endregion
+
+        #region Prefab Mode
 
         public void SetPrefabMode(bool prefabMode)
         {
             isPrefabMode = prefabMode;
+            SetPrefabModeComponents(prefabMode);
+        }
 
-            if (isPrefabMode)
+        private void SetPrefabModeComponents(bool enabled)
+        {
+            if (_navAgent != null)
             {
-                if (navAgent != null)
-                    navAgent.enabled = false;
-                if (waitCanvas != null)
-                    waitCanvas.gameObject.SetActive(false);
+                _navAgent.enabled = !enabled;
             }
-            else
+
+            if (waitCanvas != null)
             {
-                if (navAgent != null)
-                    navAgent.enabled = true;
+                waitCanvas.gameObject.SetActive(!enabled);
             }
         }
 
-        // Network variable change handlers
-        private void OnWaitTimeStartedChanged(bool previousValue, bool newValue)
+        #endregion
+
+        #region Network Event Handlers
+
+        private void HandleWaitTimeStartedChanged(bool previousValue, bool newValue)
         {
-            if (!IsServer && newValue)
+            if (IsServer) return;
+
+            if (newValue && hideCanvasUntilTimer && waitCanvas != null)
             {
-                if (hideCanvasUntilTimer && waitCanvas != null)
-                    waitCanvas.gameObject.SetActive(true);
+                waitCanvas.gameObject.SetActive(true);
             }
         }
 
-        private void OnInteractionStateChanged(bool previousValue, bool newValue)
+        private void HandleInteractionStateChanged(bool previousValue, bool newValue)
         {
-            if (!IsServer)
-            {
-                isInInteraction = newValue;
-            }
+            if (IsServer) return;
+            _isInInteraction = newValue;
         }
 
-        private void OnWaitBarTimeChanged(float previousValue, float newValue)
+        private void HandleWaitBarTimeChanged(float previousValue, float newValue)
         {
-            if (!IsServer && waitBar != null && newValue > 0)
+            if (IsServer) return;
+
+            if (waitBar != null && newValue > 0)
             {
                 waitBar.StartWaitBar(newValue);
             }
         }
 
-        private void OnShowCanvasChanged(bool previousValue, bool newValue)
+        private void HandleShowCanvasChanged(bool previousValue, bool newValue)
         {
-            if (!IsServer && waitCanvas != null)
+            if (IsServer) return;
+
+            if (waitCanvas != null)
             {
                 waitCanvas.gameObject.SetActive(newValue);
             }
         }
 
-        private void OnAnimatorSpeedChanged(float previousValue, float newValue)
+        private void HandleAnimatorSpeedChanged(float previousValue, float newValue)
         {
-            if (!IsServer && animator != null)
+            if (IsServer) return;
+
+            if (_animator != null)
             {
-                animator.SetFloat("Speed", newValue);
+                _animator.SetFloat(ANIMATOR_SPEED_PARAM, newValue);
             }
         }
 
-        private void OnStateChanged(int previousValue, int newValue)
+        private void HandleStateChanged(int previousValue, int newValue)
         {
-            if (!IsServer)
-            {
-                state = (State)newValue;
-            }
+            if (IsServer) return;
+            _state = (CustomerState)newValue;
         }
 
-        private void OnAssignedProductIndexChanged(int previousValue, int newValue)
+        private void HandleAssignedProductIndexChanged(int previousValue, int newValue)
         {
-            if (!IsServer)
-            {
-                assignedProductIndex = newValue;
-                Debug.Log($"[Client] Customer received product index: {assignedProductIndex}");
-            }
+            if (IsServer) return;
+
+            _assignedProductIndex = newValue;
+            Debug.Log($"{LOG_PREFIX} [Client] Received product index: {_assignedProductIndex}");
         }
 
-        void OnDrawGizmosSelected()
+        #endregion
+
+        #region Debug & Editor
+
+#if UNITY_EDITOR
+        private void OnDrawGizmosSelected()
         {
+            // Interaction range
             Gizmos.color = Color.yellow;
             Gizmos.DrawWireSphere(transform.position, interactionRange);
 
-            string debugInfo = $"State: {state}\nInteracted: {hasInteracted}";
+            // Detection radius
+            Gizmos.color = new Color(0f, 1f, 0f, 0.3f);
+            Gizmos.DrawWireSphere(transform.position, detectionRadius);
+
+            // Debug info
+            DrawDebugLabel();
+        }
+
+        private void DrawDebugLabel()
+        {
+            string debugInfo = BuildDebugInfo();
+            UnityEditor.Handles.Label(transform.position + Vector3.up * 2, debugInfo);
+        }
+
+        private string BuildDebugInfo()
+        {
+            var info = $"State: {_state}\nInteracted: {_hasInteracted}";
+
             if (IsServer)
             {
-                debugInfo += $"\nWait Time: {actualWaitTime:F1}s";
-                if (assignedProductIndex >= 0 && productPrefabs != null && assignedProductIndex < productPrefabs.Length)
+                info += $"\nWait Time: {_actualWaitTime:F1}s";
+
+                if (_assignedProductIndex >= 0 && HasValidProductPrefabs() && _assignedProductIndex < productPrefabs.Length)
                 {
-                    debugInfo += $"\nAssigned Product: {productPrefabs[assignedProductIndex].name} ({assignedProductIndex})";
+                    info += $"\nProduct: {productPrefabs[_assignedProductIndex].name} ({_assignedProductIndex})";
                 }
-                if (placedProduct != null)
-                    debugInfo += $"\nPlaced Product: {placedProduct.name}";
-                if (interactingPlayerId != ulong.MaxValue)
-                    debugInfo += $"\nInteracting Player ID: {interactingPlayerId}";
+
+                if (_placedProduct != null)
+                {
+                    info += $"\nPlaced: {_placedProduct.name}";
+                }
+
+                if (_interactingPlayerId != ulong.MaxValue)
+                {
+                    info += $"\nInteracting: {_interactingPlayerId}";
+                }
             }
 
-#if UNITY_EDITOR
-            UnityEditor.Handles.Label(transform.position + Vector3.up * 2, debugInfo);
-#endif
+            return info;
         }
+#endif
+
+        #endregion
     }
 }

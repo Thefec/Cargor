@@ -1,56 +1,21 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
-using UnityEngine.Localization.Settings;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
+using UnityEngine.UI;
 
+/// <summary>
+/// Tüm oyun ayarlarını (grafik, ses, dil, çözünürlük, FPS) tek bir yerden yöneten manager. 
+/// Kaydedilmemiş değişiklikleri takip eder ve geri alma özelliği sunar.
+/// </summary>
 public class UnifiedSettingsManager : MonoBehaviour
 {
-    [Header("UI Components - Shared")]
-    public Button saveButton;
-    public Button backButton;
+    #region Constants
 
-    [Header("Quality Settings")]
-    public TMP_Dropdown qualityDropdown;
-
-    [Header("Language Settings")]
-    public TMP_Dropdown languageDropdown;
-
-    [Header("Screen Mode Settings")]
-    public TMP_Dropdown screenModeDropdown;
-
-    [Header("Resolution Settings")]
-    public TMP_Dropdown resolutionDropdown;
-
-    [Header("FPS Settings")]
-    public TMP_Dropdown fpsDropdown;
-    public Toggle vSyncToggle;
-
-    [Header("Audio Settings")]
-    public Slider masterVolumeSlider;
-    public TextMeshProUGUI masterVolumeText;
-    public Slider musicVolumeSlider;
-    public TextMeshProUGUI musicVolumeText;
-    public Slider sfxVolumeSlider;
-    public TextMeshProUGUI sfxVolumeText;
-
-    [Header("Audio Sources")]
-    public AudioSource musicAudioSource;
-    public AudioSource sfxAudioSource;
-    public AudioSource uiAudioSource; // ✨ YENİ: UI sesleri için
-
-    [Header("UI Sound Effects")] // ✨ YENİ BÖLÜM
-    public AudioClip buttonClickSound;
-    public AudioClip dropdownClickSound; // Dropdown için ayrı ses (opsiyonel)
-    public AudioClip sliderChangeSound; // Slider için ses (opsiyonel)
-    [Range(0f, 1f)]
-    public float uiSoundVolume = 0.8f;
-
-    [Header("FPS Options")]
-    public int[] fpsOptions = { 30, 60, 90, 120, 140, 160 };
-    public int defaultFPSIndex = 1; // 60 FPS default
-    public bool defaultVSyncEnabled = true;
+    private const string LOG_PREFIX = "[SettingsManager]";
 
     // PlayerPrefs Keys
     private const string PREF_QUALITY = "QualityLevel";
@@ -63,7 +28,21 @@ public class UnifiedSettingsManager : MonoBehaviour
     private const string PREF_MUSIC_VOLUME = "MusicVolume_Setting";
     private const string PREF_SFX_VOLUME = "SFXVolume_Setting";
 
-    // Screen Mode Enum
+    // Audio defaults
+    private const float DEFAULT_VOLUME = 0.5f;
+    private const float SLIDER_SOUND_COOLDOWN = 0.1f;
+    private const float SLIDER_SOUND_VOLUME_MULTIPLIER = 0.3f;
+
+    // Localization
+    private const string TURKISH_LOCALE_CODE = "tr";
+
+    #endregion
+
+    #region Enums
+
+    /// <summary>
+    /// Ekran modu seçenekleri
+    /// </summary>
     public enum ScreenMode
     {
         Windowed = 0,
@@ -71,42 +50,213 @@ public class UnifiedSettingsManager : MonoBehaviour
         FullscreenExclusive = 2
     }
 
-    // Resolution data
-    private Resolution[] availableResolutions;
-    private List<Resolution> filteredResolutions;
+    #endregion
 
-    // Current (saved) values
-    private int currentQualityLevel;
-    private int currentLocaleID;
-    private ScreenMode currentScreenMode;
-    private int currentFPSIndex;
-    private bool currentVSyncEnabled;
-    private int currentResolutionIndex;
-    private float currentMasterVolume;
-    private float currentMusicVolume;
-    private float currentSFXVolume;
+    #region Serialized Fields - UI Components
 
-    // Selected (preview - unsaved) values
-    private int selectedQualityLevel;
-    private int selectedLocaleID;
-    private ScreenMode selectedScreenMode;
-    private int selectedFPSIndex;
-    private bool selectedVSyncEnabled;
-    private int selectedResolutionIndex;
-    private float selectedMasterVolume;
-    private float selectedMusicVolume;
-    private float selectedSFXVolume;
+    [Header("=== SHARED UI ===")]
+    [SerializeField, Tooltip("Kaydet butonu")]
+    public Button saveButton;
 
-    private bool hasUnsavedChanges = false;
-    private bool localizationActive = false;
+    [SerializeField, Tooltip("Geri butonu")]
+    public Button backButton;
 
-    // ✨ YENİ: Slider ses throttling için
-    private float lastSliderSoundTime = 0f;
-    private const float sliderSoundCooldown = 0.1f;
+    [Header("=== QUALITY SETTINGS ===")]
+    [SerializeField, Tooltip("Grafik kalitesi dropdown'u")]
+    public TMP_Dropdown qualityDropdown;
+
+    [Header("=== LANGUAGE SETTINGS ===")]
+    [SerializeField, Tooltip("Dil dropdown'u")]
+    public TMP_Dropdown languageDropdown;
+
+    [Header("=== SCREEN SETTINGS ===")]
+    [SerializeField, Tooltip("Ekran modu dropdown'u")]
+    public TMP_Dropdown screenModeDropdown;
+
+    [SerializeField, Tooltip("Çözünürlük dropdown'u")]
+    public TMP_Dropdown resolutionDropdown;
+
+    [Header("=== FPS SETTINGS ===")]
+    [SerializeField, Tooltip("FPS dropdown'u")]
+    public TMP_Dropdown fpsDropdown;
+
+    [SerializeField, Tooltip("VSync toggle'ı")]
+    public Toggle vSyncToggle;
+
+    [Header("=== AUDIO SLIDERS ===")]
+    [SerializeField, Tooltip("Master ses slider'ı")]
+    public Slider masterVolumeSlider;
+
+    [SerializeField, Tooltip("Master ses text'i")]
+    public TextMeshProUGUI masterVolumeText;
+
+    [SerializeField, Tooltip("Müzik ses slider'ı")]
+    public Slider musicVolumeSlider;
+
+    [SerializeField, Tooltip("Müzik ses text'i")]
+    public TextMeshProUGUI musicVolumeText;
+
+    [SerializeField, Tooltip("SFX ses slider'ı")]
+    public Slider sfxVolumeSlider;
+
+    [SerializeField, Tooltip("SFX ses text'i")]
+    public TextMeshProUGUI sfxVolumeText;
+
+    #endregion
+
+    #region Serialized Fields - Audio Sources
+
+    [Header("=== AUDIO SOURCES ===")]
+    [SerializeField, Tooltip("Müzik AudioSource")]
+    public AudioSource musicAudioSource;
+
+    [SerializeField, Tooltip("SFX AudioSource")]
+    public AudioSource sfxAudioSource;
+
+    [SerializeField, Tooltip("UI sesleri AudioSource")]
+    public AudioSource uiAudioSource;
+
+    #endregion
+
+    #region Serialized Fields - UI Sounds
+
+    [Header("=== UI SOUND EFFECTS ===")]
+    [SerializeField, Tooltip("Buton tıklama sesi")]
+    public AudioClip buttonClickSound;
+
+    [SerializeField, Tooltip("Dropdown tıklama sesi")]
+    public AudioClip dropdownClickSound;
+
+    [SerializeField, Tooltip("Slider değişim sesi")]
+    public AudioClip sliderChangeSound;
+
+    [SerializeField, Range(0f, 1f), Tooltip("UI ses seviyesi")]
+    public float uiSoundVolume = 0.8f;
+
+    #endregion
+
+    #region Serialized Fields - FPS Options
+
+    [Header("=== FPS OPTIONS ===")]
+    [SerializeField, Tooltip("FPS seçenekleri")]
+    public int[] fpsOptions = { 30, 60, 90, 120, 140, 160 };
+
+    [SerializeField, Tooltip("Varsayılan FPS index'i")]
+    public int defaultFPSIndex = 1;
+
+    [SerializeField, Tooltip("Varsayılan VSync durumu")]
+    public bool defaultVSyncEnabled = true;
+
+    #endregion
+
+    #region Private Fields - Resolution Data
+
+    private Resolution[] _availableResolutions;
+    private List<Resolution> _filteredResolutions;
+
+    #endregion
+
+    #region Private Fields - Saved Settings
+
+    private SettingsData _savedSettings;
+    private SettingsData _selectedSettings;
+
+    #endregion
+
+    #region Private Fields - State
+
+    private bool _hasUnsavedChanges;
+    private bool _isLocalizationChanging;
+    private float _lastSliderSoundTime;
+
+    #endregion
+
+    #region Nested Types
+
+    /// <summary>
+    /// Tüm ayarları tutan veri yapısı
+    /// </summary>
+    private class SettingsData
+    {
+        public int QualityLevel;
+        public int LocaleID;
+        public ScreenMode ScreenMode;
+        public int ResolutionIndex;
+        public int FPSIndex;
+        public bool VSyncEnabled;
+        public float MasterVolume;
+        public float MusicVolume;
+        public float SFXVolume;
+
+        public SettingsData Clone()
+        {
+            return new SettingsData
+            {
+                QualityLevel = QualityLevel,
+                LocaleID = LocaleID,
+                ScreenMode = ScreenMode,
+                ResolutionIndex = ResolutionIndex,
+                FPSIndex = FPSIndex,
+                VSyncEnabled = VSyncEnabled,
+                MasterVolume = MasterVolume,
+                MusicVolume = MusicVolume,
+                SFXVolume = SFXVolume
+            };
+        }
+
+        public bool Equals(SettingsData other)
+        {
+            if (other == null) return false;
+
+            return QualityLevel == other.QualityLevel &&
+                   LocaleID == other.LocaleID &&
+                   ScreenMode == other.ScreenMode &&
+                   ResolutionIndex == other.ResolutionIndex &&
+                   FPSIndex == other.FPSIndex &&
+                   VSyncEnabled == other.VSyncEnabled &&
+                   Mathf.Approximately(MasterVolume, other.MasterVolume) &&
+                   Mathf.Approximately(MusicVolume, other.MusicVolume) &&
+                   Mathf.Approximately(SFXVolume, other.SFXVolume);
+        }
+    }
+
+    #endregion
+
+    #region Unity Lifecycle
 
     private IEnumerator Start()
     {
-        // Setup all dropdowns and buttons
+        InitializeSettingsData();
+        SetupAllUI();
+
+        yield return WaitForLocalizationInitialization();
+
+        LoadAllSettings();
+    }
+
+    private void OnDisable()
+    {
+        HandleMenuClosed();
+    }
+
+    private void OnDestroy()
+    {
+        RemoveAllListeners();
+    }
+
+    #endregion
+
+    #region Initialization
+
+    private void InitializeSettingsData()
+    {
+        _savedSettings = new SettingsData();
+        _selectedSettings = new SettingsData();
+        _filteredResolutions = new List<Resolution>();
+    }
+
+    private void SetupAllUI()
+    {
         SetupQualityDropdown();
         SetupScreenModeDropdown();
         SetupResolutionDropdown();
@@ -115,110 +265,258 @@ public class UnifiedSettingsManager : MonoBehaviour
         SetupAudioSliders();
         SetupLanguageDropdown();
         SetupButtons();
+    }
 
-        // Wait for localization system
+    private IEnumerator WaitForLocalizationInitialization()
+    {
         yield return new WaitUntil(() =>
             LocalizationSettings.InitializationOperation.IsValid() &&
             LocalizationSettings.InitializationOperation.IsDone);
-
-        // Load all saved settings
-        LoadAllSettings();
     }
 
-    #region Setup Methods
+    #endregion
 
-    void SetupQualityDropdown()
+    #region Setup Methods - Dropdowns
+
+    private void SetupQualityDropdown()
     {
         if (qualityDropdown == null) return;
 
         qualityDropdown.ClearOptions();
-        List<string> qualityOptions = new List<string>();
-        string[] qualityNames = QualitySettings.names;
 
-        for (int i = 0; i < qualityNames.Length; i++)
+        var options = new List<string>(QualitySettings.names);
+        qualityDropdown.AddOptions(options);
+
+        qualityDropdown.onValueChanged.AddListener(value =>
         {
-            qualityOptions.Add(qualityNames[i]);
-        }
-
-        qualityDropdown.AddOptions(qualityOptions);
-        qualityDropdown.onValueChanged.AddListener((value) => {
-            PlayUISound(dropdownClickSound ?? buttonClickSound); // ✨ Ses efekti
-            OnQualityChanged(value);
+            PlayDropdownSound();
+            HandleQualityChanged(value);
         });
     }
 
-    void SetupLanguageDropdown()
+    private void SetupLanguageDropdown()
     {
         if (languageDropdown == null) return;
 
         languageDropdown.ClearOptions();
-        List<string> languageNames = new List<string> { "Türkçe", "English" };
 
-        foreach (string languageName in languageNames)
+        var languageNames = new List<string> { "Türkçe", "English" };
+        foreach (string name in languageNames)
         {
-            languageDropdown.options.Add(new TMP_Dropdown.OptionData(languageName));
+            languageDropdown.options.Add(new TMP_Dropdown.OptionData(name));
         }
 
         languageDropdown.RefreshShownValue();
-        languageDropdown.onValueChanged.AddListener((value) => {
-            PlayUISound(dropdownClickSound ?? buttonClickSound); // ✨ Ses efekti
-            OnLanguageChanged(value);
+
+        languageDropdown.onValueChanged.AddListener(value =>
+        {
+            PlayDropdownSound();
+            HandleLanguageChanged(value);
         });
     }
 
-    void SetupScreenModeDropdown()
+    private void SetupScreenModeDropdown()
     {
         if (screenModeDropdown == null) return;
 
         screenModeDropdown.ClearOptions();
         screenModeDropdown.AddOptions(GetLocalizedScreenModeOptions());
-        screenModeDropdown.onValueChanged.AddListener((value) => {
-            PlayUISound(dropdownClickSound ?? buttonClickSound); // ✨ Ses efekti
-            OnScreenModeChanged(value);
+
+        screenModeDropdown.onValueChanged.AddListener(value =>
+        {
+            PlayDropdownSound();
+            HandleScreenModeChanged(value);
         });
     }
 
-    void SetupResolutionDropdown()
+    private void SetupResolutionDropdown()
     {
         if (resolutionDropdown == null) return;
 
-        // Tüm çözünürlükleri al
-        availableResolutions = Screen.resolutions;
-        filteredResolutions = new List<Resolution>();
+        BuildFilteredResolutionList();
+        PopulateResolutionDropdown();
 
-        // Benzersiz çözünürlükleri filtrele
-        Resolution previousResolution = new Resolution();
-        foreach (Resolution resolution in availableResolutions)
+        resolutionDropdown.onValueChanged.AddListener(value =>
         {
-            if (resolution.width != previousResolution.width ||
-                resolution.height != previousResolution.height)
-            {
-                filteredResolutions.Add(resolution);
-                previousResolution = resolution;
-            }
-        }
-
-        // Dropdown'u doldur
-        resolutionDropdown.ClearOptions();
-        List<string> options = new List<string>();
-
-        foreach (Resolution resolution in filteredResolutions)
-        {
-            string resolutionString = GetResolutionDisplayName(resolution);
-            options.Add(resolutionString);
-        }
-
-        resolutionDropdown.AddOptions(options);
-        resolutionDropdown.onValueChanged.AddListener((value) => {
-            PlayUISound(dropdownClickSound ?? buttonClickSound); // ✨ Ses efekti
-            OnResolutionChanged(value);
+            PlayDropdownSound();
+            HandleResolutionChanged(value);
         });
     }
 
-    List<string> GetLocalizedScreenModeOptions()
+    private void SetupFPSDropdown()
     {
-        bool isTurkish = LocalizationSettings.SelectedLocale != null &&
-                        LocalizationSettings.SelectedLocale.Identifier.Code == "tr";
+        if (fpsDropdown == null) return;
+
+        fpsDropdown.ClearOptions();
+
+        var options = new List<string>();
+        foreach (int fps in fpsOptions)
+        {
+            options.Add($"{fps} FPS");
+        }
+
+        fpsDropdown.AddOptions(options);
+
+        fpsDropdown.onValueChanged.AddListener(value =>
+        {
+            PlayDropdownSound();
+            HandleFPSChanged(value);
+        });
+    }
+
+    #endregion
+
+    #region Setup Methods - Other Controls
+
+    private void SetupVSyncToggle()
+    {
+        if (vSyncToggle == null) return;
+
+        vSyncToggle.onValueChanged.AddListener(value =>
+        {
+            PlayButtonSound();
+            HandleVSyncChanged(value);
+        });
+    }
+
+    private void SetupAudioSliders()
+    {
+        SetupVolumeSlider(masterVolumeSlider, HandleMasterVolumeChanged);
+        SetupVolumeSlider(musicVolumeSlider, HandleMusicVolumeChanged);
+        SetupVolumeSlider(sfxVolumeSlider, HandleSFXVolumeChanged);
+    }
+
+    private void SetupVolumeSlider(Slider slider, UnityEngine.Events.UnityAction<float> callback)
+    {
+        if (slider == null) return;
+
+        slider.minValue = 0f;
+        slider.maxValue = 1f;
+
+        slider.onValueChanged.AddListener(value =>
+        {
+            PlaySliderSound();
+            callback?.Invoke(value);
+        });
+    }
+
+    private void SetupButtons()
+    {
+        if (saveButton != null)
+        {
+            saveButton.onClick.AddListener(() =>
+            {
+                PlayButtonSound();
+                SaveAllSettings();
+            });
+        }
+
+        if (backButton != null)
+        {
+            backButton.onClick.AddListener(() =>
+            {
+                PlayButtonSound();
+                HandleBackButtonPressed();
+            });
+        }
+
+        UpdateSaveButtonState();
+    }
+
+    #endregion
+
+    #region Resolution Helpers
+
+    private void BuildFilteredResolutionList()
+    {
+        _availableResolutions = Screen.resolutions;
+        _filteredResolutions.Clear();
+
+        Resolution previousResolution = default;
+
+        foreach (Resolution resolution in _availableResolutions)
+        {
+            bool isDifferent = resolution.width != previousResolution.width ||
+                               resolution.height != previousResolution.height;
+
+            if (isDifferent)
+            {
+                _filteredResolutions.Add(resolution);
+                previousResolution = resolution;
+            }
+        }
+    }
+
+    private void PopulateResolutionDropdown()
+    {
+        resolutionDropdown.ClearOptions();
+
+        var options = new List<string>();
+        foreach (Resolution resolution in _filteredResolutions)
+        {
+            options.Add(FormatResolutionDisplayName(resolution));
+        }
+
+        resolutionDropdown.AddOptions(options);
+    }
+
+    private string FormatResolutionDisplayName(Resolution resolution)
+    {
+        string aspectRatio = CalculateAspectRatio(resolution.width, resolution.height);
+        string qualityLabel = GetResolutionQualityLabel(resolution.height);
+
+        return $"{resolution.width} x {resolution.height} {qualityLabel} ({aspectRatio})";
+    }
+
+    private string CalculateAspectRatio(int width, int height)
+    {
+        int gcd = CalculateGCD(width, height);
+        return $"{width / gcd}:{height / gcd}";
+    }
+
+    private int CalculateGCD(int a, int b)
+    {
+        while (b != 0)
+        {
+            int temp = b;
+            b = a % b;
+            a = temp;
+        }
+        return a;
+    }
+
+    private string GetResolutionQualityLabel(int height)
+    {
+        if (height >= 2160) return "[4K]";
+        if (height >= 1440) return "[2K]";
+        if (height >= 1080) return "[Full HD]";
+        if (height >= 720) return "[HD]";
+        return "";
+    }
+
+    private int FindCurrentResolutionIndex()
+    {
+        Resolution currentRes = Screen.currentResolution;
+
+        for (int i = 0; i < _filteredResolutions.Count; i++)
+        {
+            if (_filteredResolutions[i].width == currentRes.width &&
+                _filteredResolutions[i].height == currentRes.height)
+            {
+                return i;
+            }
+        }
+
+        return _filteredResolutions.Count - 1;
+    }
+
+    #endregion
+
+    #region Localization Helpers
+
+    private List<string> GetLocalizedScreenModeOptions()
+    {
+        bool isTurkish = IsTurkishLocale();
 
         if (isTurkish)
         {
@@ -229,154 +527,110 @@ public class UnifiedSettingsManager : MonoBehaviour
                 "Tam Ekran (Çerçevesiz)"
             };
         }
-        else
+
+        return new List<string>
         {
-            return new List<string>
-            {
-                "Windowed",
-                "Fullscreen (Windowed)",
-                "Fullscreen (Exclusive)"
-            };
-        }
+            "Windowed",
+            "Fullscreen (Windowed)",
+            "Fullscreen (Exclusive)"
+        };
     }
 
-    void SetupFPSDropdown()
+    private string GetLocalizedScreenModeName(ScreenMode mode)
     {
-        if (fpsDropdown == null) return;
+        bool isTurkish = IsTurkishLocale();
 
-        fpsDropdown.ClearOptions();
-        List<string> options = new List<string>();
-        foreach (int fps in fpsOptions)
-            options.Add(fps + " FPS");
-
-        fpsDropdown.AddOptions(options);
-        fpsDropdown.onValueChanged.AddListener((value) => {
-            PlayUISound(dropdownClickSound ?? buttonClickSound); // ✨ Ses efekti
-            OnFPSChanged(value);
-        });
+        return mode switch
+        {
+            ScreenMode.Windowed => isTurkish ? "Pencere Modu" : "Windowed",
+            ScreenMode.FullscreenWindowed => isTurkish ? "Tam Ekran (Çerçeveli)" : "Fullscreen (Windowed)",
+            ScreenMode.FullscreenExclusive => isTurkish ? "Tam Ekran (Çerçevesiz)" : "Fullscreen (Exclusive)",
+            _ => isTurkish ? "Bilinmeyen" : "Unknown"
+        };
     }
 
-    void SetupVSyncToggle()
+    private bool IsTurkishLocale()
     {
-        if (vSyncToggle == null) return;
-        vSyncToggle.onValueChanged.AddListener((value) => {
-            PlayUISound(buttonClickSound); // ✨ Ses efekti
-            OnVSyncChanged(value);
-        });
+        return LocalizationSettings.SelectedLocale != null &&
+               LocalizationSettings.SelectedLocale.Identifier.Code == TURKISH_LOCALE_CODE;
     }
 
-    void SetupAudioSliders()
+    private void RefreshScreenModeDropdownLocalization()
     {
-        // Master Volume Slider
-        if (masterVolumeSlider != null)
-        {
-            masterVolumeSlider.minValue = 0f;
-            masterVolumeSlider.maxValue = 1f;
-            masterVolumeSlider.onValueChanged.AddListener((value) => {
-                PlaySliderSound(); // ✨ Slider sesi (throttled)
-                OnMasterVolumeChanged(value);
-            });
-        }
+        if (screenModeDropdown == null) return;
 
-        // Music Volume Slider
-        if (musicVolumeSlider != null)
-        {
-            musicVolumeSlider.minValue = 0f;
-            musicVolumeSlider.maxValue = 1f;
-            musicVolumeSlider.onValueChanged.AddListener((value) => {
-                PlaySliderSound(); // ✨ Slider sesi (throttled)
-                OnMusicVolumeChanged(value);
-            });
-        }
-
-        // SFX Volume Slider
-        if (sfxVolumeSlider != null)
-        {
-            sfxVolumeSlider.minValue = 0f;
-            sfxVolumeSlider.maxValue = 1f;
-            sfxVolumeSlider.onValueChanged.AddListener((value) => {
-                PlaySliderSound(); // ✨ Slider sesi (throttled)
-                OnSFXVolumeChanged(value);
-            });
-        }
+        int currentValue = screenModeDropdown.value;
+        screenModeDropdown.ClearOptions();
+        screenModeDropdown.AddOptions(GetLocalizedScreenModeOptions());
+        screenModeDropdown.SetValueWithoutNotify(currentValue);
     }
 
-    void SetupButtons()
+    private void RefreshAllLocalizedUI()
     {
-        if (saveButton != null)
-        {
-            saveButton.onClick.AddListener(() => {
-                PlayUISound(buttonClickSound); // ✨ Ses efekti
-                SaveAllSettings();
-            });
-        }
+        var localizedComponents = FindObjectsOfType<UnityEngine.Localization.Components.LocalizeStringEvent>();
 
-        if (backButton != null)
+        foreach (var component in localizedComponents)
         {
-            backButton.onClick.AddListener(() => {
-                PlayUISound(buttonClickSound); // ✨ Ses efekti
-                OnBackButtonPressed();
-            });
+            component.RefreshString();
         }
-
-        UpdateSaveButtonState();
     }
 
     #endregion
 
-    #region UI Sound Effects ✨ YENİ
+    #region UI Sound Effects
 
-    /// <summary>
-    /// Buton ve dropdown sesleri için
-    /// </summary>
-    void PlayUISound(AudioClip clip)
+    private void PlayButtonSound()
+    {
+        PlayUISound(buttonClickSound);
+    }
+
+    private void PlayDropdownSound()
+    {
+        PlayUISound(dropdownClickSound ?? buttonClickSound);
+    }
+
+    private void PlaySliderSound()
+    {
+        if (Time.time - _lastSliderSoundTime < SLIDER_SOUND_COOLDOWN)
+        {
+            return;
+        }
+
+        _lastSliderSoundTime = Time.time;
+
+        AudioClip clip = sliderChangeSound ?? buttonClickSound;
+        if (clip == null) return;
+
+        float volume = CalculateUIVolume() * SLIDER_SOUND_VOLUME_MULTIPLIER;
+        PlaySoundOnSource(clip, volume);
+    }
+
+    private void PlayUISound(AudioClip clip)
     {
         if (clip == null) return;
 
-        // SFX ve Master volume'ü kullan
-        float finalVolume = uiSoundVolume * selectedSFXVolume * selectedMasterVolume;
-
-        if (uiAudioSource != null)
-        {
-            uiAudioSource.PlayOneShot(clip, finalVolume);
-        }
-        else if (sfxAudioSource != null)
-        {
-            sfxAudioSource.PlayOneShot(clip, finalVolume);
-        }
-        else
-        {
-            // Geçici AudioSource oluştur
-            AudioSource.PlayClipAtPoint(clip, Camera.main.transform.position, finalVolume);
-        }
+        float volume = CalculateUIVolume();
+        PlaySoundOnSource(clip, volume);
     }
 
-    /// <summary>
-    /// Slider değişimleri için (çok sık çalmayı önlemek için throttled)
-    /// </summary>
-    void PlaySliderSound()
+    private float CalculateUIVolume()
     {
-        // Çok sık ses çalmasın diye cooldown
-        if (Time.time - lastSliderSoundTime < sliderSoundCooldown)
-            return;
+        return uiSoundVolume * _selectedSettings.SFXVolume * _selectedSettings.MasterVolume;
+    }
 
-        lastSliderSoundTime = Time.time;
-
-        // Slider ses varsa onu çal, yoksa button sesini kullan
-        AudioClip clipToPlay = sliderChangeSound != null ? sliderChangeSound : buttonClickSound;
-
-        if (clipToPlay == null) return;
-
-        // Slider sesi daha düşük olsun
-        float finalVolume = uiSoundVolume * 0.3f * selectedSFXVolume * selectedMasterVolume;
-
+    private void PlaySoundOnSource(AudioClip clip, float volume)
+    {
         if (uiAudioSource != null)
         {
-            uiAudioSource.PlayOneShot(clipToPlay, finalVolume);
+            uiAudioSource.PlayOneShot(clip, volume);
         }
         else if (sfxAudioSource != null)
         {
-            sfxAudioSource.PlayOneShot(clipToPlay, finalVolume);
+            sfxAudioSource.PlayOneShot(clip, volume);
+        }
+        else if (Camera.main != null)
+        {
+            AudioSource.PlayClipAtPoint(clip, Camera.main.transform.position, volume);
         }
     }
 
@@ -384,207 +638,232 @@ public class UnifiedSettingsManager : MonoBehaviour
 
     #region Load Settings
 
-    void LoadAllSettings()
+    private void LoadAllSettings()
     {
-        // Load Quality
-        int savedQuality = PlayerPrefs.GetInt(PREF_QUALITY, QualitySettings.GetQualityLevel());
-        savedQuality = Mathf.Clamp(savedQuality, 0, QualitySettings.names.Length - 1);
-        currentQualityLevel = savedQuality;
-        selectedQualityLevel = savedQuality;
-        if (qualityDropdown != null)
-            qualityDropdown.SetValueWithoutNotify(savedQuality);
-        QualitySettings.SetQualityLevel(savedQuality, true);
+        LoadQualitySettings();
+        LoadLanguageSettings();
+        LoadScreenSettings();
+        LoadFPSSettings();
+        LoadAudioSettings();
 
-        // Load Language
-        currentLocaleID = PlayerPrefs.GetInt(PREF_LOCALE, 0);
-        currentLocaleID = Mathf.Clamp(currentLocaleID, 0, LocalizationSettings.AvailableLocales.Locales.Count - 1);
-        selectedLocaleID = currentLocaleID;
-        if (languageDropdown != null)
-            languageDropdown.SetValueWithoutNotify(currentLocaleID);
-        ChangeLocalePreview(currentLocaleID);
+        // Selected = Saved (başlangıçta)
+        _selectedSettings = _savedSettings.Clone();
 
-        // Load Screen Mode
-        int savedScreenMode = PlayerPrefs.GetInt(PREF_SCREEN_MODE, (int)ScreenMode.FullscreenExclusive);
-        currentScreenMode = (ScreenMode)savedScreenMode;
-        selectedScreenMode = currentScreenMode;
-        if (screenModeDropdown != null)
-            screenModeDropdown.SetValueWithoutNotify((int)currentScreenMode);
+        ApplyAllCurrentSettings();
+        UpdateAllUI();
 
-        // Load Resolution
-        int savedResolutionIndex = PlayerPrefs.GetInt(PREF_RESOLUTION, GetCurrentResolutionIndex());
-        savedResolutionIndex = Mathf.Clamp(savedResolutionIndex, 0, filteredResolutions.Count - 1);
-        currentResolutionIndex = savedResolutionIndex;
-        selectedResolutionIndex = savedResolutionIndex;
-        if (resolutionDropdown != null)
-            resolutionDropdown.SetValueWithoutNotify(currentResolutionIndex);
-
-        // Apply Screen Mode and Resolution
-        ApplyResolutionAndScreenMode(currentResolutionIndex, currentScreenMode);
-
-        // Load FPS Settings
-        currentFPSIndex = PlayerPrefs.GetInt(PREF_FPS, defaultFPSIndex);
-        currentFPSIndex = Mathf.Clamp(currentFPSIndex, 0, fpsOptions.Length - 1);
-        currentVSyncEnabled = PlayerPrefs.GetInt(PREF_VSYNC, defaultVSyncEnabled ? 1 : 0) == 1;
-        selectedFPSIndex = currentFPSIndex;
-        selectedVSyncEnabled = currentVSyncEnabled;
-
-        if (fpsDropdown != null)
-            fpsDropdown.SetValueWithoutNotify(currentFPSIndex);
-        if (vSyncToggle != null)
-            vSyncToggle.SetIsOnWithoutNotify(currentVSyncEnabled);
-
-        UpdateFPSDropdownInteractable(!currentVSyncEnabled);
-        ApplyFPSSettings(currentFPSIndex, currentVSyncEnabled);
-
-        // Load Audio Settings
-        currentMasterVolume = PlayerPrefs.GetFloat(PREF_MASTER_VOLUME, 0.5f);
-        currentMusicVolume = PlayerPrefs.GetFloat(PREF_MUSIC_VOLUME, 0.5f);
-        currentSFXVolume = PlayerPrefs.GetFloat(PREF_SFX_VOLUME, 0.5f);
-
-        selectedMasterVolume = currentMasterVolume;
-        selectedMusicVolume = currentMusicVolume;
-        selectedSFXVolume = currentSFXVolume;
-
-        if (masterVolumeSlider != null)
-            masterVolumeSlider.SetValueWithoutNotify(currentMasterVolume);
-        if (musicVolumeSlider != null)
-            musicVolumeSlider.SetValueWithoutNotify(currentMusicVolume);
-        if (sfxVolumeSlider != null)
-            sfxVolumeSlider.SetValueWithoutNotify(currentSFXVolume);
-
-        ApplyAudioSettings(currentMasterVolume, currentMusicVolume, currentSFXVolume);
-        UpdateAudioTexts();
-
-        hasUnsavedChanges = false;
+        _hasUnsavedChanges = false;
         UpdateSaveButtonState();
 
-        Debug.Log("Tüm ayarlar yüklendi.");
+        Debug.Log($"{LOG_PREFIX} Tüm ayarlar yüklendi.");
+    }
+
+    private void LoadQualitySettings()
+    {
+        int savedQuality = PlayerPrefs.GetInt(PREF_QUALITY, QualitySettings.GetQualityLevel());
+        _savedSettings.QualityLevel = Mathf.Clamp(savedQuality, 0, QualitySettings.names.Length - 1);
+    }
+
+    private void LoadLanguageSettings()
+    {
+        int savedLocale = PlayerPrefs.GetInt(PREF_LOCALE, 0);
+        int maxLocale = LocalizationSettings.AvailableLocales.Locales.Count - 1;
+        _savedSettings.LocaleID = Mathf.Clamp(savedLocale, 0, maxLocale);
+    }
+
+    private void LoadScreenSettings()
+    {
+        // Screen Mode
+        int savedScreenMode = PlayerPrefs.GetInt(PREF_SCREEN_MODE, (int)ScreenMode.FullscreenExclusive);
+        _savedSettings.ScreenMode = (ScreenMode)savedScreenMode;
+
+        // Resolution
+        int savedResolution = PlayerPrefs.GetInt(PREF_RESOLUTION, FindCurrentResolutionIndex());
+        _savedSettings.ResolutionIndex = Mathf.Clamp(savedResolution, 0, _filteredResolutions.Count - 1);
+    }
+
+    private void LoadFPSSettings()
+    {
+        int savedFPS = PlayerPrefs.GetInt(PREF_FPS, defaultFPSIndex);
+        _savedSettings.FPSIndex = Mathf.Clamp(savedFPS, 0, fpsOptions.Length - 1);
+
+        int savedVSync = PlayerPrefs.GetInt(PREF_VSYNC, defaultVSyncEnabled ? 1 : 0);
+        _savedSettings.VSyncEnabled = savedVSync == 1;
+    }
+
+    private void LoadAudioSettings()
+    {
+        _savedSettings.MasterVolume = PlayerPrefs.GetFloat(PREF_MASTER_VOLUME, DEFAULT_VOLUME);
+        _savedSettings.MusicVolume = PlayerPrefs.GetFloat(PREF_MUSIC_VOLUME, DEFAULT_VOLUME);
+        _savedSettings.SFXVolume = PlayerPrefs.GetFloat(PREF_SFX_VOLUME, DEFAULT_VOLUME);
     }
 
     #endregion
 
     #region Change Handlers
 
-    void OnQualityChanged(int newQualityIndex)
+    private void HandleQualityChanged(int newValue)
     {
-        selectedQualityLevel = newQualityIndex;
-        QualitySettings.SetQualityLevel(newQualityIndex, true);
+        _selectedSettings.QualityLevel = newValue;
+        ApplyQualitySettings(_selectedSettings.QualityLevel);
         CheckForChanges();
-        Debug.Log($"Kalite değiştirildi: {QualitySettings.names[newQualityIndex]} (Kaydedilmedi)");
+
+        Debug.Log($"{LOG_PREFIX} Kalite değiştirildi: {QualitySettings.names[newValue]} (Kaydedilmedi)");
     }
 
-    void OnLanguageChanged(int localeID)
+    private void HandleLanguageChanged(int newValue)
     {
-        selectedLocaleID = localeID;
-        ChangeLocalePreview(localeID);
+        _selectedSettings.LocaleID = newValue;
+        StartCoroutine(ApplyLocalePreviewCoroutine(newValue));
         CheckForChanges();
     }
 
-    void OnScreenModeChanged(int modeIndex)
+    private void HandleScreenModeChanged(int newValue)
     {
-        if (modeIndex < 0 || modeIndex > 2) return;
+        if (newValue < 0 || newValue > 2) return;
 
-        selectedScreenMode = (ScreenMode)modeIndex;
-        ApplyResolutionAndScreenMode(selectedResolutionIndex, selectedScreenMode);
+        _selectedSettings.ScreenMode = (ScreenMode)newValue;
+        ApplyResolutionAndScreenMode(_selectedSettings.ResolutionIndex, _selectedSettings.ScreenMode);
         CheckForChanges();
-        Debug.Log($"Ekran modu değiştirildi: {GetScreenModeName(selectedScreenMode)} (Kaydedilmedi)");
+
+        Debug.Log($"{LOG_PREFIX} Ekran modu değiştirildi: {GetLocalizedScreenModeName(_selectedSettings.ScreenMode)} (Kaydedilmedi)");
     }
 
-    void OnResolutionChanged(int index)
+    private void HandleResolutionChanged(int newValue)
     {
-        if (index < 0 || index >= filteredResolutions.Count) return;
+        if (newValue < 0 || newValue >= _filteredResolutions.Count) return;
 
-        selectedResolutionIndex = index;
-        ApplyResolutionAndScreenMode(selectedResolutionIndex, selectedScreenMode);
+        _selectedSettings.ResolutionIndex = newValue;
+        ApplyResolutionAndScreenMode(_selectedSettings.ResolutionIndex, _selectedSettings.ScreenMode);
         CheckForChanges();
-        Debug.Log($"Çözünürlük değiştirildi: {GetResolutionDisplayName(filteredResolutions[selectedResolutionIndex])} (Kaydedilmedi)");
+
+        Debug.Log($"{LOG_PREFIX} Çözünürlük değiştirildi: {FormatResolutionDisplayName(_filteredResolutions[newValue])} (Kaydedilmedi)");
     }
 
-    void OnFPSChanged(int index)
+    private void HandleFPSChanged(int newValue)
     {
-        if (selectedVSyncEnabled) return;
-        if (index < 0 || index >= fpsOptions.Length) return;
+        if (_selectedSettings.VSyncEnabled) return;
+        if (newValue < 0 || newValue >= fpsOptions.Length) return;
 
-        selectedFPSIndex = index;
-        ApplyFPSSettings(selectedFPSIndex, selectedVSyncEnabled);
+        _selectedSettings.FPSIndex = newValue;
+        ApplyFPSSettings(_selectedSettings.FPSIndex, _selectedSettings.VSyncEnabled);
         CheckForChanges();
-        Debug.Log($"FPS değiştirildi: {fpsOptions[selectedFPSIndex]} (Kaydedilmedi)");
+
+        Debug.Log($"{LOG_PREFIX} FPS değiştirildi: {fpsOptions[newValue]} (Kaydedilmedi)");
     }
 
-    void OnVSyncChanged(bool isOn)
+    private void HandleVSyncChanged(bool newValue)
     {
-        selectedVSyncEnabled = isOn;
-        UpdateFPSDropdownInteractable(!selectedVSyncEnabled);
-        ApplyFPSSettings(selectedFPSIndex, selectedVSyncEnabled);
+        _selectedSettings.VSyncEnabled = newValue;
+        UpdateFPSDropdownInteractable(!newValue);
+        ApplyFPSSettings(_selectedSettings.FPSIndex, _selectedSettings.VSyncEnabled);
         CheckForChanges();
-        Debug.Log($"VSync değiştirildi: {selectedVSyncEnabled} (Kaydedilmedi)");
+
+        Debug.Log($"{LOG_PREFIX} VSync değiştirildi: {newValue} (Kaydedilmedi)");
     }
 
-    void OnMasterVolumeChanged(float volume)
+    private void HandleMasterVolumeChanged(float newValue)
     {
-        selectedMasterVolume = volume;
-        ApplyAudioSettings(selectedMasterVolume, selectedMusicVolume, selectedSFXVolume);
+        _selectedSettings.MasterVolume = newValue;
+        ApplyAudioSettings();
         UpdateAudioTexts();
         CheckForChanges();
     }
 
-    void OnMusicVolumeChanged(float volume)
+    private void HandleMusicVolumeChanged(float newValue)
     {
-        selectedMusicVolume = volume;
-        ApplyAudioSettings(selectedMasterVolume, selectedMusicVolume, selectedSFXVolume);
+        _selectedSettings.MusicVolume = newValue;
+        ApplyAudioSettings();
         UpdateAudioTexts();
         CheckForChanges();
     }
 
-    void OnSFXVolumeChanged(float volume)
+    private void HandleSFXVolumeChanged(float newValue)
     {
-        selectedSFXVolume = volume;
-        ApplyAudioSettings(selectedMasterVolume, selectedMusicVolume, selectedSFXVolume);
+        _selectedSettings.SFXVolume = newValue;
+        ApplyAudioSettings();
         UpdateAudioTexts();
         CheckForChanges();
+    }
+
+    private void HandleBackButtonPressed()
+    {
+        if (_hasUnsavedChanges)
+        {
+            ResetToSavedSettings();
+            Debug.Log($"{LOG_PREFIX} Kaydedilmemiş değişiklikler geri alındı.");
+        }
+    }
+
+    private void HandleMenuClosed()
+    {
+        if (_hasUnsavedChanges)
+        {
+            ResetToSavedSettings();
+            Debug.Log($"{LOG_PREFIX} Menü kapatıldı.  Kaydedilmemiş değişiklikler geri alındı.");
+        }
     }
 
     #endregion
 
     #region Apply Methods
 
-    void ApplyResolutionAndScreenMode(int resolutionIndex, ScreenMode screenMode)
+    private void ApplyAllCurrentSettings()
     {
-        if (resolutionIndex < 0 || resolutionIndex >= filteredResolutions.Count) return;
+        ApplyQualitySettings(_savedSettings.QualityLevel);
+        StartCoroutine(ApplyLocalePreviewCoroutine(_savedSettings.LocaleID));
+        ApplyResolutionAndScreenMode(_savedSettings.ResolutionIndex, _savedSettings.ScreenMode);
+        ApplyFPSSettings(_savedSettings.FPSIndex, _savedSettings.VSyncEnabled);
+        ApplyAudioSettings();
+    }
 
-        Resolution resolution = filteredResolutions[resolutionIndex];
+    private void ApplyQualitySettings(int qualityLevel)
+    {
+        QualitySettings.SetQualityLevel(qualityLevel, true);
+    }
 
-        // En yüksek refresh rate'i bul
+    private void ApplyResolutionAndScreenMode(int resolutionIndex, ScreenMode screenMode)
+    {
+        if (resolutionIndex < 0 || resolutionIndex >= _filteredResolutions.Count) return;
+
+        Resolution resolution = _filteredResolutions[resolutionIndex];
+        int maxRefreshRate = FindMaxRefreshRate(resolution);
+        FullScreenMode fullScreenMode = ConvertToFullScreenMode(screenMode);
+
+        Screen.SetResolution(resolution.width, resolution.height, fullScreenMode, maxRefreshRate);
+
+        Debug.Log($"{LOG_PREFIX} ✅ Ekran ayarları uygulandı: {resolution.width}x{resolution.height}, Mod={screenMode}, RefreshRate={maxRefreshRate}Hz");
+    }
+
+    private int FindMaxRefreshRate(Resolution targetResolution)
+    {
         int maxRefreshRate = 60;
-        foreach (Resolution res in availableResolutions)
+
+        foreach (Resolution res in _availableResolutions)
         {
-            if (res.width == resolution.width && res.height == resolution.height)
+            if (res.width == targetResolution.width &&
+                res.height == targetResolution.height &&
+                res.refreshRate > maxRefreshRate)
             {
-                if (res.refreshRate > maxRefreshRate)
-                    maxRefreshRate = res.refreshRate;
+                maxRefreshRate = res.refreshRate;
             }
         }
 
-        // FullScreenMode'u belirle
-        FullScreenMode fullScreenMode = FullScreenMode.ExclusiveFullScreen;
-        switch (screenMode)
-        {
-            case ScreenMode.Windowed:
-                fullScreenMode = FullScreenMode.Windowed;
-                break;
-            case ScreenMode.FullscreenWindowed:
-                fullScreenMode = FullScreenMode.FullScreenWindow;
-                break;
-            case ScreenMode.FullscreenExclusive:
-                fullScreenMode = FullScreenMode.ExclusiveFullScreen;
-                break;
-        }
-
-        Screen.SetResolution(resolution.width, resolution.height, fullScreenMode, maxRefreshRate);
-        Debug.Log($"✅ Ayarlar uygulandı: Çözünürlük={resolution.width}x{resolution.height}, Mod={screenMode}, RefreshRate={maxRefreshRate}Hz");
+        return maxRefreshRate;
     }
 
-    void ApplyFPSSettings(int fpsIndex, bool vSyncEnabled)
+    private FullScreenMode ConvertToFullScreenMode(ScreenMode screenMode)
+    {
+        return screenMode switch
+        {
+            ScreenMode.Windowed => FullScreenMode.Windowed,
+            ScreenMode.FullscreenWindowed => FullScreenMode.FullScreenWindow,
+            ScreenMode.FullscreenExclusive => FullScreenMode.ExclusiveFullScreen,
+            _ => FullScreenMode.ExclusiveFullScreen
+        };
+    }
+
+    private void ApplyFPSSettings(int fpsIndex, bool vSyncEnabled)
     {
         if (vSyncEnabled)
         {
@@ -601,383 +880,278 @@ public class UnifiedSettingsManager : MonoBehaviour
         }
     }
 
-    void ApplyAudioSettings(float masterVolume, float musicVolume, float sfxVolume)
+    private void ApplyAudioSettings()
     {
-        // Unity AudioListener master volume
-        AudioListener.volume = masterVolume;
+        float master = _selectedSettings.MasterVolume;
+        float music = _selectedSettings.MusicVolume;
+        float sfx = _selectedSettings.SFXVolume;
 
-        // Music AudioSource
+        AudioListener.volume = master;
+
         if (musicAudioSource != null)
         {
-            musicAudioSource.volume = musicVolume * masterVolume;
+            musicAudioSource.volume = music * master;
         }
 
-        // SFX AudioSource
         if (sfxAudioSource != null)
         {
-            sfxAudioSource.volume = sfxVolume * masterVolume;
+            sfxAudioSource.volume = sfx * master;
         }
     }
 
-    void UpdateAudioTexts()
+    private IEnumerator ApplyLocalePreviewCoroutine(int localeID)
     {
-        if (masterVolumeText != null)
-            masterVolumeText.text = Mathf.RoundToInt(selectedMasterVolume * 100).ToString();
+        if (_isLocalizationChanging) yield break;
 
-        if (musicVolumeText != null)
-            musicVolumeText.text = Mathf.RoundToInt(selectedMusicVolume * 100).ToString();
+        _isLocalizationChanging = true;
 
-        if (sfxVolumeText != null)
-            sfxVolumeText.text = Mathf.RoundToInt(selectedSFXVolume * 100).ToString();
-    }
-
-    void ChangeLocalePreview(int localeID)
-    {
-        if (localizationActive) return;
-        StartCoroutine(SetLocalePreview(localeID));
-    }
-
-    private IEnumerator SetLocalePreview(int _localeID)
-    {
-        localizationActive = true;
-
-        yield return new WaitUntil(() =>
-            LocalizationSettings.InitializationOperation.IsValid() &&
-            LocalizationSettings.InitializationOperation.IsDone);
+        yield return WaitForLocalizationInitialization();
 
         var locales = LocalizationSettings.AvailableLocales.Locales;
-        if (_localeID >= 0 && _localeID < locales.Count)
+        if (localeID >= 0 && localeID < locales.Count)
         {
-            LocalizationSettings.SelectedLocale = locales[_localeID];
+            LocalizationSettings.SelectedLocale = locales[localeID];
             yield return new WaitForEndOfFrame();
-            RefreshLocalizedUI();
-            RefreshScreenModeDropdown();
+
+            RefreshAllLocalizedUI();
+            RefreshScreenModeDropdownLocalization();
         }
 
-        localizationActive = false;
+        _isLocalizationChanging = false;
     }
 
-    private void RefreshScreenModeDropdown()
-    {
-        if (screenModeDropdown == null) return;
+    #endregion
 
-        int currentValue = screenModeDropdown.value;
-        screenModeDropdown.ClearOptions();
-        screenModeDropdown.AddOptions(GetLocalizedScreenModeOptions());
-        screenModeDropdown.SetValueWithoutNotify(currentValue);
+    #region Update UI
+
+    private void UpdateAllUI()
+    {
+        UpdateDropdownsWithoutNotify();
+        UpdateToggleWithoutNotify();
+        UpdateSlidersWithoutNotify();
+        UpdateFPSDropdownInteractable(!_savedSettings.VSyncEnabled);
+        UpdateAudioTexts();
     }
 
-    private void RefreshLocalizedUI()
+    private void UpdateDropdownsWithoutNotify()
     {
-        var localizedComponents = FindObjectsOfType<UnityEngine.Localization.Components.LocalizeStringEvent>();
-        foreach (var component in localizedComponents)
+        qualityDropdown?.SetValueWithoutNotify(_savedSettings.QualityLevel);
+        languageDropdown?.SetValueWithoutNotify(_savedSettings.LocaleID);
+        screenModeDropdown?.SetValueWithoutNotify((int)_savedSettings.ScreenMode);
+        resolutionDropdown?.SetValueWithoutNotify(_savedSettings.ResolutionIndex);
+        fpsDropdown?.SetValueWithoutNotify(_savedSettings.FPSIndex);
+    }
+
+    private void UpdateToggleWithoutNotify()
+    {
+        vSyncToggle?.SetIsOnWithoutNotify(_savedSettings.VSyncEnabled);
+    }
+
+    private void UpdateSlidersWithoutNotify()
+    {
+        masterVolumeSlider?.SetValueWithoutNotify(_savedSettings.MasterVolume);
+        musicVolumeSlider?.SetValueWithoutNotify(_savedSettings.MusicVolume);
+        sfxVolumeSlider?.SetValueWithoutNotify(_savedSettings.SFXVolume);
+    }
+
+    private void UpdateAudioTexts()
+    {
+        if (masterVolumeText != null)
+            masterVolumeText.text = Mathf.RoundToInt(_selectedSettings.MasterVolume * 100).ToString();
+
+        if (musicVolumeText != null)
+            musicVolumeText.text = Mathf.RoundToInt(_selectedSettings.MusicVolume * 100).ToString();
+
+        if (sfxVolumeText != null)
+            sfxVolumeText.text = Mathf.RoundToInt(_selectedSettings.SFXVolume * 100).ToString();
+    }
+
+    private void UpdateFPSDropdownInteractable(bool enabled)
+    {
+        if (fpsDropdown != null)
         {
-            component.RefreshString();
+            fpsDropdown.interactable = enabled;
         }
+    }
+
+    private void UpdateSaveButtonState()
+    {
+        if (saveButton == null) return;
+
+        saveButton.interactable = _hasUnsavedChanges;
+
+        ColorBlock colors = saveButton.colors;
+        colors.normalColor = _hasUnsavedChanges ? Color.green : Color.gray;
+        colors.highlightedColor = _hasUnsavedChanges ? Color.green * 0.8f : Color.gray * 0.8f;
+        saveButton.colors = colors;
     }
 
     #endregion
 
     #region Save & Reset
 
+    /// <summary>
+    /// Tüm ayarları kaydeder
+    /// </summary>
     public void SaveAllSettings()
     {
-        if (!hasUnsavedChanges)
+        if (!_hasUnsavedChanges)
         {
-            Debug.Log("Kaydedilecek değişiklik yok.");
+            Debug.Log($"{LOG_PREFIX} Kaydedilecek değişiklik yok.");
             return;
         }
 
-        // Save all settings
-        currentQualityLevel = selectedQualityLevel;
-        currentLocaleID = selectedLocaleID;
-        currentScreenMode = selectedScreenMode;
-        currentResolutionIndex = selectedResolutionIndex;
-        currentFPSIndex = selectedFPSIndex;
-        currentVSyncEnabled = selectedVSyncEnabled;
-        currentMasterVolume = selectedMasterVolume;
-        currentMusicVolume = selectedMusicVolume;
-        currentSFXVolume = selectedSFXVolume;
+        // Selected → Saved
+        _savedSettings = _selectedSettings.Clone();
 
-        PlayerPrefs.SetInt(PREF_QUALITY, currentQualityLevel);
-        PlayerPrefs.SetInt(PREF_LOCALE, currentLocaleID);
-        PlayerPrefs.SetInt(PREF_SCREEN_MODE, (int)currentScreenMode);
-        PlayerPrefs.SetInt(PREF_RESOLUTION, currentResolutionIndex);
-        PlayerPrefs.SetInt(PREF_FPS, currentFPSIndex);
-        PlayerPrefs.SetInt(PREF_VSYNC, currentVSyncEnabled ? 1 : 0);
-        PlayerPrefs.SetFloat(PREF_MASTER_VOLUME, currentMasterVolume);
-        PlayerPrefs.SetFloat(PREF_MUSIC_VOLUME, currentMusicVolume);
-        PlayerPrefs.SetFloat(PREF_SFX_VOLUME, currentSFXVolume);
-        PlayerPrefs.Save();
+        // PlayerPrefs'e kaydet
+        SaveToPlayerPrefs();
 
-        hasUnsavedChanges = false;
+        _hasUnsavedChanges = false;
         UpdateSaveButtonState();
 
-        Debug.Log($"✅ Tüm ayarlar kaydedildi! Master: {currentMasterVolume:F2}, Music: {currentMusicVolume:F2}, SFX: {currentSFXVolume:F2}");
+        Debug.Log($"{LOG_PREFIX} ✅ Tüm ayarlar kaydedildi!  " +
+                  $"Master: {_savedSettings.MasterVolume:F2}, " +
+                  $"Music: {_savedSettings.MusicVolume:F2}, " +
+                  $"SFX: {_savedSettings.SFXVolume:F2}");
     }
 
-    public void OnBackButtonPressed()
+    private void SaveToPlayerPrefs()
     {
-        if (hasUnsavedChanges)
-        {
-            ResetToSavedSettings();
-            Debug.Log("Kaydedilmemiş değişiklikler geri alındı.");
-        }
+        PlayerPrefs.SetInt(PREF_QUALITY, _savedSettings.QualityLevel);
+        PlayerPrefs.SetInt(PREF_LOCALE, _savedSettings.LocaleID);
+        PlayerPrefs.SetInt(PREF_SCREEN_MODE, (int)_savedSettings.ScreenMode);
+        PlayerPrefs.SetInt(PREF_RESOLUTION, _savedSettings.ResolutionIndex);
+        PlayerPrefs.SetInt(PREF_FPS, _savedSettings.FPSIndex);
+        PlayerPrefs.SetInt(PREF_VSYNC, _savedSettings.VSyncEnabled ? 1 : 0);
+        PlayerPrefs.SetFloat(PREF_MASTER_VOLUME, _savedSettings.MasterVolume);
+        PlayerPrefs.SetFloat(PREF_MUSIC_VOLUME, _savedSettings.MusicVolume);
+        PlayerPrefs.SetFloat(PREF_SFX_VOLUME, _savedSettings.SFXVolume);
+        PlayerPrefs.Save();
     }
 
-    void ResetToSavedSettings()
+    private void ResetToSavedSettings()
     {
-        // Reset all selections to saved values
-        selectedQualityLevel = currentQualityLevel;
-        selectedLocaleID = currentLocaleID;
-        selectedScreenMode = currentScreenMode;
-        selectedResolutionIndex = currentResolutionIndex;
-        selectedFPSIndex = currentFPSIndex;
-        selectedVSyncEnabled = currentVSyncEnabled;
-        selectedMasterVolume = currentMasterVolume;
-        selectedMusicVolume = currentMusicVolume;
-        selectedSFXVolume = currentSFXVolume;
+        // Saved → Selected
+        _selectedSettings = _savedSettings.Clone();
 
-        // Update UI (without triggering listeners)
-        if (qualityDropdown != null)
-            qualityDropdown.SetValueWithoutNotify(currentQualityLevel);
-        if (languageDropdown != null)
-            languageDropdown.SetValueWithoutNotify(currentLocaleID);
-        if (screenModeDropdown != null)
-            screenModeDropdown.SetValueWithoutNotify((int)currentScreenMode);
-        if (resolutionDropdown != null)
-            resolutionDropdown.SetValueWithoutNotify(currentResolutionIndex);
-        if (fpsDropdown != null)
-            fpsDropdown.SetValueWithoutNotify(currentFPSIndex);
-        if (vSyncToggle != null)
-            vSyncToggle.SetIsOnWithoutNotify(currentVSyncEnabled);
-        if (masterVolumeSlider != null)
-            masterVolumeSlider.SetValueWithoutNotify(currentMasterVolume);
-        if (musicVolumeSlider != null)
-            musicVolumeSlider.SetValueWithoutNotify(currentMusicVolume);
-        if (sfxVolumeSlider != null)
-            sfxVolumeSlider.SetValueWithoutNotify(currentSFXVolume);
+        // UI güncelle
+        UpdateAllUIFromSelected();
 
-        // Reapply saved settings
-        QualitySettings.SetQualityLevel(currentQualityLevel, true);
-        ChangeLocalePreview(currentLocaleID);
-        ApplyResolutionAndScreenMode(currentResolutionIndex, currentScreenMode);
-        UpdateFPSDropdownInteractable(!currentVSyncEnabled);
-        ApplyFPSSettings(currentFPSIndex, currentVSyncEnabled);
-        ApplyAudioSettings(currentMasterVolume, currentMusicVolume, currentSFXVolume);
+        // Ayarları uygula
+        ApplyAllSettingsFromSaved();
+
+        _hasUnsavedChanges = false;
+        UpdateSaveButtonState();
+    }
+
+    private void UpdateAllUIFromSelected()
+    {
+        qualityDropdown?.SetValueWithoutNotify(_selectedSettings.QualityLevel);
+        languageDropdown?.SetValueWithoutNotify(_selectedSettings.LocaleID);
+        screenModeDropdown?.SetValueWithoutNotify((int)_selectedSettings.ScreenMode);
+        resolutionDropdown?.SetValueWithoutNotify(_selectedSettings.ResolutionIndex);
+        fpsDropdown?.SetValueWithoutNotify(_selectedSettings.FPSIndex);
+        vSyncToggle?.SetIsOnWithoutNotify(_selectedSettings.VSyncEnabled);
+        masterVolumeSlider?.SetValueWithoutNotify(_selectedSettings.MasterVolume);
+        musicVolumeSlider?.SetValueWithoutNotify(_selectedSettings.MusicVolume);
+        sfxVolumeSlider?.SetValueWithoutNotify(_selectedSettings.SFXVolume);
+    }
+
+    private void ApplyAllSettingsFromSaved()
+    {
+        ApplyQualitySettings(_savedSettings.QualityLevel);
+        StartCoroutine(ApplyLocalePreviewCoroutine(_savedSettings.LocaleID));
+        ApplyResolutionAndScreenMode(_savedSettings.ResolutionIndex, _savedSettings.ScreenMode);
+        UpdateFPSDropdownInteractable(!_savedSettings.VSyncEnabled);
+        ApplyFPSSettings(_savedSettings.FPSIndex, _savedSettings.VSyncEnabled);
+        ApplyAudioSettings();
         UpdateAudioTexts();
+    }
 
-        hasUnsavedChanges = false;
+    #endregion
+
+    #region Change Detection
+
+    private void CheckForChanges()
+    {
+        _hasUnsavedChanges = !_selectedSettings.Equals(_savedSettings);
         UpdateSaveButtonState();
     }
 
     #endregion
 
-    #region Helper Methods
+    #region Cleanup
 
-    void CheckForChanges()
+    private void RemoveAllListeners()
     {
-        hasUnsavedChanges = (selectedQualityLevel != currentQualityLevel) ||
-                           (selectedLocaleID != currentLocaleID) ||
-                           (selectedScreenMode != currentScreenMode) ||
-                           (selectedResolutionIndex != currentResolutionIndex) ||
-                           (selectedFPSIndex != currentFPSIndex) ||
-                           (selectedVSyncEnabled != currentVSyncEnabled) ||
-                           !Mathf.Approximately(selectedMasterVolume, currentMasterVolume) ||
-                           !Mathf.Approximately(selectedMusicVolume, currentMusicVolume) ||
-                           !Mathf.Approximately(selectedSFXVolume, currentSFXVolume);
-
-        UpdateSaveButtonState();
-    }
-
-    void UpdateSaveButtonState()
-    {
-        if (saveButton != null)
-        {
-            saveButton.interactable = hasUnsavedChanges;
-
-            ColorBlock colors = saveButton.colors;
-            if (hasUnsavedChanges)
-            {
-                colors.normalColor = Color.green;
-                colors.highlightedColor = Color.green * 0.8f;
-            }
-            else
-            {
-                colors.normalColor = Color.gray;
-                colors.highlightedColor = Color.gray * 0.8f;
-            }
-            saveButton.colors = colors;
-        }
-    }
-
-    void UpdateFPSDropdownInteractable(bool enabled)
-    {
-        if (fpsDropdown != null)
-            fpsDropdown.interactable = enabled;
-    }
-
-    string GetScreenModeName(ScreenMode mode)
-    {
-        bool isTurkish = LocalizationSettings.SelectedLocale != null &&
-                        LocalizationSettings.SelectedLocale.Identifier.Code == "tr";
-
-        if (isTurkish)
-        {
-            switch (mode)
-            {
-                case ScreenMode.Windowed: return "Pencere Modu";
-                case ScreenMode.FullscreenWindowed: return "Tam Ekran (Çerçeveli)";
-                case ScreenMode.FullscreenExclusive: return "Tam Ekran (Çerçevesiz)";
-                default: return "Bilinmeyen";
-            }
-        }
-        else
-        {
-            switch (mode)
-            {
-                case ScreenMode.Windowed: return "Windowed";
-                case ScreenMode.FullscreenWindowed: return "Fullscreen (Windowed)";
-                case ScreenMode.FullscreenExclusive: return "Fullscreen (Exclusive)";
-                default: return "Unknown";
-            }
-        }
-    }
-
-    string GetResolutionDisplayName(Resolution resolution)
-    {
-        string aspectRatio = GetAspectRatio(resolution.width, resolution.height);
-        string qualityLabel = GetResolutionQualityLabel(resolution.height);
-
-        return $"{resolution.width} x {resolution.height} {qualityLabel} ({aspectRatio})";
-    }
-
-    string GetAspectRatio(int width, int height)
-    {
-        int gcd = GCD(width, height);
-        int ratioWidth = width / gcd;
-        int ratioHeight = height / gcd;
-
-        return $"{ratioWidth}:{ratioHeight}";
-    }
-
-    int GCD(int a, int b)
-    {
-        while (b != 0)
-        {
-            int temp = b;
-            b = a % b;
-            a = temp;
-        }
-        return a;
-    }
-
-    string GetResolutionQualityLabel(int height)
-    {
-        if (height >= 2160) return "[4K]";
-        if (height >= 1440) return "[2K]";
-        if (height >= 1080) return "[Full HD]";
-        if (height >= 720) return "[HD]";
-        return "";
-    }
-
-    int GetCurrentResolutionIndex()
-    {
-        Resolution currentRes = Screen.currentResolution;
-
-        for (int i = 0; i < filteredResolutions.Count; i++)
-        {
-            if (filteredResolutions[i].width == currentRes.width &&
-                filteredResolutions[i].height == currentRes.height)
-            {
-                return i;
-            }
-        }
-
-        return filteredResolutions.Count - 1;
+        qualityDropdown?.onValueChanged.RemoveAllListeners();
+        languageDropdown?.onValueChanged.RemoveAllListeners();
+        screenModeDropdown?.onValueChanged.RemoveAllListeners();
+        resolutionDropdown?.onValueChanged.RemoveAllListeners();
+        fpsDropdown?.onValueChanged.RemoveAllListeners();
+        vSyncToggle?.onValueChanged.RemoveAllListeners();
+        masterVolumeSlider?.onValueChanged.RemoveAllListeners();
+        musicVolumeSlider?.onValueChanged.RemoveAllListeners();
+        sfxVolumeSlider?.onValueChanged.RemoveAllListeners();
+        saveButton?.onClick.RemoveAllListeners();
+        backButton?.onClick.RemoveAllListeners();
     }
 
     #endregion
 
     #region Public API
 
-    public bool HasUnsavedChanges()
-    {
-        return hasUnsavedChanges;
-    }
+    /// <summary>
+    /// Kaydedilmemiş değişiklik var mı?
+    /// </summary>
+    public bool HasUnsavedChanges() => _hasUnsavedChanges;
 
-    public string GetCurrentQualityName()
-    {
-        return QualitySettings.names[currentQualityLevel];
-    }
+    /// <summary>
+    /// Mevcut kalite seviyesi adı
+    /// </summary>
+    public string GetCurrentQualityName() => QualitySettings.names[_savedSettings.QualityLevel];
 
-    public string GetCurrentScreenModeName()
-    {
-        return GetScreenModeName(currentScreenMode);
-    }
+    /// <summary>
+    /// Mevcut ekran modu adı
+    /// </summary>
+    public string GetCurrentScreenModeName() => GetLocalizedScreenModeName(_savedSettings.ScreenMode);
 
+    /// <summary>
+    /// Mevcut çözünürlük adı
+    /// </summary>
     public string GetCurrentResolutionName()
     {
-        if (currentResolutionIndex >= 0 && currentResolutionIndex < filteredResolutions.Count)
-            return GetResolutionDisplayName(filteredResolutions[currentResolutionIndex]);
+        if (_savedSettings.ResolutionIndex >= 0 && _savedSettings.ResolutionIndex < _filteredResolutions.Count)
+        {
+            return FormatResolutionDisplayName(_filteredResolutions[_savedSettings.ResolutionIndex]);
+        }
         return "Unknown";
     }
 
-    public string GetCurrentFPSName()
-    {
-        return fpsOptions[currentFPSIndex] + " FPS";
-    }
+    /// <summary>
+    /// Mevcut FPS adı
+    /// </summary>
+    public string GetCurrentFPSName() => $"{fpsOptions[_savedSettings.FPSIndex]} FPS";
 
-    public float GetMasterVolume()
-    {
-        return currentMasterVolume;
-    }
+    /// <summary>
+    /// Master ses seviyesi (0-1)
+    /// </summary>
+    public float GetMasterVolume() => _savedSettings.MasterVolume;
 
-    public float GetMusicVolume()
-    {
-        return currentMusicVolume;
-    }
+    /// <summary>
+    /// Müzik ses seviyesi (0-1)
+    /// </summary>
+    public float GetMusicVolume() => _savedSettings.MusicVolume;
 
-    public float GetSFXVolume()
-    {
-        return currentSFXVolume;
-    }
+    /// <summary>
+    /// SFX ses seviyesi (0-1)
+    /// </summary>
+    public float GetSFXVolume() => _savedSettings.SFXVolume;
 
+    public void OnBackButtonPressed()
+    {
+        HandleBackButtonPressed();
+    }
     #endregion
-
-    void OnDisable()
-    {
-        if (hasUnsavedChanges)
-        {
-            ResetToSavedSettings();
-            Debug.Log("Menü kapatıldı. Kaydedilmemiş değişiklikler geri alındı.");
-        }
-    }
-
-    void OnDestroy()
-    {
-        // Remove all listeners
-        if (qualityDropdown != null)
-            qualityDropdown.onValueChanged.RemoveAllListeners();
-        if (languageDropdown != null)
-            languageDropdown.onValueChanged.RemoveAllListeners();
-        if (screenModeDropdown != null)
-            screenModeDropdown.onValueChanged.RemoveAllListeners();
-        if (resolutionDropdown != null)
-            resolutionDropdown.onValueChanged.RemoveAllListeners();
-        if (fpsDropdown != null)
-            fpsDropdown.onValueChanged.RemoveAllListeners();
-        if (vSyncToggle != null)
-            vSyncToggle.onValueChanged.RemoveAllListeners();
-        if (masterVolumeSlider != null)
-            masterVolumeSlider.onValueChanged.RemoveAllListeners();
-        if (musicVolumeSlider != null)
-            musicVolumeSlider.onValueChanged.RemoveAllListeners();
-        if (sfxVolumeSlider != null)
-            sfxVolumeSlider.onValueChanged.RemoveAllListeners();
-        if (saveButton != null)
-            saveButton.onClick.RemoveAllListeners();
-        if (backButton != null)
-            backButton.onClick.RemoveAllListeners();
-    }
 }

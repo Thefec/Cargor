@@ -1,95 +1,190 @@
-﻿using UnityEngine;
-using Unity.Netcode;
+﻿using System.Collections;
 using TMPro;
-using System.Collections;
+using Unity.Netcode;
+using UnityEngine;
 
 namespace NewCss
 {
+    /// <summary>
+    /// Kamyon yönetimi - kargo teslimatı, animasyonlar ve ödül sistemini yönetir. 
+    /// Network senkronizasyonu ile multiplayer desteği sağlar.
+    /// </summary>
     public class Truck : NetworkBehaviour
     {
-        [Header("Truck Request Settings")]
+        #region Constants
+
+        private const string LOG_PREFIX = "[Truck]";
+        private const string ENTER_ANIM_STATE = "Enter";
+        private const string EXIT_ANIM_STATE = "Exit";
+        private const string EXIT_ANIM_BOOL = "DoExit";
+
+        #endregion
+
+        #region Serialized Fields - Request Settings
+
+        [Header("=== TRUCK REQUEST SETTINGS ===")]
+        [SerializeField]
         public BoxInfo.BoxType requestedBoxType;
+
+        [SerializeField]
         public int requiredCargo;
 
-        private NetworkVariable<int> deliveredCount = new NetworkVariable<int>(0);
-        private NetworkVariable<BoxInfo.BoxType> networkRequestedBoxType = new NetworkVariable<BoxInfo.BoxType>(BoxInfo.BoxType.Red);
-        private NetworkVariable<int> networkRequiredCargo = new NetworkVariable<int>(1);
-        private NetworkVariable<bool> isComplete = new NetworkVariable<bool>(false);
-        private NetworkVariable<bool> isEntering = new NetworkVariable<bool>(true);
+        #endregion
 
-        // ✅ YENİ: Animator state'lerini network-sync için
-        private NetworkVariable<bool> isPlayingExitAnimation = new NetworkVariable<bool>(false);
-        private NetworkVariable<bool> isPlayingEnterAnimation = new NetworkVariable<bool>(false);
+        #region Serialized Fields - UI
 
-        [Header("UI")]
+        [Header("=== UI ===")]
+        [SerializeField, Tooltip("Kamyon durum text'i")]
         public TextMeshProUGUI truckText;
 
-        [Header("Collider Settings")]
+        #endregion
+
+        #region Serialized Fields - Collider
+
+        [Header("=== COLLIDER SETTINGS ===")]
+        [SerializeField, Tooltip("Trigger collider object")]
         public GameObject triggerColliderObject;
 
-        [Header("Truck Parts - Colors")]
-        public GameObject truckBody;
-        public GameObject leftDoor;
-        public GameObject rightDoor;
+        #endregion
 
-        [Header("Animation Settings")]
+        #region Serialized Fields - Visual
+
+        [Header("=== TRUCK PARTS - COLORS ===")]
+        [SerializeField] public GameObject truckBody;
+        [SerializeField] public GameObject leftDoor;
+        [SerializeField] public GameObject rightDoor;
+
+        #endregion
+
+        #region Serialized Fields - Animation
+
+        [Header("=== ANIMATION SETTINGS ===")]
+        [SerializeField, Tooltip("Kamyon animator'ı")]
         public Animator truckAnimator;
 
-        [Header("Movement Settings")]
-        public Transform entryPoint;
-        public Transform exitPoint;
+        #endregion
 
-        [Header("Exit Animation Settings")]
+        #region Serialized Fields - Movement
+
+        [Header("=== MOVEMENT SETTINGS ===")]
+        [SerializeField] public Transform entryPoint;
+        [SerializeField] public Transform exitPoint;
+
+        #endregion
+
+        #region Serialized Fields - Exit
+
+        [Header("=== EXIT ANIMATION SETTINGS ===")]
+        [SerializeField, Tooltip("Çıkış gecikmesi")]
         public float exitDelay = 5f;
 
-        [Header("Money Rewards/Penalties")]
+        #endregion
+
+        #region Serialized Fields - Rewards
+
+        [Header("=== MONEY REWARDS/PENALTIES ===")]
+        [SerializeField, Tooltip("Kutu başına ödül")]
         public int rewardPerBox = 50;
+
+        [SerializeField, Tooltip("Kutu başına ceza")]
         public int penaltyPerBox = 60;
 
-        [Header("Prestige Bonus Settings")]
-        [Tooltip("Prestige required for each bonus tier (default: 10)")]
+        [Header("=== PRESTIGE BONUS SETTINGS ===")]
+        [SerializeField, Tooltip("Her bonus tier için gereken prestige")]
         public float prestigePerBonus = 10f;
 
-        [Tooltip("Money bonus per box for each prestige tier (default: 5)")]
+        [SerializeField, Tooltip("Her tier için kutu başına bonus")]
         public int bonusPerTier = 5;
 
-        [Header("Audio Settings")]
-        public AudioSource enterAudioSource;
-        public AudioClip enterAnimationClip;
+        #endregion
 
-        public AudioSource exitDelayAudioSource;
-        public AudioClip exitDelayClip;
+        #region Serialized Fields - Audio
 
-        public AudioSource exitAudioSource;
-        public AudioClip exitAnimationClip;
+        [Header("=== AUDIO SETTINGS ===")]
+        [SerializeField] public AudioSource enterAudioSource;
+        [SerializeField] public AudioClip enterAnimationClip;
+        [SerializeField] public AudioSource exitDelayAudioSource;
+        [SerializeField] public AudioClip exitDelayClip;
+        [SerializeField] public AudioSource exitAudioSource;
+        [SerializeField] public AudioClip exitAnimationClip;
 
-        private bool hasPreInitialized = false;
+        #endregion
 
-        [HideInInspector] public int hangarIndex = 0;
+        #region Network Variables
 
+        private readonly NetworkVariable<int> _deliveredCount = new(0);
+        private readonly NetworkVariable<BoxInfo.BoxType> _networkRequestedBoxType = new(BoxInfo.BoxType.Red);
+        private readonly NetworkVariable<int> _networkRequiredCargo = new(1);
+        private readonly NetworkVariable<bool> _isComplete = new(false);
+        private readonly NetworkVariable<bool> _isEntering = new(true);
+        private readonly NetworkVariable<bool> _isPlayingExitAnimation = new(false);
+        private readonly NetworkVariable<bool> _isPlayingEnterAnimation = new(false);
+
+        #endregion
+
+        #region Private Fields
+
+        private bool _hasPreInitialized;
+
+        [HideInInspector]
+        public int hangarIndex;
+
+        #endregion
+
+        #region Public Properties
+
+        /// <summary>
+        /// Teslim edilen kargo sayısı
+        /// </summary>
+        public int DeliveredCount => _deliveredCount.Value;
+
+        /// <summary>
+        /// İstenen kargo sayısı
+        /// </summary>
+        public int RequiredCargo => _networkRequiredCargo.Value;
+
+        /// <summary>
+        /// Teslimat tamamlandı mı? 
+        /// </summary>
+        public bool IsComplete => _isComplete.Value;
+
+        /// <summary>
+        /// Giriş animasyonu oynatılıyor mu?
+        /// </summary>
+        public bool IsEntering => _isEntering.Value;
+
+        /// <summary>
+        /// Mevcut prestige bonusu
+        /// </summary>
+        public int CurrentPrestigeBonus => CalculatePrestigeBonus();
+
+        #endregion
+
+        #region Pre-Initialization
+
+        /// <summary>
+        /// Network spawn öncesi başlatma
+        /// </summary>
         public void PreInitialize(BoxInfo.BoxType reqType, int reqAmount)
         {
             requestedBoxType = reqType;
             requiredCargo = reqAmount;
-            hasPreInitialized = true;
+            _hasPreInitialized = true;
         }
+
+        #endregion
+
+        #region Network Lifecycle
 
         public override void OnNetworkSpawn()
         {
-            deliveredCount.OnValueChanged += OnDeliveredCountChanged;
-            networkRequestedBoxType.OnValueChanged += OnRequestedBoxTypeChanged;
-            networkRequiredCargo.OnValueChanged += OnRequiredCargoChanged;
-            isComplete.OnValueChanged += OnIsCompleteChanged;
-            isEntering.OnValueChanged += OnIsEnteringChanged;
+            base.OnNetworkSpawn();
 
-            // ✅ YENİ: Animator state değişikliklerini dinle
-            isPlayingExitAnimation.OnValueChanged += OnExitAnimationChanged;
-            isPlayingEnterAnimation.OnValueChanged += OnEnterAnimationChanged;
-
+            SubscribeToNetworkEvents();
             SetupTriggerCollider();
             AutoFindAudioSources();
 
-            if (hasPreInitialized)
+            if (_hasPreInitialized)
             {
                 UpdateUIText();
                 SetTruckColors();
@@ -97,13 +192,7 @@ namespace NewCss
 
             if (!IsServer)
             {
-                if (!hasPreInitialized)
-                {
-                    requestedBoxType = networkRequestedBoxType.Value;
-                    requiredCargo = networkRequiredCargo.Value;
-                }
-                UpdateUIText();
-                SetTruckColors();
+                SyncFromNetworkValues();
             }
 
             if (IsServer)
@@ -114,29 +203,184 @@ namespace NewCss
 
         public override void OnNetworkDespawn()
         {
-            deliveredCount.OnValueChanged -= OnDeliveredCountChanged;
-            networkRequestedBoxType.OnValueChanged -= OnRequestedBoxTypeChanged;
-            networkRequiredCargo.OnValueChanged -= OnRequiredCargoChanged;
-            isComplete.OnValueChanged -= OnIsCompleteChanged;
-            isEntering.OnValueChanged -= OnIsEnteringChanged;
-            isPlayingExitAnimation.OnValueChanged -= OnExitAnimationChanged;
-            isPlayingEnterAnimation.OnValueChanged -= OnEnterAnimationChanged;
+            UnsubscribeFromNetworkEvents();
+            base.OnNetworkDespawn();
         }
+
+        #endregion
+
+        #region Event Subscriptions
+
+        private void SubscribeToNetworkEvents()
+        {
+            _deliveredCount.OnValueChanged += HandleDeliveredCountChanged;
+            _networkRequestedBoxType.OnValueChanged += HandleRequestedBoxTypeChanged;
+            _networkRequiredCargo.OnValueChanged += HandleRequiredCargoChanged;
+            _isComplete.OnValueChanged += HandleIsCompleteChanged;
+            _isEntering.OnValueChanged += HandleIsEnteringChanged;
+            _isPlayingExitAnimation.OnValueChanged += HandleExitAnimationChanged;
+            _isPlayingEnterAnimation.OnValueChanged += HandleEnterAnimationChanged;
+        }
+
+        private void UnsubscribeFromNetworkEvents()
+        {
+            _deliveredCount.OnValueChanged -= HandleDeliveredCountChanged;
+            _networkRequestedBoxType.OnValueChanged -= HandleRequestedBoxTypeChanged;
+            _networkRequiredCargo.OnValueChanged -= HandleRequiredCargoChanged;
+            _isComplete.OnValueChanged -= HandleIsCompleteChanged;
+            _isEntering.OnValueChanged -= HandleIsEnteringChanged;
+            _isPlayingExitAnimation.OnValueChanged -= HandleExitAnimationChanged;
+            _isPlayingEnterAnimation.OnValueChanged -= HandleEnterAnimationChanged;
+        }
+
+        #endregion
+
+        #region Network Event Handlers
+
+        private void HandleDeliveredCountChanged(int previousValue, int newValue)
+        {
+            UpdateUIText();
+        }
+
+        private void HandleRequestedBoxTypeChanged(BoxInfo.BoxType previousValue, BoxInfo.BoxType newValue)
+        {
+            requestedBoxType = newValue;
+            SetTruckColors();
+            UpdateUIText();
+        }
+
+        private void HandleRequiredCargoChanged(int previousValue, int newValue)
+        {
+            requiredCargo = newValue;
+            UpdateUIText();
+        }
+
+        private void HandleIsCompleteChanged(bool previousValue, bool newValue)
+        {
+            if (newValue && !previousValue && IsServer)
+            {
+                StartCoroutine(ExitSequenceCoroutine());
+            }
+        }
+
+        private void HandleIsEnteringChanged(bool previousValue, bool newValue)
+        {
+            // Reserved for future use
+        }
+
+        private void HandleEnterAnimationChanged(bool previousValue, bool newValue)
+        {
+            if (!newValue || truckAnimator == null) return;
+
+            LogDebug($"Enter animation starting on {(IsServer ? "SERVER" : $"CLIENT {NetworkManager.Singleton.LocalClientId}")}");
+            truckAnimator.SetBool(EXIT_ANIM_BOOL, false);
+
+            if (!IsServer)
+            {
+                StartCoroutine(WaitForEnterAnimationCoroutine());
+            }
+        }
+
+        private void HandleExitAnimationChanged(bool previousValue, bool newValue)
+        {
+            if (!newValue || truckAnimator == null) return;
+
+            LogDebug($"Exit animation starting on {(IsServer ? "SERVER" : $"CLIENT {NetworkManager.Singleton.LocalClientId}")}");
+            truckAnimator.SetBool(EXIT_ANIM_BOOL, true);
+
+            if (!IsServer)
+            {
+                StartCoroutine(WaitForExitAnimationCoroutine());
+            }
+        }
+
+        #endregion
+
+        #region Initialization
+
+        private void SyncFromNetworkValues()
+        {
+            if (!_hasPreInitialized)
+            {
+                requestedBoxType = _networkRequestedBoxType.Value;
+                requiredCargo = _networkRequiredCargo.Value;
+            }
+            UpdateUIText();
+            SetTruckColors();
+        }
+
+        private void SetupTriggerCollider()
+        {
+            GameObject colliderObj = triggerColliderObject != null ? triggerColliderObject : gameObject;
+            Collider col = colliderObj.GetComponent<Collider>();
+
+            if (col == null) return;
+
+            col.isTrigger = true;
+
+            TruckTrigger trigger = colliderObj.GetComponent<TruckTrigger>();
+            if (trigger == null)
+            {
+                trigger = colliderObj.AddComponent<TruckTrigger>();
+            }
+            trigger.mainTruck = this;
+        }
+
+        private void AutoFindAudioSources()
+        {
+            if (enterAudioSource != null && exitDelayAudioSource != null && exitAudioSource != null)
+            {
+                return;
+            }
+
+            AudioSource[] sources = GetComponentsInChildren<AudioSource>(true);
+            if (sources == null || sources.Length == 0) return;
+
+            enterAudioSource ??= sources.Length > 0 ? sources[0] : null;
+            exitDelayAudioSource ??= sources.Length > 1 ? sources[1] : enterAudioSource;
+            exitAudioSource ??= sources.Length > 2 ? sources[2] : enterAudioSource;
+        }
+
+        #endregion
+
+        #region Server RPCs
 
         [ServerRpc]
         public void InitializeServerRpc(BoxInfo.BoxType reqType, int reqAmount)
         {
-            networkRequestedBoxType.Value = reqType;
-            networkRequiredCargo.Value = reqAmount;
-            deliveredCount.Value = 0;
-            isComplete.Value = false;
-            isEntering.Value = true;
+            _networkRequestedBoxType.Value = reqType;
+            _networkRequiredCargo.Value = reqAmount;
+            _deliveredCount.Value = 0;
+            _isComplete.Value = false;
+            _isEntering.Value = true;
 
             requestedBoxType = reqType;
             requiredCargo = reqAmount;
 
             UpdateVisualsClientRpc(reqType, reqAmount);
         }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void HandleDeliveryServerRpc(BoxInfo.BoxType boxType, bool isFull)
+        {
+            if (_isComplete.Value || _isEntering.Value)
+            {
+                return;
+            }
+
+            if (isFull && boxType == _networkRequestedBoxType.Value)
+            {
+                ProcessSuccessfulDelivery();
+            }
+            else if (isFull)
+            {
+                ProcessWrongDelivery();
+            }
+        }
+
+        #endregion
+
+        #region Client RPCs
 
         [ClientRpc]
         private void UpdateVisualsClientRpc(BoxInfo.BoxType reqType, int reqAmount)
@@ -148,129 +392,134 @@ namespace NewCss
             SetTruckColors();
         }
 
-        private void OnDeliveredCountChanged(int previousValue, int newValue)
+        [ClientRpc]
+        private void PlayEnterAnimationSoundClientRpc()
         {
-            UpdateUIText();
+            PlaySound(enterAudioSource, enterAnimationClip);
+            LogDebug($"Enter sound playing on {GetClientIdentifier()}");
         }
 
-        private void OnRequestedBoxTypeChanged(BoxInfo.BoxType previousValue, BoxInfo.BoxType newValue)
+        [ClientRpc]
+        private void PlayExitDelaySoundClientRpc()
         {
-            requestedBoxType = newValue;
-            SetTruckColors();
-            UpdateUIText();
-        }
-
-        private void OnRequiredCargoChanged(int previousValue, int newValue)
-        {
-            requiredCargo = newValue;
-            UpdateUIText();
-        }
-
-        private void OnIsCompleteChanged(bool previousValue, bool newValue)
-        {
-            if (newValue && !previousValue)
+            if (exitDelayAudioSource != null && exitDelayClip != null)
             {
-                if (IsServer)
-                {
-                    StartCoroutine(ExitSequence());
-                }
+                exitDelayAudioSource.clip = exitDelayClip;
+                exitDelayAudioSource.loop = true;
+                exitDelayAudioSource.Play();
+                LogDebug($"Exit delay sound playing on {GetClientIdentifier()}");
             }
         }
 
-        private void OnIsEnteringChanged(bool previousValue, bool newValue)
+        [ClientRpc]
+        private void StopExitDelaySoundClientRpc()
         {
+            if (exitDelayAudioSource != null && exitDelayAudioSource.isPlaying)
+            {
+                exitDelayAudioSource.Stop();
+                LogDebug($"Exit delay sound stopped on {GetClientIdentifier()}");
+            }
+        }
+
+        [ClientRpc]
+        private void PlayExitAnimationSoundClientRpc()
+        {
+            PlaySound(exitAudioSource, exitAnimationClip);
+            LogDebug($"Exit animation sound playing on {GetClientIdentifier()}");
+        }
+
+        #endregion
+
+        #region Delivery Processing
+
+        private void ProcessSuccessfulDelivery()
+        {
+            _deliveredCount.Value++;
+
+            int totalReward = CalculateRewardWithPrestige();
+            MoneySystem.Instance?.AddMoney(totalReward);
+
+            if (_deliveredCount.Value >= _networkRequiredCargo.Value)
+            {
+                CompleteDelivery();
+            }
+        }
+
+        private void ProcessWrongDelivery()
+        {
+            MoneySystem.Instance?.SpendMoney(penaltyPerBox);
+        }
+
+        private void CompleteDelivery()
+        {
+            QuestManager.Instance?.IncrementQuestProgress(QuestType.DeliverTrucks);
+            _isComplete.Value = true;
+        }
+
+        #endregion
+
+        #region Reward Calculation
+
+        private int CalculateRewardWithPrestige()
+        {
+            int baseReward = rewardPerBox;
+            int prestigeBonus = CalculatePrestigeBonus();
+            int totalReward = baseReward + prestigeBonus;
+
+            LogDebug($"Base: {baseReward}, Prestige Bonus: {prestigeBonus}, Total: {totalReward}");
+
+            return totalReward;
+        }
+
+        private int CalculatePrestigeBonus()
+        {
+            if (PrestigeManager.Instance == null) return 0;
+
+            float currentPrestige = PrestigeManager.Instance.GetPrestige();
+            int prestigeTiers = Mathf.FloorToInt(currentPrestige / prestigePerBonus);
+            return prestigeTiers * bonusPerTier;
         }
 
         /// <summary>
-        /// ✅ YENİ: Enter animation değişikliğini tüm client'larda uygula
+        /// Mevcut prestige bonusunu döndürür (public accessor)
         /// </summary>
-        private void OnEnterAnimationChanged(bool previousValue, bool newValue)
+        public int GetCurrentPrestigeBonus()
         {
-            if (newValue && truckAnimator != null)
-            {
-                Debug.Log($"🚚 CLIENT {(IsServer ? "SERVER" : NetworkManager.Singleton.LocalClientId.ToString())}: Enter animation başlatılıyor");
-                truckAnimator.SetBool("DoExit", false);
-
-                // Client'ta da coroutine başlat (sadece görsel için)
-                if (!IsServer)
-                {
-                    StartCoroutine(WaitForEnterAnimationComplete());
-                }
-            }
+            return CalculatePrestigeBonus();
         }
 
-        /// <summary>
-        /// ✅ YENİ: Exit animation değişikliğini tüm client'larda uygula
-        /// </summary>
-        private void OnExitAnimationChanged(bool previousValue, bool newValue)
-        {
-            if (newValue && truckAnimator != null)
-            {
-                Debug.Log($"🚚 CLIENT {(IsServer ? "SERVER" : NetworkManager.Singleton.LocalClientId.ToString())}: Exit animation başlatılıyor");
-                truckAnimator.SetBool("DoExit", true);
+        #endregion
 
-                // Client'ta da coroutine başlat (sadece görsel için)
-                if (!IsServer)
-                {
-                    StartCoroutine(WaitForExitAnimationComplete());
-                }
-            }
-        }
+        #region Enter Animation
 
-        private void SetupTriggerCollider()
-        {
-            GameObject colliderObj = triggerColliderObject != null ? triggerColliderObject : gameObject;
-
-            Collider col = colliderObj.GetComponent<Collider>();
-            if (col == null)
-            {
-                return;
-            }
-
-            col.isTrigger = true;
-
-            TruckTrigger trigger = colliderObj.GetComponent<TruckTrigger>();
-            if (trigger == null)
-            {
-                trigger = colliderObj.AddComponent<TruckTrigger>();
-            }
-
-            trigger.mainTruck = this;
-        }
-
-        /// <summary>
-        /// ✅ FIX: Enter animation'ı server'da başlat ve network-sync yap
-        /// </summary>
         private void StartEnterAnimation()
         {
             if (!IsServer) return;
 
-            Debug.Log("🚚 SERVER: Enter animation başlatılıyor");
+            LogDebug("Starting enter animation");
 
-            // ✅ Tüm client'lara bildir
-            isPlayingEnterAnimation.Value = true;
+            _isPlayingEnterAnimation.Value = true;
             PlayEnterAnimationSoundClientRpc();
 
             if (truckAnimator != null)
             {
-                truckAnimator.SetBool("DoExit", false);
-                StartCoroutine(WaitForEnterAnimationComplete());
+                truckAnimator.SetBool(EXIT_ANIM_BOOL, false);
+                StartCoroutine(WaitForEnterAnimationCoroutine());
             }
             else
             {
-                isEntering.Value = false;
-                isPlayingEnterAnimation.Value = false;
+                _isEntering.Value = false;
+                _isPlayingEnterAnimation.Value = false;
             }
         }
 
-        private IEnumerator WaitForEnterAnimationComplete()
+        private IEnumerator WaitForEnterAnimationCoroutine()
         {
             if (truckAnimator != null)
             {
                 yield return new WaitForEndOfFrame();
 
-                while (!truckAnimator.GetCurrentAnimatorStateInfo(0).IsName("Enter") ||
-                       truckAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1.0f)
+                while (!IsAnimationComplete(ENTER_ANIM_STATE))
                 {
                     yield return null;
                 }
@@ -278,19 +527,120 @@ namespace NewCss
 
             if (IsServer)
             {
-                isEntering.Value = false;
-                isPlayingEnterAnimation.Value = false;
-                Debug.Log("🚚 SERVER: Enter animation tamamlandı");
+                _isEntering.Value = false;
+                _isPlayingEnterAnimation.Value = false;
+                LogDebug("Enter animation completed");
             }
         }
+
+        #endregion
+
+        #region Exit Animation
+
+        /// <summary>
+        /// Zamana bağlı zorla çıkış
+        /// </summary>
+        public void ForceExitDueToTime()
+        {
+            if (!IsServer) return;
+            if (_isEntering.Value || _isComplete.Value) return;
+
+            _isComplete.Value = true;
+            StopAllCoroutines();
+            StartCoroutine(ExitSequenceCoroutine());
+        }
+
+        private IEnumerator ExitSequenceCoroutine()
+        {
+            LogDebug("Exit sequence started");
+
+            PlayExitDelaySoundClientRpc();
+
+            yield return new WaitForSeconds(exitDelay);
+
+            StartExitAnimation();
+        }
+
+        private void StartExitAnimation()
+        {
+            if (!IsServer) return;
+
+            LogDebug("Starting exit animation");
+
+            StopExitDelaySoundClientRpc();
+            PlayExitAnimationSoundClientRpc();
+
+            _isPlayingExitAnimation.Value = true;
+
+            if (truckAnimator != null)
+            {
+                truckAnimator.SetBool(EXIT_ANIM_BOOL, true);
+                StartCoroutine(WaitForExitAnimationCoroutine());
+            }
+            else
+            {
+                CompleteTruckExit();
+            }
+        }
+
+        private IEnumerator WaitForExitAnimationCoroutine()
+        {
+            if (truckAnimator != null)
+            {
+                yield return new WaitForEndOfFrame();
+
+                while (!IsAnimationComplete(EXIT_ANIM_STATE))
+                {
+                    yield return null;
+                }
+            }
+
+            if (IsServer)
+            {
+                LogDebug("Exit animation completed - Despawning");
+                CompleteTruckExit();
+            }
+            else
+            {
+                LogDebug($"Exit animation completed on CLIENT {NetworkManager.Singleton.LocalClientId}");
+            }
+        }
+
+        private void CompleteTruckExit()
+        {
+            if (!IsServer) return;
+
+            TruckSpawner.Instance?.OnTruckDestroyed(hangarIndex);
+            GetComponent<NetworkObject>().Despawn();
+        }
+
+        #endregion
+
+        #region Animation Helpers
+
+        private bool IsAnimationComplete(string stateName)
+        {
+            if (truckAnimator == null) return true;
+
+            var stateInfo = truckAnimator.GetCurrentAnimatorStateInfo(0);
+            return stateInfo.IsName(stateName) && stateInfo.normalizedTime >= 1.0f;
+        }
+
+        #endregion
+
+        #region UI Update
 
         private void UpdateUIText()
         {
             if (truckText != null)
             {
-                truckText.text = $"{requestedBoxType}: {deliveredCount.Value}/{requiredCargo}";
+                truckText.text = $"{requestedBoxType}: {_deliveredCount.Value}/{requiredCargo}";
             }
         }
+
+        #endregion
+
+        #region Visual Update
 
         private void SetTruckColors()
         {
@@ -301,22 +651,18 @@ namespace NewCss
             SetObjectColor(rightDoor, targetColor);
         }
 
-        private Color GetColorForBoxType(BoxInfo.BoxType boxType)
+        private static Color GetColorForBoxType(BoxInfo.BoxType boxType)
         {
-            switch (boxType)
+            return boxType switch
             {
-                case BoxInfo.BoxType.Red:
-                    return Color.red;
-                case BoxInfo.BoxType.Yellow:
-                    return Color.yellow;
-                case BoxInfo.BoxType.Blue:
-                    return Color.blue;
-                default:
-                    return Color.white;
-            }
+                BoxInfo.BoxType.Red => Color.red,
+                BoxInfo.BoxType.Yellow => Color.yellow,
+                BoxInfo.BoxType.Blue => Color.blue,
+                _ => Color.white
+            };
         }
 
-        private void SetObjectColor(GameObject obj, Color color)
+        private static void SetObjectColor(GameObject obj, Color color)
         {
             if (obj == null) return;
 
@@ -328,226 +674,36 @@ namespace NewCss
             }
         }
 
-        private int CalculateRewardWithPrestige()
+        #endregion
+
+        #region Audio Helpers
+
+        private static void PlaySound(AudioSource source, AudioClip clip)
         {
-            int baseReward = rewardPerBox;
-
-            if (PrestigeManager.Instance != null)
+            if (source != null && clip != null)
             {
-                float currentPrestige = PrestigeManager.Instance.GetPrestige();
-                int prestigeTiers = Mathf.FloorToInt(currentPrestige / prestigePerBonus);
-                int prestigeBonus = prestigeTiers * bonusPerTier;
-                int totalReward = baseReward + prestigeBonus;
-
-                Debug.Log($"[Truck] Base: {baseReward}, Prestige: {currentPrestige:F1}, Tiers: {prestigeTiers}, Bonus: {prestigeBonus}, Total: {totalReward}");
-
-                return totalReward;
-            }
-
-            return baseReward;
-        }
-
-        public int GetCurrentPrestigeBonus()
-        {
-            if (PrestigeManager.Instance != null)
-            {
-                float currentPrestige = PrestigeManager.Instance.GetPrestige();
-                int prestigeTiers = Mathf.FloorToInt(currentPrestige / prestigePerBonus);
-                return prestigeTiers * bonusPerTier;
-            }
-            return 0;
-        }
-
-        [ServerRpc(RequireOwnership = false)]
-        public void HandleDeliveryServerRpc(BoxInfo.BoxType boxType, bool isFull)
-        {
-            if (isComplete.Value || isEntering.Value)
-                return;
-
-            if (isFull && boxType == networkRequestedBoxType.Value)
-            {
-                deliveredCount.Value++;
-
-                int totalReward = CalculateRewardWithPrestige();
-
-                if (MoneySystem.Instance != null)
-                {
-                    MoneySystem.Instance.AddMoney(totalReward);
-                }
-
-                if (deliveredCount.Value >= networkRequiredCargo.Value)
-                {
-                    if (QuestManager.Instance != null)
-                    {
-                        QuestManager.Instance.IncrementQuestProgress(QuestType.DeliverTrucks);
-                    }
-                    isComplete.Value = true;
-                }
-            }
-            else if (isFull)
-            {
-                if (MoneySystem.Instance != null)
-                {
-                    MoneySystem.Instance.SpendMoney(penaltyPerBox);
-                }
+                source.PlayOneShot(clip);
             }
         }
 
-        public void ForceExitDueToTime()
+        #endregion
+
+        #region Utility
+
+        private string GetClientIdentifier()
         {
-            if (!IsServer) return;
-
-            if (isEntering.Value || isComplete.Value)
-                return;
-
-            isComplete.Value = true;
-            StopAllCoroutines();
-            StartCoroutine(ExitSequence());
+            return IsServer ? "SERVER" : $"CLIENT {NetworkManager.Singleton.LocalClientId}";
         }
 
-        private IEnumerator ExitSequence()
+        #endregion
+
+        #region Logging
+
+        private void LogDebug(string message)
         {
-            Debug.Log("🚚 SERVER: Exit sequence başladı");
-
-            if (IsServer)
-            {
-                PlayExitDelaySoundClientRpc();
-            }
-
-            yield return new WaitForSeconds(exitDelay);
-
-            StartExitAnimation();
+            Debug.Log($"{LOG_PREFIX} {message}");
         }
 
-        /// <summary>
-        /// ✅ FIX: Exit animation'ı server'da başlat ve network-sync yap
-        /// </summary>
-        private void StartExitAnimation()
-        {
-            if (!IsServer) return;
-
-            Debug.Log("🚚 SERVER: Exit animation başlatılıyor");
-
-            // ✅ Önce sesi durdur
-            StopExitDelaySoundClientRpc();
-
-            // ✅ Exit animation sesini çal
-            PlayExitAnimationSoundClientRpc();
-
-            // ✅ Tüm client'lara animation başladığını bildir
-            isPlayingExitAnimation.Value = true;
-
-            if (truckAnimator != null)
-            {
-                truckAnimator.SetBool("DoExit", true);
-                StartCoroutine(WaitForExitAnimationComplete());
-            }
-            else
-            {
-                CompleteTruckExit();
-            }
-        }
-
-        private IEnumerator WaitForExitAnimationComplete()
-        {
-            if (truckAnimator != null)
-            {
-                yield return new WaitForEndOfFrame();
-
-                while (!truckAnimator.GetCurrentAnimatorStateInfo(0).IsName("Exit") ||
-                       truckAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1.0f)
-                {
-                    yield return null;
-                }
-            }
-
-            // ✅ Sadece server despawn etsin
-            if (IsServer)
-            {
-                Debug.Log("🚚 SERVER: Exit animation tamamlandı - Despawn ediliyor");
-                CompleteTruckExit();
-            }
-            else
-            {
-                Debug.Log($"🚚 CLIENT {NetworkManager.Singleton.LocalClientId}: Exit animation tamamlandı");
-            }
-        }
-
-        private void CompleteTruckExit()
-        {
-            if (!IsServer) return;
-
-            if (TruckSpawner.Instance != null)
-            {
-                TruckSpawner.Instance.OnTruckDestroyed(hangarIndex);
-            }
-
-            GetComponent<NetworkObject>().Despawn();
-        }
-
-        [ClientRpc]
-        private void PlayEnterAnimationSoundClientRpc()
-        {
-            if (enterAudioSource != null && enterAnimationClip != null)
-            {
-                enterAudioSource.PlayOneShot(enterAnimationClip);
-                Debug.Log($"🔊 CLIENT {(IsServer ? "SERVER" : NetworkManager.Singleton.LocalClientId.ToString())}: Enter sound çalınıyor");
-            }
-        }
-
-        [ClientRpc]
-        private void PlayExitDelaySoundClientRpc()
-        {
-            if (exitDelayAudioSource != null && exitDelayClip != null)
-            {
-                exitDelayAudioSource.clip = exitDelayClip;
-                exitDelayAudioSource.loop = true;
-                exitDelayAudioSource.Play();
-                Debug.Log($"🔊 CLIENT {(IsServer ? "SERVER" : NetworkManager.Singleton.LocalClientId.ToString())}: Exit delay sound çalınıyor");
-            }
-        }
-
-        [ClientRpc]
-        private void StopExitDelaySoundClientRpc()
-        {
-            if (exitDelayAudioSource != null && exitDelayAudioSource.isPlaying)
-            {
-                exitDelayAudioSource.Stop();
-                Debug.Log($"🔊 CLIENT {(IsServer ? "SERVER" : NetworkManager.Singleton.LocalClientId.ToString())}: Exit delay sound durduruluyor");
-            }
-        }
-
-        [ClientRpc]
-        private void PlayExitAnimationSoundClientRpc()
-        {
-            if (exitAudioSource != null && exitAnimationClip != null)
-            {
-                exitAudioSource.PlayOneShot(exitAnimationClip);
-                Debug.Log($"🔊 CLIENT {(IsServer ? "SERVER" : NetworkManager.Singleton.LocalClientId.ToString())}: Exit animation sound çalınıyor");
-            }
-        }
-
-        private void AutoFindAudioSources()
-        {
-            if (enterAudioSource == null || exitDelayAudioSource == null || exitAudioSource == null)
-            {
-                AudioSource[] sources = GetComponentsInChildren<AudioSource>(true);
-                if (sources != null && sources.Length > 0)
-                {
-                    if (enterAudioSource == null && sources.Length > 0)
-                        enterAudioSource = sources[0];
-
-                    if (exitDelayAudioSource == null && sources.Length > 1)
-                        exitDelayAudioSource = sources[1];
-                    else if (exitDelayAudioSource == null)
-                        exitDelayAudioSource = enterAudioSource;
-
-                    if (exitAudioSource == null && sources.Length > 2)
-                        exitAudioSource = sources[2];
-                    else if (exitAudioSource == null)
-                        exitAudioSource = enterAudioSource;
-                }
-            }
-        }
+        #endregion
     }
 }

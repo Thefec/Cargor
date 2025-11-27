@@ -1,26 +1,99 @@
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
-using System.Collections.Generic;
 
 namespace NewCss
 {
+    /// <summary>
+    /// Raf durumunu ve item yerleştirme/alma işlemlerini yöneten network-aware sınıf. 
+    /// Box collider tabanlı etkileşim alanı ve slot bazlı item yönetimi sağlar.
+    /// </summary>
     public class ShelfState : NetworkBehaviour
     {
-        [Header("Shelf Configuration")]
+        #region Constants
+
+        private const string LOG_PREFIX = "[ShelfState]";
+        private const float SLOT_GIZMO_SIZE = 0.2f;
+        private const float CENTER_GIZMO_RADIUS = 0.1f;
+
+        #endregion
+
+        #region Serialized Fields
+
+        [Header("=== SHELF CONFIGURATION ===")]
+        [SerializeField, Tooltip("Raftaki item slotlarının transform'ları")]
         public Transform[] shelfSlots;
 
-        [Header("Interaction Settings")]
-        [SerializeField] private Vector3 interactionBoxSize = new Vector3(3f, 2f, 2f);
-        [SerializeField] private Vector3 interactionBoxOffset = Vector3.zero;
-        [SerializeField] private LayerMask playerLayer;
-        [SerializeField] private bool showInteractionRange = true;
+        [Header("=== INTERACTION SETTINGS ===")]
+        [SerializeField, Tooltip("Etkileşim alanı boyutu")]
+        private Vector3 interactionBoxSize = new Vector3(3f, 2f, 2f);
+
+        [SerializeField, Tooltip("Etkileşim alanı offset'i")]
+        private Vector3 interactionBoxOffset = Vector3.zero;
+
+        [SerializeField, Tooltip("Oyuncu layer mask'i")]
+        private LayerMask playerLayer;
+
+        [SerializeField, Tooltip("Etkileşim alanını Gizmo ile göster")]
+        private bool showInteractionRange = true;
+
+        #endregion
+
+        #region Network Variables
 
         private NetworkList<NetworkObjectReference> _slotItems;
-        private BoxCollider interactionTrigger;
+
+        #endregion
+
+        #region Private Fields
+
+        private BoxCollider _interactionTrigger;
+
+        #endregion
+
+        #region Public Properties
+
+        /// <summary>
+        /// Etkileşim alanı boyutu
+        /// </summary>
+        public Vector3 InteractionBoxSize => interactionBoxSize;
+
+        /// <summary>
+        /// Etkileşim alanı offset'i
+        /// </summary>
+        public Vector3 InteractionBoxOffset => interactionBoxOffset;
+
+        /// <summary>
+        /// Toplam slot sayısı
+        /// </summary>
+        public int SlotCount => shelfSlots?.Length ?? 0;
+
+        /// <summary>
+        /// Dolu slot sayısı
+        /// </summary>
+        public int OccupiedSlotCount
+        {
+            get
+            {
+                int count = 0;
+                for (int i = 0; i < _slotItems.Count; i++)
+                {
+                    if (IsSlotOccupied(i))
+                    {
+                        count++;
+                    }
+                }
+                return count;
+            }
+        }
+
+        #endregion
+
+        #region Unity Lifecycle
 
         private void Awake()
         {
-            _slotItems = new NetworkList<NetworkObjectReference>();
+            InitializeNetworkList();
         }
 
         private void Start()
@@ -28,76 +101,14 @@ namespace NewCss
             SetupInteractionTrigger();
         }
 
-        private void SetupInteractionTrigger()
-        {
-            BoxCollider[] boxColliders = GetComponents<BoxCollider>();
-            bool hasTrigger = false;
-
-            foreach (BoxCollider col in boxColliders)
-            {
-                if (col.isTrigger)
-                {
-                    hasTrigger = true;
-                    interactionTrigger = col;
-                    break;
-                }
-            }
-
-            if (!hasTrigger)
-            {
-                interactionTrigger = gameObject.AddComponent<BoxCollider>();
-                interactionTrigger.isTrigger = true;
-                interactionTrigger.size = interactionBoxSize;
-                interactionTrigger.center = interactionBoxOffset;
-                Debug.Log($"ShelfState: Box interaction trigger added with size {interactionBoxSize}");
-            }
-            else
-            {
-                interactionTrigger.size = interactionBoxSize;
-                interactionTrigger.center = interactionBoxOffset;
-            }
-        }
-
         private void OnValidate()
         {
-            if (Application.isPlaying && interactionTrigger != null)
-            {
-                interactionTrigger.size = interactionBoxSize;
-                interactionTrigger.center = interactionBoxOffset;
-            }
+            UpdateInteractionTriggerInEditor();
         }
 
-        /// <summary>
-        /// ✅ Transform bazlı range kontrolü - HEM HOST HEM CLIENT için çalışır
-        /// </summary>
-        public bool IsPlayerInRange(Transform playerTransform)
-        {
-            if (playerTransform == null) return false;
+        #endregion
 
-            Vector3 localPoint = transform.InverseTransformPoint(playerTransform.position);
-            Vector3 halfSize = interactionBoxSize * 0.5f;
-            Vector3 offset = interactionBoxOffset;
-
-            bool inBox = Mathf.Abs(localPoint.x - offset.x) <= halfSize.x &&
-                         Mathf.Abs(localPoint.y - offset.y) <= halfSize.y &&
-                         Mathf.Abs(localPoint.z - offset.z) <= halfSize.z;
-
-            return inBox;
-        }
-
-        /// <summary>
-        /// ✅ ClientId'den Transform bulup kontrol et
-        /// </summary>
-        public bool IsPlayerInRange(ulong clientId)
-        {
-            if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out var client) ||
-                client.PlayerObject == null)
-            {
-                return false;
-            }
-
-            return IsPlayerInRange(client.PlayerObject.transform);
-        }
+        #region Network Lifecycle
 
         public override void OnNetworkSpawn()
         {
@@ -105,226 +116,272 @@ namespace NewCss
 
             if (IsServer)
             {
-                for (int i = 0; i < shelfSlots.Length; i++)
-                {
-                    _slotItems.Add(new NetworkObjectReference());
-                }
+                InitializeSlots();
             }
 
-            _slotItems.OnListChanged += OnSlotItemsChanged;
+            SubscribeToNetworkEvents();
         }
 
         public override void OnNetworkDespawn()
         {
-            if (_slotItems != null)
-            {
-                _slotItems.OnListChanged -= OnSlotItemsChanged;
-            }
+            UnsubscribeFromNetworkEvents();
             base.OnNetworkDespawn();
         }
 
-        private void OnSlotItemsChanged(NetworkListEvent<NetworkObjectReference> changeEvent)
+        #endregion
+
+        #region Initialization
+
+        private void InitializeNetworkList()
         {
-            UpdateVisualState();
+            _slotItems = new NetworkList<NetworkObjectReference>();
         }
 
-        private void UpdateVisualState()
+        private void InitializeSlots()
         {
-            for (int i = 0; i < _slotItems.Count && i < shelfSlots.Length; i++)
+            if (shelfSlots == null || shelfSlots.Length == 0)
             {
-                if (_slotItems[i].TryGet(out NetworkObject networkObj) && networkObj != null)
+                Debug.LogWarning($"{LOG_PREFIX} No shelf slots configured!");
+                return;
+            }
+
+            for (int i = 0; i < shelfSlots.Length; i++)
+            {
+                _slotItems.Add(new NetworkObjectReference());
+            }
+
+            Debug.Log($"{LOG_PREFIX} Initialized {shelfSlots.Length} slots");
+        }
+
+        private void SubscribeToNetworkEvents()
+        {
+            if (_slotItems != null)
+            {
+                _slotItems.OnListChanged += HandleSlotItemsChanged;
+            }
+        }
+
+        private void UnsubscribeFromNetworkEvents()
+        {
+            if (_slotItems != null)
+            {
+                _slotItems.OnListChanged -= HandleSlotItemsChanged;
+            }
+        }
+
+        #endregion
+
+        #region Interaction Trigger Setup
+
+        private void SetupInteractionTrigger()
+        {
+            _interactionTrigger = FindOrCreateInteractionTrigger();
+            ConfigureInteractionTrigger(_interactionTrigger);
+        }
+
+        private BoxCollider FindOrCreateInteractionTrigger()
+        {
+            // Mevcut trigger collider'ı ara
+            var boxColliders = GetComponents<BoxCollider>();
+
+            foreach (var collider in boxColliders)
+            {
+                if (collider.isTrigger)
                 {
-                    GameObject item = networkObj.gameObject;
-                    item.transform.SetParent(shelfSlots[i]);
-                    item.transform.localPosition = Vector3.zero;
-                    item.transform.localRotation = Quaternion.identity;
-
-                    var rb = item.GetComponent<Rigidbody>();
-                    if (rb != null) rb.isKinematic = true;
-
-                    var col = item.GetComponent<Collider>();
-                    if (col != null) col.enabled = false;
+                    return collider;
                 }
             }
+
+            // Bulunamadıysa yeni oluştur
+            var newTrigger = gameObject.AddComponent<BoxCollider>();
+            newTrigger.isTrigger = true;
+            Debug.Log($"{LOG_PREFIX} Box interaction trigger created with size {interactionBoxSize}");
+
+            return newTrigger;
         }
 
-        public bool IsFull()
+        private void ConfigureInteractionTrigger(BoxCollider trigger)
         {
-            if (_slotItems.Count < shelfSlots.Length) return false;
+            if (trigger == null) return;
 
-            for (int i = 0; i < _slotItems.Count; i++)
+            trigger.size = interactionBoxSize;
+            trigger.center = interactionBoxOffset;
+        }
+
+        private void UpdateInteractionTriggerInEditor()
+        {
+            if (!Application.isPlaying || _interactionTrigger == null) return;
+
+            ConfigureInteractionTrigger(_interactionTrigger);
+        }
+
+        #endregion
+
+        #region Range Detection
+
+        /// <summary>
+        /// Transform bazlı range kontrolü - HEM HOST HEM CLIENT için çalışır
+        /// </summary>
+        /// <param name="playerTransform">Kontrol edilecek oyuncu transform'u</param>
+        /// <returns>Oyuncu etkileşim alanı içinde mi?</returns>
+        public bool IsPlayerInRange(Transform playerTransform)
+        {
+            if (playerTransform == null) return false;
+
+            // World position'ı local space'e çevir
+            Vector3 localPoint = transform.InverseTransformPoint(playerTransform.position);
+            Vector3 halfSize = interactionBoxSize * 0.5f;
+
+            // Box içinde mi kontrol et
+            bool isInBox = IsPointInsideBox(localPoint, interactionBoxOffset, halfSize);
+
+            return isInBox;
+        }
+
+        /// <summary>
+        /// ClientId'den Transform bulup range kontrolü yapar
+        /// </summary>
+        /// <param name="clientId">Kontrol edilecek client ID</param>
+        /// <returns>Oyuncu etkileşim alanı içinde mi? </returns>
+        public bool IsPlayerInRange(ulong clientId)
+        {
+            if (!TryGetPlayerTransform(clientId, out Transform playerTransform))
             {
-                if (!_slotItems[i].TryGet(out NetworkObject networkObj) || networkObj == null)
-                    return false;
+                return false;
             }
+
+            return IsPlayerInRange(playerTransform);
+        }
+
+        private static bool IsPointInsideBox(Vector3 point, Vector3 center, Vector3 halfExtents)
+        {
+            return Mathf.Abs(point.x - center.x) <= halfExtents.x &&
+                   Mathf.Abs(point.y - center.y) <= halfExtents.y &&
+                   Mathf.Abs(point.z - center.z) <= halfExtents.z;
+        }
+
+        private static bool TryGetPlayerTransform(ulong clientId, out Transform playerTransform)
+        {
+            playerTransform = null;
+
+            if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out var client))
+            {
+                return false;
+            }
+
+            if (client.PlayerObject == null)
+            {
+                return false;
+            }
+
+            playerTransform = client.PlayerObject.transform;
             return true;
         }
 
+        #endregion
+
+        #region Slot Management
+
+        /// <summary>
+        /// Raf dolu mu kontrol eder
+        /// </summary>
+        public bool IsFull()
+        {
+            if (_slotItems == null || _slotItems.Count < shelfSlots.Length)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < _slotItems.Count; i++)
+            {
+                if (!IsSlotOccupied(i))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Rafta herhangi bir item var mı kontrol eder
+        /// </summary>
+        public bool HasItem()
+        {
+            if (_slotItems == null) return false;
+
+            for (int i = 0; i < _slotItems.Count; i++)
+            {
+                if (IsSlotOccupied(i))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Belirtilen slot'un dolu olup olmadığını kontrol eder
+        /// </summary>
+        private bool IsSlotOccupied(int slotIndex)
+        {
+            if (slotIndex < 0 || slotIndex >= _slotItems.Count)
+            {
+                return false;
+            }
+
+            return _slotItems[slotIndex].TryGet(out NetworkObject networkObj) && networkObj != null;
+        }
+
+        /// <summary>
+        /// İlk boş slot index'ini bulur
+        /// </summary>
         private int FindEmptySlotIndex()
         {
-            for (int i = 0; i < _slotItems.Count && i < shelfSlots.Length; i++)
+            int maxIndex = Mathf.Min(_slotItems.Count, shelfSlots.Length);
+
+            for (int i = 0; i < maxIndex; i++)
             {
-                if (!_slotItems[i].TryGet(out NetworkObject networkObj) || networkObj == null)
+                if (!IsSlotOccupied(i))
+                {
                     return i;
+                }
             }
+
             return -1;
         }
 
         /// <summary>
-        /// ✅ PLACE ITEM - RequireOwnership = false + doğru range kontrolü
+        /// Belirtilen NetworkObjectId'ye sahip item'ın slot index'ini bulur
         /// </summary>
-        [ServerRpc(RequireOwnership = false)]
-        public void PlaceItemOnShelfServerRpc(NetworkObjectReference itemRef, ServerRpcParams rpcParams = default)
+        private int FindSlotIndexByNetworkId(ulong networkObjectId)
         {
-            if (!IsServer) return;
-
-            ulong requesterClientId = rpcParams.Receive.SenderClientId;
-
-            Debug.Log($"📥 SERVER: PlaceItemOnShelfServerRpc - Client {requesterClientId}");
-
-            // ✅ Player'ı bul
-            if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(requesterClientId, out var client) ||
-                client.PlayerObject == null)
-            {
-                Debug.LogWarning($"❌ SERVER: Player object not found for client {requesterClientId}");
-                return;
-            }
-
-            Transform playerTransform = client.PlayerObject.transform;
-
-            // ✅ Range kontrolü
-            if (!IsPlayerInRange(playerTransform))
-            {
-                Debug.LogWarning($"❌ SERVER: Player {requesterClientId} NOT in shelf range! Distance: {Vector3.Distance(playerTransform.position, transform.position):F2}");
-                return;
-            }
-
-            // ✅ Boş slot bul
-            int slotIndex = FindEmptySlotIndex();
-            if (slotIndex == -1)
-            {
-                Debug.LogWarning($"❌ SERVER: Shelf is FULL!");
-                return;
-            }
-
-            // ✅ Item'ı slot'a yerleştir
-            _slotItems[slotIndex] = itemRef;
-
-            if (itemRef.TryGet(out NetworkObject networkObj) && networkObj != null)
-            {
-                GameObject item = networkObj.gameObject;
-                item.transform.SetParent(shelfSlots[slotIndex]);
-                item.transform.localPosition = Vector3.zero;
-                item.transform.localRotation = Quaternion.identity;
-
-                var rb = item.GetComponent<Rigidbody>();
-                if (rb != null) rb.isKinematic = true;
-
-                var col = item.GetComponent<Collider>();
-                if (col != null) col.enabled = false;
-
-                Debug.Log($"✅ SERVER: Item placed on shelf by client {requesterClientId} at slot {slotIndex}");
-            }
-        }
-
-        /// <summary>
-        /// ✅ TAKE ITEM - RequireOwnership = false + doğru range kontrolü
-        /// </summary>
-        [ServerRpc(RequireOwnership = false)]
-        public void TakeItemFromShelfServerRpc(ulong requesterClientId, ulong itemNetworkId, ServerRpcParams rpcParams = default)
-        {
-            if (!IsServer) return;
-
-            Debug.Log($"📥 SERVER: TakeItemFromShelfServerRpc - Client {requesterClientId} wants item {itemNetworkId}");
-
-            // ✅ Player'ı bul
-            if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(requesterClientId, out var client) ||
-                client.PlayerObject == null)
-            {
-                Debug.LogError($"❌ SERVER: Player object not found for client {requesterClientId}");
-                return;
-            }
-
-            Transform playerTransform = client.PlayerObject.transform;
-
-            // ✅ Range kontrolü
-            if (!IsPlayerInRange(playerTransform))
-            {
-                Debug.LogWarning($"❌ SERVER: Player {requesterClientId} NOT in shelf range! Distance: {Vector3.Distance(playerTransform.position, transform.position):F2}");
-                return;
-            }
-
-            // ✅ PlayerInventory kontrolü
-            var playerInventory = client.PlayerObject.GetComponent<PlayerInventory>();
-            if (playerInventory == null)
-            {
-                Debug.LogError($"❌ SERVER: PlayerInventory not found for client {requesterClientId}");
-                return;
-            }
-
-            if (playerInventory.HasItem)
-            {
-                Debug.Log($"⚠️ SERVER: Player {requesterClientId} already has an item");
-                return;
-            }
-
-            // ✅ Item'ı bul
-            int targetSlotIndex = -1;
             for (int i = 0; i < _slotItems.Count; i++)
             {
                 if (_slotItems[i].TryGet(out NetworkObject networkObj) &&
                     networkObj != null &&
-                    networkObj.NetworkObjectId == itemNetworkId)
+                    networkObj.NetworkObjectId == networkObjectId)
                 {
-                    targetSlotIndex = i;
-                    break;
+                    return i;
                 }
             }
 
-            if (targetSlotIndex == -1)
-            {
-                Debug.LogError($"❌ SERVER: Item {itemNetworkId} NOT found on shelf!");
-                return;
-            }
-
-            // ✅ Item'ı al
-            if (_slotItems[targetSlotIndex].TryGet(out NetworkObject targetNetworkObj) && targetNetworkObj != null)
-            {
-                NetworkWorldItem worldItem = targetNetworkObj.GetComponent<NetworkWorldItem>();
-                if (worldItem == null || worldItem.ItemData == null)
-                {
-                    Debug.LogError($"❌ SERVER: WorldItem or ItemData is null in slot {targetSlotIndex}!");
-                    return;
-                }
-
-                int itemID = worldItem.ItemData.itemID;
-                Debug.Log($"✅ SERVER: Taking item from shelf slot {targetSlotIndex}, ItemID: {itemID}");
-
-                // ✅ Slot'u temizle
-                _slotItems[targetSlotIndex] = new NetworkObjectReference();
-
-                // ✅ Item'ı despawn et
-                targetNetworkObj.Despawn();
-
-                // ✅ Player'a item ver
-                playerInventory.SetInventoryStateServerRpc(true, itemID);
-
-                Debug.Log($"✅ SERVER: Item successfully given to player {requesterClientId}");
-            }
+            return -1;
         }
 
         /// <summary>
-        /// ✅ Raftaki tüm itemları döndür (Mouse scroll için)
+        /// Raftaki tüm item'ları döndürür (Mouse scroll için)
         /// </summary>
         public NetworkWorldItem[] GetAllShelfItems()
         {
-            List<NetworkWorldItem> items = new List<NetworkWorldItem>();
+            var items = new List<NetworkWorldItem>();
 
             for (int i = 0; i < _slotItems.Count; i++)
             {
                 if (_slotItems[i].TryGet(out NetworkObject networkObj) && networkObj != null)
                 {
-                    NetworkWorldItem worldItem = networkObj.GetComponent<NetworkWorldItem>();
+                    var worldItem = networkObj.GetComponent<NetworkWorldItem>();
                     if (worldItem != null)
                     {
                         items.Add(worldItem);
@@ -335,66 +392,335 @@ namespace NewCss
             return items.ToArray();
         }
 
-        public bool HasItem()
+        #endregion
+
+        #region Visual State Management
+
+        private void HandleSlotItemsChanged(NetworkListEvent<NetworkObjectReference> changeEvent)
         {
-            for (int i = 0; i < _slotItems.Count; i++)
-            {
-                if (_slotItems[i].TryGet(out NetworkObject networkObj) && networkObj != null)
-                    return true;
-            }
-            return false;
+            UpdateVisualState();
         }
+
+        private void UpdateVisualState()
+        {
+            int maxIndex = Mathf.Min(_slotItems.Count, shelfSlots.Length);
+
+            for (int i = 0; i < maxIndex; i++)
+            {
+                UpdateSlotVisual(i);
+            }
+        }
+
+        private void UpdateSlotVisual(int slotIndex)
+        {
+            if (!_slotItems[slotIndex].TryGet(out NetworkObject networkObj) || networkObj == null)
+            {
+                return;
+            }
+
+            var item = networkObj.gameObject;
+            var slot = shelfSlots[slotIndex];
+
+            // Transform ayarları
+            item.transform.SetParent(slot);
+            item.transform.localPosition = Vector3.zero;
+            item.transform.localRotation = Quaternion.identity;
+
+            // Physics devre dışı bırak
+            DisableItemPhysics(item);
+        }
+
+        private static void DisableItemPhysics(GameObject item)
+        {
+            var rb = item.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.isKinematic = true;
+            }
+
+            var col = item.GetComponent<Collider>();
+            if (col != null)
+            {
+                col.enabled = false;
+            }
+        }
+
+        private static void EnableItemPhysics(GameObject item)
+        {
+            var rb = item.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.isKinematic = false;
+            }
+
+            var col = item.GetComponent<Collider>();
+            if (col != null)
+            {
+                col.enabled = true;
+            }
+        }
+
+        #endregion
+
+        #region Server RPCs - Place Item
+
+        /// <summary>
+        /// Rafa item yerleştirir (RequireOwnership = false - tüm client'lar çağırabilir)
+        /// </summary>
+        [ServerRpc(RequireOwnership = false)]
+        public void PlaceItemOnShelfServerRpc(NetworkObjectReference itemRef, ServerRpcParams rpcParams = default)
+        {
+            if (!IsServer) return;
+
+            ulong requesterClientId = rpcParams.Receive.SenderClientId;
+            Debug.Log($"{LOG_PREFIX} 📥 PlaceItemOnShelfServerRpc - Client {requesterClientId}");
+
+            // Validation
+            if (!ValidatePlaceItemRequest(requesterClientId, out Transform playerTransform))
+            {
+                return;
+            }
+
+            // Boş slot bul
+            int slotIndex = FindEmptySlotIndex();
+            if (slotIndex == -1)
+            {
+                Debug.LogWarning($"{LOG_PREFIX} ❌ Shelf is FULL!");
+                return;
+            }
+
+            // Item'ı yerleştir
+            PlaceItemInSlot(itemRef, slotIndex, requesterClientId);
+        }
+
+        private bool ValidatePlaceItemRequest(ulong clientId, out Transform playerTransform)
+        {
+            playerTransform = null;
+
+            // Player'ı bul
+            if (!TryGetPlayerTransform(clientId, out playerTransform))
+            {
+                Debug.LogWarning($"{LOG_PREFIX} ❌ Player object not found for client {clientId}");
+                return false;
+            }
+
+            // Range kontrolü
+            if (!IsPlayerInRange(playerTransform))
+            {
+                float distance = Vector3.Distance(playerTransform.position, transform.position);
+                Debug.LogWarning($"{LOG_PREFIX} ❌ Player {clientId} NOT in shelf range!  Distance: {distance:F2}");
+                return false;
+            }
+
+            return true;
+        }
+
+        private void PlaceItemInSlot(NetworkObjectReference itemRef, int slotIndex, ulong clientId)
+        {
+            _slotItems[slotIndex] = itemRef;
+
+            if (itemRef.TryGet(out NetworkObject networkObj) && networkObj != null)
+            {
+                var item = networkObj.gameObject;
+                var slot = shelfSlots[slotIndex];
+
+                // Transform ayarla
+                item.transform.SetParent(slot);
+                item.transform.localPosition = Vector3.zero;
+                item.transform.localRotation = Quaternion.identity;
+
+                // Physics devre dışı
+                DisableItemPhysics(item);
+
+                Debug.Log($"{LOG_PREFIX} ✅ Item placed on shelf by client {clientId} at slot {slotIndex}");
+            }
+        }
+
+        #endregion
+
+        #region Server RPCs - Take Item
+
+        /// <summary>
+        /// Raftan item alır (RequireOwnership = false - tüm client'lar çağırabilir)
+        /// </summary>
+        [ServerRpc(RequireOwnership = false)]
+        public void TakeItemFromShelfServerRpc(ulong requesterClientId, ulong itemNetworkId, ServerRpcParams rpcParams = default)
+        {
+            if (!IsServer) return;
+
+            Debug.Log($"{LOG_PREFIX} 📥 TakeItemFromShelfServerRpc - Client {requesterClientId} wants item {itemNetworkId}");
+
+            // Validation
+            if (!ValidateTakeItemRequest(requesterClientId, itemNetworkId, out PlayerInventory playerInventory, out int slotIndex))
+            {
+                return;
+            }
+
+            // Item'ı al
+            TakeItemFromSlot(slotIndex, playerInventory, requesterClientId);
+        }
+
+        private bool ValidateTakeItemRequest(ulong clientId, ulong itemNetworkId, out PlayerInventory playerInventory, out int slotIndex)
+        {
+            playerInventory = null;
+            slotIndex = -1;
+
+            // Player'ı bul
+            if (!TryGetPlayerTransform(clientId, out Transform playerTransform))
+            {
+                Debug.LogError($"{LOG_PREFIX} ❌ Player object not found for client {clientId}");
+                return false;
+            }
+
+            // Range kontrolü
+            if (!IsPlayerInRange(playerTransform))
+            {
+                float distance = Vector3.Distance(playerTransform.position, transform.position);
+                Debug.LogWarning($"{LOG_PREFIX} ❌ Player {clientId} NOT in shelf range! Distance: {distance:F2}");
+                return false;
+            }
+
+            // PlayerInventory kontrolü
+            if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out var client))
+            {
+                Debug.LogError($"{LOG_PREFIX} ❌ Client {clientId} not found");
+                return false;
+            }
+
+            playerInventory = client.PlayerObject.GetComponent<PlayerInventory>();
+            if (playerInventory == null)
+            {
+                Debug.LogError($"{LOG_PREFIX} ❌ PlayerInventory not found for client {clientId}");
+                return false;
+            }
+
+            if (playerInventory.HasItem)
+            {
+                Debug.Log($"{LOG_PREFIX} ⚠️ Player {clientId} already has an item");
+                return false;
+            }
+
+            // Item'ı bul
+            slotIndex = FindSlotIndexByNetworkId(itemNetworkId);
+            if (slotIndex == -1)
+            {
+                Debug.LogError($"{LOG_PREFIX} ❌ Item {itemNetworkId} NOT found on shelf!");
+                return false;
+            }
+
+            return true;
+        }
+
+        private void TakeItemFromSlot(int slotIndex, PlayerInventory playerInventory, ulong clientId)
+        {
+            if (!_slotItems[slotIndex].TryGet(out NetworkObject networkObj) || networkObj == null)
+            {
+                Debug.LogError($"{LOG_PREFIX} ❌ NetworkObject is null at slot {slotIndex}");
+                return;
+            }
+
+            var worldItem = networkObj.GetComponent<NetworkWorldItem>();
+            if (worldItem == null || worldItem.ItemData == null)
+            {
+                Debug.LogError($"{LOG_PREFIX} ❌ WorldItem or ItemData is null at slot {slotIndex}");
+                return;
+            }
+
+            int itemID = worldItem.ItemData.itemID;
+            Debug.Log($"{LOG_PREFIX} ✅ Taking item from slot {slotIndex}, ItemID: {itemID}");
+
+            // Slot'u temizle
+            _slotItems[slotIndex] = new NetworkObjectReference();
+
+            // Item'ı despawn et
+            networkObj.Despawn();
+
+            // Player'a item ver
+            playerInventory.SetInventoryStateServerRpc(true, itemID);
+
+            Debug.Log($"{LOG_PREFIX} ✅ Item successfully given to player {clientId}");
+        }
+
+        #endregion
+
+        #region Debug & Editor
 
         [ContextMenu("Debug Slot States")]
         private void DebugSlotStates()
         {
-            Debug.Log($"=== SHELF DEBUG ===");
-            Debug.Log($"Total Slots: {shelfSlots.Length}");
-            Debug.Log($"Network List Count: {_slotItems.Count}");
+            Debug.Log($"{LOG_PREFIX} === SHELF DEBUG ===");
+            Debug.Log($"Total Slots: {shelfSlots?.Length ?? 0}");
+            Debug.Log($"Network List Count: {_slotItems?.Count ?? 0}");
+            Debug.Log($"Occupied Slots: {OccupiedSlotCount}");
+            Debug.Log($"Is Full: {IsFull()}");
+            Debug.Log($"Has Item: {HasItem()}");
+
+            if (_slotItems == null) return;
 
             for (int i = 0; i < _slotItems.Count; i++)
             {
-                bool hasItem = _slotItems[i].TryGet(out NetworkObject networkObj) && networkObj != null;
-                Debug.Log($"Slot {i}: {(hasItem ? networkObj.name : "Empty")}");
+                string status = IsSlotOccupied(i)
+                    ? (_slotItems[i].TryGet(out NetworkObject obj) ? obj.name : "Unknown")
+                    : "Empty";
+
+                Debug.Log($"  Slot {i}: {status}");
             }
         }
 
+#if UNITY_EDITOR
         private void OnDrawGizmosSelected()
         {
             if (!showInteractionRange) return;
 
-            // ✅ Box range gösterimi
+            DrawInteractionBoxGizmo();
+            DrawSlotGizmos();
+            DrawCenterPointGizmo();
+        }
+
+        private void DrawInteractionBoxGizmo()
+        {
+            // Yarı saydam dolgu
             Gizmos.color = new Color(0f, 1f, 0f, 0.3f);
-            Matrix4x4 rotationMatrix = Matrix4x4.TRS(
+
+            var rotationMatrix = Matrix4x4.TRS(
                 transform.position + transform.TransformDirection(interactionBoxOffset),
                 transform.rotation,
                 Vector3.one
             );
+
             Gizmos.matrix = rotationMatrix;
             Gizmos.DrawCube(Vector3.zero, interactionBoxSize);
 
+            // Çerçeve
             Gizmos.color = Color.green;
             Gizmos.DrawWireCube(Vector3.zero, interactionBoxSize);
 
             Gizmos.matrix = Matrix4x4.identity;
-
-            // ✅ Slot pozisyonları
-            if (shelfSlots != null)
-            {
-                Gizmos.color = Color.yellow;
-                foreach (Transform slot in shelfSlots)
-                {
-                    if (slot != null)
-                    {
-                        Gizmos.DrawWireCube(slot.position, Vector3.one * 0.2f);
-                        Gizmos.DrawLine(transform.position, slot.position);
-                    }
-                }
-            }
-
-            // ✅ Merkez nokta
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(transform.position + transform.TransformDirection(interactionBoxOffset), 0.1f);
         }
+
+        private void DrawSlotGizmos()
+        {
+            if (shelfSlots == null) return;
+
+            Gizmos.color = Color.yellow;
+
+            foreach (var slot in shelfSlots)
+            {
+                if (slot == null) continue;
+
+                Gizmos.DrawWireCube(slot.position, Vector3.one * SLOT_GIZMO_SIZE);
+                Gizmos.DrawLine(transform.position, slot.position);
+            }
+        }
+
+        private void DrawCenterPointGizmo()
+        {
+            Gizmos.color = Color.red;
+            Vector3 centerPos = transform.position + transform.TransformDirection(interactionBoxOffset);
+            Gizmos.DrawWireSphere(centerPos, CENTER_GIZMO_RADIUS);
+        }
+#endif
+
+        #endregion
     }
 }

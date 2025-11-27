@@ -1,45 +1,114 @@
-﻿using UnityEngine;
-using Unity.Netcode;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Collections;
+using Unity.Netcode;
+using UnityEngine;
 
 namespace NewCss
 {
+    /// <summary>
+    /// Masa yönetimi - item yerleştirme, alma ve kutulamayı (boxing) yönetir. 
+    /// Network senkronizasyonu ile multiplayer desteği sağlar.
+    /// </summary>
     public class Table : NetworkBehaviour
     {
-        [Header("Table Settings")]
-        [SerializeField] private string tableID = "";
-        [SerializeField] private Transform itemPlacePoint;
+        #region Constants
 
-        [Header("Interaction Box Settings")]
-        [SerializeField] private Vector3 interactionBoxSize = new Vector3(2f, 2f, 2f);
-        [SerializeField] private Vector3 interactionBoxOffset = Vector3.zero;
-        [SerializeField] private bool showInteractionRange = true;
+        private const string LOG_PREFIX = "[Table]";
+        private const float ITEM_SPAWN_DELAY = 0.1f;
+        private const float BOXED_PRODUCT_SPAWN_DELAY = 0.3f;
+        private const float ITEM_HEIGHT_OFFSET = 0.5f;
+        private const float SPAWN_HEIGHT_OFFSET = 1f;
+        private const float PLACE_POINT_GIZMO_SIZE = 0.3f;
+        private const float CENTER_GIZMO_RADIUS = 0.1f;
 
-        private NetworkVariable<TableState> tableState = new NetworkVariable<TableState>(
+        #endregion
+
+        #region Serialized Fields
+
+        [Header("=== TABLE SETTINGS ===")]
+        [SerializeField, Tooltip("Benzersiz masa ID'si")]
+        private string tableID = "";
+
+        [SerializeField, Tooltip("Item yerleştirme noktası")]
+        private Transform itemPlacePoint;
+
+        [Header("=== INTERACTION BOX SETTINGS ===")]
+        [SerializeField, Tooltip("Etkileşim kutusu boyutu")]
+        private Vector3 interactionBoxSize = new Vector3(2f, 2f, 2f);
+
+        [SerializeField, Tooltip("Etkileşim kutusu offset'i")]
+        private Vector3 interactionBoxOffset = Vector3.zero;
+
+        [SerializeField, Tooltip("Etkileşim alanını Gizmo ile göster")]
+        private bool showInteractionRange = true;
+
+        #endregion
+
+        #region Network Variables
+
+        private readonly NetworkVariable<TableState> _tableState = new(
             new TableState { isEmpty = true, itemNetworkId = 0, isItemBoxed = false },
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server
         );
 
-        private GameObject currentItemOnTable;
-        private static List<Table> allTables = new List<Table>();
-        private BoxCollider interactionTrigger;
+        #endregion
+
+        #region Private Fields
+
+        private GameObject _currentItemOnTable;
+        private BoxCollider _interactionTrigger;
+
+        // Static table registry
+        private static readonly List<Table> _allTables = new();
+
+        #endregion
+
+        #region Public Properties
+
+        /// <summary>
+        /// Masa ID'si
+        /// </summary>
+        public string TableID => tableID;
+
+        /// <summary>
+        /// Masa boş mu?
+        /// </summary>
+        public bool IsEmpty => _tableState.Value.isEmpty;
+
+        /// <summary>
+        /// Masada item var mı?
+        /// </summary>
+        public bool HasItem => !_tableState.Value.isEmpty;
+
+        /// <summary>
+        /// Masadaki item kutulanmış mı?
+        /// </summary>
+        public bool IsItemBoxed => _tableState.Value.isItemBoxed;
+
+        /// <summary>
+        /// Masadaki mevcut item (null olabilir)
+        /// </summary>
+        public GameObject CurrentItem => _currentItemOnTable;
+
+        /// <summary>
+        /// Item yerleştirilebilir mi?
+        /// </summary>
+        public bool CanPlaceItem => IsEmpty;
+
+        /// <summary>
+        /// Item alınabilir mi?
+        /// </summary>
+        public bool CanTakeItem => HasItem;
+
+        #endregion
 
         #region Unity Lifecycle
 
         private void Awake()
         {
-            if (string.IsNullOrEmpty(tableID))
-            {
-                tableID = $"Table_{GetInstanceID()}";
-            }
-
-            if (itemPlacePoint == null)
-            {
-                itemPlacePoint = transform;
-                Debug.LogWarning($"Table {tableID}: No itemPlacePoint set, using transform");
-            }
+            InitializeTableID();
+            InitializeItemPlacePoint();
         }
 
         private void Start()
@@ -47,47 +116,173 @@ namespace NewCss
             SetupInteractionTrigger();
         }
 
-        private void SetupInteractionTrigger()
+        private void OnDestroy()
         {
-            BoxCollider[] boxColliders = GetComponents<BoxCollider>();
-            bool hasTrigger = false;
-
-            foreach (BoxCollider col in boxColliders)
-            {
-                if (col.isTrigger)
-                {
-                    hasTrigger = true;
-                    interactionTrigger = col;
-                    break;
-                }
-            }
-
-            if (!hasTrigger)
-            {
-                interactionTrigger = gameObject.AddComponent<BoxCollider>();
-                interactionTrigger.isTrigger = true;
-                interactionTrigger.size = interactionBoxSize;
-                interactionTrigger.center = interactionBoxOffset;
-                Debug.Log($"Table {tableID}: Box interaction trigger added");
-            }
-            else
-            {
-                interactionTrigger.size = interactionBoxSize;
-                interactionTrigger.center = interactionBoxOffset;
-            }
+            UnregisterTable();
         }
 
         private void OnValidate()
         {
-            if (Application.isPlaying && interactionTrigger != null)
+            UpdateInteractionTriggerInEditor();
+        }
+
+        #endregion
+
+        #region Network Lifecycle
+
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+
+            RegisterTable();
+            SubscribeToNetworkEvents();
+
+            if (IsServer)
             {
-                interactionTrigger.size = interactionBoxSize;
-                interactionTrigger.center = interactionBoxOffset;
+                InitializeTableState();
+            }
+
+            LogDebug($"Spawned - Total tables: {_allTables.Count}");
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            UnsubscribeFromNetworkEvents();
+            UnregisterTable();
+
+            base.OnNetworkDespawn();
+        }
+
+        #endregion
+
+        #region Initialization
+
+        private void InitializeTableID()
+        {
+            if (string.IsNullOrEmpty(tableID))
+            {
+                tableID = $"Table_{GetInstanceID()}";
             }
         }
 
+        private void InitializeItemPlacePoint()
+        {
+            if (itemPlacePoint == null)
+            {
+                itemPlacePoint = transform;
+                LogWarning("No itemPlacePoint set, using transform");
+            }
+        }
+
+        private void InitializeTableState()
+        {
+            _tableState.Value = new TableState
+            {
+                isEmpty = true,
+                itemNetworkId = 0,
+                isItemBoxed = false
+            };
+        }
+
+        #endregion
+
+        #region Interaction Trigger Setup
+
+        private void SetupInteractionTrigger()
+        {
+            _interactionTrigger = FindOrCreateInteractionTrigger();
+            ConfigureInteractionTrigger(_interactionTrigger);
+        }
+
+        private BoxCollider FindOrCreateInteractionTrigger()
+        {
+            var boxColliders = GetComponents<BoxCollider>();
+
+            foreach (var col in boxColliders)
+            {
+                if (col.isTrigger)
+                {
+                    return col;
+                }
+            }
+
+            // Create new trigger
+            var newTrigger = gameObject.AddComponent<BoxCollider>();
+            newTrigger.isTrigger = true;
+            LogDebug("Box interaction trigger added");
+
+            return newTrigger;
+        }
+
+        private void ConfigureInteractionTrigger(BoxCollider trigger)
+        {
+            if (trigger == null) return;
+
+            trigger.size = interactionBoxSize;
+            trigger.center = interactionBoxOffset;
+        }
+
+        private void UpdateInteractionTriggerInEditor()
+        {
+            if (!Application.isPlaying || _interactionTrigger == null) return;
+
+            ConfigureInteractionTrigger(_interactionTrigger);
+        }
+
+        #endregion
+
+        #region Table Registry
+
+        private void RegisterTable()
+        {
+            if (!_allTables.Contains(this))
+            {
+                _allTables.Add(this);
+            }
+        }
+
+        private void UnregisterTable()
+        {
+            _allTables.Remove(this);
+        }
+
         /// <summary>
-        /// ✅ FIX: Transform bazlı range kontrolü - HEM HOST HEM CLIENT için çalışır
+        /// ID'ye göre masa bul
+        /// </summary>
+        public static Table GetTableByID(string id)
+        {
+            return _allTables.Find(t => t != null && t.tableID == id);
+        }
+
+        /// <summary>
+        /// Tüm masaları döndür
+        /// </summary>
+        public static List<Table> GetAllTables()
+        {
+            _allTables.RemoveAll(t => t == null);
+            return new List<Table>(_allTables);
+        }
+
+        #endregion
+
+        #region Network Event Subscriptions
+
+        private void SubscribeToNetworkEvents()
+        {
+            _tableState.OnValueChanged += HandleTableStateChanged;
+        }
+
+        private void UnsubscribeFromNetworkEvents()
+        {
+            _tableState.OnValueChanged -= HandleTableStateChanged;
+        }
+
+        #endregion
+
+        #region Range Detection
+
+        /// <summary>
+        /// Transform bazlı range kontrolü - HEM HOST HEM CLIENT için çalışır
         /// </summary>
         public bool IsPlayerInRange(Transform playerTransform)
         {
@@ -95,77 +290,55 @@ namespace NewCss
 
             Vector3 localPoint = transform.InverseTransformPoint(playerTransform.position);
             Vector3 halfSize = interactionBoxSize * 0.5f;
-            Vector3 offset = interactionBoxOffset;
 
-            bool inBox = Mathf.Abs(localPoint.x - offset.x) <= halfSize.x &&
-                         Mathf.Abs(localPoint.y - offset.y) <= halfSize.y &&
-                         Mathf.Abs(localPoint.z - offset.z) <= halfSize.z;
-
-            return inBox;
+            return IsPointInsideBox(localPoint, interactionBoxOffset, halfSize);
         }
 
         /// <summary>
-        /// ✅ FIX: ClientId'den Transform bulup kontrol et
+        /// ClientId'den Transform bulup kontrol et
         /// </summary>
         private bool IsPlayerInRange(ulong clientId)
         {
-            if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out var client) ||
-                client.PlayerObject == null)
+            if (!TryGetPlayerTransform(clientId, out Transform playerTransform))
             {
                 return false;
             }
 
-            return IsPlayerInRange(client.PlayerObject.transform);
+            return IsPlayerInRange(playerTransform);
         }
 
-        public override void OnNetworkSpawn()
+        private static bool IsPointInsideBox(Vector3 point, Vector3 center, Vector3 halfExtents)
         {
-            if (!allTables.Contains(this))
-            {
-                allTables.Add(this);
-            }
-
-            tableState.OnValueChanged += OnTableStateChanged;
-
-            if (IsServer)
-            {
-                var initialState = new TableState
-                {
-                    isEmpty = true,
-                    itemNetworkId = 0,
-                    isItemBoxed = false
-                };
-                tableState.Value = initialState;
-            }
-
-            Debug.Log($"Table {tableID} spawned - Total tables: {allTables.Count}");
+            return Mathf.Abs(point.x - center.x) <= halfExtents.x &&
+                   Mathf.Abs(point.y - center.y) <= halfExtents.y &&
+                   Mathf.Abs(point.z - center.z) <= halfExtents.z;
         }
 
-        public override void OnNetworkDespawn()
+        private static bool TryGetPlayerTransform(ulong clientId, out Transform playerTransform)
         {
-            tableState.OnValueChanged -= OnTableStateChanged;
+            playerTransform = null;
 
-            if (allTables.Contains(this))
+            if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out var client))
             {
-                allTables.Remove(this);
+                return false;
             }
-        }
 
-        private void OnDestroy()
-        {
-            if (allTables.Contains(this))
+            if (client.PlayerObject == null)
             {
-                allTables.Remove(this);
+                return false;
             }
+
+            playerTransform = client.PlayerObject.transform;
+            return true;
         }
 
         #endregion
 
         #region Network State Management
 
-        private void OnTableStateChanged(TableState oldState, TableState newState)
+        private void HandleTableStateChanged(TableState oldState, TableState newState)
         {
-            Debug.Log($"Table {tableID} state changed - isEmpty: {newState.isEmpty}, itemNetworkId: {newState.itemNetworkId}");
+            LogDebug($"State changed - isEmpty: {newState.isEmpty}, itemNetworkId: {newState.itemNetworkId}");
             UpdateVisualState(newState);
         }
 
@@ -173,21 +346,33 @@ namespace NewCss
         {
             if (state.isEmpty)
             {
-                if (currentItemOnTable != null)
-                {
-                    Debug.Log($"Table {tableID}: Clearing visual item");
-                    currentItemOnTable = null;
-                }
+                ClearVisualItem();
             }
             else
             {
-                if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(state.itemNetworkId, out NetworkObject itemNetObj))
-                {
-                    currentItemOnTable = itemNetObj.gameObject;
-                    PositionItemOnTable(currentItemOnTable);
-                    Debug.Log($"Table {tableID}: Item positioned on table");
-                }
+                TryDisplayItem(state.itemNetworkId);
             }
+        }
+
+        private void ClearVisualItem()
+        {
+            if (_currentItemOnTable != null)
+            {
+                LogDebug("Clearing visual item");
+                _currentItemOnTable = null;
+            }
+        }
+
+        private void TryDisplayItem(ulong itemNetworkId)
+        {
+            if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(itemNetworkId, out NetworkObject itemNetObj))
+            {
+                return;
+            }
+
+            _currentItemOnTable = itemNetObj.gameObject;
+            PositionItemOnTable(_currentItemOnTable);
+            LogDebug("Item positioned on table");
         }
 
         private void PositionItemOnTable(GameObject item)
@@ -195,12 +380,13 @@ namespace NewCss
             if (item == null || itemPlacePoint == null) return;
 
             Vector3 targetPosition = itemPlacePoint.position;
-            targetPosition.y += 0.5f;
+            targetPosition.y += ITEM_HEIGHT_OFFSET;
 
             item.transform.position = targetPosition;
             item.transform.rotation = itemPlacePoint.rotation;
 
-            Rigidbody rb = item.GetComponent<Rigidbody>();
+            // Disable physics
+            var rb = item.GetComponent<Rigidbody>();
             if (rb != null)
             {
                 rb.isKinematic = true;
@@ -208,29 +394,28 @@ namespace NewCss
             }
         }
 
+        private void SetTableState(bool isEmpty, ulong itemNetworkId = 0, bool isBoxed = false)
+        {
+            _tableState.Value = new TableState
+            {
+                isEmpty = isEmpty,
+                itemNetworkId = itemNetworkId,
+                isItemBoxed = isBoxed
+            };
+        }
+
         #endregion
 
-        #region Public Interface
+        #region Public Interaction API
 
-        public bool IsEmpty => tableState.Value.isEmpty;
-        public bool HasItem => !tableState.Value.isEmpty;
-        public bool IsItemBoxed => tableState.Value.isItemBoxed;
-
-        public bool CanPlaceItem()
-        {
-            return IsEmpty;
-        }
-
-        public bool CanTakeItem()
-        {
-            return HasItem;
-        }
-
+        /// <summary>
+        /// Masa ile etkileşim başlatır
+        /// </summary>
         public void InteractWithTable(PlayerInventory player)
         {
             if (!IsServer)
             {
-                Debug.Log($"Table {tableID}: Client requesting interaction");
+                LogDebug("Client requesting interaction");
                 RequestInteractionServerRpc(player.NetworkObjectId);
                 return;
             }
@@ -242,411 +427,313 @@ namespace NewCss
 
         #region Server RPCs
 
-        /// <summary>
-        /// ✅ FIX: Transform bazlı range kontrolü kullanılıyor
-        /// </summary>
         [ServerRpc(RequireOwnership = false)]
         private void RequestInteractionServerRpc(ulong playerNetworkId, ServerRpcParams rpcParams = default)
         {
             ulong requesterClientId = rpcParams.Receive.SenderClientId;
 
-            Debug.Log($"📥 Table {tableID}: Interaction requested by client {requesterClientId}");
+            LogDebug($"📥 Interaction requested by client {requesterClientId}");
 
-            // ✅ Player object bul
-            if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(requesterClientId, out var client) ||
-                client.PlayerObject == null)
+            if (!ValidateInteractionRequest(requesterClientId, playerNetworkId, out PlayerInventory player))
             {
-                Debug.LogError($"❌ Table {tableID}: Player object not found for client {requesterClientId}");
-                return;
-            }
-
-            Transform playerTransform = client.PlayerObject.transform;
-
-            // ✅ Transform bazlı range kontrolü
-            if (!IsPlayerInRange(playerTransform))
-            {
-                Debug.LogWarning($"❌ Table {tableID}: Client {requesterClientId} is NOT in range! Distance: {Vector3.Distance(playerTransform.position, transform.position)}");
-                return;
-            }
-
-            if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(playerNetworkId, out NetworkObject playerObj))
-            {
-                Debug.LogError($"❌ Table {tableID}: Player NetworkObject not found");
-                return;
-            }
-
-            PlayerInventory player = playerObj.GetComponent<PlayerInventory>();
-            if (player == null)
-            {
-                Debug.LogError($"❌ Table {tableID}: PlayerInventory component not found");
                 return;
             }
 
             ProcessTableInteraction(player);
         }
 
+        private bool ValidateInteractionRequest(ulong clientId, ulong playerNetworkId, out PlayerInventory player)
+        {
+            player = null;
+
+            // Get player transform
+            if (!TryGetPlayerTransform(clientId, out Transform playerTransform))
+            {
+                LogError($"Player object not found for client {clientId}");
+                return false;
+            }
+
+            // Range check
+            if (!IsPlayerInRange(playerTransform))
+            {
+                float distance = Vector3.Distance(playerTransform.position, transform.position);
+                LogWarning($"Client {clientId} is NOT in range!  Distance: {distance}");
+                return false;
+            }
+
+            // Get PlayerInventory
+            if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(playerNetworkId, out NetworkObject playerObj))
+            {
+                LogError("Player NetworkObject not found");
+                return false;
+            }
+
+            player = playerObj.GetComponent<PlayerInventory>();
+            if (player == null)
+            {
+                LogError("PlayerInventory component not found");
+                return false;
+            }
+
+            return true;
+        }
+
+        #endregion
+
+        #region Interaction Processing
+
         private void ProcessTableInteraction(PlayerInventory player)
         {
-            Debug.Log($"Table {tableID}: Processing interaction - Player has item: {player.HasItem}, Table has item: {HasItem}");
+            LogDebug($"Processing interaction - Player has item: {player.HasItem}, Table has item: {HasItem}");
 
             if (player.HasItem)
             {
-                if (CanPlaceItem())
-                {
-                    Debug.Log($"✅ Table {tableID}: Placing item from player {player.OwnerClientId}");
-                    PlaceItemOnTable(player);
-                }
-                else
-                {
-                    Debug.Log($"🎮 Table {tableID}: Attempting boxing for player {player.OwnerClientId}");
-                    TryBoxingInteraction(player);
-                }
+                ProcessPlayerHasItem(player);
             }
             else
             {
-                if (CanTakeItem())
-                {
-                    Debug.Log($"✅ Table {tableID}: Taking item from table for player {player.OwnerClientId}");
-                    TakeItemFromTable(player);
-                }
-                else
-                {
-                    Debug.Log($"⚠️ Table {tableID}: No interaction possible");
-                }
+                ProcessPlayerHasNoItem(player);
             }
         }
 
+        private void ProcessPlayerHasItem(PlayerInventory player)
+        {
+            if (CanPlaceItem)
+            {
+                LogDebug($"✅ Placing item from player {player.OwnerClientId}");
+                PlaceItemOnTable(player);
+            }
+            else
+            {
+                LogDebug($"🎮 Attempting boxing for player {player.OwnerClientId}");
+                TryBoxingInteraction(player);
+            }
+        }
+
+        private void ProcessPlayerHasNoItem(PlayerInventory player)
+        {
+            if (CanTakeItem)
+            {
+                LogDebug($"✅ Taking item from table for player {player.OwnerClientId}");
+                TakeItemFromTable(player);
+            }
+            else
+            {
+                LogDebug("⚠️ No interaction possible");
+            }
+        }
+
+        #endregion
+
+        #region Place Item
+
         private void PlaceItemOnTable(PlayerInventory player)
         {
-            Debug.Log($"📤 Table {tableID}: Placing item for client {player.OwnerClientId}");
+            LogDebug($"📤 Placing item for client {player.OwnerClientId}");
 
             ItemData playerItemData = player.CurrentItemData;
             if (playerItemData == null)
             {
-                Debug.LogError($"❌ Table {tableID}: Player has no valid item data");
+                LogError("Player has no valid item data");
                 return;
             }
 
+            // Clear player inventory
             player.SetInventoryStateServerRpc(false, -1);
             player.TriggerDropAnimationServerRpc();
 
+            // Spawn item on table
             StartCoroutine(SpawnItemOnTableCoroutine(playerItemData));
 
-            if (TutorialManager.Instance != null)
-            {
-                TutorialManager.Instance.OnTableInteraction(true);
-            }
+            // Notify tutorial
+            NotifyTutorialManager(true);
         }
 
         private IEnumerator SpawnItemOnTableCoroutine(ItemData itemData)
         {
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(ITEM_SPAWN_DELAY);
 
             if (itemData.worldPrefab == null)
             {
-                Debug.LogError($"❌ Table {tableID}: Item {itemData.itemName} has no world prefab");
+                LogError($"Item {itemData.itemName} has no world prefab");
                 yield break;
             }
 
-            Vector3 spawnPos = itemPlacePoint.position;
-            spawnPos.y += 1f;
-
+            Vector3 spawnPos = CalculateSpawnPosition();
             GameObject worldItem = Instantiate(itemData.worldPrefab, spawnPos, itemPlacePoint.rotation);
-            NetworkObject netObj = worldItem.GetComponent<NetworkObject>();
 
-            if (netObj != null)
+            var netObj = worldItem.GetComponent<NetworkObject>();
+            if (netObj == null)
             {
-                netObj.Spawn();
-
-                NetworkWorldItem worldItemComponent = worldItem.GetComponent<NetworkWorldItem>();
-                if (worldItemComponent != null)
-                {
-                    worldItemComponent.SetItemData(itemData);
-                    worldItemComponent.DisablePickup();
-                }
-
-                var newState = new TableState
-                {
-                    isEmpty = false,
-                    itemNetworkId = netObj.NetworkObjectId,
-                    isItemBoxed = false
-                };
-                tableState.Value = newState;
-
-                Debug.Log($"✅ Table {tableID}: Item {itemData.itemName} placed successfully");
-            }
-            else
-            {
-                Debug.LogError($"❌ Table {tableID}: World item has no NetworkObject component");
+                LogError("World item has no NetworkObject component");
                 Destroy(worldItem);
+                yield break;
+            }
+
+            netObj.Spawn();
+            ConfigureWorldItem(worldItem, itemData);
+            SetTableState(false, netObj.NetworkObjectId, false);
+
+            LogDebug($"✅ Item {itemData.itemName} placed successfully");
+        }
+
+        private Vector3 CalculateSpawnPosition()
+        {
+            Vector3 spawnPos = itemPlacePoint.position;
+            spawnPos.y += SPAWN_HEIGHT_OFFSET;
+            return spawnPos;
+        }
+
+        private void ConfigureWorldItem(GameObject worldItem, ItemData itemData)
+        {
+            var worldItemComponent = worldItem.GetComponent<NetworkWorldItem>();
+            if (worldItemComponent != null)
+            {
+                worldItemComponent.SetItemData(itemData);
+                worldItemComponent.DisablePickup();
             }
         }
 
+        #endregion
+
+        #region Take Item
+
         private void TakeItemFromTable(PlayerInventory player)
         {
-            var state = tableState.Value;
+            var state = _tableState.Value;
+
             if (state.isEmpty)
             {
-                Debug.Log($"⚠️ Table {tableID}: Cannot take item - table is empty");
+                LogDebug("⚠️ Cannot take item - table is empty");
                 return;
             }
 
-            if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(state.itemNetworkId, out NetworkObject itemNetObj))
+            if (!TryGetTableItem(state.itemNetworkId, out NetworkObject itemNetObj, out NetworkWorldItem worldItem))
             {
-                Debug.LogError($"❌ Table {tableID}: Item NetworkObject not found");
-                return;
-            }
-
-            NetworkWorldItem worldItem = itemNetObj.GetComponent<NetworkWorldItem>();
-            if (worldItem == null)
-            {
-                Debug.LogError($"❌ Table {tableID}: NetworkWorldItem component not found");
                 return;
             }
 
             ItemData itemData = worldItem.ItemData;
             if (itemData == null)
             {
-                Debug.LogError($"❌ Table {tableID}: Item has no ItemData");
+                LogError("Item has no ItemData");
                 return;
             }
 
+            // Give item to player and despawn
             player.GiveItemDirectlyServerRpc(itemData.itemID);
             itemNetObj.Despawn(true);
 
-            var newState = new TableState
-            {
-                isEmpty = true,
-                itemNetworkId = 0,
-                isItemBoxed = false
-            };
-            tableState.Value = newState;
+            // Clear table state
+            SetTableState(true);
 
-            Debug.Log($"✅ Table {tableID}: Item {itemData.itemName} taken by player {player.OwnerClientId}");
+            LogDebug($"✅ Item {itemData.itemName} taken by player {player.OwnerClientId}");
 
-            if (TutorialManager.Instance != null)
-            {
-                TutorialManager.Instance.OnTableInteraction(false);
-            }
+            // Notify tutorial
+            NotifyTutorialManager(false);
         }
 
-        /// <summary>
-        /// ✅ FIX: Boxing minigame başlatma düzeltildi - PlayerNetworkId gönderiliyor
-        /// </summary>
+        private bool TryGetTableItem(ulong itemNetworkId, out NetworkObject itemNetObj, out NetworkWorldItem worldItem)
+        {
+            itemNetObj = null;
+            worldItem = null;
+
+            if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(itemNetworkId, out itemNetObj))
+            {
+                LogError("Item NetworkObject not found");
+                return false;
+            }
+
+            worldItem = itemNetObj.GetComponent<NetworkWorldItem>();
+            if (worldItem == null)
+            {
+                LogError("NetworkWorldItem component not found");
+                return false;
+            }
+
+            return true;
+        }
+
+        #endregion
+
+        #region Boxing Interaction
+
         private void TryBoxingInteraction(PlayerInventory player)
         {
-            var state = tableState.Value;
+            var state = _tableState.Value;
 
-            if (state.isItemBoxed)
+            // Validation
+            if (!ValidateBoxingRequest(player, state, out BoxInfo playerBox, out ProductInfo tableProduct))
             {
-                Debug.Log($"⚠️ Table {tableID}: Item is already boxed");
                 return;
             }
 
-            ItemData playerItemData = player.CurrentItemData;
-            if (playerItemData?.visualPrefab == null)
-            {
-                Debug.Log($"⚠️ Table {tableID}: Player has no valid item for boxing");
-                return;
-            }
-
-            BoxInfo playerBox = playerItemData.visualPrefab.GetComponent<BoxInfo>();
-            if (playerBox == null || playerBox.isFull)
-            {
-                Debug.Log($"⚠️ Table {tableID}: Player doesn't have an empty box");
-                return;
-            }
-
-            if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(state.itemNetworkId, out NetworkObject tableItemNetObj))
-            {
-                Debug.LogError($"❌ Table {tableID}: Table item not found for boxing");
-                return;
-            }
-
-            ProductInfo tableProduct = tableItemNetObj.GetComponent<ProductInfo>();
-            if (tableProduct == null)
-            {
-                Debug.Log($"⚠️ Table {tableID}: Table item is not a product, cannot box");
-                return;
-            }
-
+            // Box-Product compatibility check
             if (!IsValidBoxProductCombination(playerBox.boxType, tableProduct.productType))
             {
-                Debug.Log($"❌ Table {tableID}: Box type {playerBox.boxType} doesn't match product type {tableProduct.productType}");
+                LogDebug($"❌ Box type {playerBox.boxType} doesn't match product type {tableProduct.productType}");
                 NotifyBoxingFailedClientRpc(player.OwnerClientId);
                 return;
             }
 
-            BoxingMinigameManager minigame = GetComponentInChildren<BoxingMinigameManager>();
+            // Find minigame manager
+            var minigame = GetComponentInChildren<BoxingMinigameManager>();
             if (minigame == null)
             {
-                Debug.LogError($"❌ Table {tableID}: BoxingMinigameManager not found!");
+                LogError("BoxingMinigameManager not found!");
                 return;
             }
 
-            Debug.Log($"🎮 Table {tableID}: Starting minigame for client {player.OwnerClientId}");
-
-            // ✅ FIX: PlayerNetworkObjectId de gönderiliyor
+            // Start minigame
+            ItemData playerItemData = player.CurrentItemData;
+            LogDebug($"🎮 Starting minigame for client {player.OwnerClientId}");
             StartMinigameClientRpc(player.OwnerClientId, player.NetworkObjectId, (int)playerBox.boxType, playerItemData.itemID);
         }
 
-        #endregion
-
-        #region Client RPCs
-
-        /// <summary>
-        /// ✅ FIX: PlayerNetworkObjectId ile player bulunuyor
-        /// </summary>
-        [ClientRpc]
-        private void StartMinigameClientRpc(ulong targetClientId, ulong playerNetworkObjectId, int boxTypeInt, int itemDataID)
+        private bool ValidateBoxingRequest(PlayerInventory player, TableState state, out BoxInfo playerBox, out ProductInfo tableProduct)
         {
-            Debug.Log($"📥 CLIENT {NetworkManager.Singleton.LocalClientId}: Received StartMinigameClientRpc - Target: {targetClientId}, PlayerNetID: {playerNetworkObjectId}");
+            playerBox = null;
+            tableProduct = null;
 
-            // Sadece hedef client minigame'i başlatır
-            if (NetworkManager.Singleton.LocalClientId != targetClientId)
+            // Already boxed check
+            if (state.isItemBoxed)
             {
-                Debug.Log($"⏩ Skipping minigame start - not target client");
-                return;
+                LogDebug("⚠️ Item is already boxed");
+                return false;
             }
 
-            Debug.Log($"🎮 CLIENT {targetClientId}: I AM the target!  Starting minigame...");
-
-            // ✅ NetworkObjectId ile player'ı bul
-            if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(playerNetworkObjectId, out NetworkObject playerObj))
+            // Player item check
+            ItemData playerItemData = player.CurrentItemData;
+            if (playerItemData?.visualPrefab == null)
             {
-                Debug.LogError($"❌ CLIENT {targetClientId}: Player NetworkObject {playerNetworkObjectId} not found!");
-                return;
+                LogDebug("⚠️ Player has no valid item for boxing");
+                return false;
             }
 
-            PlayerInventory player = playerObj.GetComponent<PlayerInventory>();
-            if (player == null)
+            // Box check
+            playerBox = playerItemData.visualPrefab.GetComponent<BoxInfo>();
+            if (playerBox == null || playerBox.isFull)
             {
-                Debug.LogError($"❌ CLIENT {targetClientId}: PlayerInventory not found!");
-                return;
+                LogDebug("⚠️ Player doesn't have an empty box");
+                return false;
             }
 
-            // ✅ IsOwner ZORUNLU kontrolü
-            if (!player.IsOwner)
+            // Table item check
+            if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(state.itemNetworkId, out NetworkObject tableItemNetObj))
             {
-                Debug.LogError($"❌ CLIENT {targetClientId}: Player is NOT owned by this client!");
-                return;
+                LogError("Table item not found for boxing");
+                return false;
             }
 
-            // ItemData'yı bul
-            ItemData itemData = GetItemDataFromID(itemDataID);
-            if (itemData == null)
+            tableProduct = tableItemNetObj.GetComponent<ProductInfo>();
+            if (tableProduct == null)
             {
-                Debug.LogError($"❌ CLIENT {targetClientId}: ItemData with ID {itemDataID} not found!");
-                return;
+                LogDebug("⚠️ Table item is not a product, cannot box");
+                return false;
             }
 
-            BoxInfo.BoxType boxType = (BoxInfo.BoxType)boxTypeInt;
-
-            BoxingMinigameManager minigame = GetComponentInChildren<BoxingMinigameManager>();
-            if (minigame == null)
-            {
-                Debug.LogError($"❌ CLIENT {targetClientId}: BoxingMinigameManager not found!");
-                return;
-            }
-
-            Debug.Log($"✅ CLIENT {targetClientId}: All checks passed - Starting minigame for {boxType} box");
-            minigame.StartMinigame(player, boxType, itemData);
+            return true;
         }
-
-        [ClientRpc]
-        private void NotifyBoxingFailedClientRpc(ulong targetClientId)
-        {
-            if (NetworkManager.Singleton.LocalClientId == targetClientId)
-            {
-                Debug.Log($"❌ Table {tableID}: Boxing failed - box and product don't match");
-            }
-        }
-
-        #endregion
-
-        #region Minigame Callbacks
-
-        public void CompleteBoxingSuccess(PlayerInventory player, BoxInfo.BoxType boxType)
-        {
-            if (!IsServer) return;
-
-            Debug.Log($"✅ Table {tableID}: Boxing SUCCESS for {boxType} by client {player.OwnerClientId}");
-
-            player.SetInventoryStateServerRpc(false, -1);
-            player.TriggerDropAnimationServerRpc();
-
-            var state = tableState.Value;
-            if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(state.itemNetworkId, out NetworkObject productNetObj))
-            {
-                productNetObj.Despawn(true);
-            }
-
-            StartCoroutine(SpawnBoxedProductAfterMinigame(boxType));
-
-            if (QuestManager.Instance != null && IsServer)
-            {
-                QuestManager.Instance.IncrementQuestProgress(QuestType.PackageBoxes, boxType);
-            }
-        }
-
-        public void CompleteBoxingFailure(PlayerInventory player)
-        {
-            if (!IsServer) return;
-
-            Debug.Log($"❌ Table {tableID}: Boxing FAILED for client {player.OwnerClientId}");
-
-            player.SetInventoryStateServerRpc(false, -1);
-            player.TriggerDropAnimationServerRpc();
-
-            NotifyBoxingFailedClientRpc(player.OwnerClientId);
-        }
-
-        private IEnumerator SpawnBoxedProductAfterMinigame(BoxInfo.BoxType boxType)
-        {
-            yield return new WaitForSeconds(0.3f);
-
-            ItemData boxedProductData = GetBoxedProductData(boxType);
-            if (boxedProductData != null)
-            {
-                yield return StartCoroutine(SpawnBoxedProductCoroutine(boxedProductData));
-                Debug.Log($"✅ Table {tableID}: Boxed product spawned: {boxedProductData.itemName}");
-            }
-        }
-
-        private IEnumerator SpawnBoxedProductCoroutine(ItemData boxedProductData)
-        {
-            Vector3 spawnPos = itemPlacePoint.position;
-            spawnPos.y += 1f;
-
-            GameObject boxedItem = Instantiate(boxedProductData.worldPrefab, spawnPos, itemPlacePoint.rotation);
-            NetworkObject netObj = boxedItem.GetComponent<NetworkObject>();
-
-            if (netObj != null)
-            {
-                netObj.Spawn();
-
-                NetworkWorldItem worldItem = boxedItem.GetComponent<NetworkWorldItem>();
-                if (worldItem != null)
-                {
-                    worldItem.SetItemData(boxedProductData);
-                    worldItem.DisablePickup();
-                }
-
-                var newState = new TableState
-                {
-                    isEmpty = false,
-                    itemNetworkId = netObj.NetworkObjectId,
-                    isItemBoxed = true
-                };
-                tableState.Value = newState;
-            }
-
-            yield return null;
-        }
-
-        #endregion
-
-        #region Helper Methods
 
         private bool IsValidBoxProductCombination(BoxInfo.BoxType boxType, ProductInfo.ProductType productType)
         {
@@ -654,6 +741,174 @@ namespace NewCss
                    (productType == ProductInfo.ProductType.Clothing && boxType == BoxInfo.BoxType.Yellow) ||
                    (productType == ProductInfo.ProductType.Glass && boxType == BoxInfo.BoxType.Blue);
         }
+
+        #endregion
+
+        #region Client RPCs
+
+        [ClientRpc]
+        private void StartMinigameClientRpc(ulong targetClientId, ulong playerNetworkObjectId, int boxTypeInt, int itemDataID)
+        {
+            LogDebug($"📥 CLIENT {NetworkManager.Singleton.LocalClientId}: Received StartMinigameClientRpc - Target: {targetClientId}");
+
+            // Only target client processes
+            if (NetworkManager.Singleton.LocalClientId != targetClientId)
+            {
+                LogDebug("⏩ Skipping minigame start - not target client");
+                return;
+            }
+
+            LogDebug($"🎮 CLIENT {targetClientId}: I AM the target!  Starting minigame...");
+
+            if (!ValidateMinigameStart(targetClientId, playerNetworkObjectId, itemDataID,
+                out PlayerInventory player, out ItemData itemData))
+            {
+                return;
+            }
+
+            BoxInfo.BoxType boxType = (BoxInfo.BoxType)boxTypeInt;
+
+            var minigame = GetComponentInChildren<BoxingMinigameManager>();
+            if (minigame == null)
+            {
+                LogError($"CLIENT {targetClientId}: BoxingMinigameManager not found!");
+                return;
+            }
+
+            LogDebug($"✅ CLIENT {targetClientId}: All checks passed - Starting minigame for {boxType} box");
+            minigame.StartMinigame(player, boxType, itemData);
+        }
+
+        private bool ValidateMinigameStart(ulong targetClientId, ulong playerNetworkObjectId, int itemDataID,
+            out PlayerInventory player, out ItemData itemData)
+        {
+            player = null;
+            itemData = null;
+
+            // Find player
+            if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(playerNetworkObjectId, out NetworkObject playerObj))
+            {
+                LogError($"CLIENT {targetClientId}: Player NetworkObject {playerNetworkObjectId} not found!");
+                return false;
+            }
+
+            player = playerObj.GetComponent<PlayerInventory>();
+            if (player == null)
+            {
+                LogError($"CLIENT {targetClientId}: PlayerInventory not found!");
+                return false;
+            }
+
+            // Ownership check
+            if (!player.IsOwner)
+            {
+                LogError($"CLIENT {targetClientId}: Player is NOT owned by this client!");
+                return false;
+            }
+
+            // Find ItemData
+            itemData = GetItemDataFromID(itemDataID);
+            if (itemData == null)
+            {
+                LogError($"CLIENT {targetClientId}: ItemData with ID {itemDataID} not found!");
+                return false;
+            }
+
+            return true;
+        }
+
+        [ClientRpc]
+        private void NotifyBoxingFailedClientRpc(ulong targetClientId)
+        {
+            if (NetworkManager.Singleton.LocalClientId == targetClientId)
+            {
+                LogDebug($"❌ Boxing failed - box and product don't match");
+            }
+        }
+
+        #endregion
+
+        #region Minigame Callbacks
+
+        /// <summary>
+        /// Boxing başarılı olduğunda çağrılır
+        /// </summary>
+        public void CompleteBoxingSuccess(PlayerInventory player, BoxInfo.BoxType boxType)
+        {
+            if (!IsServer) return;
+
+            LogDebug($"✅ Boxing SUCCESS for {boxType} by client {player.OwnerClientId}");
+
+            // Clear player inventory
+            player.SetInventoryStateServerRpc(false, -1);
+            player.TriggerDropAnimationServerRpc();
+
+            // Despawn original product
+            DespawnCurrentTableItem();
+
+            // Spawn boxed product
+            StartCoroutine(SpawnBoxedProductCoroutine(boxType));
+
+            // Update quest
+            NotifyQuestManager(boxType);
+        }
+
+        /// <summary>
+        /// Boxing başarısız olduğunda çağrılır
+        /// </summary>
+        public void CompleteBoxingFailure(PlayerInventory player)
+        {
+            if (!IsServer) return;
+
+            LogDebug($"❌ Boxing FAILED for client {player.OwnerClientId}");
+
+            player.SetInventoryStateServerRpc(false, -1);
+            player.TriggerDropAnimationServerRpc();
+
+            NotifyBoxingFailedClientRpc(player.OwnerClientId);
+        }
+
+        private void DespawnCurrentTableItem()
+        {
+            var state = _tableState.Value;
+
+            if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(state.itemNetworkId, out NetworkObject productNetObj))
+            {
+                productNetObj.Despawn(true);
+            }
+        }
+
+        private IEnumerator SpawnBoxedProductCoroutine(BoxInfo.BoxType boxType)
+        {
+            yield return new WaitForSeconds(BOXED_PRODUCT_SPAWN_DELAY);
+
+            ItemData boxedProductData = GetBoxedProductData(boxType);
+            if (boxedProductData == null)
+            {
+                LogError($"Boxed product data not found for {boxType}");
+                yield break;
+            }
+
+            Vector3 spawnPos = CalculateSpawnPosition();
+            GameObject boxedItem = Instantiate(boxedProductData.worldPrefab, spawnPos, itemPlacePoint.rotation);
+
+            var netObj = boxedItem.GetComponent<NetworkObject>();
+            if (netObj == null)
+            {
+                Destroy(boxedItem);
+                yield break;
+            }
+
+            netObj.Spawn();
+            ConfigureWorldItem(boxedItem, boxedProductData);
+            SetTableState(false, netObj.NetworkObjectId, true);
+
+            LogDebug($"✅ Boxed product spawned: {boxedProductData.itemName}");
+        }
+
+        #endregion
+
+        #region Helper Methods
 
         private ItemData GetBoxedProductData(BoxInfo.BoxType boxType)
         {
@@ -665,17 +920,18 @@ namespace NewCss
                 _ => ""
             };
 
-            if (!string.IsNullOrEmpty(itemName))
+            if (string.IsNullOrEmpty(itemName))
             {
-                return Resources.Load<ItemData>($"Items/{itemName}");
+                return null;
             }
 
-            return null;
+            return Resources.Load<ItemData>($"Items/{itemName}");
         }
 
         private ItemData GetItemDataFromID(int itemID)
         {
             ItemData[] allItems = Resources.LoadAll<ItemData>("Items");
+
             foreach (ItemData item in allItems)
             {
                 if (item.itemID == itemID)
@@ -683,23 +939,49 @@ namespace NewCss
                     return item;
                 }
             }
+
             return null;
-        }
-
-        public static Table GetTableByID(string id)
-        {
-            return allTables.Find(t => t != null && t.tableID == id);
-        }
-
-        public static List<Table> GetAllTables()
-        {
-            allTables.RemoveAll(t => t == null);
-            return new List<Table>(allTables);
         }
 
         #endregion
 
-        #region Debug & Gizmos
+        #region Notifications
+
+        private void NotifyTutorialManager(bool isPlacing)
+        {
+            TutorialManager.Instance?.OnTableInteraction(isPlacing);
+        }
+
+        private void NotifyQuestManager(BoxInfo.BoxType boxType)
+        {
+            if (QuestManager.Instance != null && IsServer)
+            {
+                QuestManager.Instance.IncrementQuestProgress(QuestType.PackageBoxes, boxType);
+            }
+        }
+
+        #endregion
+
+        #region Logging
+
+        private void LogDebug(string message)
+        {
+            Debug.Log($"{LOG_PREFIX} {tableID}: {message}");
+        }
+
+        private void LogWarning(string message)
+        {
+            Debug.LogWarning($"{LOG_PREFIX} {tableID}: {message}");
+        }
+
+        private void LogError(string message)
+        {
+            Debug.LogError($"{LOG_PREFIX} {tableID}: {message}");
+        }
+
+        #endregion
+
+        #region Debug & Editor
 
         [ContextMenu("Debug Table State")]
         public void DebugTableState()
@@ -707,43 +989,69 @@ namespace NewCss
             Debug.Log($"=== TABLE {tableID} DEBUG ===");
             Debug.Log($"Network State - IsServer: {IsServer}, IsClient: {IsClient}");
             Debug.Log($"Table State - Empty: {IsEmpty}, HasItem: {HasItem}, IsBoxed: {IsItemBoxed}");
-            Debug.Log($"NetworkObjectId: {(tableState.Value.isEmpty ? "None" : tableState.Value.itemNetworkId.ToString())}");
-            Debug.Log($"Current Item Object: {(currentItemOnTable != null ? currentItemOnTable.name : "null")}");
+            Debug.Log($"NetworkObjectId: {(_tableState.Value.isEmpty ? "None" : _tableState.Value.itemNetworkId.ToString())}");
+            Debug.Log($"Current Item Object: {(_currentItemOnTable != null ? _currentItemOnTable.name : "null")}");
             Debug.Log($"============================");
         }
 
+#if UNITY_EDITOR
         private void OnDrawGizmosSelected()
         {
             if (!showInteractionRange) return;
 
+            DrawInteractionBoxGizmo();
+            DrawItemPlacePointGizmo();
+            DrawCenterPointGizmo();
+        }
+
+        private void DrawInteractionBoxGizmo()
+        {
+            // Filled box
             Gizmos.color = new Color(1f, 1f, 0f, 0.3f);
-            Matrix4x4 rotationMatrix = Matrix4x4.TRS(transform.position + transform.TransformDirection(interactionBoxOffset), transform.rotation, Vector3.one);
+
+            var rotationMatrix = Matrix4x4.TRS(
+                transform.position + transform.TransformDirection(interactionBoxOffset),
+                transform.rotation,
+                Vector3.one
+            );
+
             Gizmos.matrix = rotationMatrix;
             Gizmos.DrawCube(Vector3.zero, interactionBoxSize);
 
+            // Wire box
             Gizmos.color = Color.yellow;
             Gizmos.DrawWireCube(Vector3.zero, interactionBoxSize);
 
             Gizmos.matrix = Matrix4x4.identity;
-
-            if (itemPlacePoint != null)
-            {
-                Gizmos.color = Color.green;
-                Gizmos.DrawWireCube(itemPlacePoint.position, Vector3.one * 0.3f);
-                Gizmos.DrawLine(transform.position, itemPlacePoint.position);
-
-#if UNITY_EDITOR
-                UnityEditor.Handles.Label(itemPlacePoint.position + Vector3.up * 0.5f, tableID);
-#endif
-            }
-
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(transform.position + transform.TransformDirection(interactionBoxOffset), 0.1f);
         }
+
+        private void DrawItemPlacePointGizmo()
+        {
+            if (itemPlacePoint == null) return;
+
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireCube(itemPlacePoint.position, Vector3.one * PLACE_POINT_GIZMO_SIZE);
+            Gizmos.DrawLine(transform.position, itemPlacePoint.position);
+
+            UnityEditor.Handles.Label(itemPlacePoint.position + Vector3.up * 0.5f, tableID);
+        }
+
+        private void DrawCenterPointGizmo()
+        {
+            Gizmos.color = Color.red;
+            Vector3 centerPos = transform.position + transform.TransformDirection(interactionBoxOffset);
+            Gizmos.DrawWireSphere(centerPos, CENTER_GIZMO_RADIUS);
+        }
+#endif
 
         #endregion
     }
 
+    #region Network Serializable Struct
+
+    /// <summary>
+    /// Masa durumunu network üzerinden senkronize eden struct
+    /// </summary>
     [System.Serializable]
     public struct TableState : INetworkSerializable
     {
@@ -758,4 +1066,6 @@ namespace NewCss
             serializer.SerializeValue(ref isItemBoxed);
         }
     }
+
+    #endregion
 }

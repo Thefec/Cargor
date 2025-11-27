@@ -1,531 +1,890 @@
 using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
-using Unity.Netcode;
 
 namespace NewCss.UIScripts
 {
+    /// <summary>
+    /// Network destekli karakter özelleştirme UI sistemi.   
+    /// Trigger bazlı etkileşim, animasyonlu panel açma/kapama ve karakter kustomizasyon kaydetme özellikleri sunar.
+    /// </summary>
     [RequireComponent(typeof(Collider))]
     public class NetworkCharacterCusUI : MonoBehaviour
     {
-        [Tooltip("UI Panel that will open and close")]
+        #region Constants
+
+        private const string LOG_PREFIX = "[CharacterCusUI]";
+        private const string CHARACTER_TAG = "Character";
+        private const float DEFAULT_OPEN_ANIMATION_DURATION = 0.5f;
+        private const float DEFAULT_CLOSE_ANIMATION_DURATION = 0.25f;
+
+        // Animator triggers
+        private const string TRIGGER_OPEN = "Open";
+        private const string TRIGGER_CLOSE = "Close";
+
+        #endregion
+
+        #region Serialized Fields - UI References
+
+        [Header("=== UI REFERENCES ===")]
+        [SerializeField, Tooltip("Açılacak UI paneli")]
         public GameObject uiPanel;
 
-        [Tooltip("Button that will appear when character enters trigger")]
+        [SerializeField, Tooltip("Etkileşim butonu")]
         public GameObject interactionButton;
 
-        [Tooltip("Close button inside the UI panel")]
+        [SerializeField, Tooltip("Kapatma butonu")]
         public Button closeButton;
 
-        [Tooltip("Character rotation speed toward camera (0 = instant)")]
-        public float rotationSpeed = 0f;
+        #endregion
 
-        [SerializeField] private int CurrentTime = 14;
+        #region Serialized Fields - Animation
 
-        // NEW: Animator for the UI panel
-        [Tooltip("Animator on the uiPanel (must have Open and Close triggers)")]
+        [Header("=== ANIMATION SETTINGS ===")]
+        [SerializeField, Tooltip("UI panel animator'ı")]
         public Animator uiAnimator;
 
-        // Name of the close animation clip (used to determine length if no animation event used)
+        [SerializeField, Tooltip("Kapatma animasyon clip adı")]
         public string closeAnimationClipName = "SlideOut";
+
+        [SerializeField, Tooltip("Açma animasyon clip adı")]
         public string openAnimationClipName = "SlideIn";
 
-        private NetworkObject currentCharacterNetwork;
-        private Transform currentCharacter;
-        private Button buttonComponent;
-        private PlayerMovement currentPlayerMovement;
-        private bool isPanelOpen = false;
-        private bool isAnimating = false;
+        #endregion
 
-        // YENI: Referans NetworkCharacterMeshSwapper için
-        private NetworkCharacterMeshSwapper characterMeshSwapper;
+        #region Serialized Fields - Interaction
+
+        [Header("=== INTERACTION SETTINGS ===")]
+        [SerializeField, Tooltip("Karakter kameraya dönme hızı (0 = anında)")]
+        public float rotationSpeed = 0f;
+
+        [SerializeField, Tooltip("Etkileşim için gereken maksimum saat")]
+        private int CurrentTime = 14;
+
+        #endregion
+
+        #region Private Fields - Character References
+
+        private NetworkObject _currentCharacterNetwork;
+        private Transform _currentCharacter;
+        private PlayerMovement _currentPlayerMovement;
+        private NetworkCharacterMeshSwapper _characterMeshSwapper;
+
+        #endregion
+
+        #region Private Fields - UI State
+
+        private Button _buttonComponent;
+        private bool _isPanelOpen;
+        private bool _isAnimating;
+
+        #endregion
+
+        #region Private Fields - Cached Animation Durations
+
+        private float _cachedOpenDuration = -1f;
+        private float _cachedCloseDuration = -1f;
+
+        #endregion
+
+        #region Public Properties
+
+        /// <summary>
+        /// Panel açık mı? 
+        /// </summary>
+        public bool IsPanelOpen => _isPanelOpen;
+
+        /// <summary>
+        /// Animasyon devam ediyor mu?
+        /// </summary>
+        public bool IsAnimating => _isAnimating;
+
+        /// <summary>
+        /// Etkileşim mümkün mü?
+        /// </summary>
+        public bool CanInteract => !_isPanelOpen && !_isAnimating;
+
+        #endregion
+
+        #region Unity Lifecycle
 
         private void Awake()
         {
-            // IMPORTANT: if uiPanel is null -> warn
+            Initialize();
+        }
+
+        private void OnDestroy()
+        {
+            Cleanup();
+        }
+
+        #endregion
+
+        #region Initialization
+
+        private void Initialize()
+        {
+            InitializeUIPanel();
+            InitializeInteractionButton();
+            InitializeCloseButton();
+            InitializeAnimator();
+            CacheAnimationDurations();
+        }
+
+        private void InitializeUIPanel()
+        {
             if (uiPanel == null)
             {
-                Debug.LogWarning("uiPanel not assigned!", this);
+                LogWarning("uiPanel not assigned!");
+                return;
+            }
+
+            uiPanel.SetActive(false);
+        }
+
+        private void InitializeInteractionButton()
+        {
+            if (interactionButton == null)
+            {
+                LogWarning("interactionButton not assigned!");
+                return;
+            }
+
+            interactionButton.SetActive(false);
+            _buttonComponent = interactionButton.GetComponent<Button>();
+
+            if (_buttonComponent != null)
+            {
+                _buttonComponent.onClick.AddListener(HandleInteractionButtonClicked);
             }
             else
             {
-                // Panel'i başlangıçta gizle
-                uiPanel.SetActive(false);
-            }
-
-            if (interactionButton != null)
-            {
-                interactionButton.SetActive(false);
-                buttonComponent = interactionButton.GetComponent<Button>();
-
-                if (buttonComponent != null)
-                {
-                    buttonComponent.onClick.AddListener(OnInteractionButtonClicked);
-                }
-                else
-                {
-                    Debug.LogWarning("Interaction button doesn't have a Button component!", this);
-                }
-            }
-
-            // Setup close button
-            if (closeButton != null)
-            {
-                closeButton.onClick.AddListener(OnCloseButtonClicked);
-            }
-            else
-            {
-                Debug.LogWarning("Close button not assigned! Panel won't be closable.", this);
-            }
-
-            // If animator not assigned, try to get it from uiPanel
-            if (uiAnimator == null && uiPanel != null)
-            {
-                uiAnimator = uiPanel.GetComponent<Animator>();
-                if (uiAnimator == null)
-                    Debug.LogWarning("uiAnimator not assigned and uiPanel has no Animator!", this);
+                LogWarning("Interaction button doesn't have a Button component!");
             }
         }
 
-        private void OnTriggerEnter(Collider other)
+        private void InitializeCloseButton()
         {
-            NetworkObject networkObject = other.GetComponent<NetworkObject>();
-            if (networkObject == null) return;
-
-            if (!networkObject.IsOwner) return;
-
-            if (!other.CompareTag("Character")) return;
-
-            currentCharacterNetwork = networkObject;
-            currentCharacter = other.transform;
-
-            // YENI: NetworkCharacterMeshSwapper referansını al
-            characterMeshSwapper = other.GetComponent<NetworkCharacterMeshSwapper>();
-            if (characterMeshSwapper == null)
+            if (closeButton != null)
             {
-                characterMeshSwapper = other.GetComponentInChildren<NetworkCharacterMeshSwapper>();
-            }
-
-            // Cache PlayerMovement component
-            currentPlayerMovement = other.GetComponent<PlayerMovement>();
-            if (currentPlayerMovement == null)
-            {
-                currentPlayerMovement = other.GetComponentInChildren<PlayerMovement>();
-            }
-            if (currentPlayerMovement == null)
-            {
-                currentPlayerMovement = other.GetComponentInParent<PlayerMovement>();
-            }
-
-            int currentHour = DayCycleManager.Instance.CurrentHour;
-            Debug.Log($"Current Hour: {currentHour}, Required Time: {CurrentTime}");
-
-            if (currentHour <= CurrentTime)
-            {
-                if (interactionButton != null && !isPanelOpen)
-                    interactionButton.SetActive(true);
-                else
-                    Debug.LogWarning("interactionButton not assigned!", this);
+                closeButton.onClick.AddListener(HandleCloseButtonClicked);
             }
             else
             {
-                Debug.Log($"Button not shown - Current hour ({currentHour}) is greater than required time ({CurrentTime})");
+                LogWarning("Close button not assigned!  Panel won't be closable.");
             }
+        }
+
+        private void InitializeAnimator()
+        {
+            if (uiAnimator != null) return;
+
+            if (uiPanel != null)
+            {
+                uiAnimator = uiPanel.GetComponent<Animator>();
+
+                if (uiAnimator == null)
+                {
+                    LogWarning("uiAnimator not assigned and uiPanel has no Animator!");
+                }
+            }
+        }
+
+        private void CacheAnimationDurations()
+        {
+            if (uiAnimator == null) return;
+
+            var controller = uiAnimator.runtimeAnimatorController;
+            if (controller == null) return;
+
+            foreach (var clip in controller.animationClips)
+            {
+                if (IsOpenAnimationClip(clip.name))
+                {
+                    _cachedOpenDuration = clip.length;
+                }
+                else if (IsCloseAnimationClip(clip.name))
+                {
+                    _cachedCloseDuration = clip.length;
+                }
+            }
+        }
+
+        private bool IsOpenAnimationClip(string clipName)
+        {
+            return clipName.Contains("Open") ||
+                   clipName.Contains("SlideIn") ||
+                   clipName == openAnimationClipName;
+        }
+
+        private bool IsCloseAnimationClip(string clipName)
+        {
+            return clipName.Contains("Close") ||
+                   clipName.Contains("SlideOut") ||
+                   clipName == closeAnimationClipName;
+        }
+
+        #endregion
+
+        #region Trigger Detection
+
+        private void OnTriggerEnter(Collider other)
+        {
+            if (!ValidateCharacterTrigger(other, out NetworkObject networkObject))
+            {
+                return;
+            }
+
+            CacheCharacterReferences(other, networkObject);
+            TryShowInteractionButton();
         }
 
         private void OnTriggerExit(Collider other)
         {
-            NetworkObject networkObject = other.GetComponent<NetworkObject>();
-            if (networkObject == null || networkObject != currentCharacterNetwork) return;
+            var networkObject = other.GetComponent<NetworkObject>();
 
-            if (!networkObject.IsOwner) return;
+            if (networkObject == null || networkObject != _currentCharacterNetwork)
+            {
+                return;
+            }
 
-            if (!other.CompareTag("Character")) return;
+            if (!networkObject.IsOwner || !other.CompareTag(CHARACTER_TAG))
+            {
+                return;
+            }
 
-            // If panel is open, close it first and unlock movement
-            if (isPanelOpen)
+            // Panel açıksa kapat
+            if (_isPanelOpen)
             {
                 CloseUI();
             }
 
-            currentCharacterNetwork = null;
-            currentCharacter = null;
-            currentPlayerMovement = null;
-            
-            // YENI: MeshSwapper referansını temizle
-            characterMeshSwapper = null;
+            ClearCharacterReferences();
+            HideInteractionButton();
+        }
 
+        private bool ValidateCharacterTrigger(Collider other, out NetworkObject networkObject)
+        {
+            networkObject = other.GetComponent<NetworkObject>();
+
+            if (networkObject == null)
+            {
+                return false;
+            }
+
+            if (!networkObject.IsOwner)
+            {
+                return false;
+            }
+
+            if (!other.CompareTag(CHARACTER_TAG))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        #endregion
+
+        #region Character Reference Management
+
+        private void CacheCharacterReferences(Collider other, NetworkObject networkObject)
+        {
+            _currentCharacterNetwork = networkObject;
+            _currentCharacter = other.transform;
+
+            // Cache components
+            _characterMeshSwapper = FindComponent<NetworkCharacterMeshSwapper>(other);
+            _currentPlayerMovement = FindComponent<PlayerMovement>(other);
+        }
+
+        private void ClearCharacterReferences()
+        {
+            _currentCharacterNetwork = null;
+            _currentCharacter = null;
+            _currentPlayerMovement = null;
+            _characterMeshSwapper = null;
+        }
+
+        private T FindComponent<T>(Collider other) where T : Component
+        {
+            var component = other.GetComponent<T>();
+
+            if (component == null)
+            {
+                component = other.GetComponentInChildren<T>();
+            }
+
+            if (component == null)
+            {
+                component = other.GetComponentInParent<T>();
+            }
+
+            return component;
+        }
+
+        #endregion
+
+        #region Interaction Button
+
+        private void TryShowInteractionButton()
+        {
+            if (interactionButton == null)
+            {
+                LogWarning("interactionButton not assigned!");
+                return;
+            }
+
+            if (_isPanelOpen)
+            {
+                return;
+            }
+
+            int currentHour = GetCurrentHour();
+            LogDebug($"Current Hour: {currentHour}, Required Time: {CurrentTime}");
+
+            if (currentHour <= CurrentTime)
+            {
+                interactionButton.SetActive(true);
+            }
+            else
+            {
+                LogDebug($"Button not shown - Current hour ({currentHour}) > required time ({CurrentTime})");
+            }
+        }
+
+        private void HideInteractionButton()
+        {
             if (interactionButton != null)
+            {
                 interactionButton.SetActive(false);
-        }
-
-        private void OnInteractionButtonClicked()
-        {
-            if (currentCharacterNetwork == null || !currentCharacterNetwork.IsOwner)
-            {
-                Debug.LogWarning("Cannot interact - no valid local player character");
-                return;
-            }
-
-            // Animasyon sırasında tıklamaları engelle
-            if (isAnimating)
-            {
-                Debug.Log("Animation in progress, ignoring interaction");
-                return;
-            }
-
-            // Panel zaten açıksa tekrar açmaya çalışma
-            if (isPanelOpen)
-            {
-                Debug.Log("Panel already open, ignoring interaction");
-                return;
-            }
-
-            if (currentCharacter != null)
-            {
-                RotateCharacterToCamera(currentCharacter);
-            }
-
-            // Lock player movement
-            LockPlayerMovement(true);
-            isPanelOpen = true;
-            isAnimating = true;
-
-            if (uiPanel != null)
-            {
-                // DÜZELTME: Panel'i aktif etmeden önce animator state'ini sıfırla
-                if (uiAnimator != null)
-                {
-                    // Animator'ı tamamen resetle
-                    uiAnimator.Rebind();
-                    uiAnimator.Update(0f);
-                    
-                    // Tüm trigger'ları temizle
-                    uiAnimator.ResetTrigger("Open");
-                    uiAnimator.ResetTrigger("Close");
-                }
-
-                // Panel'i aktif et
-                uiPanel.SetActive(true);
-
-                // Kısa bir gecikme sonrası animasyonu başlat
-                StartCoroutine(DelayedOpenAnimation());
-
-                if (interactionButton != null)
-                    interactionButton.SetActive(false);
-
-                var customizationUI = uiPanel.GetComponent<NetworkCharacterCustomizationUI>();
-                if (customizationUI != null)
-                {
-                    customizationUI.OnCharacterSpawned(currentCharacterNetwork.gameObject);
-                }
-            }
-            else
-            {
-                Debug.LogWarning("uiPanel not assigned!", this);
-                isAnimating = false;
             }
         }
 
-        // YENİ: Geciktirilmiş açılma animasyonu
-        private IEnumerator DelayedOpenAnimation()
+        /// <summary>
+        /// Zaman koşulunu kontrol eder ve butonu günceller
+        /// </summary>
+        public void CheckTimeCondition()
         {
-            // Bir frame bekle ki panel düzgün aktif olsun
-            yield return null;
-            
-            // Play Open animation via Animator trigger if available
-            if (uiAnimator != null)
+            if (_currentCharacterNetwork == null || !_currentCharacterNetwork.IsOwner)
             {
-                uiAnimator.SetTrigger("Open");
-                
-                // Açılma animasyonu bitene kadar bekle
-                yield return StartCoroutine(WaitForOpenAnimation());
+                return;
             }
-            else
+
+            if (interactionButton == null || uiPanel == null || _isPanelOpen)
             {
-                // Fallback: if no animator, just show it immediately
-                isAnimating = false;
+                return;
             }
+
+            int currentHour = GetCurrentHour();
+            interactionButton.SetActive(currentHour <= CurrentTime);
         }
 
-        // NEW: Handle close button click
-        private void OnCloseButtonClicked()
+        #endregion
+
+        #region Button Event Handlers
+
+        private void HandleInteractionButtonClicked()
         {
-            // Animasyon sırasında kapatma işlemini engelle
-            if (isAnimating)
+            if (!CanOpenPanel())
             {
-                Debug.Log("Animation in progress, ignoring close request");
+                return;
+            }
+
+            OpenUI();
+        }
+
+        private void HandleCloseButtonClicked()
+        {
+            if (_isAnimating)
+            {
+                LogDebug("Animation in progress, ignoring close request");
                 return;
             }
 
             CloseUI();
         }
 
-        // PUBLIC: call this to close the UI (animasyonlu)
-        public void CloseUI()
+        private bool CanOpenPanel()
         {
-            if (uiPanel == null || !isPanelOpen)
+            if (_currentCharacterNetwork == null || !_currentCharacterNetwork.IsOwner)
             {
-                Debug.Log("Panel not open or null, cannot close");
+                LogWarning("Cannot interact - no valid local player character");
+                return false;
+            }
+
+            if (_isAnimating)
+            {
+                LogDebug("Animation in progress, ignoring interaction");
+                return false;
+            }
+
+            if (_isPanelOpen)
+            {
+                LogDebug("Panel already open, ignoring interaction");
+                return false;
+            }
+
+            return true;
+        }
+
+        #endregion
+
+        #region Open UI
+
+        private void OpenUI()
+        {
+            // Rotate character
+            if (_currentCharacter != null)
+            {
+                RotateCharacterToCamera(_currentCharacter);
+            }
+
+            // Lock movement
+            SetPlayerMovementLock(true);
+
+            _isPanelOpen = true;
+            _isAnimating = true;
+
+            // Open panel
+            if (uiPanel == null)
+            {
+                LogWarning("uiPanel not assigned!");
+                _isAnimating = false;
                 return;
             }
 
-            // Animasyon sırasında kapatmaya çalışırsa engelle
-            if (isAnimating)
+            PrepareAndOpenPanel();
+        }
+
+        private void PrepareAndOpenPanel()
+        {
+            // Reset animator state
+            if (uiAnimator != null)
             {
-                Debug.Log("Animation in progress, ignoring close request");
-                return;
+                uiAnimator.Rebind();
+                uiAnimator.Update(0f);
+                ResetAnimatorTriggers();
             }
 
-            // YENI: UI kapatılmadan önce karakter kustomizasyonunu kaydet
-            SaveCharacterCustomization();
+            // Activate panel
+            uiPanel.SetActive(true);
 
-            isPanelOpen = false;
-            isAnimating = true;
+            // Hide interaction button
+            HideInteractionButton();
+
+            // Notify customization UI
+            NotifyCustomizationUI();
+
+            // Start animation
+            StartCoroutine(PlayOpenAnimationCoroutine());
+        }
+
+        private void NotifyCustomizationUI()
+        {
+            if (_currentCharacterNetwork == null) return;
+
+            var customizationUI = uiPanel.GetComponent<NetworkCharacterCustomizationUI>();
+            if (customizationUI != null)
+            {
+                customizationUI.OnCharacterSpawned(_currentCharacterNetwork.gameObject);
+            }
+        }
+
+        private IEnumerator PlayOpenAnimationCoroutine()
+        {
+            // Wait one frame for panel to properly activate
+            yield return null;
 
             if (uiAnimator != null)
             {
-                // trigger close anim; coroutine will disable the panel at the end
-                uiAnimator.ResetTrigger("Open");
-                uiAnimator.SetTrigger("Close");
-                StartCoroutine(PlayCloseAndUnlockMovement());
+                uiAnimator.SetTrigger(TRIGGER_OPEN);
+
+                float duration = GetOpenAnimationDuration();
+                yield return new WaitForSeconds(duration);
+            }
+
+            _isAnimating = false;
+            LogDebug("Open animation completed");
+        }
+
+        #endregion
+
+        #region Close UI
+
+        /// <summary>
+        /// UI'ı kapatır (animasyonlu)
+        /// </summary>
+        public void CloseUI()
+        {
+            if (uiPanel == null || !_isPanelOpen)
+            {
+                LogDebug("Panel not open or null, cannot close");
+                return;
+            }
+
+            if (_isAnimating)
+            {
+                LogDebug("Animation in progress, ignoring close request");
+                return;
+            }
+
+            // Save customization before closing
+            SaveCharacterCustomization();
+
+            _isPanelOpen = false;
+            _isAnimating = true;
+
+            if (uiAnimator != null)
+            {
+                ResetAnimatorTriggers();
+                uiAnimator.SetTrigger(TRIGGER_CLOSE);
+                StartCoroutine(PlayCloseAnimationCoroutine());
             }
             else
             {
-                uiPanel.SetActive(false);
-                // Unlock movement immediately if no animation
-                LockPlayerMovement(false);
-                isAnimating = false;
+                CompleteClose();
             }
 
-            int currentHour = DayCycleManager.Instance.CurrentHour;
-            if (currentCharacterNetwork != null && currentCharacterNetwork.IsOwner &&
-                interactionButton != null && currentHour <= CurrentTime)
+            // Show interaction button if conditions met
+            TryShowInteractionButtonAfterClose();
+        }
+
+        private IEnumerator PlayCloseAnimationCoroutine()
+        {
+            float duration = GetCloseAnimationDuration();
+            yield return new WaitForSeconds(duration);
+
+            CompleteClose();
+        }
+
+        private void CompleteClose()
+        {
+            if (uiPanel != null)
+            {
+                uiPanel.SetActive(false);
+            }
+
+            SetPlayerMovementLock(false);
+            _isAnimating = false;
+
+            LogDebug("Close animation completed");
+        }
+
+        private void TryShowInteractionButtonAfterClose()
+        {
+            if (_currentCharacterNetwork == null || !_currentCharacterNetwork.IsOwner)
+            {
+                return;
+            }
+
+            if (interactionButton == null)
+            {
+                return;
+            }
+
+            int currentHour = GetCurrentHour();
+            if (currentHour <= CurrentTime)
             {
                 interactionButton.SetActive(true);
             }
         }
 
-        // YENI: Karakter kustomizasyonunu kaydet
-        private void SaveCharacterCustomization()
+        /// <summary>
+        /// UI'ı zorla kapatır ve movement'ı unlock eder
+        /// </summary>
+        public void ForceCloseAndUnlock()
         {
-            if (characterMeshSwapper != null && currentCharacterNetwork != null && currentCharacterNetwork.IsOwner)
-            {
-                characterMeshSwapper.SaveCustomizationData();
-                Debug.Log("Character customization saved via UI close!");
-            }
-            else if (characterMeshSwapper == null)
-            {
-                Debug.LogWarning("NetworkCharacterMeshSwapper not found - cannot save customization!");
-            }
-        }
+            if (!_isPanelOpen) return;
 
-        // YENI: Manuel kaydetme butonu için public metod
-        public void SaveCustomizationManually()
-        {
             SaveCharacterCustomization();
-        }
 
-        // YENI: Customization sıfırlama butonu için
-        public void ResetCustomization()
-        {
-            if (characterMeshSwapper != null && currentCharacterNetwork != null && currentCharacterNetwork.IsOwner)
-            {
-                characterMeshSwapper.ResetToDefaults();
-                Debug.Log("Character customization reset to defaults!");
-            }
-        }
+            _isPanelOpen = false;
+            _isAnimating = false;
 
-        public void CheckTimeCondition()
-        {
-            int currentHour = DayCycleManager.Instance.CurrentHour;
+            SetPlayerMovementLock(false);
 
-            if (currentCharacterNetwork != null && currentCharacterNetwork.IsOwner && interactionButton != null)
-            {
-                bool shouldShowButton = currentHour <= CurrentTime;
-
-                if (uiPanel != null && !isPanelOpen)
-                {
-                    interactionButton.SetActive(shouldShowButton);
-                }
-            }
-        }
-
-        // NEW: Method to lock/unlock player movement
-        private void LockPlayerMovement(bool lockMovement)
-        {
-            if (currentPlayerMovement != null)
-            {
-                if (lockMovement)
-                {
-                    currentPlayerMovement.LockMovement(true);
-                    currentPlayerMovement.LockAllInteractions(true);
-                    Debug.Log("Player movement locked for UI interaction");
-                }
-                else
-                {
-                    currentPlayerMovement.LockMovement(false);
-                    currentPlayerMovement.LockAllInteractions(false);
-                    Debug.Log("Player movement unlocked");
-                }
-            }
-            else
-            {
-                Debug.LogWarning("PlayerMovement component not found!");
-            }
-        }
-
-        // DÜZELTME: Wait for open animation to complete
-        private IEnumerator WaitForOpenAnimation()
-        {
-            float waitTime = 0.5f; // default fallback
-
-            if (uiAnimator != null)
-            {
-                // Mevcut state bilgisini al
-                AnimatorStateInfo stateInfo = uiAnimator.GetCurrentAnimatorStateInfo(0);
-                
-                // Animation clip uzunluğunu bul
-                var ac = uiAnimator.runtimeAnimatorController;
-                if (ac != null)
-                {
-                    foreach (var clip in ac.animationClips)
-                    {
-                        if (clip.name.Contains("Open") || clip.name.Contains("SlideIn") || 
-                            clip.name == openAnimationClipName)
-                        {
-                            waitTime = clip.length;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            yield return new WaitForSeconds(waitTime);
-
-            // Açılma animasyonu bitti
-            isAnimating = false;
-        }
-
-        // NEW: Updated coroutine that unlocks movement after close animation
-        private IEnumerator PlayCloseAndUnlockMovement()
-        {
-            float waitTime = 0.25f; // default fallback
-
-            if (uiAnimator != null)
-            {
-                // Try to find animation clip length by name
-                var ac = uiAnimator.runtimeAnimatorController;
-                if (ac != null)
-                {
-                    foreach (var clip in ac.animationClips)
-                    {
-                        if (clip.name == closeAnimationClipName)
-                        {
-                            waitTime = clip.length;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            yield return new WaitForSeconds(waitTime);
-
-            // After close animation, disable panel and unlock movement
             if (uiPanel != null)
+            {
                 uiPanel.SetActive(false);
+            }
 
-            // Unlock player movement after animation completes
-            LockPlayerMovement(false);
-            
-            // Kapatma animasyonu bitti
-            isAnimating = false;
+            TryShowInteractionButtonAfterClose();
+
+            LogDebug("Force close and unlock completed");
         }
+
+        #endregion
+
+        #region Animation Helpers
+
+        private void ResetAnimatorTriggers()
+        {
+            if (uiAnimator == null) return;
+
+            uiAnimator.ResetTrigger(TRIGGER_OPEN);
+            uiAnimator.ResetTrigger(TRIGGER_CLOSE);
+        }
+
+        private float GetOpenAnimationDuration()
+        {
+            if (_cachedOpenDuration > 0)
+            {
+                return _cachedOpenDuration;
+            }
+            return DEFAULT_OPEN_ANIMATION_DURATION;
+        }
+
+        private float GetCloseAnimationDuration()
+        {
+            if (_cachedCloseDuration > 0)
+            {
+                return _cachedCloseDuration;
+            }
+            return DEFAULT_CLOSE_ANIMATION_DURATION;
+        }
+
+        #endregion
+
+        #region Player Movement
+
+        private void SetPlayerMovementLock(bool locked)
+        {
+            if (_currentPlayerMovement == null)
+            {
+                LogWarning("PlayerMovement component not found!");
+                return;
+            }
+
+            _currentPlayerMovement.LockMovement(locked);
+            _currentPlayerMovement.LockAllInteractions(locked);
+
+            LogDebug($"Player movement {(locked ? "locked" : "unlocked")}");
+        }
+
+        #endregion
+
+        #region Character Rotation
 
         private void RotateCharacterToCamera(Transform character)
         {
             Camera cam = Camera.main;
             if (cam == null)
             {
-                Debug.LogError("Main Camera not found!");
+                LogError("Main Camera not found!");
                 return;
             }
 
             Vector3 direction = cam.transform.position - character.position;
             direction.y = 0f;
+
             if (direction.sqrMagnitude < 0.001f)
+            {
                 return;
+            }
 
             Quaternion targetRotation = Quaternion.LookRotation(direction);
+
             if (rotationSpeed <= 0f)
             {
                 character.rotation = targetRotation;
             }
             else
             {
-                character.rotation = Quaternion.Slerp(character.rotation, targetRotation,
-                    rotationSpeed * Time.deltaTime);
+                character.rotation = Quaternion.Slerp(
+                    character.rotation,
+                    targetRotation,
+                    rotationSpeed * Time.deltaTime
+                );
             }
         }
 
-        private void OnDestroy()
+        #endregion
+
+        #region Customization Management
+
+        private void SaveCharacterCustomization()
         {
-            if (buttonComponent != null)
-                buttonComponent.onClick.RemoveListener(OnInteractionButtonClicked);
-
-            if (closeButton != null)
-                closeButton.onClick.RemoveListener(OnCloseButtonClicked);
-
-            // YENI: Destroy edilmeden önce kaydet
-            if (isPanelOpen)
+            if (_characterMeshSwapper == null)
             {
-                SaveCharacterCustomization();
-                LockPlayerMovement(false);
+                LogWarning("NetworkCharacterMeshSwapper not found - cannot save customization!");
+                return;
             }
-            
-            // Reset animation state
-            isAnimating = false;
+
+            if (_currentCharacterNetwork == null || !_currentCharacterNetwork.IsOwner)
+            {
+                return;
+            }
+
+            _characterMeshSwapper.SaveCustomizationData();
+            LogDebug("Character customization saved!");
         }
 
-        // NEW: Public method to force close and unlock (for external scripts)
-        public void ForceCloseAndUnlock()
+        /// <summary>
+        /// Manuel kaydetme butonu için
+        /// </summary>
+        public void SaveCustomizationManually()
         {
-            if (isPanelOpen)
-            {
-                // YENI: Force close'da da kaydet
-                SaveCharacterCustomization();
-                
-                isPanelOpen = false;
-                isAnimating = false;
-                LockPlayerMovement(false);
-                
-                if (uiPanel != null)
-                    uiPanel.SetActive(false);
-
-                int currentHour = DayCycleManager.Instance.CurrentHour;
-                if (currentCharacterNetwork != null && currentCharacterNetwork.IsOwner &&
-                    interactionButton != null && currentHour <= CurrentTime)
-                {
-                    interactionButton.SetActive(true);
-                }
-            }
+            SaveCharacterCustomization();
         }
 
-        // YENİ: Animation Event için callback (opsiyonel)
+        /// <summary>
+        /// Kustomizasyonu varsayılana sıfırlar
+        /// </summary>
+        public void ResetCustomization()
+        {
+            if (_characterMeshSwapper == null)
+            {
+                return;
+            }
+
+            if (_currentCharacterNetwork == null || !_currentCharacterNetwork.IsOwner)
+            {
+                return;
+            }
+
+            _characterMeshSwapper.ResetToDefaults();
+            LogDebug("Character customization reset to defaults!");
+        }
+
+        #endregion
+
+        #region Animation Event Callbacks
+
+        /// <summary>
+        /// Animation Event callback - açılma animasyonu tamamlandığında
+        /// </summary>
         public void OnOpenAnimationComplete()
         {
-            isAnimating = false;
-            Debug.Log("Open animation completed via Animation Event");
+            _isAnimating = false;
+            LogDebug("Open animation completed via Animation Event");
         }
 
+        /// <summary>
+        /// Animation Event callback - kapanma animasyonu tamamlandığında
+        /// </summary>
         public void OnCloseAnimationComplete()
         {
-            if (uiPanel != null)
-                uiPanel.SetActive(false);
-
-            LockPlayerMovement(false);
-            isAnimating = false;
-            Debug.Log("Close animation completed via Animation Event");
+            CompleteClose();
+            LogDebug("Close animation completed via Animation Event");
         }
+
+        #endregion
+
+        #region Utility
+
+        private int GetCurrentHour()
+        {
+            return DayCycleManager.Instance?.CurrentHour ?? 0;
+        }
+
+        #endregion
+
+        #region Cleanup
+
+        private void Cleanup()
+        {
+            // Remove listeners
+            if (_buttonComponent != null)
+            {
+                _buttonComponent.onClick.RemoveListener(HandleInteractionButtonClicked);
+            }
+
+            if (closeButton != null)
+            {
+                closeButton.onClick.RemoveListener(HandleCloseButtonClicked);
+            }
+
+            // Save if panel is open
+            if (_isPanelOpen)
+            {
+                SaveCharacterCustomization();
+                SetPlayerMovementLock(false);
+            }
+
+            _isAnimating = false;
+        }
+
+        #endregion
+
+        #region Logging
+
+        private void LogDebug(string message)
+        {
+            Debug.Log($"{LOG_PREFIX} {message}");
+        }
+
+        private void LogWarning(string message)
+        {
+            Debug.LogWarning($"{LOG_PREFIX} {message}", this);
+        }
+
+        private void LogError(string message)
+        {
+            Debug.LogError($"{LOG_PREFIX} {message}", this);
+        }
+
+        #endregion
+
+        #region Editor Debug
+
+#if UNITY_EDITOR
+        [ContextMenu("Open UI")]
+        private void DebugOpenUI()
+        {
+            if (_currentCharacterNetwork != null)
+            {
+                OpenUI();
+            }
+            else
+            {
+                LogWarning("No character in range to open UI");
+            }
+        }
+
+        [ContextMenu("Close UI")]
+        private void DebugCloseUI()
+        {
+            CloseUI();
+        }
+
+        [ContextMenu("Force Close")]
+        private void DebugForceClose()
+        {
+            ForceCloseAndUnlock();
+        }
+
+        [ContextMenu("Save Customization")]
+        private void DebugSaveCustomization()
+        {
+            SaveCustomizationManually();
+        }
+
+        [ContextMenu("Reset Customization")]
+        private void DebugResetCustomization()
+        {
+            ResetCustomization();
+        }
+
+        [ContextMenu("Debug: Print State")]
+        private void DebugPrintState()
+        {
+            Debug.Log($"{LOG_PREFIX} === UI STATE ===");
+            Debug.Log($"Is Panel Open: {_isPanelOpen}");
+            Debug.Log($"Is Animating: {_isAnimating}");
+            Debug.Log($"Can Interact: {CanInteract}");
+            Debug.Log($"Has Character: {_currentCharacterNetwork != null}");
+            Debug.Log($"Has Movement: {_currentPlayerMovement != null}");
+            Debug.Log($"Has MeshSwapper: {_characterMeshSwapper != null}");
+            Debug.Log($"Current Hour: {GetCurrentHour()}");
+            Debug.Log($"Required Hour: {CurrentTime}");
+            Debug.Log($"Cached Open Duration: {_cachedOpenDuration}");
+            Debug.Log($"Cached Close Duration: {_cachedCloseDuration}");
+        }
+#endif
+
+        #endregion
     }
 }

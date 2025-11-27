@@ -5261,9 +5261,7 @@ GameObject:
   - component: {fileID: 466977369}
   - component: {fileID: 466977368}
   - component: {fileID: 466977367}
-  - component: {fileID: 466977370}
   - component: {fileID: 466977371}
-  - component: {fileID: 466977372}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -5345,18 +5343,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &466977370
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 466977366}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3cafb2f049d83c9488f695f404a8208a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &466977371
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5401,22 +5387,6 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
---- !u!114 &466977372
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 466977366}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 69716454426d9a246b5636604eff3cd3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NewCss.CameraFollow
-  target: {fileID: 0}
-  offset: {x: 0, y: 10, z: -10}
-  smoothSpeed: 5
-  fixedRotationX: 45
 --- !u!1 &484348425
 GameObject:
   m_ObjectHideFlags: 0
@@ -16558,10 +16528,11 @@ MonoBehaviour:
   hostJoinPanel: {fileID: 1892757153}
   settingsPanel: {fileID: 599392010}
   creditsPanel: {fileID: 0}
-  versionText: {fileID: 701481868}
   backFromSettingsButton: {fileID: 205244517}
   saveSettingsButton: {fileID: 1720023450}
   backFromCreditsButton: {fileID: 0}
+  versionText: {fileID: 701481868}
+  gameVersion: v0.1
   discordURL: https://discord.gg/eWhxFU7Z
   steamPageURL: https://store.steampowered.com/app/YOURAPPID
   instagramURL: https://www.instagram.com/eclion_software/
@@ -16571,7 +16542,6 @@ MonoBehaviour:
   buttonClickSound: {fileID: 8300000, guid: 9005da31678a4d742b0791cb8b34aaab, type: 3}
   buttonHoverSound: {fileID: 0}
   buttonSoundVolume: 1
-  gameVersion: v0.1
   settingsManager: {fileID: 666334062}
   steamManager: {fileID: 1410857690}
 --- !u!1 &1417016025
