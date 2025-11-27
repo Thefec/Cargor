@@ -1,66 +1,223 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using TMPro;
 using Unity.Netcode;
+using UnityEngine;
 using NewCss;
 
+/// <summary>
+/// Tutorial yönetim sistemi - adım adım tutorial akışı, UI yönetimi ve koşul kontrollerini sağlar. 
+/// Typewriter efekti, highlight sistemi ve kapı entegrasyonu içerir.
+/// </summary>
 public class TutorialManager : NetworkBehaviour
 {
-    [Header("Tutorial Settings")]
-    [SerializeField] private bool isTutorialLevel = true;
-    [SerializeField] private List<TutorialStep> tutorialSteps = new List<TutorialStep>();
+    #region Constants
 
-    [Header("Door Management")]
-    [SerializeField] private List<TutorialDoor> tutorialDoors = new List<TutorialDoor>();
+    private const string LOG_PREFIX = "[TutorialManager]";
+    private const float PLAYER_SEARCH_INTERVAL = 0.5f;
+    private const int MAX_PLAYER_SEARCH_ATTEMPTS = 20;
+    private const float CONDITION_CHECK_INTERVAL = 0.1f;
+    private const float STEP_TRANSITION_DELAY = 0.3f;
+    private const float TUTORIAL_START_DELAY = 1f;
 
-    [Header("UI References")]
-    [SerializeField] private GameObject tutorialUI;
-    [SerializeField] private TextMeshProUGUI instructionText;
-    [SerializeField] private CanvasGroup tutorialCanvasGroup;
-    [SerializeField] private float fadeSpeed = 2f;
+    private const float TEXT_FONT_SIZE_MIN = 18f;
+    private const float TEXT_FONT_SIZE_MAX = 36f;
 
-    [Header("Typewriter Effect")]
-    [SerializeField] private bool enableTypewriterEffect = true;
-    [SerializeField] private float typewriterSpeed = 0.05f;
-    [SerializeField] private AudioClip typingSound;
-    [SerializeField] private AudioSource typingSoundSource;
-    [Range(0f, 1f)]
-    [SerializeField] private float typingSoundVolume = 0.3f;
+    private const float PUNCTUATION_DELAY_MULTIPLIER = 8f;
+    private const float COMMA_DELAY_MULTIPLIER = 4f;
+    private const float SPACE_DELAY_MULTIPLIER = 0.5f;
 
-    [Header("Skip Settings")]
-    [SerializeField] private KeyCode skipKey = KeyCode.Space;
-    [SerializeField] private bool showSkipHint = true;
-    [SerializeField] private TextMeshProUGUI skipHintText;
-    [SerializeField] private string skipHintMessage = "Geçmek için [SPACE] tuşuna basın";
+    private const float HIGHLIGHT_OUTLINE_WIDTH = 5f;
 
-    [Header("Player Reference")]
-    [SerializeField] private PlayerInventory playerInventory;
+    #endregion
 
-    [Header("Visual Helpers")]
-    [SerializeField] private GameObject highlightPrefab;
-    [SerializeField] private Color highlightColor = Color.yellow;
+    #region Singleton
 
-    [Header("Debug")]
-    [SerializeField] private bool showDebugLogs = true;
-
-    private int currentStepIndex = 0;
-    private TutorialStep currentStep;
-    private bool isTransitioning = false;
-    private GameObject currentHighlight;
-
-    // Typewriter kontrol
-    private bool isTyping = false;
-    private bool skipTyping = false;
-    private Coroutine currentTypewriterCoroutine;
-
-    // ✅ FIX: Table interaction tracking
-    private bool tableInteractionCompleted = false;
-
-    // Singleton
     public static TutorialManager Instance { get; private set; }
 
+    #endregion
+
+    #region Serialized Fields - Settings
+
+    [Header("=== TUTORIAL SETTINGS ===")]
+    [SerializeField, Tooltip("Bu seviye tutorial mu?")]
+    private bool isTutorialLevel = true;
+
+    [SerializeField, Tooltip("Tutorial adımları")]
+    private List<TutorialStep> tutorialSteps = new();
+
+    #endregion
+
+    #region Serialized Fields - Door Management
+
+    [Header("=== DOOR MANAGEMENT ===")]
+    [SerializeField, Tooltip("Tutorial kapıları")]
+    private List<TutorialDoor> tutorialDoors = new();
+
+    #endregion
+
+    #region Serialized Fields - UI
+
+    [Header("=== UI REFERENCES ===")]
+    [SerializeField, Tooltip("Tutorial UI paneli")]
+    private GameObject tutorialUI;
+
+    [SerializeField, Tooltip("Talimat text'i")]
+    private TextMeshProUGUI instructionText;
+
+    [SerializeField, Tooltip("Tutorial canvas group")]
+    private CanvasGroup tutorialCanvasGroup;
+
+    [SerializeField, Tooltip("Fade hızı")]
+    private float fadeSpeed = 2f;
+
+    #endregion
+
+    #region Serialized Fields - Typewriter
+
+    [Header("=== TYPEWRITER EFFECT ===")]
+    [SerializeField, Tooltip("Typewriter efekti aktif")]
+    private bool enableTypewriterEffect = true;
+
+    [SerializeField, Tooltip("Typewriter hızı")]
+    private float typewriterSpeed = 0.05f;
+
+    [SerializeField, Tooltip("Yazma sesi")]
+    private AudioClip typingSound;
+
+    [SerializeField, Tooltip("Ses kaynağı")]
+    private AudioSource typingSoundSource;
+
+    [SerializeField, Range(0f, 1f), Tooltip("Yazma sesi seviyesi")]
+    private float typingSoundVolume = 0.3f;
+
+    #endregion
+
+    #region Serialized Fields - Skip Settings
+
+    [Header("=== SKIP SETTINGS ===")]
+    [SerializeField, Tooltip("Geçme tuşu")]
+    private KeyCode skipKey = KeyCode.Space;
+
+    [SerializeField, Tooltip("Geçme ipucunu göster")]
+    private bool showSkipHint = true;
+
+    [SerializeField, Tooltip("Geçme ipucu text'i")]
+    private TextMeshProUGUI skipHintText;
+
+    [SerializeField, Tooltip("Geçme ipucu mesajı")]
+    private string skipHintMessage = "Geçmek için [SPACE] tuşuna basın";
+
+    #endregion
+
+    #region Serialized Fields - References
+
+    [Header("=== PLAYER REFERENCE ===")]
+    [SerializeField, Tooltip("Oyuncu envanteri")]
+    private PlayerInventory playerInventory;
+
+    #endregion
+
+    #region Serialized Fields - Visual Helpers
+
+    [Header("=== VISUAL HELPERS ===")]
+    [SerializeField, Tooltip("Highlight prefab'ı")]
+    private GameObject highlightPrefab;
+
+    [SerializeField, Tooltip("Highlight rengi")]
+    private Color highlightColor = Color.yellow;
+
+    #endregion
+
+    #region Serialized Fields - Debug
+
+    [Header("=== DEBUG ===")]
+    [SerializeField, Tooltip("Debug loglarını göster")]
+    private bool showDebugLogs = true;
+
+    #endregion
+
+    #region Private Fields - State
+
+    private int _currentStepIndex;
+    private TutorialStep _currentStep;
+    private bool _isTransitioning;
+    private GameObject _currentHighlight;
+
+    #endregion
+
+    #region Private Fields - Typewriter
+
+    private bool _isTyping;
+    private bool _skipTyping;
+    private Coroutine _currentTypewriterCoroutine;
+
+    #endregion
+
+    #region Private Fields - Conditions
+
+    private bool _tableInteractionCompleted;
+    private bool _shelfInteractionCompleted;
+    private NetworkedShelf.BoxType _lastTakenBoxType;
+
+    #endregion
+
+    #region Events
+
+    public event Action<int, TutorialStep> OnStepStarted;
+    public event Action<int, TutorialStep> OnStepCompleted;
+    public event Action OnTutorialCompleted;
+
+    #endregion
+
+    #region Public Properties
+
+    public int CurrentStepIndex => _currentStepIndex;
+    public TutorialStep CurrentStep => _currentStep;
+    public int TotalSteps => tutorialSteps.Count;
+    public bool IsTutorialActive => isTutorialLevel && _currentStep != null;
+    public bool IsTyping => _isTyping;
+    public bool IsTransitioning => _isTransitioning;
+
+    #endregion
+
+    #region Unity Lifecycle
+
     private void Awake()
+    {
+        InitializeSingleton();
+    }
+
+    private void Start()
+    {
+        if (!isTutorialLevel)
+        {
+            DisableTutorial();
+            return;
+        }
+
+        InitializeAudioSource();
+        InitializeUI();
+        StartPlayerSearch();
+        StartCoroutine(StartTutorialSequenceCoroutine());
+    }
+
+    private void Update()
+    {
+        HandleSkipInput();
+    }
+
+    private void OnDestroy()
+    {
+        RemoveHighlight();
+    }
+
+    #endregion
+
+    #region Initialization
+
+    private void InitializeSingleton()
     {
         if (Instance != null && Instance != this)
         {
@@ -70,36 +227,25 @@ public class TutorialManager : NetworkBehaviour
         Instance = this;
     }
 
-    private void Start()
+    private void DisableTutorial()
     {
-        if (!isTutorialLevel)
+        if (tutorialUI != null)
         {
-            if (tutorialUI != null)
-                tutorialUI.SetActive(false);
-            enabled = false;
-            return;
+            tutorialUI.SetActive(false);
         }
+        enabled = false;
+    }
 
+    private void InitializeAudioSource()
+    {
         if (typingSound != null && typingSoundSource == null)
         {
             typingSoundSource = gameObject.AddComponent<AudioSource>();
             typingSoundSource.playOnAwake = false;
             typingSoundSource.volume = typingSoundVolume;
         }
-
-        InitializeUI();
-
-        if (playerInventory == null)
-        {
-            StartCoroutine(FindLocalPlayer());
-        }
-
-        StartCoroutine(StartTutorialSequence());
     }
 
-    /// <summary>
-    /// ✅ FIX: UI text ayarlarını düzelt (overflow + auto-size)
-    /// </summary>
     private void InitializeUI()
     {
         if (tutorialUI != null)
@@ -112,128 +258,185 @@ public class TutorialManager : NetworkBehaviour
             tutorialCanvasGroup.alpha = 1f;
         }
 
-        if (instructionText != null)
-        {
-            instructionText.text = "";
+        ConfigureInstructionText();
+        ConfigureSkipHintText();
 
-            // ✅ FIX: Text overflow ayarları
-            instructionText.overflowMode = TextOverflowModes.Overflow; // Taşma izin ver (RectTransform içinde kal)
-            instructionText.enableWordWrapping = true; // Kelime kaydırma aktif
-            instructionText.enableAutoSizing = true; // Otomatik boyutlandırma
-            instructionText.fontSizeMin = 18f; // Minimum font boyutu
-            instructionText.fontSizeMax = 36f; // Maksimum font boyutu
-
-            if (showDebugLogs)
-                Debug.Log("✅ Instruction text configured with auto-sizing and word wrapping");
-        }
-
-        if (skipHintText != null)
-        {
-            skipHintText.gameObject.SetActive(false);
-
-            // ✅ Skip hint için de ayarla
-            skipHintText.enableWordWrapping = true;
-            skipHintText.overflowMode = TextOverflowModes.Overflow;
-        }
-
-        if (showDebugLogs)
-            Debug.Log("✅ Tutorial UI initialized (always visible)");
+        LogDebug("Tutorial UI initialized");
     }
 
-    private void Update()
+    private void ConfigureInstructionText()
     {
-        if (Input.GetKeyDown(skipKey))
+        if (instructionText == null) return;
+
+        instructionText.text = "";
+        instructionText.overflowMode = TextOverflowModes.Overflow;
+        instructionText.enableWordWrapping = true;
+        instructionText.enableAutoSizing = true;
+        instructionText.fontSizeMin = TEXT_FONT_SIZE_MIN;
+        instructionText.fontSizeMax = TEXT_FONT_SIZE_MAX;
+
+        LogDebug("Instruction text configured with auto-sizing and word wrapping");
+    }
+
+    private void ConfigureSkipHintText()
+    {
+        if (skipHintText == null) return;
+
+        skipHintText.gameObject.SetActive(false);
+        skipHintText.enableWordWrapping = true;
+        skipHintText.overflowMode = TextOverflowModes.Overflow;
+    }
+
+    private void StartPlayerSearch()
+    {
+        if (playerInventory == null)
         {
-            if (isTyping)
-            {
-                skipTyping = true;
-
-                if (showDebugLogs)
-                    Debug.Log($"⏭️ Typewriter skipped with {skipKey}");
-            }
-            else if (currentStep != null && currentStep.conditionType == TutorialConditionType.WaitForTime)
-            {
-                if (showDebugLogs)
-                    Debug.Log($"⏭️ Wait step skipped with {skipKey}");
-
-                CompleteCurrentStep();
-            }
+            StartCoroutine(FindLocalPlayerCoroutine());
         }
     }
+
+    #endregion
+
+    #region Input Handling
+
+    private void HandleSkipInput()
+    {
+        if (!Input.GetKeyDown(skipKey)) return;
+
+        if (_isTyping)
+        {
+            SkipTypewriter();
+        }
+        else if (CanSkipCurrentStep())
+        {
+            SkipWaitStep();
+        }
+    }
+
+    private void SkipTypewriter()
+    {
+        _skipTyping = true;
+        LogDebug($"Typewriter skipped with {skipKey}");
+    }
+
+    private void SkipWaitStep()
+    {
+        LogDebug($"Wait step skipped with {skipKey}");
+        CompleteCurrentStep();
+    }
+
+    private bool CanSkipCurrentStep()
+    {
+        return _currentStep != null &&
+               _currentStep.conditionType == TutorialConditionType.WaitForTime;
+    }
+
+    #endregion
+
+    #region Player Finding
 
     public void SetPlayerInventory(PlayerInventory player)
     {
         playerInventory = player;
-
-        if (showDebugLogs)
-            Debug.Log($"✅ Player Inventory set: {(player != null ? player.name : "null")}");
+        LogDebug($"Player Inventory set: {(player != null ? player.name : "null")}");
     }
 
-    private IEnumerator FindLocalPlayer()
+    private IEnumerator FindLocalPlayerCoroutine()
     {
         int attempts = 0;
-        int maxAttempts = 20;
 
-        while (attempts < maxAttempts)
+        while (attempts < MAX_PLAYER_SEARCH_ATTEMPTS)
         {
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(PLAYER_SEARCH_INTERVAL);
             attempts++;
 
-            if (showDebugLogs)
-                Debug.Log($"🔍 Searching for player... Attempt {attempts}/{maxAttempts}");
+            LogDebug($"Searching for player... Attempt {attempts}/{MAX_PLAYER_SEARCH_ATTEMPTS}");
 
-            PlayerInventory[] players = FindObjectsOfType<PlayerInventory>();
-
-            if (showDebugLogs)
-                Debug.Log($"Found {players.Length} PlayerInventory objects");
-
-            foreach (var player in players)
+            if (TryFindLocalPlayer())
             {
-                if (player.IsOwner)
-                {
-                    playerInventory = player;
-
-                    if (showDebugLogs)
-                        Debug.Log($"✅ Local player found: {player.name}!");
-
-                    yield break;
-                }
+                yield break;
             }
         }
 
-        Debug.LogError($"❌ Could not find local player after {maxAttempts} attempts!");
+        Debug.LogError($"{LOG_PREFIX} Could not find local player after {MAX_PLAYER_SEARCH_ATTEMPTS} attempts!");
     }
+
+    private bool TryFindLocalPlayer()
+    {
+        PlayerInventory[] players = FindObjectsOfType<PlayerInventory>();
+        LogDebug($"Found {players.Length} PlayerInventory objects");
+
+        foreach (var player in players)
+        {
+            if (player.IsOwner)
+            {
+                playerInventory = player;
+                LogDebug($"Local player found: {player.name}!");
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    #endregion
+
+    #region Door Management
 
     public void RegisterDoor(TutorialDoor door)
     {
-        if (!tutorialDoors.Contains(door))
+        if (tutorialDoors.Contains(door)) return;
+
+        tutorialDoors.Add(door);
+        LogDebug($"Door registered: {door.DoorName}");
+    }
+
+    public void UnregisterDoor(TutorialDoor door)
+    {
+        if (tutorialDoors.Remove(door))
         {
-            tutorialDoors.Add(door);
-            if (showDebugLogs)
-                Debug.Log($"✅ Door registered: {door.DoorName}");
+            LogDebug($"Door unregistered: {door.DoorName}");
         }
     }
 
-    private IEnumerator StartTutorialSequence()
+    private void NotifyDoorsOfStepCompletion(int completedStepIndex)
     {
-        while (playerInventory == null)
+        foreach (var door in tutorialDoors)
         {
-            yield return new WaitForSeconds(0.5f);
-
-            if (showDebugLogs)
-                Debug.Log("⏳ Waiting for player to spawn...");
+            door?.OnTutorialStepCompleted(completedStepIndex);
         }
+    }
 
-        if (showDebugLogs)
-            Debug.Log("✅ Player ready, starting tutorial sequence!");
+    #endregion
 
-        yield return new WaitForSeconds(1f);
+    #region Tutorial Sequence
+
+    private IEnumerator StartTutorialSequenceCoroutine()
+    {
+        yield return WaitForPlayerCoroutine();
+
+        LogDebug("Player ready, starting tutorial sequence!");
+
+        yield return new WaitForSeconds(TUTORIAL_START_DELAY);
 
         if (tutorialSteps.Count > 0)
         {
             StartStep(0);
         }
     }
+
+    private IEnumerator WaitForPlayerCoroutine()
+    {
+        while (playerInventory == null)
+        {
+            yield return new WaitForSeconds(PLAYER_SEARCH_INTERVAL);
+            LogDebug("Waiting for player to spawn...");
+        }
+    }
+
+    #endregion
+
+    #region Step Management
 
     private void StartStep(int stepIndex)
     {
@@ -243,230 +446,54 @@ public class TutorialManager : NetworkBehaviour
             return;
         }
 
-        currentStepIndex = stepIndex;
-        currentStep = tutorialSteps[stepIndex];
+        _currentStepIndex = stepIndex;
+        _currentStep = tutorialSteps[stepIndex];
+        _currentStep.stepStartTime = Time.time;
 
-        currentStep.stepStartTime = Time.time;
+        // Flag'leri sıfırla
+        _tableInteractionCompleted = false;
+        _shelfInteractionCompleted = false;
 
-        // ✅ FIX: Table interaction flag'ini sıfırla
-        tableInteractionCompleted = false;
+        LogDebug($"Tutorial Step {stepIndex + 1}/{tutorialSteps.Count}: {_currentStep.stepName}");
 
-        if (showDebugLogs)
-            Debug.Log($"📚 Tutorial Step {stepIndex + 1}/{tutorialSteps.Count}: {currentStep.stepName}");
+        _currentStep.onStepStart?.Invoke();
+        OnStepStarted?.Invoke(stepIndex, _currentStep);
 
-        currentStep.onStepStart?.Invoke();
-
-        StartCoroutine(ShowInstruction(currentStep.instructionText));
-
-        if (currentStep.objectToHighlight != null)
-        {
-            HighlightObject(currentStep.objectToHighlight);
-        }
-
-        StartCoroutine(CheckStepCondition());
-    }
-
-    private IEnumerator ShowInstruction(string text)
-    {
-        if (instructionText != null)
-        {
-            if (showSkipHint && skipHintText != null && currentStep.conditionType == TutorialConditionType.WaitForTime)
-            {
-                skipHintText.text = skipHintMessage.Replace("[SPACE]", $"[{skipKey}]");
-                skipHintText.gameObject.SetActive(true);
-            }
-
-            if (enableTypewriterEffect)
-            {
-                if (currentTypewriterCoroutine != null)
-                {
-                    StopCoroutine(currentTypewriterCoroutine);
-                }
-
-                currentTypewriterCoroutine = StartCoroutine(TypewriterEffect(text));
-            }
-            else
-            {
-                instructionText.text = text;
-            }
-        }
-
-        yield return null;
-    }
-
-    private IEnumerator TypewriterEffect(string fullText)
-    {
-        isTyping = true;
-        skipTyping = false;
-
-        instructionText.text = "";
-
-        for (int i = 0; i < fullText.Length; i++)
-        {
-            if (skipTyping)
-            {
-                instructionText.text = fullText;
-                break;
-            }
-
-            instructionText.text += fullText[i];
-
-            if (typingSound != null && typingSoundSource != null && i % 2 == 0)
-            {
-                typingSoundSource.PlayOneShot(typingSound, typingSoundVolume);
-            }
-
-            if (fullText[i] == '.' || fullText[i] == '!' || fullText[i] == '?')
-            {
-                yield return new WaitForSeconds(typewriterSpeed * 8f);
-            }
-            else if (fullText[i] == ',' || fullText[i] == ';')
-            {
-                yield return new WaitForSeconds(typewriterSpeed * 4f);
-            }
-            else if (fullText[i] == ' ')
-            {
-                yield return new WaitForSeconds(typewriterSpeed * 0.5f);
-            }
-            else
-            {
-                yield return new WaitForSeconds(typewriterSpeed);
-            }
-        }
-
-        isTyping = false;
-        skipTyping = false;
-
-        if (showDebugLogs)
-            Debug.Log("✅ Typewriter effect completed");
-    }
-
-    private IEnumerator HideInstruction()
-    {
-        if (skipHintText != null)
-        {
-            skipHintText.gameObject.SetActive(false);
-        }
-
-        if (instructionText != null)
-        {
-            instructionText.text = "";
-        }
-
-        yield return null;
-    }
-
-    private IEnumerator CheckStepCondition()
-    {
-        while (!IsStepConditionMet())
-        {
-            yield return new WaitForSeconds(0.1f);
-        }
-
-        CompleteCurrentStep();
-    }
-
-    /// <summary>
-    /// ✅ FIX: PlaceOnTable ve TakeFromTable condition'ları eklendi
-    /// </summary>
-    private bool IsStepConditionMet()
-    {
-        if (currentStep == null || playerInventory == null)
-            return false;
-
-        switch (currentStep.conditionType)
-        {
-            case TutorialConditionType.PickupItem:
-                if (currentStep.requiresItemPickup)
-                {
-                    if (!string.IsNullOrEmpty(currentStep.requiredItemName))
-                    {
-                        return playerInventory.HasItem &&
-                               playerInventory.CurrentItemData != null &&
-                               playerInventory.CurrentItemData.itemName == currentStep.requiredItemName;
-                    }
-                    return playerInventory.HasItem;
-                }
-                return false;
-
-            case TutorialConditionType.DropItem:
-                return !playerInventory.HasItem;
-
-            // ✅ FIX: Masaya koyma kontrolü
-            case TutorialConditionType.PlaceOnTable:
-                return tableInteractionCompleted;
-
-            // ✅ FIX: Masadan alma kontrolü
-            case TutorialConditionType.TakeFromTable:
-                return tableInteractionCompleted;
-
-            case TutorialConditionType.WaitForTime:
-                float elapsedTime = Time.time - currentStep.stepStartTime;
-                bool timeComplete = elapsedTime >= currentStep.waitDuration;
-
-                if (showDebugLogs && timeComplete)
-                    Debug.Log($"⏰ Wait time completed: {elapsedTime:F1}s / {currentStep.waitDuration}s");
-
-                return timeComplete;
-
-            // ✅ FIX: Minigame completion
-            case TutorialConditionType.CompleteMinigame:
-                return currentStep.isCompleted;
-
-            case TutorialConditionType.Custom:
-                return false;
-
-            default:
-                return false;
-        }
+        StartCoroutine(ShowInstructionCoroutine(_currentStep.instructionText));
+        HighlightObject(_currentStep.objectToHighlight);
+        StartCoroutine(CheckStepConditionCoroutine());
     }
 
     private void CompleteCurrentStep()
     {
-        if (isTransitioning || currentStep == null)
-            return;
+        if (_isTransitioning || _currentStep == null) return;
 
-        isTransitioning = true;
+        _isTransitioning = true;
 
-        if (showDebugLogs)
-            Debug.Log($"✅ Step {currentStepIndex + 1} completed: {currentStep.stepName}");
+        LogDebug($"Step {_currentStepIndex + 1} completed: {_currentStep.stepName}");
 
-        currentStep.isCompleted = true;
-        currentStep.onStepComplete?.Invoke();
+        _currentStep.isCompleted = true;
+        _currentStep.onStepComplete?.Invoke();
+        OnStepCompleted?.Invoke(_currentStepIndex, _currentStep);
 
         RemoveHighlight();
+        NotifyDoorsOfStepCompletion(_currentStepIndex);
 
-        NotifyDoorsOfStepCompletion(currentStepIndex);
-
-        StartCoroutine(TransitionToNextStep());
+        StartCoroutine(TransitionToNextStepCoroutine());
     }
 
-    private void NotifyDoorsOfStepCompletion(int completedStepIndex)
+    private IEnumerator TransitionToNextStepCoroutine()
     {
-        foreach (var door in tutorialDoors)
-        {
-            if (door != null)
-            {
-                door.OnTutorialStepCompleted(completedStepIndex);
-            }
-        }
-    }
+        yield return StartCoroutine(HideInstructionCoroutine());
+        yield return new WaitForSeconds(STEP_TRANSITION_DELAY);
 
-    private IEnumerator TransitionToNextStep()
-    {
-        yield return StartCoroutine(HideInstruction());
-
-        yield return new WaitForSeconds(0.3f);
-
-        isTransitioning = false;
-
-        StartStep(currentStepIndex + 1);
+        _isTransitioning = false;
+        StartStep(_currentStepIndex + 1);
     }
 
     private void CompleteTutorial()
     {
-        if (showDebugLogs)
-            Debug.Log("🎉 Tutorial completed!");
+        LogDebug("🎉 Tutorial completed!");
 
         if (instructionText != null)
         {
@@ -477,14 +504,204 @@ public class TutorialManager : NetworkBehaviour
         {
             skipHintText.gameObject.SetActive(false);
         }
+
+        OnTutorialCompleted?.Invoke();
     }
+
+    #endregion
+
+    #region Condition Checking
+
+    private IEnumerator CheckStepConditionCoroutine()
+    {
+        while (!IsStepConditionMet())
+        {
+            yield return new WaitForSeconds(CONDITION_CHECK_INTERVAL);
+        }
+
+        CompleteCurrentStep();
+    }
+
+    private bool IsStepConditionMet()
+    {
+        if (_currentStep == null || playerInventory == null)
+            return false;
+
+        return _currentStep.conditionType switch
+        {
+            TutorialConditionType.PickupItem => CheckPickupCondition(),
+            TutorialConditionType.DropItem => CheckDropCondition(),
+            TutorialConditionType.PlaceOnTable => _tableInteractionCompleted,
+            TutorialConditionType.TakeFromTable => _tableInteractionCompleted,
+            TutorialConditionType.TakeFromShelf => CheckTakeFromShelfCondition(),
+            TutorialConditionType.WaitForTime => CheckWaitTimeCondition(),
+            TutorialConditionType.CompleteMinigame => _currentStep.isCompleted,
+            TutorialConditionType.Custom => false,
+            _ => false
+        };
+    }
+
+    private bool CheckPickupCondition()
+    {
+        if (!_currentStep.requiresItemPickup) return false;
+
+        if (!playerInventory.HasItem) return false;
+
+        if (string.IsNullOrEmpty(_currentStep.requiredItemName))
+        {
+            return true;
+        }
+
+        return playerInventory.CurrentItemData != null &&
+               playerInventory.CurrentItemData.itemName == _currentStep.requiredItemName;
+    }
+
+    private bool CheckDropCondition()
+    {
+        return !playerInventory.HasItem;
+    }
+
+    private bool CheckTakeFromShelfCondition()
+    {
+        if (!_shelfInteractionCompleted)
+            return false;
+
+        if (_currentStep.requiresSpecificBoxType)
+        {
+            return _lastTakenBoxType == _currentStep.requiredBoxType;
+        }
+
+        return true;
+    }
+
+    private bool CheckWaitTimeCondition()
+    {
+        float elapsedTime = Time.time - _currentStep.stepStartTime;
+        bool isComplete = elapsedTime >= _currentStep.waitDuration;
+
+        if (isComplete)
+        {
+            LogDebug($"Wait time completed: {elapsedTime:F1}s / {_currentStep.waitDuration}s");
+        }
+
+        return isComplete;
+    }
+
+    #endregion
+
+    #region Instruction Display
+
+    private IEnumerator ShowInstructionCoroutine(string text)
+    {
+        if (instructionText == null) yield break;
+
+        ShowSkipHintIfNeeded();
+
+        if (enableTypewriterEffect)
+        {
+            StopCurrentTypewriter();
+            _currentTypewriterCoroutine = StartCoroutine(TypewriterEffectCoroutine(text));
+        }
+        else
+        {
+            instructionText.text = text;
+        }
+
+        yield return null;
+    }
+
+    private void ShowSkipHintIfNeeded()
+    {
+        if (!showSkipHint || skipHintText == null) return;
+        if (_currentStep.conditionType != TutorialConditionType.WaitForTime) return;
+
+        skipHintText.text = skipHintMessage.Replace("[SPACE]", $"[{skipKey}]");
+        skipHintText.gameObject.SetActive(true);
+    }
+
+    private void StopCurrentTypewriter()
+    {
+        if (_currentTypewriterCoroutine != null)
+        {
+            StopCoroutine(_currentTypewriterCoroutine);
+            _currentTypewriterCoroutine = null;
+        }
+    }
+
+    private IEnumerator HideInstructionCoroutine()
+    {
+        if (skipHintText != null)
+        {
+            skipHintText.gameObject.SetActive(false);
+        }
+
+        if (instructionText != null)
+        {
+            instructionText.text = "";
+        }
+
+        yield return null;
+    }
+
+    #endregion
+
+    #region Typewriter Effect
+
+    private IEnumerator TypewriterEffectCoroutine(string fullText)
+    {
+        _isTyping = true;
+        _skipTyping = false;
+        instructionText.text = "";
+
+        for (int i = 0; i < fullText.Length; i++)
+        {
+            if (_skipTyping)
+            {
+                instructionText.text = fullText;
+                break;
+            }
+
+            instructionText.text += fullText[i];
+            PlayTypingSound(i);
+
+            float delay = GetCharacterDelay(fullText[i]);
+            yield return new WaitForSeconds(delay);
+        }
+
+        _isTyping = false;
+        _skipTyping = false;
+
+        LogDebug("Typewriter effect completed");
+    }
+
+    private void PlayTypingSound(int charIndex)
+    {
+        if (typingSound == null || typingSoundSource == null) return;
+        if (charIndex % 2 != 0) return;
+
+        typingSoundSource.PlayOneShot(typingSound, typingSoundVolume);
+    }
+
+    private float GetCharacterDelay(char character)
+    {
+        return character switch
+        {
+            '.' or '!' or '?' => typewriterSpeed * PUNCTUATION_DELAY_MULTIPLIER,
+            ',' or ';' => typewriterSpeed * COMMA_DELAY_MULTIPLIER,
+            ' ' => typewriterSpeed * SPACE_DELAY_MULTIPLIER,
+            _ => typewriterSpeed
+        };
+    }
+
+    #endregion
+
+    #region Highlight System
 
     private void HighlightObject(GameObject obj)
     {
         RemoveHighlight();
 
-        if (obj == null)
-            return;
+        if (obj == null) return;
 
         Outline outline = obj.GetComponent<Outline>();
         if (outline == null)
@@ -492,26 +709,108 @@ public class TutorialManager : NetworkBehaviour
             outline = obj.AddComponent<Outline>();
         }
 
+        ConfigureOutline(outline);
+        _currentHighlight = obj;
+    }
+
+    private void ConfigureOutline(Outline outline)
+    {
         outline.OutlineMode = Outline.Mode.OutlineAll;
         outline.OutlineColor = highlightColor;
-        outline.OutlineWidth = 5f;
+        outline.OutlineWidth = HIGHLIGHT_OUTLINE_WIDTH;
         outline.enabled = true;
-
-        currentHighlight = obj;
     }
 
     private void RemoveHighlight()
     {
-        if (currentHighlight != null)
+        if (_currentHighlight == null) return;
+
+        Outline outline = _currentHighlight.GetComponent<Outline>();
+        if (outline != null)
         {
-            Outline outline = currentHighlight.GetComponent<Outline>();
-            if (outline != null)
-            {
-                outline.enabled = false;
-            }
-            currentHighlight = null;
+            outline.enabled = false;
+        }
+
+        _currentHighlight = null;
+    }
+
+    #endregion
+
+    #region External Notifications
+
+    /// <summary>
+    /// Minigame tamamlandığında çağrılır
+    /// </summary>
+    public void OnMinigameCompleted()
+    {
+        if (_currentStep == null) return;
+        if (_currentStep.conditionType != TutorialConditionType.CompleteMinigame) return;
+
+        LogDebug("Minigame completed - marking step as done");
+        _currentStep.isCompleted = true;
+
+        StartCoroutine(CompleteStepNextFrameCoroutine());
+    }
+
+    /// <summary>
+    /// Masa etkileşimi gerçekleştiğinde çağrılır
+    /// </summary>
+    public void OnTableInteraction(bool isPlacing)
+    {
+        if (_currentStep == null) return;
+
+        bool shouldComplete = (isPlacing && _currentStep.conditionType == TutorialConditionType.PlaceOnTable) ||
+                              (!isPlacing && _currentStep.conditionType == TutorialConditionType.TakeFromTable);
+
+        if (shouldComplete)
+        {
+            string action = isPlacing ? "placed on" : "taken from";
+            LogDebug($"Item {action} table - marking step for completion");
+            _tableInteractionCompleted = true;
         }
     }
+
+    /// <summary>
+    /// Raftan kutu alındığında NetworkedShelf tarafından çağrılır
+    /// </summary>
+    public void OnBoxTakenFromShelf(NetworkedShelf.BoxType boxType)
+    {
+        if (_currentStep == null) return;
+
+        if (_currentStep.conditionType == TutorialConditionType.TakeFromShelf)
+        {
+            _lastTakenBoxType = boxType;
+            _shelfInteractionCompleted = true;
+
+            LogDebug($"📦 {boxType} box taken from shelf - marking step for completion");
+            return;
+        }
+
+        // Backward compatibility for PickupItem condition
+        if (_currentStep.conditionType == TutorialConditionType.PickupItem)
+        {
+            if (_currentStep.requiresItemPickup &&
+                !string.IsNullOrEmpty(_currentStep.requiredItemName) &&
+                _currentStep.requiredItemName.Contains("Box"))
+            {
+                LogDebug($"📦 {boxType} box taken from shelf - checking tutorial step");
+            }
+        }
+    }
+
+    private IEnumerator CompleteStepNextFrameCoroutine()
+    {
+        yield return null;
+
+        if (_currentStep != null && _currentStep.isCompleted)
+        {
+            CompleteCurrentStep();
+        }
+    }
+
+    #endregion
+
+    #region Public API
 
     public void ForceCompleteCurrentStep()
     {
@@ -520,88 +819,139 @@ public class TutorialManager : NetworkBehaviour
 
     public void SkipToStep(int stepIndex)
     {
+        if (stepIndex < 0 || stepIndex >= tutorialSteps.Count)
+        {
+            Debug.LogWarning($"{LOG_PREFIX} Invalid step index: {stepIndex}");
+            return;
+        }
+
         StopAllCoroutines();
         RemoveHighlight();
         StartStep(stepIndex);
     }
 
-    /// <summary>
-    /// ✅ FIX: Minigame tamamlandığında BoxingMinigameManager tarafından çağrılır
-    /// </summary>
-    public void OnMinigameCompleted()
+    public int GetCurrentStepIndex() => _currentStepIndex;
+
+    public TutorialStep GetCurrentStep() => _currentStep;
+
+    public TutorialStep GetStep(int index)
     {
-        if (currentStep != null && currentStep.conditionType == TutorialConditionType.CompleteMinigame)
+        if (index < 0 || index >= tutorialSteps.Count)
+            return null;
+
+        return tutorialSteps[index];
+    }
+
+    public void RestartTutorial()
+    {
+        StopAllCoroutines();
+        RemoveHighlight();
+
+        foreach (var step in tutorialSteps)
         {
-            if (showDebugLogs)
-                Debug.Log("✅ Minigame completed - marking step as done");
+            step.isCompleted = false;
+        }
 
-            currentStep.isCompleted = true;
+        _currentStepIndex = 0;
+        _currentStep = null;
+        _isTransitioning = false;
 
-            StartCoroutine(CompleteStepNextFrame());
+        StartCoroutine(StartTutorialSequenceCoroutine());
+    }
+
+    #endregion
+
+    #region Logging
+
+    private void LogDebug(string message)
+    {
+        if (showDebugLogs)
+        {
+            Debug.Log($"{LOG_PREFIX} {message}");
         }
     }
 
-    /// <summary>
-    /// ✅ FIX: Table etkileşimi düzeltildi - flag kullanılıyor
-    /// </summary>
-    public void OnTableInteraction(bool isPlacing)
+    #endregion
+
+    #region Editor Debug
+
+#if UNITY_EDITOR
+    [ContextMenu("Force Complete Current Step")]
+    private void DebugForceCompleteStep()
     {
-        if (currentStep == null) return;
+        ForceCompleteCurrentStep();
+    }
 
-        if (isPlacing && currentStep.conditionType == TutorialConditionType.PlaceOnTable)
+    [ContextMenu("Skip to Next Step")]
+    private void DebugSkipToNextStep()
+    {
+        SkipToStep(_currentStepIndex + 1);
+    }
+
+    [ContextMenu("Restart Tutorial")]
+    private void DebugRestartTutorial()
+    {
+        RestartTutorial();
+    }
+
+    [ContextMenu("Complete Tutorial")]
+    private void DebugCompleteTutorial()
+    {
+        CompleteTutorial();
+    }
+
+    [ContextMenu("Debug: Print State")]
+    private void DebugPrintState()
+    {
+        Debug.Log($"{LOG_PREFIX} === TUTORIAL MANAGER STATE ===");
+        Debug.Log($"Is Tutorial Level: {isTutorialLevel}");
+        Debug.Log($"Is Tutorial Active: {IsTutorialActive}");
+        Debug.Log($"Current Step Index: {_currentStepIndex}/{TotalSteps}");
+        Debug.Log($"Current Step: {(_currentStep != null ? _currentStep.stepName : "NULL")}");
+        Debug.Log($"Is Transitioning: {_isTransitioning}");
+        Debug.Log($"Is Typing: {_isTyping}");
+        Debug.Log($"Table Interaction Completed: {_tableInteractionCompleted}");
+        Debug.Log($"Shelf Interaction Completed: {_shelfInteractionCompleted}");
+        Debug.Log($"Has Player Inventory: {playerInventory != null}");
+        Debug.Log($"Registered Doors: {tutorialDoors.Count}");
+
+        if (_currentStep != null)
         {
-            if (showDebugLogs)
-                Debug.Log("📦 Item placed on table - marking step for completion");
-
-            tableInteractionCompleted = true;
-        }
-        else if (!isPlacing && currentStep.conditionType == TutorialConditionType.TakeFromTable)
-        {
-            if (showDebugLogs)
-                Debug.Log("📦 Item taken from table - marking step for completion");
-
-            tableInteractionCompleted = true;
+            Debug.Log($"--- Current Step Details ---");
+            Debug.Log($"  Name: {_currentStep.stepName}");
+            Debug.Log($"  Condition: {_currentStep.conditionType}");
+            Debug.Log($"  Is Completed: {_currentStep.isCompleted}");
+            Debug.Log($"  Start Time: {_currentStep.stepStartTime:F2}");
         }
     }
 
-    public void OnBoxTakenFromShelf(NetworkedShelf.BoxType boxType)
+    [ContextMenu("Debug: Print All Steps")]
+    private void DebugPrintAllSteps()
     {
-        if (currentStep == null) return;
+        Debug.Log($"{LOG_PREFIX} === ALL TUTORIAL STEPS ===");
 
-        if (currentStep.conditionType == TutorialConditionType.PickupItem)
+        for (int i = 0; i < tutorialSteps.Count; i++)
         {
-            if (currentStep.requiresItemPickup &&
-                !string.IsNullOrEmpty(currentStep.requiredItemName) &&
-                currentStep.requiredItemName.Contains("Box"))
+            var step = tutorialSteps[i];
+            string status = step.isCompleted ? "[COMPLETED]" : (i == _currentStepIndex ? "[CURRENT]" : "[PENDING]");
+            Debug.Log($"  [{i}] {step.stepName} - {step.conditionType} {status}");
+        }
+    }
+
+    [ContextMenu("Debug: Print Registered Doors")]
+    private void DebugPrintDoors()
+    {
+        Debug.Log($"{LOG_PREFIX} === REGISTERED DOORS ===");
+
+        foreach (var door in tutorialDoors)
+        {
+            if (door != null)
             {
-                if (showDebugLogs)
-                    Debug.Log($"📦 {boxType} box taken from shelf - checking tutorial step");
+                Debug.Log($"  - {door.DoorName}");
             }
         }
     }
+#endif
 
-    private IEnumerator CompleteStepNextFrame()
-    {
-        yield return null;
-
-        if (currentStep != null && currentStep.isCompleted)
-        {
-            CompleteCurrentStep();
-        }
-    }
-
-    public int GetCurrentStepIndex()
-    {
-        return currentStepIndex;
-    }
-
-    public TutorialStep GetCurrentStep()
-    {
-        return currentStep;
-    }
-
-    private void OnDestroy()
-    {
-        RemoveHighlight();
-    }
+    #endregion
 }

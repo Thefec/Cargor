@@ -152,14 +152,16 @@ namespace NewCss
 
         private void Update()
         {
+            // Box tracking should work on all clients for tutorial notifications
+            CheckForBoxTaken();
+
+            // Server-only operations
             if (!CanPerformNetworkOperations()) return;
 
             if (enableAutoRespawn)
             {
                 CheckAndRespawnIfNeeded();
             }
-
-            CheckForBoxTaken();
         }
 
         #endregion
@@ -257,6 +259,9 @@ namespace NewCss
 
         private void CheckForBoxTaken()
         {
+            // Ensure we're spawned before checking
+            if (!IsSpawned) return;
+
             var currentCounts = BoxCountState.Create(HasRedBox, HasBlueBox, HasYellowBox);
 
             // Check each box type

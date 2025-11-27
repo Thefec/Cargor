@@ -6,7 +6,7 @@ using UnityEngine;
 namespace NewCss
 {
     /// <summary>
-    /// Kutu paketleme minigame yöneticisi. 
+    /// Kutu paketleme minigame yöneticisi.  
     /// Server-authoritative tuş sırası doğrulama ve network senkronizasyonu sağlar.
     /// </summary>
     public class BoxingMinigameManager : NetworkBehaviour
@@ -98,6 +98,9 @@ namespace NewCss
         private BoxInfo.BoxType _currentBoxType;
         private ItemData _currentItemData;
 
+        // ✅ YENİ: Client-side local state tracking
+        private bool _isLocalPlayerInMinigame;
+
         #endregion
 
         #region Private Fields - Cached
@@ -106,7 +109,7 @@ namespace NewCss
         {
             KeyCode. UpArrow,
             KeyCode.DownArrow,
-            KeyCode.LeftArrow,
+            KeyCode. LeftArrow,
             KeyCode.RightArrow
         };
 
@@ -121,7 +124,7 @@ namespace NewCss
         /// <summary>
         /// Minigame aktif mi?
         /// </summary>
-        public bool IsMinigameActive => _isActive;
+        public bool IsMinigameActive => _isActive || _isLocalPlayerInMinigame;
 
         /// <summary>
         /// Input bekleniyor mu?
@@ -198,11 +201,17 @@ namespace NewCss
             }
         }
 
+        // ✅ DEĞİŞTİRİLDİ: Client-side input kontrolü düzeltildi
         private bool CanProcessInput()
         {
-            if (!_isActive || !_isWaitingForInput) return false;
+            // Temel kontroller
+            if (!_isActive && !_isLocalPlayerInMinigame) return false;
+            if (!_isWaitingForInput) return false;
             if (NetworkManager.Singleton == null) return false;
-            if (_currentPlayer == null || !_currentPlayer.IsOwner) return false;
+
+            // ✅ YENİ: Local player minigame'de mi kontrolü
+            // _currentPlayer null olabilir client'ta, bu yüzden _isLocalPlayerInMinigame kullanıyoruz
+            if (!_isLocalPlayerInMinigame) return false;
 
             return true;
         }
@@ -267,7 +276,9 @@ namespace NewCss
 
             LogDebug($"✅ SERVER: Minigame started - Sequence: {string.Join(", ", _currentSequence)}");
 
-            StartMinigameClientRpc(playerClientId, boxTypeInt, _currentSequence[0]);
+            // ✅ DEĞİŞTİRİLDİ: Sequence'ı array olarak gönder
+            KeyCode[] sequenceArray = _currentSequence.ToArray();
+            StartMinigameClientRpc(playerClientId, boxTypeInt, sequenceArray);
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -434,7 +445,7 @@ namespace NewCss
 
         private void HandleWrongKey()
         {
-            LogDebug("❌ SERVER: Wrong key! Failed!");
+            LogDebug("❌ SERVER: Wrong key!  Failed!");
             OnWrongKeyClientRpc(_currentIndex);
             OnMinigameFailed();
         }
@@ -472,19 +483,33 @@ namespace NewCss
 
         #region Client RPCs
 
+        // ✅ DEĞİŞTİRİLDİ: Sequence'ı parametre olarak al
         [ClientRpc]
-        private void StartMinigameClientRpc(ulong targetClientId, int boxTypeInt, KeyCode firstKey)
+        private void StartMinigameClientRpc(ulong targetClientId, int boxTypeInt, KeyCode[] sequence)
         {
-            if (!IsTargetClient(targetClientId))
+            bool isTargetClient = NetworkManager.Singleton.LocalClientId == targetClientId;
+
+            LogDebug($"📥 CLIENT {NetworkManager.Singleton.LocalClientId}: Received StartMinigameClientRpc - Target: {targetClientId}, IsTarget: {isTargetClient}");
+
+            if (!isTargetClient)
             {
                 LogDebug($"⏩ CLIENT {NetworkManager.Singleton.LocalClientId}: Skipping minigame (not target)");
                 return;
             }
 
-            LogDebug($"🎮 CLIENT {targetClientId}: Starting minigame UI");
+            LogDebug($"🎮 CLIENT {targetClientId}: I AM the target! Starting minigame...");
+
+            // ✅ YENİ: Client-side sequence'ı sakla
+            _currentSequence.Clear();
+            _currentSequence.AddRange(sequence);
+            _currentIndex = 0;
 
             InitializeClientState((BoxInfo.BoxType)boxTypeInt, targetClientId);
-            ShowUIAndStartSequence(firstKey);
+
+            if (sequence.Length > 0)
+            {
+                ShowUIAndStartSequence(sequence[0]);
+            }
         }
 
         [ClientRpc]
@@ -498,6 +523,9 @@ namespace NewCss
         [ClientRpc]
         private void OnCorrectKeyClientRpc(int stepIndex)
         {
+            // ✅ YENİ: Sadece minigame'deki client için
+            if (!_isLocalPlayerInMinigame && !IsServer) return;
+
             PlaySound(correctSound);
             uiController?.ShowFeedback(true, stepIndex);
         }
@@ -505,6 +533,9 @@ namespace NewCss
         [ClientRpc]
         private void OnWrongKeyClientRpc(int stepIndex)
         {
+            // ✅ YENİ: Sadece minigame'deki client için
+            if (!_isLocalPlayerInMinigame && !IsServer) return;
+
             PlaySound(wrongSound);
             uiController?.ShowFeedback(false, stepIndex);
         }
@@ -514,8 +545,10 @@ namespace NewCss
         {
             if (!IsTargetClient(targetClientId)) return;
 
+            LogDebug($"✅ CLIENT {targetClientId}: Minigame SUCCESS!");
+
             PlaySound(successSound);
-            UnlockPlayerMovement();
+            CleanupClientState();
             uiController?.HideUI();
         }
 
@@ -524,8 +557,10 @@ namespace NewCss
         {
             if (!IsTargetClient(targetClientId)) return;
 
+            LogDebug($"❌ CLIENT {targetClientId}: Minigame FAILED!");
+
             PlaySound(failSound);
-            UnlockPlayerMovement();
+            CleanupClientState();
 
             if (uiController != null)
             {
@@ -541,6 +576,7 @@ namespace NewCss
 
             _isActive = false;
             _isWaitingForInput = false;
+            _isLocalPlayerInMinigame = false;
 
             UnlockPlayerMovement();
             uiController?.HideUI();
@@ -555,43 +591,93 @@ namespace NewCss
             return NetworkManager.Singleton.LocalClientId == targetClientId;
         }
 
+        // ✅ DEĞİŞTİRİLDİ: Client state initialization
         private void InitializeClientState(BoxInfo.BoxType boxType, ulong targetClientId)
         {
             _currentBoxType = boxType;
             _isActive = true;
+            _isLocalPlayerInMinigame = true; // ✅ YENİ: Local flag set
+            _currentPlayerClientId = targetClientId;
 
-            LockPlayerMovement(targetClientId);
+            // ✅ DEĞİŞTİRİLDİ: Movement kilitleme düzeltildi
+            LockLocalPlayerMovement();
         }
 
-        private void LockPlayerMovement(ulong targetClientId)
+        // ✅ YENİ: Client state cleanup
+        private void CleanupClientState()
         {
-            foreach (var netObj in FindObjectsOfType<NetworkObject>())
+            _isActive = false;
+            _isWaitingForInput = false;
+            _isLocalPlayerInMinigame = false;
+
+            UnlockPlayerMovement();
+        }
+
+        // ✅ DEĞİŞTİRİLDİ: Sadece local player'ın movement'ını kilitle
+        private void LockLocalPlayerMovement()
+        {
+            // Local client'ın kendi player'ını bul
+            if (NetworkManager.Singleton == null) return;
+
+            ulong localClientId = NetworkManager.Singleton.LocalClientId;
+
+            if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(localClientId, out var client))
             {
-                if (!netObj.IsOwner || netObj.OwnerClientId != targetClientId) continue;
+                LogWarning($"❌ CLIENT: Could not find local client {localClientId}");
+                return;
+            }
 
-                _currentPlayerMovement = netObj.GetComponent<PlayerMovement>();
-                if (_currentPlayerMovement == null)
-                {
-                    _currentPlayerMovement = netObj.GetComponentInChildren<PlayerMovement>();
-                }
+            if (client.PlayerObject == null)
+            {
+                LogWarning($"❌ CLIENT: PlayerObject is null for client {localClientId}");
+                return;
+            }
 
-                if (_currentPlayerMovement != null)
-                {
-                    _currentPlayerMovement.LockMovement(true);
-                    _currentPlayerMovement.LockAllInteractions(true);
-                    LogDebug("✅ CLIENT: Movement locked");
-                }
+            _currentPlayerMovement = client.PlayerObject.GetComponent<PlayerMovement>();
 
-                break;
+            if (_currentPlayerMovement == null)
+            {
+                _currentPlayerMovement = client.PlayerObject.GetComponentInChildren<PlayerMovement>();
+            }
+
+            if (_currentPlayerMovement != null)
+            {
+                _currentPlayerMovement.LockMovement(true);
+                _currentPlayerMovement.LockAllInteractions(true);
+                LogDebug($"✅ CLIENT {localClientId}: Movement LOCKED");
+            }
+            else
+            {
+                LogError($"❌ CLIENT {localClientId}: PlayerMovement component not found!");
             }
         }
 
         private void UnlockPlayerMovement()
         {
-            if (_currentPlayerMovement == null) return;
+            if (_currentPlayerMovement == null)
+            {
+                LogDebug("⚠️ CLIENT: No PlayerMovement to unlock, trying to find...");
 
-            _currentPlayerMovement.LockMovement(false);
-            _currentPlayerMovement.LockAllInteractions(false);
+                // Fallback: Try to find local player's movement
+                if (NetworkManager.Singleton != null)
+                {
+                    ulong localClientId = NetworkManager.Singleton.LocalClientId;
+                    if (NetworkManager.Singleton.ConnectedClients.TryGetValue(localClientId, out var client))
+                    {
+                        if (client.PlayerObject != null)
+                        {
+                            _currentPlayerMovement = client.PlayerObject.GetComponent<PlayerMovement>();
+                        }
+                    }
+                }
+            }
+
+            if (_currentPlayerMovement != null)
+            {
+                _currentPlayerMovement.LockMovement(false);
+                _currentPlayerMovement.LockAllInteractions(false);
+                LogDebug($"✅ CLIENT: Movement UNLOCKED");
+            }
         }
 
         private void ShowUIAndStartSequence(KeyCode firstKey)
@@ -623,7 +709,7 @@ namespace NewCss
 
             _isWaitingForInput = true;
 
-            LogDebug("✅ CLIENT: Now waiting for input!");
+            LogDebug($"✅ CLIENT {NetworkManager.Singleton.LocalClientId}: Now waiting for input!  isWaitingForInput={_isWaitingForInput}, isLocalPlayerInMinigame={_isLocalPlayerInMinigame}");
         }
 
         private IEnumerator ShowNextKeyCoroutine(KeyCode nextKey)
@@ -744,10 +830,12 @@ namespace NewCss
             Debug.Log($"{LOG_PREFIX} === MINIGAME STATE ===");
             Debug.Log($"Is Active: {_isActive}");
             Debug.Log($"Is Waiting For Input: {_isWaitingForInput}");
+            Debug.Log($"Is Local Player In Minigame: {_isLocalPlayerInMinigame}");
             Debug.Log($"Current Index: {_currentIndex}/{REQUIRED_SEQUENCE_LENGTH}");
             Debug.Log($"Current Box Type: {_currentBoxType}");
             Debug.Log($"Current Player Client ID: {_currentPlayerClientId}");
             Debug.Log($"Sequence: {(_currentSequence.Count > 0 ? string.Join(", ", _currentSequence) : "Empty")}");
+            Debug.Log($"Has PlayerMovement: {_currentPlayerMovement != null}");
         }
 
         [ContextMenu("Debug: Generate Test Sequence")]

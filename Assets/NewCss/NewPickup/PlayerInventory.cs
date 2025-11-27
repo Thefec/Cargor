@@ -358,7 +358,15 @@ public class PlayerInventory : NetworkBehaviour
     {
         // Store previous frame items for comparison
         _previousFrameItems.Clear();
-        _previousFrameItems.UnionWith(_itemsInRange);
+
+        // ✅ DEĞİŞTİRİLDİ: Destroyed item'ları atla
+        foreach (var item in _itemsInRange.ToArray())
+        {
+            if (IsValidWorldItem(item))
+            {
+                _previousFrameItems.Add(item);
+            }
+        }
 
         var detectionPos = GetDetectionCenterPosition();
         var currentFrameItems = new HashSet<NetworkWorldItem>();
@@ -392,20 +400,28 @@ public class PlayerInventory : NetworkBehaviour
         // Handle items that left range
         foreach (var item in _previousFrameItems)
         {
-            if (!IsValidPickupTarget(item) || !currentFrameItems.Contains(item))
+            if (!IsValidWorldItem(item) || !currentFrameItems.Contains(item))
             {
                 OnItemExitRange(item);
             }
         }
+
+        // ✅ YENİ: _itemsInRange'den destroyed item'ları temizle
+        _itemsInRange.RemoveAll(item => !IsValidWorldItem(item));
     }
 
     private bool IsValidPickupTarget(NetworkWorldItem item)
     {
-        return item != null
-               && item.CanBePickedUp
-               && item.NetworkObject != null
-               && item.NetworkObject.IsSpawned
-               && item.ItemData != null;
+        if (!IsValidWorldItem(item)) return false;
+
+        try
+        {
+            return item.CanBePickedUp && item.ItemData != null;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private Vector3 GetDetectionCenterPosition()
@@ -518,7 +534,15 @@ public class PlayerInventory : NetworkBehaviour
 
         if (_itemsInRange.Remove(item))
         {
-            RemoveOutlineFromItem(item);
+            try
+            {
+                if (item != null && item.gameObject != null)
+                {
+                    RemoveOutlineFromItem(item);
+                }
+            }
+            catch { /* Destroyed, ignore */ }
+
             UpdateTargetedItem();
         }
     }
@@ -597,10 +621,17 @@ public class PlayerInventory : NetworkBehaviour
 
     private void UpdateTargetedShelfItem()
     {
-        // Clear previous outline
+        // Clear previous outline - ✅ Güvenli check
         if (_previousTargetedShelfItem != null)
         {
-            RemoveOutlineFromItem(_previousTargetedShelfItem);
+            try
+            {
+                if (_previousTargetedShelfItem.gameObject != null)
+                {
+                    RemoveOutlineFromItem(_previousTargetedShelfItem);
+                }
+            }
+            catch { /* Destroyed object, ignore */ }
         }
 
         var nearbyShelf = GetNearbyShelf();
@@ -617,12 +648,21 @@ public class PlayerInventory : NetworkBehaviour
             return;
         }
 
-        // Clean up outlines for items no longer on shelf
-        foreach (var item in _availableShelfItems)
+        // ✅ DEĞİŞTİRİLDİ: Destroyed item'ları temizle
+        foreach (var item in _availableShelfItems.ToArray()) // ToArray() ile kopya oluştur
         {
-            if (item != null && !Array.Exists(shelfItems, x => x == item))
+            if (!IsValidWorldItem(item))
             {
-                RemoveOutlineFromItem(item);
+                _availableShelfItems.Remove(item);
+            }
+            else if (!System.Array.Exists(shelfItems, x => x == item))
+            {
+                try
+                {
+                    RemoveOutlineFromItem(item);
+                }
+                catch { /* Ignore */ }
+                _availableShelfItems.Remove(item);
             }
         }
 
@@ -631,7 +671,7 @@ public class PlayerInventory : NetworkBehaviour
 
         foreach (var item in shelfItems)
         {
-            if (item != null && item.NetworkObject != null && item.NetworkObject.IsSpawned)
+            if (IsValidWorldItem(item))
             {
                 _availableShelfItems.Add(item);
             }
@@ -650,7 +690,7 @@ public class PlayerInventory : NetworkBehaviour
         _previousTargetedShelfItem = _targetedShelfItem;
         _targetedShelfItem = _availableShelfItems[_currentShelfItemIndex];
 
-        if (_targetedShelfItem != null)
+        if (IsValidWorldItem(_targetedShelfItem))
         {
             AddOutlineToItem(_targetedShelfItem);
             Debug.Log($"[PlayerInventory] Targeted shelf item [{_currentShelfItemIndex + 1}/{_availableShelfItems.Count}]: {_targetedShelfItem.ItemData?.itemName}");
@@ -696,23 +736,45 @@ public class PlayerInventory : NetworkBehaviour
 
     private void ClearShelfItemTargeting()
     {
+        // ✅ DEĞİŞTİRİLDİ: Güvenli cleanup
         if (_targetedShelfItem != null)
         {
-            RemoveOutlineFromItem(_targetedShelfItem);
+            try
+            {
+                if (_targetedShelfItem.gameObject != null)
+                {
+                    RemoveOutlineFromItem(_targetedShelfItem);
+                }
+            }
+            catch { /* Destroyed, ignore */ }
             _targetedShelfItem = null;
         }
 
         if (_previousTargetedShelfItem != null)
         {
-            RemoveOutlineFromItem(_previousTargetedShelfItem);
+            try
+            {
+                if (_previousTargetedShelfItem.gameObject != null)
+                {
+                    RemoveOutlineFromItem(_previousTargetedShelfItem);
+                }
+            }
+            catch { /* Destroyed, ignore */ }
             _previousTargetedShelfItem = null;
         }
 
-        foreach (var item in _availableShelfItems)
+        foreach (var item in _availableShelfItems.ToArray())
         {
             if (item != null)
             {
-                RemoveOutlineFromItem(item);
+                try
+                {
+                    if (item.gameObject != null)
+                    {
+                        RemoveOutlineFromItem(item);
+                    }
+                }
+                catch { /* Destroyed, ignore */ }
             }
         }
 
@@ -799,12 +861,31 @@ public class PlayerInventory : NetworkBehaviour
 
     private void HandlePickupInteraction()
     {
-        Debug.Log($"[PlayerInventory] E pressed.  HasItem: {_hasItem.Value}, TargetedItem: {_targetedItem?.name ?? "null"}, TargetedShelfItem: {_targetedShelfItem?.name ?? "null"}");
+        // ✅ YENİ: Null ve destroyed check
+        string targetedItemName = "null";
+        string targetedShelfItemName = "null";
+
+        try
+        {
+            if (_targetedItem != null && _targetedItem.gameObject != null)
+                targetedItemName = _targetedItem.name;
+        }
+        catch { targetedItemName = "destroyed"; }
+
+        try
+        {
+            if (_targetedShelfItem != null && _targetedShelfItem.gameObject != null)
+                targetedShelfItemName = _targetedShelfItem.name;
+        }
+        catch { targetedShelfItemName = "destroyed"; }
+
+        Debug.Log($"[PlayerInventory] E pressed.  HasItem: {_hasItem.Value}, TargetedItem: {targetedItemName}, TargetedShelfItem: {targetedShelfItemName}");
 
         if (!_hasItem.Value)
         {
             // Priority 1: Shelf item (selected via mouse wheel)
-            if (_targetedShelfItem != null && _targetedShelfItem.NetworkObject != null)
+            // ✅ DEĞİŞTİRİLDİ: Daha güvenli null check
+            if (IsValidShelfItem(_targetedShelfItem))
             {
                 var nearbyShelf = GetNearbyShelf();
                 if (nearbyShelf != null)
@@ -817,7 +898,8 @@ public class PlayerInventory : NetworkBehaviour
             }
 
             // Priority 2: Ground item
-            if (_targetedItem != null)
+            // ✅ DEĞİŞTİRİLDİ: Daha güvenli null check
+            if (IsValidWorldItem(_targetedItem))
             {
                 Debug.Log($"[PlayerInventory] Attempting to pickup targeted item: {_targetedItem.name}");
                 _isProcessingInteraction = true;
@@ -841,6 +923,42 @@ public class PlayerInventory : NetworkBehaviour
         Debug.Log("[PlayerInventory] No valid interaction target found");
     }
 
+    private bool IsValidWorldItem(NetworkWorldItem item)
+    {
+        if (item == null) return false;
+
+        try
+        {
+            // GameObject destroyed mu kontrol et
+            if (item.gameObject == null) return false;
+
+            // NetworkObject kontrol et
+            if (item.NetworkObject == null) return false;
+            if (!item.NetworkObject.IsSpawned) return false;
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+    private bool IsValidShelfItem(NetworkWorldItem item)
+    {
+        if (!IsValidWorldItem(item)) return false;
+
+        try
+        {
+            // NetworkObjectId erişilebilir mi?
+            _ = item.NetworkObject.NetworkObjectId;
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     private void HandleDropInteraction()
     {
         if (!_hasItem.Value || _isAnimating) return;
@@ -848,9 +966,10 @@ public class PlayerInventory : NetworkBehaviour
         var nearbyShelf = GetNearbyShelf();
         var networkedShelf = GetNearbyNetworkedShelf();
 
-        Debug.Log($"[PlayerInventory] F pressed - Shelf: {(nearbyShelf != null ? "Found" : "None")}, NetworkedShelf: {(networkedShelf != null ? "Found" : "None")}");
+        Debug.Log($"[PlayerInventory] F pressed - HasItem: {_hasItem.Value}, ItemData: {_currentItemData?.itemName ?? "null"}");
+        Debug.Log($"[PlayerInventory] Shelf: {(nearbyShelf != null ? nearbyShelf.name : "None")}, NetworkedShelf: {(networkedShelf != null ? "Found" : "None")}");
 
-        // Check NetworkedShelf restrictions
+        // NetworkedShelf kısıtlaması kontrolü
         if (networkedShelf != null && !networkedShelf.CanPlaceItems())
         {
             Debug.Log("[PlayerInventory] Cannot place items on NetworkedShelf - doing normal drop");
@@ -858,20 +977,26 @@ public class PlayerInventory : NetworkBehaviour
             return;
         }
 
-        // Check ShelfState placement
+        // ShelfState yerleştirme kontrolü
         if (nearbyShelf != null)
         {
+            // ✅ DEĞİŞTİRİLDİ: Client-side kontrol sadece bilgilendirme amaçlı
+            // Asıl kontrol server'da yapılacak
             bool canPlace = CanPlaceBoxOnShelf(nearbyShelf);
-            Debug.Log($"[PlayerInventory] Can place box on shelf: {canPlace}");
+            Debug.Log($"[PlayerInventory] Client-side canPlace check: {canPlace}");
 
             if (canPlace)
             {
-                Debug.Log($"[PlayerInventory] Calling RequestPlaceOnShelfServerRpc (ItemID: {_currentItemID.Value})");
+                Debug.Log($"[PlayerInventory] Calling RequestPlaceOnShelfServerRpc");
                 _isProcessingInteraction = true;
                 RequestPlaceOnShelfServerRpc();
                 PlaySound(SoundType.PlaceOnShelf);
                 StartCoroutine(ResetInteractionFlagAfterDelay());
                 return;
+            }
+            else
+            {
+                Debug.Log("[PlayerInventory] Cannot place on shelf (not a full box) - doing normal drop");
             }
         }
 
@@ -1019,19 +1144,17 @@ public class PlayerInventory : NetworkBehaviour
     {
         if (_currentItemData == null) return false;
 
-        // Check held item visual
-        if (_heldItemVisual != null)
+        // ✅ YENİ: Önce ItemData üzerinden kontrol et (Server-side için)
+        // Item adından kontrol
+        var itemName = _currentItemData.itemName.ToLower();
+        if (itemName.Contains("full") || itemName.Contains("dolu") || itemName.Contains("boxfull"))
         {
-            var boxInfo = _heldItemVisual.GetComponent<BoxInfo>();
-            if (boxInfo != null)
-            {
-                Debug.Log($"[PlayerInventory] Box in held visual: {boxInfo.boxType}, isFull: {boxInfo.isFull}");
-                return boxInfo.isFull;
-            }
+            Debug.Log($"[PlayerInventory] CanPlaceBoxOnShelf: TRUE (item name contains full/dolu)");
+            return true;
         }
 
-        // Check item data prefabs
-        var prefabsToCheck = new[] { _currentItemData.visualPrefab, _currentItemData.worldPrefab };
+        // ✅ YENİ: Prefab'lardan BoxInfo kontrolü (Server-side için çalışır)
+        var prefabsToCheck = new[] { _currentItemData.worldPrefab, _currentItemData.visualPrefab };
 
         foreach (var prefab in prefabsToCheck)
         {
@@ -1040,13 +1163,24 @@ public class PlayerInventory : NetworkBehaviour
                 var boxInfo = prefab.GetComponent<BoxInfo>();
                 if (boxInfo != null)
                 {
-                    Debug.Log($"[PlayerInventory] Box found in prefab: {boxInfo.boxType}, isFull: {boxInfo.isFull}");
+                    Debug.Log($"[PlayerInventory] CanPlaceBoxOnShelf: Prefab BoxInfo found - isFull: {boxInfo.isFull}");
                     return boxInfo.isFull;
                 }
             }
         }
 
-        Debug.Log("[PlayerInventory] No BoxInfo component found on item");
+        // Held item visual kontrolü (Client-side için)
+        if (_heldItemVisual != null)
+        {
+            var boxInfo = _heldItemVisual.GetComponent<BoxInfo>();
+            if (boxInfo != null)
+            {
+                Debug.Log($"[PlayerInventory] CanPlaceBoxOnShelf: HeldItemVisual BoxInfo - isFull: {boxInfo.isFull}");
+                return boxInfo.isFull;
+            }
+        }
+
+        Debug.Log("[PlayerInventory] CanPlaceBoxOnShelf: FALSE (no BoxInfo found)");
         return false;
     }
 
@@ -1192,7 +1326,6 @@ public class PlayerInventory : NetworkBehaviour
     #endregion
 
     #region Server RPCs - Shelf Interaction
-
     [ServerRpc(RequireOwnership = false)]
     private void RequestTakeFromShelfServerRpc(ulong itemNetworkId, ServerRpcParams rpcParams = default)
     {
@@ -1234,8 +1367,11 @@ public class PlayerInventory : NetworkBehaviour
         try
         {
             nearbyShelf.TakeItemFromShelfServerRpc(requesterClientId, itemNetworkId, rpcParams);
+
+            // ✅ YENİ: Client'a shelf item targeting'i temizlemesini söyle
+            ClearShelfTargetingClientRpc(requesterClientId);
         }
-        catch (Exception e)
+        catch (System.Exception e)
         {
             Debug.LogError($"[PlayerInventory] Error in TakeItemFromShelfServerRpc: {e.Message}\n{e.StackTrace}");
         }
@@ -1244,67 +1380,179 @@ public class PlayerInventory : NetworkBehaviour
             ResetProcessingInteractionClientRpc();
         }
     }
+    [ClientRpc]
+    private void ClearShelfTargetingClientRpc(ulong targetClientId)
+    {
+        if (NetworkManager.Singleton.LocalClientId != targetClientId) return;
+
+        Debug.Log($"[PlayerInventory] Client {targetClientId}: Clearing shelf targeting after take");
+        ClearShelfItemTargeting();
+    }
+
+    private bool CanPlaceBoxOnShelfServerSide(ItemData itemData)
+    {
+        if (itemData == null) return false;
+
+        // Item adından kontrol
+        var itemName = itemData.itemName.ToLower();
+        if (itemName.Contains("full") || itemName.Contains("dolu") || itemName.Contains("boxfull"))
+        {
+            Debug.Log($"[PlayerInventory] Server: Item name indicates full box: {itemData.itemName}");
+            return true;
+        }
+
+        // Prefab'lardan BoxInfo kontrolü
+        var prefabsToCheck = new[] { itemData.worldPrefab, itemData.visualPrefab };
+
+        foreach (var prefab in prefabsToCheck)
+        {
+            if (prefab != null)
+            {
+                var boxInfo = prefab.GetComponent<BoxInfo>();
+                if (boxInfo != null)
+                {
+                    Debug.Log($"[PlayerInventory] Server: Prefab BoxInfo found - isFull: {boxInfo.isFull}, type: {boxInfo.boxType}");
+                    return boxInfo.isFull;
+                }
+            }
+        }
+
+        Debug.Log("[PlayerInventory] Server: No BoxInfo found in prefabs");
+        return false;
+    }
+    private ShelfState FindNearbyShelfWithRangeCheck(Transform playerTransform)
+    {
+        if (playerTransform == null) return null;
+
+        var colliders = Physics.OverlapSphere(playerTransform.position, detectionRange + 2f); // Biraz daha geniş ara
+        ShelfState closestShelf = null;
+        float closestDistance = float.MaxValue;
+
+        foreach (var collider in colliders)
+        {
+            var shelf = collider.GetComponent<ShelfState>();
+            if (shelf == null) continue;
+
+            // ✅ ÖNEMLİ: IsPlayerInRange kontrolü
+            if (!shelf.IsPlayerInRange(playerTransform))
+            {
+                Debug.Log($"[PlayerInventory] Shelf {shelf.name} found but player NOT in range");
+                continue;
+            }
+
+            float distance = Vector3.Distance(playerTransform.position, shelf.transform.position);
+            if (distance < closestDistance)
+            {
+                closestDistance = distance;
+                closestShelf = shelf;
+            }
+        }
+
+        if (closestShelf != null)
+        {
+            Debug.Log($"[PlayerInventory] ✅ Found shelf {closestShelf.name} at distance {closestDistance:F2}");
+        }
+
+        return closestShelf;
+    }
+
+    /// <summary>
+    /// Server tarafında normal drop işlemi
+    /// </summary>
+    private void PerformNormalDropServer(Transform playerTransform)
+    {
+        if (_currentItemData == null) return;
+
+        var worldItemPrefab = GetWorldItemPrefab(_currentItemData);
+        if (worldItemPrefab == null) return;
+
+        Vector3 dropPos = playerTransform.position + playerTransform.forward * 1.5f;
+        dropPos.y += 0.5f;
+
+        var spawnedItem = Instantiate(worldItemPrefab, dropPos, Quaternion.identity);
+        var networkObject = spawnedItem.GetComponent<NetworkObject>();
+
+        if (networkObject != null)
+        {
+            networkObject.Spawn();
+
+            var worldItem = spawnedItem.GetComponent<NetworkWorldItem>();
+            if (worldItem != null)
+            {
+                worldItem.SetItemData(_currentItemData);
+                StartCoroutine(DelayedEnablePickup(worldItem));
+            }
+        }
+
+        ClearInventoryState();
+
+        if (_playerMovement != null)
+        {
+            _playerMovement.SetCarrying(false);
+        }
+
+        StartDropAnimationClientRpc();
+    }
+
 
     [ServerRpc(RequireOwnership = false)]
     private void RequestPlaceOnShelfServerRpc(ServerRpcParams rpcParams = default)
     {
         var requesterClientId = rpcParams.Receive.SenderClientId;
-        Debug.Log($"[PlayerInventory] Server: RequestPlaceOnShelfServerRpc - Client {requesterClientId}");
+        Debug.Log($"[PlayerInventory] 📥 SERVER: RequestPlaceOnShelfServerRpc - Client {requesterClientId}");
 
+        // Player kontrolü
         if (!_hasItem.Value)
         {
-            Debug.Log($"[PlayerInventory] Client {requesterClientId} has no item to place!");
+            Debug.Log($"[PlayerInventory] ❌ Client {requesterClientId} has no item to place!");
             ResetProcessingInteractionClientRpc();
             return;
         }
 
-        // Get player transform
+        // Player transform bul
         if (!TryGetPlayerTransform(requesterClientId, out var playerTransform))
         {
+            Debug.LogError($"[PlayerInventory] ❌ Player transform not found for client {requesterClientId}");
             ResetProcessingInteractionClientRpc();
             return;
         }
 
         Debug.Log($"[PlayerInventory] Found player at position {playerTransform.position}");
 
-        // Find shelf
-        var nearbyShelf = FindNearbyShelfForPosition(playerTransform.position, detectionRange);
+        // ✅ DEĞİŞTİRİLDİ: Shelf bul - daha geniş arama
+        var nearbyShelf = FindNearbyShelfWithRangeCheck(playerTransform);
         if (nearbyShelf == null)
         {
-            Debug.LogError($"[PlayerInventory] No shelf found near client {requesterClientId}!");
+            Debug.LogError($"[PlayerInventory] ❌ No shelf in range for client {requesterClientId}!");
             ResetProcessingInteractionClientRpc();
             return;
         }
 
-        Debug.Log($"[PlayerInventory] Found shelf: {nearbyShelf.name}");
+        Debug.Log($"[PlayerInventory] ✅ Found shelf: {nearbyShelf.name}");
 
-        // Validate placement
-        if (!nearbyShelf.IsPlayerInRange(playerTransform))
-        {
-            Debug.LogWarning($"[PlayerInventory] Client {requesterClientId} NOT in shelf range!");
-            ResetProcessingInteractionClientRpc();
-            return;
-        }
-
+        // Shelf dolu mu?
         if (nearbyShelf.IsFull())
         {
-            Debug.Log("[PlayerInventory] Shelf is FULL!");
+            Debug.Log("[PlayerInventory] ❌ Shelf is FULL!");
             ResetProcessingInteractionClientRpc();
             return;
         }
 
-        if (!CanPlaceBoxOnShelf(nearbyShelf))
+        // ✅ DEĞİŞTİRİLDİ: Server-side BoxInfo kontrolü
+        if (!CanPlaceBoxOnShelfServerSide(_currentItemData))
         {
-            Debug.Log("[PlayerInventory] Can only place FULL boxes on shelf!");
+            Debug.Log("[PlayerInventory] ❌ Can only place FULL boxes on shelf!");
+            // Normal drop yap
+            PerformNormalDropServer(playerTransform);
             ResetProcessingInteractionClientRpc();
             return;
         }
 
-        // Spawn world item
+        // World item spawn et
         var worldItemPrefab = GetWorldItemPrefab(_currentItemData);
         if (worldItemPrefab == null)
         {
-            Debug.LogError("[PlayerInventory] World item prefab is NULL!");
+            Debug.LogError("[PlayerInventory] ❌ World item prefab is NULL!");
             ResetProcessingInteractionClientRpc();
             return;
         }
@@ -1315,7 +1563,7 @@ public class PlayerInventory : NetworkBehaviour
 
         if (networkObject == null)
         {
-            Debug.LogError("[PlayerInventory] NetworkObject component missing!");
+            Debug.LogError("[PlayerInventory] ❌ NetworkObject component missing!");
             Destroy(spawnedItem);
             ResetProcessingInteractionClientRpc();
             return;
@@ -1323,19 +1571,28 @@ public class PlayerInventory : NetworkBehaviour
 
         networkObject.Spawn();
 
-        // Setup world item
+        // World item ayarla
         var worldItem = spawnedItem.GetComponent<NetworkWorldItem>();
         if (worldItem != null)
         {
             worldItem.SetItemData(_currentItemData);
-            CopyBoxInfoToWorldItem(spawnedItem);
+
+            // ✅ YENİ: BoxInfo'yu prefab'dan kopyala
+            var worldBoxInfo = spawnedItem.GetComponent<BoxInfo>();
+            var prefabBoxInfo = worldItemPrefab.GetComponent<BoxInfo>();
+            if (worldBoxInfo != null && prefabBoxInfo != null)
+            {
+                worldBoxInfo.isFull = true; // Zaten kontrol ettik, full olmalı
+                worldBoxInfo.boxType = prefabBoxInfo.boxType;
+            }
+
             worldItem.DisablePickup();
         }
 
-        Debug.Log("[PlayerInventory] Calling ShelfState.PlaceItemOnShelfServerRpc");
+        Debug.Log("[PlayerInventory] ✅ Calling ShelfState.PlaceItemOnShelfServerRpc");
         nearbyShelf.PlaceItemOnShelfServerRpc(new NetworkObjectReference(networkObject), rpcParams);
 
-        // Clear player inventory
+        // Player inventory temizle
         ClearInventoryState();
 
         if (_playerMovement != null)
@@ -1345,10 +1602,10 @@ public class PlayerInventory : NetworkBehaviour
 
         StartDropAnimationClientRpc();
 
-        // Update quest
+        // Quest güncelle
         QuestManager.Instance?.IncrementQuestProgress(QuestType.PlaceOnShelf);
 
-        Debug.Log($"[PlayerInventory] Item placed on shelf successfully by client {requesterClientId}!");
+        Debug.Log($"[PlayerInventory] ✅ Item placed on shelf successfully by client {requesterClientId}!");
         ResetProcessingInteractionClientRpc();
     }
 

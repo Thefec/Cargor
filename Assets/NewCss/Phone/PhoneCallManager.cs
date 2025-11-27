@@ -388,17 +388,17 @@ namespace NewCss
         }
 
         private void HandleConversationChanged(bool previousValue, bool newValue)
-        {
-            UpdateUIState();
+{
+    UpdateUIState();
 
-            if (!newValue)
-            {
-                StopConversationSound();
-            }
+    if (! newValue)
+    {
+        StopConversationSound();
+    }
 
-            // Lock/unlock sadece telefonu cevaplayan client için
-            HandleMovementLockForCallOwner(newValue);
-        }
+    // ✅ DEĞİŞTİRİLDİ: Movement lock işlemini KALDIR - ClientRpc'de yapılacak
+    // HandleMovementLockForCallOwner(newValue); // KALDIRILDI
+}
 
         private void HandleCustomerSupportChanged(bool previousValue, bool newValue)
         {
@@ -408,6 +408,14 @@ namespace NewCss
         private void HandleCallOwnerChanged(ulong previousValue, ulong newValue)
         {
             UpdateUIState();
+
+            // ✅ YENİ: Call owner değiştiğinde movement lock
+            // Bu metod NetworkVariable değiştiğinde çağrılır
+            // Yeni owner varsa ve konuşma aktifse, lock yap
+            if (newValue != 0 && _networkIsInPhoneConversation.Value)
+            {
+                HandleMovementLockForCallOwner(true);
+            }
         }
 
         #endregion
@@ -421,14 +429,17 @@ namespace NewCss
             ulong localClientId = NetworkManager.Singleton.LocalClientId;
             ulong callOwner = _networkCurrentCallOwner.Value;
 
-            LogDebug($"Client {localClientId} - Conversation: {shouldLock}, CallOwner: {callOwner}");
+            LogDebug($"HandleMovementLock - LocalClient: {localClientId}, CallOwner: {callOwner}, ShouldLock: {shouldLock}");
 
-            // Sadece telefonu cevaplayan oyuncu için lock/unlock
-            if (callOwner == localClientId)
+            // ✅ DEĞİŞTİRİLDİ: Sadece telefonu cevaplayan oyuncu için lock/unlock
+            if (callOwner != localClientId)
             {
-                LockLocalPlayerMovement(shouldLock);
-                LogDebug($"Client {localClientId} - Movement locked: {shouldLock}");
+                LogDebug($"Client {localClientId} is NOT the call owner ({callOwner}), skipping lock");
+                return;
             }
+
+            LogDebug($"Client {localClientId} IS the call owner, applying lock: {shouldLock}");
+            LockLocalPlayerMovement(shouldLock);
         }
 
         private void LockLocalPlayerMovement(bool locked)
@@ -437,24 +448,38 @@ namespace NewCss
 
             ulong localClientId = NetworkManager.Singleton.LocalClientId;
 
-            foreach (var netObj in FindObjectsOfType<NetworkObject>())
-            {
-                if (!netObj.IsOwner || netObj.OwnerClientId != localClientId || !netObj.CompareTag(playerTag))
-                {
-                    continue;
-                }
+            LogDebug($"LockLocalPlayerMovement - Client {localClientId}, Locked: {locked}");
 
-                var playerMovement = FindPlayerMovement(netObj);
-                if (playerMovement != null)
-                {
-                    LogDebug($"Client {localClientId} - Locking movement: {locked}");
-                    playerMovement.LockMovement(locked);
-                    playerMovement.LockAllInteractions(locked);
-                    return;
-                }
+            // ✅ DEĞİŞTİRİLDİ: ConnectedClients kullan, FindObjectsOfType değil
+            if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(localClientId, out var client))
+            {
+                LogWarning($"Client {localClientId} not found in ConnectedClients!");
+                return;
             }
 
-            LogWarning($"Client {localClientId} - Could not find local player!");
+            if (client.PlayerObject == null)
+            {
+                LogWarning($"PlayerObject is null for client {localClientId}!");
+                return;
+            }
+
+            var playerMovement = client.PlayerObject.GetComponent<PlayerMovement>();
+
+            if (playerMovement == null)
+            {
+                playerMovement = client.PlayerObject.GetComponentInChildren<PlayerMovement>();
+            }
+
+            if (playerMovement != null)
+            {
+                playerMovement.LockMovement(locked);
+                playerMovement.LockAllInteractions(locked);
+                LogDebug($"✅ Client {localClientId} - Movement locked: {locked}");
+            }
+            else
+            {
+                LogError($"❌ Client {localClientId} - PlayerMovement component not found!");
+            }
         }
 
         private PlayerMovement FindPlayerMovement(NetworkObject netObj)
@@ -716,6 +741,12 @@ namespace NewCss
 
         private void EndCallServer(bool wasMissed)
         {
+            LogDebug($"EndCallServer - WasMissed: {wasMissed}, CurrentOwner: {_networkCurrentCallOwner.Value}");
+
+            // ✅ YENİ: Önce ClientRpc çağır, sonra state'leri reset et
+            OnCallEndedClientRpc(wasMissed);
+
+            // State'leri reset et
             _networkIsCallActive.Value = false;
             _networkIsCallAnswered.Value = false;
             _networkIsInPhoneConversation.Value = false;
@@ -728,8 +759,6 @@ namespace NewCss
                 StopCoroutine(_callCoroutine);
                 _callCoroutine = null;
             }
-
-            OnCallEndedClientRpc(wasMissed);
         }
 
         #endregion
@@ -756,12 +785,16 @@ namespace NewCss
 
             ulong clientId = rpcParams.Receive.SenderClientId;
 
+            LogDebug($"AnswerCallServerRpc - Client {clientId} answering the call");
+
+            // ✅ DEĞİŞTİRİLDİ: Önce owner'ı set et, sonra state'leri değiştir
+            _networkCurrentCallOwner.Value = clientId;
             _networkIsCallAnswered.Value = true;
             _networkIsInPhoneConversation.Value = true;
-            _networkCurrentCallOwner.Value = clientId;
 
             phoneWaitBar?.StartWaitBar(callAnswerDuration);
 
+            // ✅ ClientRpc ile movement lock'u uygula
             OnCallAnsweredClientRpc(clientId);
         }
 
@@ -839,25 +872,39 @@ namespace NewCss
         [ClientRpc]
         private void OnCallAnsweredClientRpc(ulong answeringClientId)
         {
-            LogDebug($"Phone call answered by client {answeringClientId}");
+            LogDebug($"OnCallAnsweredClientRpc - AnsweringClient: {answeringClientId}, LocalClient: {NetworkManager.Singleton?.LocalClientId}");
+
+            // ✅ YENİ: Telefonu cevaplayan client'ın movement'ını kilitle
+            if (NetworkManager.Singleton == null) return;
+
+            ulong localClientId = NetworkManager.Singleton.LocalClientId;
+
+            if (answeringClientId == localClientId)
+            {
+                LogDebug($"✅ Client {localClientId} answered the call - Locking movement");
+                LockLocalPlayerMovement(true);
+            }
+            else
+            {
+                LogDebug($"Client {localClientId} did NOT answer the call (answerer: {answeringClientId})");
+            }
         }
 
         [ClientRpc]
         private void OnCallEndedClientRpc(bool wasMissed)
         {
-            LogDebug($"Phone call ended - Missed: {wasMissed}");
+            LogDebug($"OnCallEndedClientRpc - Missed: {wasMissed}");
 
-            // Unlock call owner
             if (NetworkManager.Singleton == null) return;
 
             ulong localClientId = NetworkManager.Singleton.LocalClientId;
-            ulong callOwner = _networkCurrentCallOwner.Value;
 
-            if (callOwner == localClientId)
-            {
-                LogDebug($"Client {localClientId} - Unlocking movement after call end");
-                LockLocalPlayerMovement(false);
-            }
+            // ✅ DEĞİŞTİRİLDİ: Her zaman local player'ın lock'unu kaldır
+            // Çünkü call owner bilgisi reset edilmiş olabilir
+            // Sadece konuşmada olan oyuncu zaten locked olacak
+            LockLocalPlayerMovement(false);
+
+            LogDebug($"Client {localClientId} - Movement unlocked after call end");
         }
 
         [ClientRpc]

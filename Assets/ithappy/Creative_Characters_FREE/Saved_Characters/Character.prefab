@@ -422,7 +422,7 @@ Transform:
   m_GameObject: {fileID: 476499632315951937}
   serializedVersion: 2
   m_LocalRotation: {x: 0.006189771, y: 2.2726336e-13, z: 1.9906367e-13, w: 0.9999809}
-  m_LocalPosition: {x: 0, y: 1.176, z: 0.497}
+  m_LocalPosition: {x: -0, y: 1.303, z: 0.164}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -14065,6 +14065,8 @@ MonoBehaviour:
   moveSpeed: 4
   sprintSpeed: 7
   exhaustedSpeed: 3
+  rotationSpeed: 10
+  gravity: 9.81
   sprintDuration: 3
   sprintCooldown: 3
   staminaRegenRate: 1
