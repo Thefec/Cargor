@@ -977,27 +977,16 @@ public class PlayerInventory : NetworkBehaviour
             return;
         }
 
-        // ShelfState yerleştirme kontrolü
+        // ShelfState yerleştirme - HER ZAMAN SERVER'A GÖNDER, CLIENT-SIDE KONTROL YAPMA
         if (nearbyShelf != null)
         {
-            // ✅ DEĞİŞTİRİLDİ: Client-side kontrol sadece bilgilendirme amaçlı
-            // Asıl kontrol server'da yapılacak
-            bool canPlace = CanPlaceBoxOnShelf(nearbyShelf);
-            Debug.Log($"[PlayerInventory] Client-side canPlace check: {canPlace}");
-
-            if (canPlace)
-            {
-                Debug.Log($"[PlayerInventory] Calling RequestPlaceOnShelfServerRpc");
-                _isProcessingInteraction = true;
-                RequestPlaceOnShelfServerRpc();
-                PlaySound(SoundType.PlaceOnShelf);
-                StartCoroutine(ResetInteractionFlagAfterDelay());
-                return;
-            }
-            else
-            {
-                Debug.Log("[PlayerInventory] Cannot place on shelf (not a full box) - doing normal drop");
-            }
+            Debug.Log($"[PlayerInventory] Shelf found, sending to server for validation");
+            _isProcessingInteraction = true;
+            RequestPlaceOnShelfServerRpc();
+            PlaySound(SoundType.PlaceOnShelf);
+            // NOT: StartCoroutine(ResetInteractionFlagAfterDelay()) KALDIRILDI
+            // Server RPC içinde reset yapılıyor
+            return;
         }
 
         // Default: Normal drop
@@ -1335,14 +1324,15 @@ public class PlayerInventory : NetworkBehaviour
         if (_hasItem.Value)
         {
             Debug.LogWarning($"[PlayerInventory] Client {requesterClientId} already has an item!");
-            ResetProcessingInteractionClientRpc();
+            ResetProcessingInteractionForClientRpc(requesterClientId);
             return;
         }
 
         // Get player transform
         if (!TryGetPlayerTransform(requesterClientId, out var playerTransform))
         {
-            ResetProcessingInteractionClientRpc();
+            Debug.LogError($"[PlayerInventory] Player transform not found for client {requesterClientId}");
+            ResetProcessingInteractionForClientRpc(requesterClientId);
             return;
         }
 
@@ -1351,14 +1341,14 @@ public class PlayerInventory : NetworkBehaviour
         if (nearbyShelf == null)
         {
             Debug.LogError($"[PlayerInventory] No shelf found near client {requesterClientId}!");
-            ResetProcessingInteractionClientRpc();
+            ResetProcessingInteractionForClientRpc(requesterClientId);
             return;
         }
 
         if (!nearbyShelf.HasItem())
         {
             Debug.LogWarning("[PlayerInventory] Shelf is empty!");
-            ResetProcessingInteractionClientRpc();
+            ResetProcessingInteractionForClientRpc(requesterClientId);
             return;
         }
 
@@ -1368,7 +1358,7 @@ public class PlayerInventory : NetworkBehaviour
         {
             nearbyShelf.TakeItemFromShelfServerRpc(requesterClientId, itemNetworkId, rpcParams);
 
-            // ✅ YENİ: Client'a shelf item targeting'i temizlemesini söyle
+            // Client'a shelf item targeting'i temizlemesini söyle
             ClearShelfTargetingClientRpc(requesterClientId);
         }
         catch (System.Exception e)
@@ -1377,7 +1367,7 @@ public class PlayerInventory : NetworkBehaviour
         }
         finally
         {
-            ResetProcessingInteractionClientRpc();
+            ResetProcessingInteractionForClientRpc(requesterClientId);
         }
     }
     [ClientRpc]
@@ -1459,12 +1449,22 @@ public class PlayerInventory : NetworkBehaviour
     /// <summary>
     /// Server tarafında normal drop işlemi
     /// </summary>
-    private void PerformNormalDropServer(Transform playerTransform)
+    private void PerformNormalDropServer(Transform playerTransform, ulong clientId)
     {
-        if (_currentItemData == null) return;
+        if (_currentItemData == null)
+        {
+            Debug.LogError("[PlayerInventory] ❌ PerformNormalDropServer: _currentItemData is null!");
+            ResetProcessingInteractionForClientRpc(clientId);
+            return;
+        }
 
         var worldItemPrefab = GetWorldItemPrefab(_currentItemData);
-        if (worldItemPrefab == null) return;
+        if (worldItemPrefab == null)
+        {
+            Debug.LogError("[PlayerInventory] ❌ PerformNormalDropServer: worldItemPrefab is null!");
+            ResetProcessingInteractionForClientRpc(clientId);
+            return;
+        }
 
         Vector3 dropPos = playerTransform.position + playerTransform.forward * 1.5f;
         dropPos.y += 0.5f;
@@ -1482,16 +1482,55 @@ public class PlayerInventory : NetworkBehaviour
                 worldItem.SetItemData(_currentItemData);
                 StartCoroutine(DelayedEnablePickup(worldItem));
             }
+
+            Debug.Log($"[PlayerInventory] ✅ Normal drop completed at {dropPos}");
         }
 
+        // Inventory temizle
         ClearInventoryState();
 
-        if (_playerMovement != null)
-        {
-            _playerMovement.SetCarrying(false);
-        }
+        // Client'a özel bildirimler
+        ClearHeldItemForClientRpc(clientId);
+        StartDropAnimationForClientRpc(clientId);
+        ResetProcessingInteractionForClientRpc(clientId);
+    }
 
-        StartDropAnimationClientRpc();
+    [ClientRpc]
+    private void ResetProcessingInteractionForClientRpc(ulong targetClientId)
+    {
+        if (NetworkManager.Singleton.LocalClientId == targetClientId)
+        {
+            _isProcessingInteraction = false;
+            Debug.Log($"[PlayerInventory] Client {targetClientId}: _isProcessingInteraction reset to false");
+        }
+    }
+
+    [ClientRpc]
+    private void ClearHeldItemForClientRpc(ulong targetClientId)
+    {
+        if (NetworkManager.Singleton.LocalClientId == targetClientId)
+        {
+            DestroyHeldItemVisual();
+            Debug.Log($"[PlayerInventory] Client {targetClientId}: Held item visual cleared");
+        }
+    }
+
+    [ClientRpc]
+    private void StartDropAnimationForClientRpc(ulong targetClientId)
+    {
+        if (NetworkManager.Singleton.LocalClientId == targetClientId)
+        {
+            StartCoroutine(DropAnimationCoroutine());
+        }
+    }
+
+    [ClientRpc]
+    private void StartPickupAnimationForClientRpc(ulong targetClientId)
+    {
+        if (NetworkManager.Singleton.LocalClientId == targetClientId)
+        {
+            StartCoroutine(PickupAnimationCoroutine());
+        }
     }
 
 
@@ -1505,7 +1544,7 @@ public class PlayerInventory : NetworkBehaviour
         if (!_hasItem.Value)
         {
             Debug.Log($"[PlayerInventory] ❌ Client {requesterClientId} has no item to place!");
-            ResetProcessingInteractionClientRpc();
+            ResetProcessingInteractionForClientRpc(requesterClientId);
             return;
         }
 
@@ -1513,18 +1552,18 @@ public class PlayerInventory : NetworkBehaviour
         if (!TryGetPlayerTransform(requesterClientId, out var playerTransform))
         {
             Debug.LogError($"[PlayerInventory] ❌ Player transform not found for client {requesterClientId}");
-            ResetProcessingInteractionClientRpc();
+            ResetProcessingInteractionForClientRpc(requesterClientId);
             return;
         }
 
         Debug.Log($"[PlayerInventory] Found player at position {playerTransform.position}");
 
-        // ✅ DEĞİŞTİRİLDİ: Shelf bul - daha geniş arama
+        // Shelf bul
         var nearbyShelf = FindNearbyShelfWithRangeCheck(playerTransform);
         if (nearbyShelf == null)
         {
-            Debug.LogError($"[PlayerInventory] ❌ No shelf in range for client {requesterClientId}!");
-            ResetProcessingInteractionClientRpc();
+            Debug.LogWarning($"[PlayerInventory] ⚠️ No shelf in range for client {requesterClientId} - doing normal drop");
+            PerformNormalDropServer(playerTransform, requesterClientId);
             return;
         }
 
@@ -1533,18 +1572,16 @@ public class PlayerInventory : NetworkBehaviour
         // Shelf dolu mu?
         if (nearbyShelf.IsFull())
         {
-            Debug.Log("[PlayerInventory] ❌ Shelf is FULL!");
-            ResetProcessingInteractionClientRpc();
+            Debug.Log("[PlayerInventory] ❌ Shelf is FULL!  - doing normal drop");
+            PerformNormalDropServer(playerTransform, requesterClientId);
             return;
         }
 
-        // ✅ DEĞİŞTİRİLDİ: Server-side BoxInfo kontrolü
+        // Server-side BoxInfo kontrolü
         if (!CanPlaceBoxOnShelfServerSide(_currentItemData))
         {
-            Debug.Log("[PlayerInventory] ❌ Can only place FULL boxes on shelf!");
-            // Normal drop yap
-            PerformNormalDropServer(playerTransform);
-            ResetProcessingInteractionClientRpc();
+            Debug.Log("[PlayerInventory] ❌ Can only place FULL boxes on shelf!  - doing normal drop");
+            PerformNormalDropServer(playerTransform, requesterClientId);
             return;
         }
 
@@ -1553,7 +1590,7 @@ public class PlayerInventory : NetworkBehaviour
         if (worldItemPrefab == null)
         {
             Debug.LogError("[PlayerInventory] ❌ World item prefab is NULL!");
-            ResetProcessingInteractionClientRpc();
+            ResetProcessingInteractionForClientRpc(requesterClientId);
             return;
         }
 
@@ -1565,7 +1602,7 @@ public class PlayerInventory : NetworkBehaviour
         {
             Debug.LogError("[PlayerInventory] ❌ NetworkObject component missing!");
             Destroy(spawnedItem);
-            ResetProcessingInteractionClientRpc();
+            ResetProcessingInteractionForClientRpc(requesterClientId);
             return;
         }
 
@@ -1577,12 +1614,12 @@ public class PlayerInventory : NetworkBehaviour
         {
             worldItem.SetItemData(_currentItemData);
 
-            // ✅ YENİ: BoxInfo'yu prefab'dan kopyala
+            // BoxInfo'yu prefab'dan kopyala
             var worldBoxInfo = spawnedItem.GetComponent<BoxInfo>();
             var prefabBoxInfo = worldItemPrefab.GetComponent<BoxInfo>();
             if (worldBoxInfo != null && prefabBoxInfo != null)
             {
-                worldBoxInfo.isFull = true; // Zaten kontrol ettik, full olmalı
+                worldBoxInfo.isFull = true;
                 worldBoxInfo.boxType = prefabBoxInfo.boxType;
             }
 
@@ -1595,18 +1632,15 @@ public class PlayerInventory : NetworkBehaviour
         // Player inventory temizle
         ClearInventoryState();
 
-        if (_playerMovement != null)
-        {
-            _playerMovement.SetCarrying(false);
-        }
-
-        StartDropAnimationClientRpc();
+        // Tüm client'lara animasyon bildir
+        ClearHeldItemForClientRpc(requesterClientId);
+        StartDropAnimationForClientRpc(requesterClientId);
 
         // Quest güncelle
         QuestManager.Instance?.IncrementQuestProgress(QuestType.PlaceOnShelf);
 
         Debug.Log($"[PlayerInventory] ✅ Item placed on shelf successfully by client {requesterClientId}!");
-        ResetProcessingInteractionClientRpc();
+        ResetProcessingInteractionForClientRpc(requesterClientId);
     }
 
     private bool TryGetPlayerTransform(ulong clientId, out Transform playerTransform)
@@ -1692,6 +1726,15 @@ public class PlayerInventory : NetworkBehaviour
 
     [ClientRpc]
     private void ResetProcessingInteractionClientRpc()
+    {
+        // Sadece owner'ın flag'ini sıfırla
+        if (IsOwner)
+        {
+            _isProcessingInteraction = false;
+        }
+    }
+    [ClientRpc]
+    private void ResetProcessingInteractionTargetedClientRpc(ClientRpcParams clientRpcParams = default)
     {
         _isProcessingInteraction = false;
     }

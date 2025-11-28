@@ -1,111 +1,63 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using UnityEngine;
 using Unity.Netcode;
-using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace NewCss
 {
-    /// <summary>
-    /// Kutu paketleme minigame yöneticisi.  
-    /// Server-authoritative tuş sırası doğrulama ve network senkronizasyonu sağlar.
-    /// </summary>
     public class BoxingMinigameManager : NetworkBehaviour
     {
         #region Constants
 
-        private const string LOG_PREFIX = "[BoxingMinigame]";
         private const int REQUIRED_SEQUENCE_LENGTH = 3;
-        private const float UI_SHOW_DELAY = 0.1f;
-        private const float INPUT_WAIT_DELAY = 0.2f;
+        private const float MINIGAME_START_DELAY = 0.1f;
+        private const float NEXT_KEY_DELAY = 0.3f;
         private const float FAILURE_UI_HIDE_DELAY = 1.5f;
-        private const float AUDIO_SPATIAL_BLEND = 0.5f;
 
         #endregion
 
-        #region Serialized Fields - Settings
+        #region Serialized Fields
 
         [Header("=== MINIGAME SETTINGS ===")]
-        [SerializeField, Tooltip("Sıra uzunluğu (zorunlu 3)")]
-        private int sequenceLength = REQUIRED_SEQUENCE_LENGTH;
+        [SerializeField] private int sequenceLength = REQUIRED_SEQUENCE_LENGTH;
 
-        [Header("=== TIMING SETTINGS ===")]
-        [SerializeField, Tooltip("Tuş gösterim gecikmesi")]
-        private float keyDisplayDelay = 1f;
-
-        [SerializeField, Tooltip("Tuş fade in süresi")]
-        private float keyFadeInDuration = 0.15f;
-
-        [SerializeField, Tooltip("Tuş fade out süresi")]
-        private float keyFadeOutDuration = 0.15f;
-
-        [SerializeField, Tooltip("Geri bildirim gösterim süresi")]
-        private float feedbackDisplayTime = 0.3f;
-
-        #endregion
-
-        #region Serialized Fields - Audio
+        [Header("=== FADE SETTINGS ===")]
+        [SerializeField, Range(0.05f, 1f)] private float keyFadeInDuration = 0.15f;
+        [SerializeField, Range(0.05f, 1f)] private float keyFadeOutDuration = 0.15f;
+        [SerializeField, Range(0.1f, 1f)] private float nextKeyDelay = 0.3f;
 
         [Header("=== AUDIO ===")]
-        [SerializeField, Tooltip("Doğru tuş sesi")]
-        private AudioClip correctSound;
-
-        [SerializeField, Tooltip("Yanlış tuş sesi")]
-        private AudioClip wrongSound;
-
-        [SerializeField, Tooltip("Başarı sesi")]
-        private AudioClip successSound;
-
-        [SerializeField, Tooltip("Başarısızlık sesi")]
-        private AudioClip failSound;
-
-        #endregion
-
-        #region Serialized Fields - References
+        [SerializeField] private AudioClip correctSound;
+        [SerializeField] private AudioClip wrongSound;
+        [SerializeField] private AudioClip successSound;
+        [SerializeField] private AudioClip failSound;
 
         [Header("=== REFERENCES ===")]
-        [SerializeField, Tooltip("UI Controller")]
-        private BoxingUIController uiController;
-
-        [SerializeField, Tooltip("Parent Table referansı")]
-        private Table parentTable;
+        [SerializeField] private BoxingUIController uiController;
+        [SerializeField] private Table parentTable;
 
         [Header("=== DEBUG ===")]
-        [SerializeField, Tooltip("Debug loglarını göster")]
-        private bool showDebugLogs = true;
+        [SerializeField] private bool showDebugLogs = true;
 
         #endregion
 
-        #region Private Fields - Components
+        #region Private Fields
 
         private AudioSource _audioSource;
 
-        #endregion
+        // Minigame state
+        private List<KeyCode> _currentSequence = new List<KeyCode>();
+        private int _currentIndex = 0;
+        private bool _isWaitingForInput = false;
 
-        #region Private Fields - Player State
+        // ✅ Client-side: "Ben minigame'deyim mi?"
+        private bool _isLocalPlayerInMinigame = false;
+        private ulong _myClientId;
 
-        private PlayerInventory _currentPlayer;
-        private PlayerMovement _currentPlayerMovement;
-        private ulong _currentPlayerClientId;
-
-        #endregion
-
-        #region Private Fields - Minigame State
-
-        private readonly List<KeyCode> _currentSequence = new();
-        private int _currentIndex;
-        private bool _isActive;
-        private bool _isWaitingForInput;
         private BoxInfo.BoxType _currentBoxType;
         private ItemData _currentItemData;
 
-        // ✅ YENİ: Client-side local state tracking
-        private bool _isLocalPlayerInMinigame;
-
-        #endregion
-
-        #region Private Fields - Cached
-
-        private static readonly KeyCode[] PossibleKeys =
+        private static readonly KeyCode[] PossibleKeys = new KeyCode[]
         {
             KeyCode. UpArrow,
             KeyCode.DownArrow,
@@ -113,28 +65,11 @@ namespace NewCss
             KeyCode.RightArrow
         };
 
-        // ItemData cache
-        private ItemData[] _cachedItemData;
-        private bool _isItemDataCached;
-
         #endregion
 
         #region Public Properties
 
-        /// <summary>
-        /// Minigame aktif mi?
-        /// </summary>
-        public bool IsMinigameActive => _isActive || _isLocalPlayerInMinigame;
-
-        /// <summary>
-        /// Input bekleniyor mu?
-        /// </summary>
-        public bool IsWaitingForInput => _isWaitingForInput;
-
-        /// <summary>
-        /// Mevcut adım (0-2)
-        /// </summary>
-        public int CurrentStep => _currentIndex;
+        public bool IsMinigameActive => _isLocalPlayerInMinigame;
 
         #endregion
 
@@ -151,11 +86,6 @@ namespace NewCss
             ProcessInput();
         }
 
-        private void OnDestroy()
-        {
-            ClearItemDataCache();
-        }
-
         #endregion
 
         #region Initialization
@@ -163,21 +93,19 @@ namespace NewCss
         private void InitializeAudioSource()
         {
             _audioSource = GetComponent<AudioSource>();
-
             if (_audioSource == null)
             {
                 _audioSource = gameObject.AddComponent<AudioSource>();
             }
-
             _audioSource.playOnAwake = false;
-            _audioSource.spatialBlend = AUDIO_SPATIAL_BLEND;
+            _audioSource.spatialBlend = 0.5f;
         }
 
         private void ValidateSequenceLength()
         {
             if (sequenceLength != REQUIRED_SEQUENCE_LENGTH)
             {
-                LogWarning($"Sequence length is {sequenceLength}!  Forcing to {REQUIRED_SEQUENCE_LENGTH}.");
+                LogWarning($"Sequence length forced to {REQUIRED_SEQUENCE_LENGTH}");
                 sequenceLength = REQUIRED_SEQUENCE_LENGTH;
             }
         }
@@ -188,32 +116,19 @@ namespace NewCss
 
         private void ProcessInput()
         {
-            if (!CanProcessInput()) return;
+            // ✅ Phone gibi: Sadece minigame'deki local player
+            if (!_isLocalPlayerInMinigame || !_isWaitingForInput) return;
 
             foreach (KeyCode key in PossibleKeys)
             {
                 if (Input.GetKeyDown(key))
                 {
-                    LogDebug($"🎮 CLIENT {NetworkManager.Singleton.LocalClientId}: Key pressed: {key}");
-                    HandleInputServerRpc(key);
+                    LogDebug($"🎮 Key pressed: {key}");
+                    _isWaitingForInput = false; // Double-press önle
+                    HandleInput(key);
                     break;
                 }
             }
-        }
-
-        // ✅ DEĞİŞTİRİLDİ: Client-side input kontrolü düzeltildi
-        private bool CanProcessInput()
-        {
-            // Temel kontroller
-            if (!_isActive && !_isLocalPlayerInMinigame) return false;
-            if (!_isWaitingForInput) return false;
-            if (NetworkManager.Singleton == null) return false;
-
-            // ✅ YENİ: Local player minigame'de mi kontrolü
-            // _currentPlayer null olabilir client'ta, bu yüzden _isLocalPlayerInMinigame kullanıyoruz
-            if (!_isLocalPlayerInMinigame) return false;
-
-            return true;
         }
 
         #endregion
@@ -221,36 +136,20 @@ namespace NewCss
         #region Public API
 
         /// <summary>
-        /// Minigame'i başlatır (CLIENT tarafından çağrılır)
+        /// Minigame'i başlatır - Table tarafından çağrılır
         /// </summary>
         public void StartMinigame(PlayerInventory player, BoxInfo.BoxType boxType, ItemData itemData)
         {
-            if (player == null)
+            if (player == null || itemData == null)
             {
-                LogError("Player is null!");
+                LogError("Player or ItemData is null!");
                 return;
             }
 
-            if (itemData == null)
-            {
-                LogError("ItemData is null!");
-                return;
-            }
+            LogDebug($"🎮 StartMinigame - Player: {player.OwnerClientId}, BoxType: {boxType}");
 
-            LogDebug($"🎮 CLIENT {NetworkManager.Singleton.LocalClientId}: Requesting minigame start");
-
+            // Server'a istek gönder
             RequestStartMinigameServerRpc(player.OwnerClientId, (int)boxType, itemData.itemID);
-        }
-
-        /// <summary>
-        /// Minigame'i zorla durdurur
-        /// </summary>
-        public void ForceStop()
-        {
-            if (!IsServer) return;
-
-            ResetMinigameState();
-            ForceStopClientRpc(_currentPlayerClientId);
         }
 
         #endregion
@@ -260,109 +159,329 @@ namespace NewCss
         [ServerRpc(RequireOwnership = false)]
         private void RequestStartMinigameServerRpc(ulong playerClientId, int boxTypeInt, int itemDataID, ServerRpcParams rpcParams = default)
         {
-            if (!IsServer) return;
-
+            // ✅ Phone gibi: Kim gönderdi? 
             ulong senderClientId = rpcParams.Receive.SenderClientId;
 
-            LogDebug($"📥 SERVER: Minigame start requested by client {senderClientId} for player {playerClientId}");
+            LogDebug($"📥 SERVER: Minigame requested by client {senderClientId} for player {playerClientId}");
 
-            if (!ValidateStartRequest(playerClientId, itemDataID, out PlayerInventory player, out ItemData itemData))
-            {
-                return;
-            }
-
-            InitializeMinigameState(player, playerClientId, (BoxInfo.BoxType)boxTypeInt, itemData);
+            // Unique sequence oluştur
             GenerateUniqueSequence();
 
-            LogDebug($"✅ SERVER: Minigame started - Sequence: {string.Join(", ", _currentSequence)}");
-
-            // ✅ DEĞİŞTİRİLDİ: Sequence'ı array olarak gönder
             KeyCode[] sequenceArray = _currentSequence.ToArray();
-            StartMinigameClientRpc(playerClientId, boxTypeInt, sequenceArray);
+            LogDebug($"✅ SERVER: Sequence: {string.Join(", ", _currentSequence)}");
+
+            // ✅ HERKESE gönder, ama sadece doğru client işleyecek
+            OnMinigameStartedClientRpc(playerClientId, boxTypeInt, itemDataID, sequenceArray);
         }
 
         [ServerRpc(RequireOwnership = false)]
-        private void HandleInputServerRpc(KeyCode pressedKey, ServerRpcParams rpcParams = default)
+        private void ReportSuccessServerRpc(int boxTypeInt, ServerRpcParams rpcParams = default)
         {
-            if (!IsServer) return;
-
             ulong senderClientId = rpcParams.Receive.SenderClientId;
+            LogDebug($"📥 SERVER: Success from client {senderClientId}");
 
-            LogDebug($"📥 SERVER: Input received - Key: {pressedKey}, Sender: {senderClientId}");
-
-            if (!ValidateInput(senderClientId))
+            // Player'ı bul
+            if (TryGetPlayer(senderClientId, out PlayerInventory player))
             {
-                return;
+                if (parentTable != null)
+                {
+                    parentTable.CompleteBoxingSuccess(player, (BoxInfo.BoxType)boxTypeInt);
+                }
             }
 
-            ProcessKeyInput(pressedKey);
+            // Herkese bittiğini bildir
+            OnMinigameEndedClientRpc(senderClientId, true);
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        private void ReportFailureServerRpc(ServerRpcParams rpcParams = default)
+        {
+            ulong senderClientId = rpcParams.Receive.SenderClientId;
+            LogDebug($"📥 SERVER: Failure from client {senderClientId}");
+
+            if (TryGetPlayer(senderClientId, out PlayerInventory player))
+            {
+                if (parentTable != null)
+                {
+                    parentTable.CompleteBoxingFailure(player);
+                }
+            }
+
+            OnMinigameEndedClientRpc(senderClientId, false);
         }
 
         #endregion
 
-        #region Server - Validation
+        #region Client RPCs
 
-        private bool ValidateStartRequest(ulong playerClientId, int itemDataID, out PlayerInventory player, out ItemData itemData)
+        /// <summary>
+        /// ✅ Phone gibi: Herkese gidiyor, ama sadece doğru client işliyor
+        /// </summary>
+        [ClientRpc]
+        private void OnMinigameStartedClientRpc(ulong targetClientId, int boxTypeInt, int itemDataID, KeyCode[] sequence)
         {
-            player = null;
-            itemData = null;
+            // ✅ Phone gibi: Ben miyim?
+            ulong localClientId = NetworkManager.Singleton.LocalClientId;
 
-            // Check if already active
-            if (_isActive)
+            LogDebug($"📥 CLIENT {localClientId}: Received minigame start - Target: {targetClientId}");
+
+            if (targetClientId != localClientId)
             {
-                LogWarning("⚠️ SERVER: Minigame already active!");
-                return false;
+                LogDebug($"⏩ CLIENT {localClientId}: Not my minigame, skipping");
+                return;
             }
 
-            // Find player
-            if (!TryGetPlayer(playerClientId, out player))
+            // ✅ EVET, BENİM! 
+            LogDebug($"🎮 CLIENT {localClientId}: Starting MY minigame!");
+
+            _myClientId = localClientId;
+            _isLocalPlayerInMinigame = true;
+            _currentSequence = new List<KeyCode>(sequence);
+            _currentIndex = 0;
+            _currentBoxType = (BoxInfo.BoxType)boxTypeInt;
+            _currentItemData = GetItemDataFromID(itemDataID);
+
+            // ✅ Phone gibi: Kendi movement'ımı kilitle
+            LockLocalPlayerMovement(true);
+
+            // UI başlat
+            if (uiController != null)
             {
-                LogError($"❌ SERVER: Player {playerClientId} not found!");
-                return false;
+                uiController.SetFadeDurations(keyFadeInDuration, keyFadeOutDuration);
+                uiController.ShowUI(_currentBoxType);
             }
 
-            // Find ItemData
-            itemData = GetItemDataFromID(itemDataID);
-            if (itemData == null)
-            {
-                LogError($"❌ SERVER: ItemData {itemDataID} not found!");
-                return false;
-            }
-
-            return true;
+            StartCoroutine(StartMinigameCoroutine());
         }
 
-        private bool ValidateInput(ulong senderClientId)
+        /// <summary>
+        /// ✅ Phone gibi: Herkese gidiyor, doğru client unlock yapıyor
+        /// </summary>
+        [ClientRpc]
+        private void OnMinigameEndedClientRpc(ulong targetClientId, bool success)
         {
-            // Check sender
-            if (senderClientId != _currentPlayerClientId)
+            ulong localClientId = NetworkManager.Singleton.LocalClientId;
+
+            LogDebug($"📥 CLIENT {localClientId}: Minigame ended - Target: {targetClientId}, Success: {success}");
+
+            if (targetClientId != localClientId)
             {
-                LogWarning($"❌ SERVER: Input from wrong client ({senderClientId} != {_currentPlayerClientId})");
-                return false;
+                return;
             }
 
-            // Check state
-            if (!_isActive || !_isWaitingForInput)
+            // ✅ Benim minigame'im bitti
+            LogDebug($"🏁 CLIENT {localClientId}: MY minigame ended!");
+
+            PlaySound(success ? successSound : failSound);
+
+            if (!success && uiController != null)
             {
-                LogWarning($"❌ SERVER: Minigame not ready (active: {_isActive}, waiting: {_isWaitingForInput})");
-                return false;
+                uiController.ShowFailure();
+                StartCoroutine(HideUIDelayedCoroutine(FAILURE_UI_HIDE_DELAY));
+            }
+            else if (uiController != null)
+            {
+                uiController.HideUI();
             }
 
-            // Check sequence
-            if (_currentSequence.Count == 0)
-            {
-                LogError("❌ SERVER: Sequence is empty!");
-                return false;
-            }
+            // ✅ Phone gibi: Kendi movement'ımı aç
+            LockLocalPlayerMovement(false);
 
-            return true;
+            // State temizle
+            CleanupMinigame();
+
+            if (success)
+            {
+                NotifyTutorialMinigameComplete();
+            }
         }
 
-        private bool TryGetPlayer(ulong playerClientId, out PlayerInventory player)
+        #endregion
+
+        #region Sequence Generation
+
+        private void GenerateUniqueSequence()
+        {
+            _currentSequence.Clear();
+            _currentIndex = 0;
+
+            List<KeyCode> availableKeys = new List<KeyCode>(PossibleKeys);
+
+            for (int i = 0; i < REQUIRED_SEQUENCE_LENGTH; i++)
+            {
+                int randomIndex = Random.Range(0, availableKeys.Count);
+                KeyCode selectedKey = availableKeys[randomIndex];
+                _currentSequence.Add(selectedKey);
+                availableKeys.RemoveAt(randomIndex);
+            }
+
+            LogDebug($"🔑 Generated UNIQUE sequence: {string.Join(", ", _currentSequence)}");
+        }
+
+        #endregion
+
+        #region Minigame Flow
+
+        private IEnumerator StartMinigameCoroutine()
+        {
+            yield return new WaitForSeconds(MINIGAME_START_DELAY);
+
+            LogDebug("⏳ Showing first key...");
+
+            if (uiController != null)
+            {
+                uiController.ShowInputPrompt();
+                uiController.ShowKey(_currentSequence[_currentIndex]);
+            }
+
+            _isWaitingForInput = true;
+            LogDebug($"✅ Input ENABLED - Waiting for key {_currentIndex + 1}/{REQUIRED_SEQUENCE_LENGTH}");
+        }
+
+        private void HandleInput(KeyCode pressedKey)
+        {
+            KeyCode expectedKey = _currentSequence[_currentIndex];
+
+            LogDebug($"🎯 Key {_currentIndex + 1}/{REQUIRED_SEQUENCE_LENGTH} - Expected: {expectedKey}, Pressed: {pressedKey}");
+
+            if (pressedKey == expectedKey)
+            {
+                OnCorrectKey();
+            }
+            else
+            {
+                OnWrongKey();
+            }
+        }
+
+        private void OnCorrectKey()
+        {
+            PlaySound(correctSound);
+
+            if (uiController != null)
+            {
+                uiController.ShowFeedback(true, _currentIndex);
+            }
+
+            _currentIndex++;
+
+            if (_currentIndex >= REQUIRED_SEQUENCE_LENGTH)
+            {
+                LogDebug("✅ All keys correct! Reporting to server...");
+                ReportSuccessServerRpc((int)_currentBoxType);
+            }
+            else
+            {
+                StartCoroutine(ShowNextKeyCoroutine());
+            }
+        }
+
+        private void OnWrongKey()
+        {
+            PlaySound(wrongSound);
+
+            if (uiController != null)
+            {
+                uiController.ShowFeedback(false, _currentIndex);
+            }
+
+            LogDebug($"❌ Wrong key! Reporting to server...");
+            ReportFailureServerRpc();
+        }
+
+        private IEnumerator ShowNextKeyCoroutine()
+        {
+            if (uiController != null)
+            {
+                uiController.HideKey();
+            }
+
+            yield return new WaitForSeconds(nextKeyDelay);
+
+            if (uiController != null && _currentIndex < _currentSequence.Count)
+            {
+                LogDebug($"➡️ Showing key {_currentIndex + 1}/{REQUIRED_SEQUENCE_LENGTH}");
+                uiController.ShowKey(_currentSequence[_currentIndex]);
+            }
+
+            _isWaitingForInput = true;
+        }
+
+        private IEnumerator HideUIDelayedCoroutine(float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            if (uiController != null)
+            {
+                uiController.HideUI();
+            }
+        }
+
+        #endregion
+
+        #region Player Movement Lock
+
+        /// <summary>
+        /// ✅ Phone'dan kopyalandı: Local player'ın movement'ını kilitle/aç
+        /// </summary>
+        private void LockLocalPlayerMovement(bool locked)
+        {
+            if (NetworkManager.Singleton == null) return;
+
+            ulong localClientId = NetworkManager.Singleton.LocalClientId;
+
+            LogDebug($"LockLocalPlayerMovement - Client {localClientId}, Locked: {locked}");
+
+            if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(localClientId, out var client))
+            {
+                LogWarning($"Client {localClientId} not found!");
+                return;
+            }
+
+            if (client.PlayerObject == null)
+            {
+                LogWarning($"PlayerObject is null for client {localClientId}!");
+                return;
+            }
+
+            var playerMovement = client.PlayerObject.GetComponent<PlayerMovement>();
+            if (playerMovement == null)
+            {
+                playerMovement = client.PlayerObject.GetComponentInChildren<PlayerMovement>();
+            }
+
+            if (playerMovement != null)
+            {
+                playerMovement.LockMovement(locked);
+                playerMovement.LockAllInteractions(locked);
+                LogDebug($"✅ Client {localClientId} - Movement locked: {locked}");
+            }
+            else
+            {
+                LogError($"❌ Client {localClientId} - PlayerMovement not found!");
+            }
+        }
+
+        #endregion
+
+        #region Cleanup
+
+        private void CleanupMinigame()
+        {
+            _isLocalPlayerInMinigame = false;
+            _isWaitingForInput = false;
+            _currentSequence.Clear();
+            _currentIndex = 0;
+        }
+
+        #endregion
+
+        #region Helpers
+
+        private bool TryGetPlayer(ulong clientId, out PlayerInventory player)
         {
             player = null;
 
-            if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(playerClientId, out var client))
+            if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out var client))
             {
                 return false;
             }
@@ -376,385 +495,27 @@ namespace NewCss
             return player != null;
         }
 
-        #endregion
-
-        #region Server - Game Logic
-
-        private void InitializeMinigameState(PlayerInventory player, ulong clientId, BoxInfo.BoxType boxType, ItemData itemData)
+        private ItemData GetItemDataFromID(int itemID)
         {
-            _currentPlayer = player;
-            _currentPlayerMovement = player.GetComponent<PlayerMovement>();
-            _currentPlayerClientId = clientId;
-            _currentBoxType = boxType;
-            _currentItemData = itemData;
-
-            _isActive = true;
-            _isWaitingForInput = false;
-            _currentIndex = 0;
-        }
-
-        private void GenerateUniqueSequence()
-        {
-            _currentSequence.Clear();
-            _currentIndex = 0;
-
-            var availableKeys = new List<KeyCode>(PossibleKeys);
-
-            for (int i = 0; i < REQUIRED_SEQUENCE_LENGTH; i++)
+            ItemData[] allItems = Resources.LoadAll<ItemData>("Items");
+            foreach (ItemData item in allItems)
             {
-                int randomIndex = Random.Range(0, availableKeys.Count);
-                _currentSequence.Add(availableKeys[randomIndex]);
-                availableKeys.RemoveAt(randomIndex);
-            }
-
-            LogDebug($"🔑 SERVER: Generated sequence: {string.Join(", ", _currentSequence)}");
-        }
-
-        private void ProcessKeyInput(KeyCode pressedKey)
-        {
-            KeyCode expectedKey = _currentSequence[_currentIndex];
-
-            LogDebug($"🎯 SERVER: Key {_currentIndex + 1}/{REQUIRED_SEQUENCE_LENGTH} - Expected: {expectedKey}, Pressed: {pressedKey}");
-
-            if (pressedKey == expectedKey)
-            {
-                HandleCorrectKey();
-            }
-            else
-            {
-                HandleWrongKey();
-            }
-        }
-
-        private void HandleCorrectKey()
-        {
-            OnCorrectKeyClientRpc(_currentIndex);
-            _currentIndex++;
-
-            if (_currentIndex >= REQUIRED_SEQUENCE_LENGTH)
-            {
-                LogDebug("✅ SERVER: All keys correct! Success!");
-                OnMinigameSuccess();
-            }
-            else
-            {
-                KeyCode nextKey = _currentSequence[_currentIndex];
-                ShowNextKeyClientRpc(_currentPlayerClientId, nextKey);
-            }
-        }
-
-        private void HandleWrongKey()
-        {
-            LogDebug("❌ SERVER: Wrong key!  Failed!");
-            OnWrongKeyClientRpc(_currentIndex);
-            OnMinigameFailed();
-        }
-
-        private void OnMinigameSuccess()
-        {
-            LogDebug("✅ SERVER: Minigame SUCCESS!");
-
-            OnSuccessClientRpc(_currentPlayerClientId);
-            ResetMinigameState();
-
-            // Notify systems
-            NotifyTutorialManager();
-            NotifyParentTable(true);
-        }
-
-        private void OnMinigameFailed()
-        {
-            LogDebug("❌ SERVER: Minigame FAILED!");
-
-            OnFailureClientRpc(_currentPlayerClientId);
-            ResetMinigameState();
-
-            // Notify systems
-            NotifyParentTable(false);
-        }
-
-        private void ResetMinigameState()
-        {
-            _isActive = false;
-            _isWaitingForInput = false;
-        }
-
-        #endregion
-
-        #region Client RPCs
-
-        // ✅ DEĞİŞTİRİLDİ: Sequence'ı parametre olarak al
-        [ClientRpc]
-        private void StartMinigameClientRpc(ulong targetClientId, int boxTypeInt, KeyCode[] sequence)
-        {
-            bool isTargetClient = NetworkManager.Singleton.LocalClientId == targetClientId;
-
-            LogDebug($"📥 CLIENT {NetworkManager.Singleton.LocalClientId}: Received StartMinigameClientRpc - Target: {targetClientId}, IsTarget: {isTargetClient}");
-
-            if (!isTargetClient)
-            {
-                LogDebug($"⏩ CLIENT {NetworkManager.Singleton.LocalClientId}: Skipping minigame (not target)");
-                return;
-            }
-
-            LogDebug($"🎮 CLIENT {targetClientId}: I AM the target! Starting minigame...");
-
-            // ✅ YENİ: Client-side sequence'ı sakla
-            _currentSequence.Clear();
-            _currentSequence.AddRange(sequence);
-            _currentIndex = 0;
-
-            InitializeClientState((BoxInfo.BoxType)boxTypeInt, targetClientId);
-
-            if (sequence.Length > 0)
-            {
-                ShowUIAndStartSequence(sequence[0]);
-            }
-        }
-
-        [ClientRpc]
-        private void ShowNextKeyClientRpc(ulong targetClientId, KeyCode nextKey)
-        {
-            if (!IsTargetClient(targetClientId)) return;
-
-            StartCoroutine(ShowNextKeyCoroutine(nextKey));
-        }
-
-        [ClientRpc]
-        private void OnCorrectKeyClientRpc(int stepIndex)
-        {
-            // ✅ YENİ: Sadece minigame'deki client için
-            if (!_isLocalPlayerInMinigame && !IsServer) return;
-
-            PlaySound(correctSound);
-            uiController?.ShowFeedback(true, stepIndex);
-        }
-
-        [ClientRpc]
-        private void OnWrongKeyClientRpc(int stepIndex)
-        {
-            // ✅ YENİ: Sadece minigame'deki client için
-            if (!_isLocalPlayerInMinigame && !IsServer) return;
-
-            PlaySound(wrongSound);
-            uiController?.ShowFeedback(false, stepIndex);
-        }
-
-        [ClientRpc]
-        private void OnSuccessClientRpc(ulong targetClientId)
-        {
-            if (!IsTargetClient(targetClientId)) return;
-
-            LogDebug($"✅ CLIENT {targetClientId}: Minigame SUCCESS!");
-
-            PlaySound(successSound);
-            CleanupClientState();
-            uiController?.HideUI();
-        }
-
-        [ClientRpc]
-        private void OnFailureClientRpc(ulong targetClientId)
-        {
-            if (!IsTargetClient(targetClientId)) return;
-
-            LogDebug($"❌ CLIENT {targetClientId}: Minigame FAILED!");
-
-            PlaySound(failSound);
-            CleanupClientState();
-
-            if (uiController != null)
-            {
-                uiController.ShowFailure();
-                StartCoroutine(HideUIDelayedCoroutine(FAILURE_UI_HIDE_DELAY));
-            }
-        }
-
-        [ClientRpc]
-        private void ForceStopClientRpc(ulong targetClientId)
-        {
-            if (!IsTargetClient(targetClientId)) return;
-
-            _isActive = false;
-            _isWaitingForInput = false;
-            _isLocalPlayerInMinigame = false;
-
-            UnlockPlayerMovement();
-            uiController?.HideUI();
-        }
-
-        #endregion
-
-        #region Client - Helpers
-
-        private bool IsTargetClient(ulong targetClientId)
-        {
-            return NetworkManager.Singleton.LocalClientId == targetClientId;
-        }
-
-        // ✅ DEĞİŞTİRİLDİ: Client state initialization
-        private void InitializeClientState(BoxInfo.BoxType boxType, ulong targetClientId)
-        {
-            _currentBoxType = boxType;
-            _isActive = true;
-            _isLocalPlayerInMinigame = true; // ✅ YENİ: Local flag set
-            _currentPlayerClientId = targetClientId;
-
-            // ✅ DEĞİŞTİRİLDİ: Movement kilitleme düzeltildi
-            LockLocalPlayerMovement();
-        }
-
-        // ✅ YENİ: Client state cleanup
-        private void CleanupClientState()
-        {
-            _isActive = false;
-            _isWaitingForInput = false;
-            _isLocalPlayerInMinigame = false;
-
-            UnlockPlayerMovement();
-        }
-
-        // ✅ DEĞİŞTİRİLDİ: Sadece local player'ın movement'ını kilitle
-        private void LockLocalPlayerMovement()
-        {
-            // Local client'ın kendi player'ını bul
-            if (NetworkManager.Singleton == null) return;
-
-            ulong localClientId = NetworkManager.Singleton.LocalClientId;
-
-            if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(localClientId, out var client))
-            {
-                LogWarning($"❌ CLIENT: Could not find local client {localClientId}");
-                return;
-            }
-
-            if (client.PlayerObject == null)
-            {
-                LogWarning($"❌ CLIENT: PlayerObject is null for client {localClientId}");
-                return;
-            }
-
-            _currentPlayerMovement = client.PlayerObject.GetComponent<PlayerMovement>();
-
-            if (_currentPlayerMovement == null)
-            {
-                _currentPlayerMovement = client.PlayerObject.GetComponentInChildren<PlayerMovement>();
-            }
-
-            if (_currentPlayerMovement != null)
-            {
-                _currentPlayerMovement.LockMovement(true);
-                _currentPlayerMovement.LockAllInteractions(true);
-                LogDebug($"✅ CLIENT {localClientId}: Movement LOCKED");
-            }
-            else
-            {
-                LogError($"❌ CLIENT {localClientId}: PlayerMovement component not found!");
-            }
-        }
-
-        private void UnlockPlayerMovement()
-        {
-            if (_currentPlayerMovement == null)
-            {
-                LogDebug("⚠️ CLIENT: No PlayerMovement to unlock, trying to find...");
-
-                // Fallback: Try to find local player's movement
-                if (NetworkManager.Singleton != null)
+                if (item.itemID == itemID)
                 {
-                    ulong localClientId = NetworkManager.Singleton.LocalClientId;
-                    if (NetworkManager.Singleton.ConnectedClients.TryGetValue(localClientId, out var client))
-                    {
-                        if (client.PlayerObject != null)
-                        {
-                            _currentPlayerMovement = client.PlayerObject.GetComponent<PlayerMovement>();
-                        }
-                    }
+                    return item;
                 }
             }
+            return null;
+        }
 
-            if (_currentPlayerMovement != null)
+        private void NotifyTutorialMinigameComplete()
+        {
+            if (TutorialManager.Instance != null)
             {
-                _currentPlayerMovement.LockMovement(false);
-                _currentPlayerMovement.LockAllInteractions(false);
-                LogDebug($"✅ CLIENT: Movement UNLOCKED");
+                TutorialManager.Instance.OnMinigameCompleted();
+                LogDebug("📚 Tutorial notified!");
             }
         }
-
-        private void ShowUIAndStartSequence(KeyCode firstKey)
-        {
-            if (uiController != null)
-            {
-                uiController.SetFadeDurations(keyFadeInDuration, keyFadeOutDuration);
-                uiController.ShowUI(_currentBoxType);
-            }
-
-            StartCoroutine(StartSequenceCoroutine(firstKey));
-        }
-
-        #endregion
-
-        #region Coroutines
-
-        private IEnumerator StartSequenceCoroutine(KeyCode firstKey)
-        {
-            yield return new WaitForSeconds(UI_SHOW_DELAY);
-
-            if (uiController != null)
-            {
-                uiController.ShowInputPrompt();
-                uiController.ShowKey(firstKey);
-            }
-
-            yield return new WaitForSeconds(INPUT_WAIT_DELAY);
-
-            _isWaitingForInput = true;
-
-            LogDebug($"✅ CLIENT {NetworkManager.Singleton.LocalClientId}: Now waiting for input!  isWaitingForInput={_isWaitingForInput}, isLocalPlayerInMinigame={_isLocalPlayerInMinigame}");
-        }
-
-        private IEnumerator ShowNextKeyCoroutine(KeyCode nextKey)
-        {
-            yield return new WaitForSeconds(feedbackDisplayTime);
-
-            uiController?.HideKey();
-
-            yield return new WaitForSeconds(keyDisplayDelay);
-
-            uiController?.ShowKey(nextKey);
-        }
-
-        private IEnumerator HideUIDelayedCoroutine(float delay)
-        {
-            yield return new WaitForSeconds(delay);
-            uiController?.HideUI();
-        }
-
-        #endregion
-
-        #region Notifications
-
-        private void NotifyTutorialManager()
-        {
-            TutorialManager.Instance?.OnMinigameCompleted();
-        }
-
-        private void NotifyParentTable(bool success)
-        {
-            if (parentTable == null) return;
-
-            if (success)
-            {
-                parentTable.CompleteBoxingSuccess(_currentPlayer, _currentBoxType);
-            }
-            else
-            {
-                parentTable.CompleteBoxingFailure(_currentPlayer);
-            }
-        }
-
-        #endregion
-
-        #region Audio
 
         private void PlaySound(AudioClip clip)
         {
@@ -766,91 +527,25 @@ namespace NewCss
 
         #endregion
 
-        #region ItemData Cache
-
-        private ItemData GetItemDataFromID(int itemID)
-        {
-            EnsureItemDataCached();
-
-            foreach (ItemData item in _cachedItemData)
-            {
-                if (item.itemID == itemID)
-                {
-                    return item;
-                }
-            }
-
-            return null;
-        }
-
-        private void EnsureItemDataCached()
-        {
-            if (_isItemDataCached && _cachedItemData != null) return;
-
-            _cachedItemData = Resources.LoadAll<ItemData>("Items");
-            _isItemDataCached = true;
-        }
-
-        private void ClearItemDataCache()
-        {
-            _cachedItemData = null;
-            _isItemDataCached = false;
-        }
-
-        #endregion
-
         #region Logging
 
         private void LogDebug(string message)
         {
             if (showDebugLogs)
             {
-                Debug.Log($"{LOG_PREFIX} {message}");
+                Debug.Log($"[BoxingMinigame] {message}");
             }
         }
 
         private void LogWarning(string message)
         {
-            Debug.LogWarning($"{LOG_PREFIX} {message}");
+            Debug.LogWarning($"[BoxingMinigame] {message}");
         }
 
         private void LogError(string message)
         {
-            Debug.LogError($"{LOG_PREFIX} {message}");
+            Debug.LogError($"[BoxingMinigame] {message}");
         }
-
-        #endregion
-
-        #region Editor & Debug
-
-#if UNITY_EDITOR
-        [ContextMenu("Debug: Print State")]
-        private void DebugPrintState()
-        {
-            Debug.Log($"{LOG_PREFIX} === MINIGAME STATE ===");
-            Debug.Log($"Is Active: {_isActive}");
-            Debug.Log($"Is Waiting For Input: {_isWaitingForInput}");
-            Debug.Log($"Is Local Player In Minigame: {_isLocalPlayerInMinigame}");
-            Debug.Log($"Current Index: {_currentIndex}/{REQUIRED_SEQUENCE_LENGTH}");
-            Debug.Log($"Current Box Type: {_currentBoxType}");
-            Debug.Log($"Current Player Client ID: {_currentPlayerClientId}");
-            Debug.Log($"Sequence: {(_currentSequence.Count > 0 ? string.Join(", ", _currentSequence) : "Empty")}");
-            Debug.Log($"Has PlayerMovement: {_currentPlayerMovement != null}");
-        }
-
-        [ContextMenu("Debug: Generate Test Sequence")]
-        private void DebugGenerateSequence()
-        {
-            GenerateUniqueSequence();
-            Debug.Log($"{LOG_PREFIX} Test sequence generated: {string.Join(", ", _currentSequence)}");
-        }
-
-        [ContextMenu("Debug: Force Stop")]
-        private void DebugForceStop()
-        {
-            ForceStop();
-        }
-#endif
 
         #endregion
     }
