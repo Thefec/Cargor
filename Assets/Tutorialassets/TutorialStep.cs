@@ -7,7 +7,7 @@ using UnityEngine.Events;
 /// </summary>
 public enum TutorialConditionType
 {
-    /// <summary>Item aldı mı? </summary>
+    /// <summary>Item aldı mı?</summary>
     PickupItem,
 
     /// <summary>Item bıraktı mı?</summary>
@@ -19,7 +19,7 @@ public enum TutorialConditionType
     /// <summary>Masadan aldı mı?</summary>
     TakeFromTable,
 
-    /// <summary>Rafa koydu mu? </summary>
+    /// <summary>Rafa koydu mu?</summary>
     PlaceOnShelf,
 
     /// <summary>Raftan kutu aldı mı?</summary>
@@ -31,11 +31,14 @@ public enum TutorialConditionType
     /// <summary>Belirli bir trigger'a girdi mi?</summary>
     EnterTrigger,
 
-    /// <summary>Belirli süre geçti mi? </summary>
+    /// <summary>Belirli süre geçti mi?</summary>
     WaitForTime,
 
     /// <summary>Belirli tuşa bastı mı?</summary>
     PressKey,
+
+    /// <summary>Araca kutu teslim etti mi?</summary>
+    DeliverToTruck,
 
     /// <summary>Özel koşul</summary>
     Custom
@@ -63,7 +66,7 @@ public class TutorialStep
     [Header("=== DISPLAY SETTINGS ===")]
     [TextArea(3, 5)]
     [Tooltip("Gösterilecek talimat metni")]
-    public string instructionText = "Talimatı buraya yazın...";
+    public string instructionText = "Talimatı buraya yazın... ";
 
     #endregion
 
@@ -76,10 +79,10 @@ public class TutorialStep
     [Tooltip("WaitForTime koşulu için bekleme süresi (saniye)")]
     public float waitDuration = 3f;
 
-    [Tooltip("Item alma koşulu için gerekli mi? ")]
+    [Tooltip("Item alma koşulu için gerekli mi?")]
     public bool requiresItemPickup;
 
-    [Tooltip("Belirli bir item adı gerekiyor mu? (boş = herhangi bir item)")]
+    [Tooltip("Belirli bir item adı gerekiyor mu?  (boş = herhangi bir item)")]
     public string requiredItemName = "";
 
     [Tooltip("PressKey koşulu için gerekli tuş")]
@@ -98,6 +101,20 @@ public class TutorialStep
 
     [Tooltip("Gerekli kutu türü (Red, Yellow, Blue)")]
     public NewCss.NetworkedShelf.BoxType requiredBoxType;
+
+    #endregion
+
+    #region Truck Delivery Conditions
+
+    [Header("=== TRUCK DELIVERY CONDITIONS ===")]
+    [Tooltip("DeliverToTruck koşulu için gerekli teslimat sayısı")]
+    public int requiredDeliveryCount = 1;
+
+    [Tooltip("DeliverToTruck koşulu için belirli kutu türü gerekiyor mu?")]
+    public bool requiresSpecificBoxTypeForTruck;
+
+    [Tooltip("Truck için gerekli kutu türü")]
+    public NewCss.BoxInfo.BoxType requiredTruckBoxType;
 
     #endregion
 
@@ -137,6 +154,9 @@ public class TutorialStep
     [HideInInspector]
     public float stepStartTime;
 
+    [HideInInspector]
+    public int currentDeliveryCount;
+
     #endregion
 
     #region Constructors
@@ -147,6 +167,7 @@ public class TutorialStep
         instructionText = "Talimatı buraya yazın...";
         conditionType = TutorialConditionType.PickupItem;
         waitDuration = 3f;
+        requiredDeliveryCount = 1;
     }
 
     public TutorialStep(string name, string instruction, TutorialConditionType condition)
@@ -155,6 +176,7 @@ public class TutorialStep
         instructionText = instruction;
         conditionType = condition;
         waitDuration = 3f;
+        requiredDeliveryCount = 1;
     }
 
     #endregion
@@ -168,6 +190,7 @@ public class TutorialStep
     {
         isCompleted = false;
         stepStartTime = 0f;
+        currentDeliveryCount = 0;
     }
 
     /// <summary>
@@ -177,6 +200,7 @@ public class TutorialStep
     {
         stepStartTime = Time.time;
         isCompleted = false;
+        currentDeliveryCount = 0;
         onStepStart?.Invoke();
     }
 
@@ -187,6 +211,23 @@ public class TutorialStep
     {
         isCompleted = true;
         onStepComplete?.Invoke();
+    }
+
+    /// <summary>
+    /// Teslimat sayısını artırır ve tamamlanıp tamamlanmadığını döndürür
+    /// </summary>
+    public bool IncrementDeliveryCount()
+    {
+        currentDeliveryCount++;
+        return currentDeliveryCount >= requiredDeliveryCount;
+    }
+
+    /// <summary>
+    /// Teslimat tamamlandı mı kontrol eder
+    /// </summary>
+    public bool IsDeliveryComplete()
+    {
+        return currentDeliveryCount >= requiredDeliveryCount;
     }
 
     /// <summary>
@@ -210,14 +251,31 @@ public class TutorialStep
     }
 
     /// <summary>
-    /// İlerleme yüzdesini döndürür (WaitForTime için)
+    /// İlerleme yüzdesini döndürür
     /// </summary>
     public float GetProgress()
     {
-        if (conditionType != TutorialConditionType.WaitForTime || waitDuration <= 0f)
-            return isCompleted ? 1f : 0f;
+        switch (conditionType)
+        {
+            case TutorialConditionType.WaitForTime:
+                if (waitDuration <= 0f) return isCompleted ? 1f : 0f;
+                return Mathf.Clamp01(GetElapsedTime() / waitDuration);
 
-        return Mathf.Clamp01(GetElapsedTime() / waitDuration);
+            case TutorialConditionType.DeliverToTruck:
+                if (requiredDeliveryCount <= 0) return isCompleted ? 1f : 0f;
+                return Mathf.Clamp01((float)currentDeliveryCount / requiredDeliveryCount);
+
+            default:
+                return isCompleted ? 1f : 0f;
+        }
+    }
+
+    /// <summary>
+    /// Teslimat durumunu string olarak döndürür
+    /// </summary>
+    public string GetDeliveryStatusText()
+    {
+        return $"{currentDeliveryCount}/{requiredDeliveryCount}";
     }
 
     #endregion
@@ -246,6 +304,9 @@ public class TutorialStep
             case TutorialConditionType.EnterTrigger:
                 return !string.IsNullOrEmpty(triggerTag);
 
+            case TutorialConditionType.DeliverToTruck:
+                return requiredDeliveryCount > 0;
+
             default:
                 return true;
         }
@@ -273,6 +334,9 @@ public class TutorialStep
             case TutorialConditionType.EnterTrigger when string.IsNullOrEmpty(triggerTag):
                 return "Trigger tag is not set";
 
+            case TutorialConditionType.DeliverToTruck when requiredDeliveryCount <= 0:
+                return "Required delivery count must be greater than 0";
+
             default:
                 return null;
         }
@@ -285,7 +349,10 @@ public class TutorialStep
     public override string ToString()
     {
         string status = isCompleted ? "[COMPLETED]" : "[PENDING]";
-        return $"{status} {stepName} ({conditionType})";
+        string extra = conditionType == TutorialConditionType.DeliverToTruck
+            ? $" ({currentDeliveryCount}/{requiredDeliveryCount})"
+            : "";
+        return $"{status} {stepName} ({conditionType}){extra}";
     }
 
     #endregion

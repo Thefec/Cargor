@@ -548,20 +548,41 @@ public class SteamManager : MonoBehaviour
     {
         try
         {
+            // Loading ekranını göster
+            SetLoadingScreenActive(true);
+            UpdateLoadingProgress(0.2f, "Lobi oluşturuluyor...");
+
             await ForceNetworkCleanup();
 
+            UpdateLoadingProgress(0.5f, "Steam'e bağlanılıyor...");
+
             var lobby = await SteamMatchmaking.CreateLobbyAsync(MAX_PLAYERS);
+
             if (!lobby.HasValue)
             {
                 ShowErrorMessage("Lobi oluşturulamadı!");
                 _isLobbyJoinValid = false;
+                SetLoadingScreenActive(false);
+                return;
             }
+
+            UpdateLoadingProgress(0.8f, "Lobi hazırlanıyor.. .");
+
+            // Kısa bir bekleme - UI'ın güncelenmesi için
+            await System.Threading.Tasks.Task.Delay(300);
+
+            UpdateLoadingProgress(1f, "Hazır!");
+
+            // Loading ekranını kapat
+            await System.Threading.Tasks.Task.Delay(200);
+            SetLoadingScreenActive(false);
         }
         catch (Exception ex)
         {
             LogError($"Host lobby error: {ex.Message}");
             ShowErrorMessage("Lobi hatası!");
             _isLobbyJoinValid = false;
+            SetLoadingScreenActive(false);
         }
     }
 
@@ -582,14 +603,28 @@ public class SteamManager : MonoBehaviour
 
         try
         {
+            // Loading ekranını göster
+            SetLoadingScreenActive(true);
+            UpdateLoadingProgress(0.2f, "Lobiye bağlanılıyor...");
+
             await PrepareForJoin();
+
+            UpdateLoadingProgress(0.5f, "Lobi aranıyor...");
+
             await ExecuteJoinLobby(lobbyId);
+
+            UpdateLoadingProgress(1f, "Bağlandı!");
+
+            // Loading ekranını kapat
+            await System.Threading.Tasks.Task.Delay(300);
+            SetLoadingScreenActive(false);
         }
         catch (Exception ex)
         {
             LogError($"Join lobby error: {ex.Message}");
             ShowErrorMessage("Beklenmeyen hata oluştu!");
             _isLobbyJoinValid = false;
+            SetLoadingScreenActive(false);
         }
         finally
         {

@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>
-/// Ana menü sistemi - Panel yönetimi, buton etkileşimleri, sosyal medya bağlantıları ve ses efektlerini yönetir.
+/// Ana menü sistemi - Panel yönetimi, buton etkileşimleri, sosyal medya bağlantıları ve ses efektlerini yönetir. 
 /// </summary>
 public class Menu : MonoBehaviour
 {
@@ -26,7 +26,8 @@ public class Menu : MonoBehaviour
         MainMenu,
         HostJoinMenu,
         Settings,
-        Credits
+        Credits,
+        TutorialConfirm
     }
 
     #endregion
@@ -65,6 +66,20 @@ public class Menu : MonoBehaviour
 
     [SerializeField, Tooltip("Geri butonu")]
     public Button exitHostJoinButton;
+
+    #endregion
+
+    #region Serialized Fields - Tutorial Confirmation Panel
+
+    [Header("=== TUTORIAL ONAY PANELİ ===")]
+    [SerializeField, Tooltip("Tutorial onay paneli")]
+    public GameObject tutorialConfirmPanel;
+
+    [SerializeField, Tooltip("Evet butonu")]
+    public Button tutorialConfirmYesButton;
+
+    [SerializeField, Tooltip("Hayır butonu")]
+    public Button tutorialConfirmNoButton;
 
     #endregion
 
@@ -120,14 +135,14 @@ public class Menu : MonoBehaviour
     public TextMeshProUGUI versionText;
 
     [SerializeField, Tooltip("Oyun versiyonu")]
-    public string gameVersion = "v1.0. 0";
+    public string gameVersion = "v1.0.0";
 
     [Header("=== SOSYAL MEDYA LİNKLERİ ===")]
     [SerializeField, Tooltip("Discord URL")]
-    public string discordURL = "https://discord.gg/yourdiscord";
+    public string discordURL = "https://discord. gg/yourdiscord";
 
     [SerializeField, Tooltip("Steam sayfa URL")]
-    public string steamPageURL = "https://store. steampowered.com/app/YOURAPPID";
+    public string steamPageURL = "https://store.steampowered.com/app/YOURAPPID";
 
     [SerializeField, Tooltip("Instagram URL")]
     public string instagramURL = "https://instagram.com/youraccount";
@@ -251,6 +266,7 @@ public class Menu : MonoBehaviour
     {
         SetupMainMenuButtons();
         SetupHostJoinButtons();
+        SetupTutorialConfirmButtons();
         SetupPanelButtons();
         SetupSocialMediaButtons();
     }
@@ -259,7 +275,7 @@ public class Menu : MonoBehaviour
     {
         SetupButton(playOnlineButton, () => TransitionToState(MenuState.HostJoinMenu));
         SetupButton(playOfflineButton, PlayOffline);
-        SetupButton(tutorialButton, PlayTutorial);
+        SetupButton(tutorialButton, () => TransitionToState(MenuState.TutorialConfirm));
         SetupButton(settingsButton, () => TransitionToState(MenuState.Settings));
         SetupButton(creditsButton, () => TransitionToState(MenuState.Credits));
         SetupButton(quitButton, QuitGame);
@@ -270,6 +286,12 @@ public class Menu : MonoBehaviour
         SetupButtonWithClear(hostButton, ExecuteHostLobby);
         SetupButtonWithClear(joinButton, ExecuteJoinLobby);
         SetupButton(exitHostJoinButton, () => TransitionToState(MenuState.MainMenu));
+    }
+
+    private void SetupTutorialConfirmButtons()
+    {
+        SetupButton(tutorialConfirmYesButton, ConfirmTutorial);
+        SetupButton(tutorialConfirmNoButton, CancelTutorial);
     }
 
     private void SetupPanelButtons()
@@ -331,6 +353,9 @@ public class Menu : MonoBehaviour
             case MenuState.Credits:
                 ShowCreditsPanel();
                 break;
+            case MenuState.TutorialConfirm:
+                ShowTutorialConfirmPanel();
+                break;
         }
 
         Debug.Log($"{LOG_PREFIX} State changed to: {newState}");
@@ -349,7 +374,6 @@ public class Menu : MonoBehaviour
 
     private void ShowHostJoinPanel()
     {
-        SetPanelActive(mainMenuPanel, false);
         SetPanelActive(hostJoinPanel, true);
         CloseAllOverlayPanels();
     }
@@ -358,18 +382,28 @@ public class Menu : MonoBehaviour
     {
         SetPanelActive(settingsPanel, true);
         SetPanelActive(creditsPanel, false);
+        SetPanelActive(tutorialConfirmPanel, false);
     }
 
     private void ShowCreditsPanel()
     {
         SetPanelActive(creditsPanel, true);
         SetPanelActive(settingsPanel, false);
+        SetPanelActive(tutorialConfirmPanel, false);
+    }
+
+    private void ShowTutorialConfirmPanel()
+    {
+        SetPanelActive(tutorialConfirmPanel, true);
+        SetPanelActive(settingsPanel, false);
+        SetPanelActive(creditsPanel, false);
     }
 
     private void CloseAllOverlayPanels()
     {
         SetPanelActive(settingsPanel, false);
         SetPanelActive(creditsPanel, false);
+        SetPanelActive(tutorialConfirmPanel, false);
     }
 
     private void HideAllPanels()
@@ -395,12 +429,12 @@ public class Menu : MonoBehaviour
     {
         if (steamManager != null)
         {
-            Debug.Log($"{LOG_PREFIX} 🎮 Host lobi oluşturuluyor (Steam)...");
+            Debug.Log($"{LOG_PREFIX} 🎮 Host lobi oluşturuluyor (Steam).. .");
             steamManager.HostLobby();
         }
         else
         {
-            Debug.LogError($"{LOG_PREFIX} ❌ SteamManager bulunamadı! Lobi oluşturulamıyor.");
+            Debug.LogError($"{LOG_PREFIX} ❌ SteamManager bulunamadı!  Lobi oluşturulamıyor.");
         }
     }
 
@@ -413,7 +447,7 @@ public class Menu : MonoBehaviour
         }
         else
         {
-            Debug.LogError($"{LOG_PREFIX} ❌ SteamManager bulunamadı! Lobiye katılınamıyor.");
+            Debug.LogError($"{LOG_PREFIX} ❌ SteamManager bulunamadı!  Lobiye katılınamıyor.");
         }
     }
 
@@ -490,6 +524,10 @@ public class Menu : MonoBehaviour
             case MenuState.HostJoinMenu:
                 TransitionToState(MenuState.MainMenu);
                 break;
+
+            case MenuState.TutorialConfirm:
+                CancelTutorial();
+                break;
         }
     }
 
@@ -535,17 +573,17 @@ public class Menu : MonoBehaviour
     /// </summary>
     public void PlayOffline()
     {
-        Debug.Log($"{LOG_PREFIX} Offline oyun başlatılıyor...");
+        Debug.Log($"{LOG_PREFIX} Offline oyun başlatılıyor.. .");
         SceneManager.LoadScene(SCENE_MAP_SELECTION);
     }
 
     /// <summary>
-    /// Tutorial'ı başlatır
+    /// Tutorial onay ekranını gösterir
     /// </summary>
     public void PlayTutorial()
     {
-        Debug.Log($"{LOG_PREFIX} Tutorial seviyesi yükleniyor...");
-        SceneManager.LoadScene(SCENE_TUTORIAL);
+        Debug.Log($"{LOG_PREFIX} Tutorial onay ekranı açılıyor...");
+        TransitionToState(MenuState.TutorialConfirm);
     }
 
     /// <summary>
@@ -574,8 +612,40 @@ public class Menu : MonoBehaviour
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else
-        Application.Quit();
+        Application. Quit();
 #endif
+    }
+
+    #endregion
+
+    #region Public API - Tutorial Confirmation
+
+    /// <summary>
+    /// Tutorial onay ekranını gösterir
+    /// </summary>
+    public void ShowTutorialConfirm()
+    {
+        TransitionToState(MenuState.TutorialConfirm);
+    }
+
+    /// <summary>
+    /// Tutorial'ı onaylar ve başlatır (Evet butonuna tıklandığında)
+    /// </summary>
+    public void ConfirmTutorial()
+    {
+        Debug.Log($"{LOG_PREFIX} ✅ Tutorial onaylandı, seviye yükleniyor...");
+        SetPanelActive(tutorialConfirmPanel, false);
+        SceneManager.LoadScene(SCENE_TUTORIAL);
+    }
+
+    /// <summary>
+    /// Tutorial'ı iptal eder ve ana menüye döner (Hayır butonuna tıklandığında)
+    /// </summary>
+    public void CancelTutorial()
+    {
+        Debug.Log($"{LOG_PREFIX} ❌ Tutorial iptal edildi, ana menüye dönülüyor...");
+        SetPanelActive(tutorialConfirmPanel, false);
+        TransitionToState(MenuState.MainMenu);
     }
 
     #endregion
@@ -595,7 +665,6 @@ public class Menu : MonoBehaviour
 
         SetPanelActive(settingsPanel, false);
 
-        // Ana state'e göre geri dön
         if (_currentState == MenuState.Settings)
         {
             _currentState = MenuState.MainMenu;
@@ -649,7 +718,7 @@ public class Menu : MonoBehaviour
     /// </summary>
     public void OpenSteamPage()
     {
-        Debug.Log($"{LOG_PREFIX} Steam sayfası açılıyor...");
+        Debug.Log($"{LOG_PREFIX} Steam sayfası açılıyor.. .");
         Application.OpenURL(steamPageURL);
     }
 
@@ -768,14 +837,14 @@ public class Menu : MonoBehaviour
         RemoveButtonListener(discordButton);
         RemoveButtonListener(steamPageButton);
         RemoveButtonListener(instagramButton);
+        RemoveButtonListener(tutorialConfirmYesButton);
+        RemoveButtonListener(tutorialConfirmNoButton);
     }
 
     private static void RemoveButtonListener(Button button)
     {
         button?.onClick.RemoveAllListeners();
     }
-
-
 
     #endregion
 }

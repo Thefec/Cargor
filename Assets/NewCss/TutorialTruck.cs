@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -7,7 +8,7 @@ namespace NewCss
 {
     /// <summary>
     /// Tutorial için özelleştirilmiş kamyon sistemi. 
-    /// Rafa item konulana kadar kapılar kapalı, konulduktan sonra açılır.
+    /// Giriş animasyonu ile gelir, kutu teslimi alır, çıkış animasyonu ile gider.
     /// TutorialManager ile entegre çalışır.
     /// </summary>
     public class TutorialTruck : NetworkBehaviour
@@ -15,7 +16,9 @@ namespace NewCss
         #region Constants
 
         private const string LOG_PREFIX = "[TutorialTruck]";
-        private const string DOOR_OPEN_ANIM_BOOL = "DoorsOpen";
+        private const string ENTER_ANIM_STATE = "Enter";
+        private const string EXIT_ANIM_STATE = "Exit";
+        private const string EXIT_ANIM_BOOL = "DoExit";
 
         #endregion
 
@@ -36,9 +39,6 @@ namespace NewCss
         [SerializeField, Tooltip("Kamyon durum text'i")]
         public TextMeshProUGUI truckText;
 
-        [SerializeField, Tooltip("Talimat text'i (opsiyonel - TutorialManager kullanılabilir)")]
-        public TextMeshProUGUI instructionText;
-
         #endregion
 
         #region Serialized Fields - Collider
@@ -56,42 +56,35 @@ namespace NewCss
         [SerializeField] public GameObject leftDoor;
         [SerializeField] public GameObject rightDoor;
 
-        [Header("=== DOOR SETTINGS ===")]
-        [SerializeField, Tooltip("Sol kapı açık rotasyonu")]
-        private Vector3 leftDoorOpenRotation = new Vector3(0f, -110f, 0f);
+        #endregion
 
-        [SerializeField, Tooltip("Sağ kapı açık rotasyonu")]
-        private Vector3 rightDoorOpenRotation = new Vector3(0f, 110f, 0f);
+        #region Serialized Fields - Animation
 
-        [SerializeField, Tooltip("Kapı açılma hızı")]
-        private float doorOpenSpeed = 2f;
+        [Header("=== ANIMATION SETTINGS ===")]
+        [SerializeField, Tooltip("Kamyon animator'ı")]
+        public Animator truckAnimator;
 
-        [SerializeField, Tooltip("Kapı animatörü (opsiyonel - animator varsa kullanılır)")]
-        public Animator doorAnimator;
+        [SerializeField, Tooltip("Çıkış gecikmesi (saniye)")]
+        public float exitDelay = 2f;
 
         #endregion
 
         #region Serialized Fields - Audio
 
         [Header("=== AUDIO SETTINGS ===")]
-        [SerializeField] public AudioSource doorAudioSource;
-        [SerializeField] public AudioClip doorOpenClip;
+        [SerializeField] public AudioSource audioSource;
+        [SerializeField] public AudioClip enterAnimationClip;
+        [SerializeField] public AudioClip exitAnimationClip;
         [SerializeField] public AudioClip itemDeliveredClip;
         [SerializeField] public AudioClip wrongItemClip;
 
         #endregion
 
-        #region Serialized Fields - Tutorial Integration
+        #region Serialized Fields - Debug
 
-        [Header("=== TUTORIAL INTEGRATION ===")]
-        [SerializeField, Tooltip("Rafa koyma step index'i (bu step tamamlandığında kapılar açılır)")]
-        private int placeOnShelfStepIndex = 2;
-
-        [SerializeField, Tooltip("Araca atma step index'i")]
-        private int deliverToTruckStepIndex = 3;
-
-        [SerializeField, Tooltip("Tutorial tamamlandığında otomatik kapan")]
-        private bool autoCloseOnTutorialComplete = true;
+        [Header("=== DEBUG ===")]
+        [SerializeField, Tooltip("Debug loglarını göster")]
+        private bool showDebugLogs = true;
 
         #endregion
 
@@ -100,61 +93,35 @@ namespace NewCss
         private readonly NetworkVariable<int> _deliveredCount = new(0,
             NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-        private readonly NetworkVariable<bool> _areDoorsOpen = new(false,
+        private readonly NetworkVariable<bool> _isEntering = new(true,
+            NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+        private readonly NetworkVariable<bool> _isExiting = new(false,
             NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
         private readonly NetworkVariable<bool> _isDeliveryComplete = new(false,
             NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-        private readonly NetworkVariable<bool> _isActive = new(true,
+        private readonly NetworkVariable<bool> _isReadyForDelivery = new(false,
             NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
         #endregion
 
-        #region Private Fields
+        #region Events
 
-        private Vector3 _leftDoorClosedRotation;
-        private Vector3 _rightDoorClosedRotation;
-        private Coroutine _doorAnimationCoroutine;
-        private bool _isSubscribedToTutorial;
+        public event Action OnTruckArrived;
+        public event Action OnDeliveryComplete;
+        public event Action OnTruckExitComplete;
 
         #endregion
 
         #region Public Properties
 
-        /// <summary>
-        /// Teslim edilen kargo sayısı
-        /// </summary>
         public int DeliveredCount => _deliveredCount.Value;
-
-        /// <summary>
-        /// Kapılar açık mı? 
-        /// </summary>
-        public bool AreDoorsOpen => _areDoorsOpen.Value;
-
-        /// <summary>
-        /// Teslimat tamamlandı mı?
-        /// </summary>
+        public bool IsEntering => _isEntering.Value;
+        public bool IsExiting => _isExiting.Value;
         public bool IsDeliveryComplete => _isDeliveryComplete.Value;
-
-        /// <summary>
-        /// Truck aktif mi?
-        /// </summary>
-        public bool IsActive => _isActive.Value;
-
-        #endregion
-
-        #region Unity Lifecycle
-
-        private void Start()
-        {
-            CacheInitialDoorRotations();
-        }
-
-        private void OnDestroy()
-        {
-            UnsubscribeFromTutorialEvents();
-        }
+        public bool IsReadyForDelivery => _isReadyForDelivery.Value;
 
         #endregion
 
@@ -169,44 +136,92 @@ namespace NewCss
             SetTruckColors();
             UpdateUIText();
 
-            // Tutorial event'lerine abone ol
-            SubscribeToTutorialEvents();
-
-            // Başlangıçta kapıları kapalı tut
+            // Giriş animasyonunu başlat
             if (IsServer)
             {
-                _areDoorsOpen.Value = false;
+                _isEntering.Value = true;
+                StartEnterAnimation();
             }
 
-            // İlk kapı durumunu ayarla
-            SetDoorsInstant(false);
-
-            LogDebug("TutorialTruck spawned - Doors CLOSED, waiting for PlaceOnShelf step");
+            LogDebug("TutorialTruck spawned - Starting enter animation");
         }
 
         public override void OnNetworkDespawn()
         {
             UnsubscribeFromNetworkEvents();
-            UnsubscribeFromTutorialEvents();
             base.OnNetworkDespawn();
         }
 
         #endregion
 
-        #region Initialization
+        #region Event Subscriptions
 
-        private void CacheInitialDoorRotations()
+        private void SubscribeToNetworkEvents()
         {
-            if (leftDoor != null)
-            {
-                _leftDoorClosedRotation = leftDoor.transform.localEulerAngles;
-            }
+            _deliveredCount.OnValueChanged += HandleDeliveredCountChanged;
+            _isEntering.OnValueChanged += HandleIsEnteringChanged;
+            _isExiting.OnValueChanged += HandleIsExitingChanged;
+            _isDeliveryComplete.OnValueChanged += HandleDeliveryCompleteChanged;
+            _isReadyForDelivery.OnValueChanged += HandleReadyForDeliveryChanged;
+        }
 
-            if (rightDoor != null)
+        private void UnsubscribeFromNetworkEvents()
+        {
+            _deliveredCount.OnValueChanged -= HandleDeliveredCountChanged;
+            _isEntering.OnValueChanged -= HandleIsEnteringChanged;
+            _isExiting.OnValueChanged -= HandleIsExitingChanged;
+            _isDeliveryComplete.OnValueChanged -= HandleDeliveryCompleteChanged;
+            _isReadyForDelivery.OnValueChanged -= HandleReadyForDeliveryChanged;
+        }
+
+        #endregion
+
+        #region Network Event Handlers
+
+        private void HandleDeliveredCountChanged(int previousValue, int newValue)
+        {
+            UpdateUIText();
+            LogDebug($"Delivered count: {newValue}/{requiredCargo}");
+        }
+
+        private void HandleIsEnteringChanged(bool previousValue, bool newValue)
+        {
+            if (!newValue && previousValue)
             {
-                _rightDoorClosedRotation = rightDoor.transform.localEulerAngles;
+                LogDebug("Enter animation complete - Ready for delivery");
+                OnTruckArrived?.Invoke();
             }
         }
+
+        private void HandleIsExitingChanged(bool previousValue, bool newValue)
+        {
+            if (newValue && !previousValue)
+            {
+                LogDebug("Exit animation started");
+            }
+        }
+
+        private void HandleDeliveryCompleteChanged(bool previousValue, bool newValue)
+        {
+            if (newValue && !previousValue)
+            {
+                LogDebug("🎉 Delivery complete!");
+                OnDeliveryComplete?.Invoke();
+            }
+        }
+
+        private void HandleReadyForDeliveryChanged(bool previousValue, bool newValue)
+        {
+            if (newValue)
+            {
+                LogDebug("Truck is now ready for delivery");
+                UpdateUIText();
+            }
+        }
+
+        #endregion
+
+        #region Initialization
 
         private void SetupTriggerCollider()
         {
@@ -227,205 +242,56 @@ namespace NewCss
 
         #endregion
 
-        #region Event Subscriptions
+        #region Enter Animation
 
-        private void SubscribeToNetworkEvents()
-        {
-            _deliveredCount.OnValueChanged += HandleDeliveredCountChanged;
-            _areDoorsOpen.OnValueChanged += HandleDoorsOpenChanged;
-            _isDeliveryComplete.OnValueChanged += HandleDeliveryCompleteChanged;
-        }
-
-        private void UnsubscribeFromNetworkEvents()
-        {
-            _deliveredCount.OnValueChanged -= HandleDeliveredCountChanged;
-            _areDoorsOpen.OnValueChanged -= HandleDoorsOpenChanged;
-            _isDeliveryComplete.OnValueChanged -= HandleDeliveryCompleteChanged;
-        }
-
-        private void SubscribeToTutorialEvents()
-        {
-            if (_isSubscribedToTutorial) return;
-            if (TutorialManager.Instance == null) return;
-
-            TutorialManager.Instance.OnStepCompleted += HandleTutorialStepCompleted;
-            TutorialManager.Instance.OnTutorialCompleted += HandleTutorialCompleted;
-            _isSubscribedToTutorial = true;
-
-            LogDebug("Subscribed to TutorialManager events");
-        }
-
-        private void UnsubscribeFromTutorialEvents()
-        {
-            if (!_isSubscribedToTutorial) return;
-            if (TutorialManager.Instance == null) return;
-
-            TutorialManager.Instance.OnStepCompleted -= HandleTutorialStepCompleted;
-            TutorialManager.Instance.OnTutorialCompleted -= HandleTutorialCompleted;
-            _isSubscribedToTutorial = false;
-        }
-
-        #endregion
-
-        #region Network Event Handlers
-
-        private void HandleDeliveredCountChanged(int previousValue, int newValue)
-        {
-            UpdateUIText();
-            LogDebug($"Delivered count changed: {previousValue} -> {newValue}");
-        }
-
-        private void HandleDoorsOpenChanged(bool previousValue, bool newValue)
-        {
-            LogDebug($"Doors state changed: {(newValue ? "OPEN" : "CLOSED")}");
-            AnimateDoors(newValue);
-        }
-
-        private void HandleDeliveryCompleteChanged(bool previousValue, bool newValue)
-        {
-            if (newValue)
-            {
-                LogDebug("🎉 Tutorial truck delivery COMPLETE!");
-                NotifyTutorialDeliveryComplete();
-            }
-        }
-
-        #endregion
-
-        #region Tutorial Event Handlers
-
-        private void HandleTutorialStepCompleted(int stepIndex, TutorialStep step)
-        {
-            LogDebug($"Tutorial step {stepIndex} completed: {step.stepName}");
-
-            // PlaceOnShelf step'i tamamlandığında kapıları aç
-            if (stepIndex == placeOnShelfStepIndex)
-            {
-                LogDebug("PlaceOnShelf step completed - Opening truck doors!");
-                OpenDoorsServerRpc();
-            }
-        }
-
-        private void HandleTutorialCompleted()
-        {
-            LogDebug("Tutorial completed!");
-
-            if (autoCloseOnTutorialComplete && IsServer)
-            {
-                _isActive.Value = false;
-            }
-        }
-
-        #endregion
-
-        #region Door Control
-
-        [ServerRpc(RequireOwnership = false)]
-        public void OpenDoorsServerRpc()
+        private void StartEnterAnimation()
         {
             if (!IsServer) return;
-            if (_areDoorsOpen.Value) return;
 
-            _areDoorsOpen.Value = true;
-            LogDebug("Server: Doors OPENED");
-        }
+            LogDebug("Starting enter animation.. .");
 
-        [ServerRpc(RequireOwnership = false)]
-        public void CloseDoorsServerRpc()
-        {
-            if (!IsServer) return;
-            if (!_areDoorsOpen.Value) return;
+            PlayEnterSoundClientRpc();
 
-            _areDoorsOpen.Value = false;
-            LogDebug("Server: Doors CLOSED");
-        }
-
-        private void AnimateDoors(bool open)
-        {
-            // Animator varsa kullan
-            if (doorAnimator != null)
+            if (truckAnimator != null)
             {
-                doorAnimator.SetBool(DOOR_OPEN_ANIM_BOOL, open);
-                PlayDoorSound();
-                return;
+                truckAnimator.SetBool(EXIT_ANIM_BOOL, false);
+                StartCoroutine(WaitForEnterAnimationCoroutine());
             }
-
-            // Manual animasyon
-            if (_doorAnimationCoroutine != null)
+            else
             {
-                StopCoroutine(_doorAnimationCoroutine);
+                // Animator yoksa direkt hazır ol
+                CompleteEnterAnimation();
             }
-
-            _doorAnimationCoroutine = StartCoroutine(AnimateDoorsCoroutine(open));
         }
 
-        private IEnumerator AnimateDoorsCoroutine(bool open)
+        private IEnumerator WaitForEnterAnimationCoroutine()
         {
-            PlayDoorSound();
+            yield return new WaitForEndOfFrame();
 
-            Vector3 leftTargetRotation = open ? leftDoorOpenRotation : _leftDoorClosedRotation;
-            Vector3 rightTargetRotation = open ? rightDoorOpenRotation : _rightDoorClosedRotation;
-
-            float elapsed = 0f;
-            float duration = 1f / doorOpenSpeed;
-
-            Vector3 leftStartRotation = leftDoor != null ? leftDoor.transform.localEulerAngles : Vector3.zero;
-            Vector3 rightStartRotation = rightDoor != null ? rightDoor.transform.localEulerAngles : Vector3.zero;
-
-            while (elapsed < duration)
+            // Animasyonun tamamlanmasını bekle
+            while (!IsAnimationComplete(ENTER_ANIM_STATE))
             {
-                elapsed += Time.deltaTime;
-                float t = Mathf.SmoothStep(0f, 1f, elapsed / duration);
-
-                if (leftDoor != null)
-                {
-                    leftDoor.transform.localEulerAngles = Vector3.Lerp(leftStartRotation, leftTargetRotation, t);
-                }
-
-                if (rightDoor != null)
-                {
-                    rightDoor.transform.localEulerAngles = Vector3.Lerp(rightStartRotation, rightTargetRotation, t);
-                }
-
                 yield return null;
             }
 
-            // Final pozisyon
-            if (leftDoor != null)
+            if (IsServer)
             {
-                leftDoor.transform.localEulerAngles = leftTargetRotation;
-            }
-
-            if (rightDoor != null)
-            {
-                rightDoor.transform.localEulerAngles = rightTargetRotation;
-            }
-
-            LogDebug($"Door animation complete - Doors are now {(open ? "OPEN" : "CLOSED")}");
-        }
-
-        private void SetDoorsInstant(bool open)
-        {
-            Vector3 leftTargetRotation = open ? leftDoorOpenRotation : _leftDoorClosedRotation;
-            Vector3 rightTargetRotation = open ? rightDoorOpenRotation : _rightDoorClosedRotation;
-
-            if (leftDoor != null)
-            {
-                leftDoor.transform.localEulerAngles = leftTargetRotation;
-            }
-
-            if (rightDoor != null)
-            {
-                rightDoor.transform.localEulerAngles = rightTargetRotation;
+                CompleteEnterAnimation();
             }
         }
 
-        private void PlayDoorSound()
+        private void CompleteEnterAnimation()
         {
-            if (doorAudioSource != null && doorOpenClip != null)
-            {
-                doorAudioSource.PlayOneShot(doorOpenClip);
-            }
+            _isEntering.Value = false;
+            _isReadyForDelivery.Value = true;
+
+            LogDebug("Enter animation complete - Truck ready for delivery!");
+        }
+
+        [ClientRpc]
+        private void PlayEnterSoundClientRpc()
+        {
+            PlaySound(enterAnimationClip);
         }
 
         #endregion
@@ -437,20 +303,29 @@ namespace NewCss
         /// </summary>
         public void HandleItemDelivery(BoxInfo.BoxType boxType, bool isFull)
         {
-            if (!IsServer) return;
+            if (!IsServer)
+            {
+                HandleDeliveryServerRpc(boxType, isFull);
+                return;
+            }
 
-            HandleDeliveryServerRpc(boxType, isFull);
+            ProcessDeliveryInternal(boxType, isFull);
         }
 
         [ServerRpc(RequireOwnership = false)]
-        public void HandleDeliveryServerRpc(BoxInfo.BoxType boxType, bool isFull, ServerRpcParams rpcParams = default)
+        public void HandleDeliveryServerRpc(BoxInfo.BoxType boxType, bool isFull)
+        {
+            ProcessDeliveryInternal(boxType, isFull);
+        }
+
+        private void ProcessDeliveryInternal(BoxInfo.BoxType boxType, bool isFull)
         {
             if (!IsServer) return;
 
-            // Kapılar kapalıysa teslimat kabul etme
-            if (!_areDoorsOpen.Value)
+            // Hazır değilse teslimat kabul etme
+            if (!_isReadyForDelivery.Value)
             {
-                LogDebug("❌ Delivery rejected - Doors are CLOSED!");
+                LogDebug("❌ Delivery rejected - Truck not ready!");
                 return;
             }
 
@@ -461,16 +336,16 @@ namespace NewCss
                 return;
             }
 
-            // Aktif değilse kabul etme
-            if (!_isActive.Value)
+            // Çıkış yapıyorsa kabul etme
+            if (_isExiting.Value)
             {
-                LogDebug("❌ Delivery rejected - Truck not active!");
+                LogDebug("❌ Delivery rejected - Truck is exiting!");
                 return;
             }
 
             if (isFull && boxType == requestedBoxType)
             {
-                ProcessSuccessfulDelivery();
+                ProcessSuccessfulDelivery(boxType);
             }
             else if (isFull)
             {
@@ -482,13 +357,18 @@ namespace NewCss
             }
         }
 
-        private void ProcessSuccessfulDelivery()
+        private void ProcessSuccessfulDelivery(BoxInfo.BoxType boxType)
         {
             _deliveredCount.Value++;
 
-            LogDebug($"✅ Successful delivery! Count: {_deliveredCount.Value}/{requiredCargo}");
+            LogDebug($"✅ Successful delivery!  Count: {_deliveredCount.Value}/{requiredCargo}");
 
-            // Ses çal
+            // TutorialManager'a bildir
+            if (TutorialManager.Instance != null)
+            {
+                TutorialManager.Instance.OnBoxDeliveredToTruck(boxType);
+            }
+
             PlayDeliverySuccessSoundClientRpc();
 
             // Tamamlandı mı kontrol et
@@ -500,52 +380,112 @@ namespace NewCss
 
         private void ProcessWrongDelivery(BoxInfo.BoxType wrongType)
         {
-            LogDebug($"❌ Wrong box type!  Expected: {requestedBoxType}, Got: {wrongType}");
+            LogDebug($"❌ Wrong box type! Expected: {requestedBoxType}, Got: {wrongType}");
 
-            // Yanlış item sesi çal
             PlayWrongItemSoundClientRpc();
         }
 
         private void CompleteDelivery()
         {
             _isDeliveryComplete.Value = true;
-            LogDebug("🎉 All cargo delivered!");
+            _isReadyForDelivery.Value = false;
+
+            LogDebug("🎉 All cargo delivered!  Starting exit sequence...");
+
+            // Çıkış sekansını başlat
+            StartCoroutine(ExitSequenceCoroutine());
         }
-
-        private void NotifyTutorialDeliveryComplete()
-        {
-            // TutorialManager'a bildir - bu şekilde current step otomatik tamamlanacak
-            if (TutorialManager.Instance != null)
-            {
-                var currentStep = TutorialManager.Instance.CurrentStep;
-                if (currentStep != null && currentStep.conditionType == TutorialConditionType.Custom)
-                {
-                    // Custom condition için manuel tamamlama
-                    TutorialManager.Instance.ForceCompleteCurrentStep();
-                }
-            }
-        }
-
-        #endregion
-
-        #region Client RPCs
 
         [ClientRpc]
         private void PlayDeliverySuccessSoundClientRpc()
         {
-            if (doorAudioSource != null && itemDeliveredClip != null)
-            {
-                doorAudioSource.PlayOneShot(itemDeliveredClip);
-            }
+            PlaySound(itemDeliveredClip);
         }
 
         [ClientRpc]
         private void PlayWrongItemSoundClientRpc()
         {
-            if (doorAudioSource != null && wrongItemClip != null)
+            PlaySound(wrongItemClip);
+        }
+
+        #endregion
+
+        #region Exit Animation
+
+        private IEnumerator ExitSequenceCoroutine()
+        {
+            LogDebug($"Exit sequence starting in {exitDelay} seconds...");
+
+            yield return new WaitForSeconds(exitDelay);
+
+            StartExitAnimation();
+        }
+
+        private void StartExitAnimation()
+        {
+            if (!IsServer) return;
+
+            LogDebug("Starting exit animation...");
+
+            _isExiting.Value = true;
+
+            PlayExitSoundClientRpc();
+
+            if (truckAnimator != null)
             {
-                doorAudioSource.PlayOneShot(wrongItemClip);
+                truckAnimator.SetBool(EXIT_ANIM_BOOL, true);
+                StartCoroutine(WaitForExitAnimationCoroutine());
             }
+            else
+            {
+                CompleteExitAnimation();
+            }
+        }
+
+        private IEnumerator WaitForExitAnimationCoroutine()
+        {
+            yield return new WaitForEndOfFrame();
+
+            while (!IsAnimationComplete(EXIT_ANIM_STATE))
+            {
+                yield return null;
+            }
+
+            if (IsServer)
+            {
+                CompleteExitAnimation();
+            }
+        }
+
+        private void CompleteExitAnimation()
+        {
+            LogDebug("Exit animation complete - Despawning truck");
+
+            OnTruckExitComplete?.Invoke();
+
+            // Truck'ı despawn et
+            if (IsServer && NetworkObject != null && NetworkObject.IsSpawned)
+            {
+                NetworkObject.Despawn();
+            }
+        }
+
+        [ClientRpc]
+        private void PlayExitSoundClientRpc()
+        {
+            PlaySound(exitAnimationClip);
+        }
+
+        #endregion
+
+        #region Animation Helpers
+
+        private bool IsAnimationComplete(string stateName)
+        {
+            if (truckAnimator == null) return true;
+
+            var stateInfo = truckAnimator.GetCurrentAnimatorStateInfo(0);
+            return stateInfo.IsName(stateName) && stateInfo.normalizedTime >= 1.0f;
         }
 
         #endregion
@@ -554,14 +494,28 @@ namespace NewCss
 
         private void UpdateUIText()
         {
-            if (truckText != null)
-            {
-                string statusText = !_areDoorsOpen.Value
-                    ? $"{requestedBoxType}: Kapılar Kapalı"
-                    : $"{requestedBoxType}: {_deliveredCount.Value}/{requiredCargo}";
+            if (truckText == null) return;
 
-                truckText.text = statusText;
+            string statusText;
+
+            if (_isEntering.Value)
+            {
+                statusText = $"{requestedBoxType}: Geliyor... ";
             }
+            else if (_isExiting.Value)
+            {
+                statusText = $"{requestedBoxType}: Gidiyor...";
+            }
+            else if (_isDeliveryComplete.Value)
+            {
+                statusText = $"{requestedBoxType}: Tamamlandı!";
+            }
+            else
+            {
+                statusText = $"{requestedBoxType}: {_deliveredCount.Value}/{requiredCargo}";
+            }
+
+            truckText.text = statusText;
         }
 
         #endregion
@@ -602,45 +556,14 @@ namespace NewCss
 
         #endregion
 
-        #region Public API
+        #region Audio
 
-        /// <summary>
-        /// Kapıları manuel olarak açar (TutorialManager dışından kullanım için)
-        /// </summary>
-        public void ForceOpenDoors()
+        private void PlaySound(AudioClip clip)
         {
-            if (IsServer)
+            if (audioSource != null && clip != null)
             {
-                _areDoorsOpen.Value = true;
+                audioSource.PlayOneShot(clip);
             }
-            else
-            {
-                OpenDoorsServerRpc();
-            }
-        }
-
-        /// <summary>
-        /// Tutorial truck'ı sıfırlar
-        /// </summary>
-        public void ResetTruck()
-        {
-            if (!IsServer) return;
-
-            _deliveredCount.Value = 0;
-            _areDoorsOpen.Value = false;
-            _isDeliveryComplete.Value = false;
-            _isActive.Value = true;
-
-            UpdateUIText();
-            LogDebug("Tutorial truck RESET");
-        }
-
-        /// <summary>
-        /// Belirli bir step index'i için kapıları açar
-        /// </summary>
-        public void SetPlaceOnShelfStepIndex(int stepIndex)
-        {
-            placeOnShelfStepIndex = stepIndex;
         }
 
         #endregion
@@ -649,7 +572,10 @@ namespace NewCss
 
         private void LogDebug(string message)
         {
-            Debug.Log($"{LOG_PREFIX} {message}");
+            if (showDebugLogs)
+            {
+                Debug.Log($"{LOG_PREFIX} {message}");
+            }
         }
 
         #endregion
@@ -657,47 +583,21 @@ namespace NewCss
         #region Editor Debug
 
 #if UNITY_EDITOR
-        [ContextMenu("Debug: Open Doors")]
-        private void DebugOpenDoors()
-        {
-            if (Application.isPlaying)
-            {
-                ForceOpenDoors();
-            }
-            else
-            {
-                SetDoorsInstant(true);
-            }
-        }
-
-        [ContextMenu("Debug: Close Doors")]
-        private void DebugCloseDoors()
-        {
-            if (Application.isPlaying && IsServer)
-            {
-                _areDoorsOpen.Value = false;
-            }
-            else
-            {
-                SetDoorsInstant(false);
-            }
-        }
-
         [ContextMenu("Debug: Simulate Delivery")]
         private void DebugSimulateDelivery()
         {
             if (Application.isPlaying && IsServer)
             {
-                ProcessSuccessfulDelivery();
+                ProcessSuccessfulDelivery(requestedBoxType);
             }
         }
 
-        [ContextMenu("Debug: Reset Truck")]
-        private void DebugResetTruck()
+        [ContextMenu("Debug: Force Exit")]
+        private void DebugForceExit()
         {
-            if (Application.isPlaying)
+            if (Application.isPlaying && IsServer)
             {
-                ResetTruck();
+                StartExitAnimation();
             }
         }
 
@@ -708,11 +608,10 @@ namespace NewCss
             Debug.Log($"Requested Box Type: {requestedBoxType}");
             Debug.Log($"Required Cargo: {requiredCargo}");
             Debug.Log($"Delivered Count: {_deliveredCount.Value}");
-            Debug.Log($"Doors Open: {_areDoorsOpen.Value}");
-            Debug.Log($"Delivery Complete: {_isDeliveryComplete.Value}");
-            Debug.Log($"Is Active: {_isActive.Value}");
-            Debug.Log($"PlaceOnShelf Step Index: {placeOnShelfStepIndex}");
-            Debug.Log($"Subscribed to Tutorial: {_isSubscribedToTutorial}");
+            Debug.Log($"Is Entering: {_isEntering.Value}");
+            Debug.Log($"Is Ready For Delivery: {_isReadyForDelivery.Value}");
+            Debug.Log($"Is Delivery Complete: {_isDeliveryComplete.Value}");
+            Debug.Log($"Is Exiting: {_isExiting.Value}");
         }
 #endif
 

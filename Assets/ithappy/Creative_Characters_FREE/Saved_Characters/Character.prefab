@@ -8089,8 +8089,8 @@ RectTransform:
   m_GameObject: {fileID: 7279497551629304242}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.63163996, y: 0.63163996, z: 0.63163996}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.74999994, y: 0.74999994, z: 0.74999994}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 7424750687274706261}
   - {fileID: 8059096327240533763}
@@ -8100,7 +8100,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -560.89307, y: 303.81696}
+  m_AnchoredPosition: {x: -706, y: 402}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &6162039116639015870
@@ -14063,13 +14063,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   moveSpeed: 4
-  sprintSpeed: 7
+  sprintSpeed: 8
   exhaustedSpeed: 3
   rotationSpeed: 10
   gravity: 9.81
   sprintDuration: 3
-  sprintCooldown: 3
-  staminaRegenRate: 1
+  sprintCooldown: 2
+  staminaRegenRate: 1.2
   walkSounds:
   - {fileID: 8300000, guid: fdc2329d7bdfb7b4b814352e9e08cd82, type: 3}
   runSounds:

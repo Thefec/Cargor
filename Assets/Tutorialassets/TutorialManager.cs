@@ -7,7 +7,7 @@ using UnityEngine;
 using NewCss;
 
 /// <summary>
-/// Tutorial yönetim sistemi - adım adım tutorial akışı, UI yönetimi ve koşul kontrollerini sağlar. 
+/// Tutorial yönetim sistemi - adım adım tutorial akışı, UI yönetimi ve koşul kontrollerini sağlar.
 /// Typewriter efekti, highlight sistemi ve kapı entegrasyonu içerir.
 /// </summary>
 public class TutorialManager : NetworkBehaviour
@@ -159,7 +159,10 @@ public class TutorialManager : NetworkBehaviour
 
     private bool _tableInteractionCompleted;
     private bool _shelfInteractionCompleted;
+    private bool _shelfPlacementCompleted;
+    private bool _truckDeliveryCompleted;
     private NetworkedShelf.BoxType _lastTakenBoxType;
+    private BoxInfo.BoxType _lastDeliveredBoxType;
 
     #endregion
 
@@ -451,8 +454,7 @@ public class TutorialManager : NetworkBehaviour
         _currentStep.stepStartTime = Time.time;
 
         // Flag'leri sıfırla
-        _tableInteractionCompleted = false;
-        _shelfInteractionCompleted = false;
+        ResetConditionFlags();
 
         LogDebug($"Tutorial Step {stepIndex + 1}/{tutorialSteps.Count}: {_currentStep.stepName}");
 
@@ -464,11 +466,30 @@ public class TutorialManager : NetworkBehaviour
         StartCoroutine(CheckStepConditionCoroutine());
     }
 
+    private void ResetConditionFlags()
+    {
+        _tableInteractionCompleted = false;
+        _shelfInteractionCompleted = false;
+        _shelfPlacementCompleted = false;
+        _truckDeliveryCompleted = false;
+
+        // Step'in kendi delivery sayacını da sıfırla
+        if (_currentStep != null)
+        {
+            _currentStep.currentDeliveryCount = 0;
+        }
+    }
+
     private void CompleteCurrentStep()
     {
         if (_isTransitioning || _currentStep == null) return;
 
         _isTransitioning = true;
+
+        // Typewriter efektini hemen durdur
+        StopCurrentTypewriter();
+        _isTyping = false;
+        _skipTyping = false;
 
         LogDebug($"Step {_currentStepIndex + 1} completed: {_currentStep.stepName}");
 
@@ -533,10 +554,12 @@ public class TutorialManager : NetworkBehaviour
             TutorialConditionType.DropItem => CheckDropCondition(),
             TutorialConditionType.PlaceOnTable => _tableInteractionCompleted,
             TutorialConditionType.TakeFromTable => _tableInteractionCompleted,
+            TutorialConditionType.PlaceOnShelf => _shelfPlacementCompleted,
             TutorialConditionType.TakeFromShelf => CheckTakeFromShelfCondition(),
+            TutorialConditionType.DeliverToTruck => CheckDeliverToTruckCondition(),
             TutorialConditionType.WaitForTime => CheckWaitTimeCondition(),
             TutorialConditionType.CompleteMinigame => _currentStep.isCompleted,
-            TutorialConditionType.Custom => false,
+            TutorialConditionType.Custom => _currentStep.isCompleted,
             _ => false
         };
     }
@@ -569,6 +592,21 @@ public class TutorialManager : NetworkBehaviour
         if (_currentStep.requiresSpecificBoxType)
         {
             return _lastTakenBoxType == _currentStep.requiredBoxType;
+        }
+
+        return true;
+    }
+
+    private bool CheckDeliverToTruckCondition()
+    {
+        // Teslimat sayısı kontrolü
+        if (!_currentStep.IsDeliveryComplete())
+            return false;
+
+        // Belirli kutu türü gerekiyorsa kontrol et
+        if (_currentStep.requiresSpecificBoxTypeForTruck)
+        {
+            return _lastDeliveredBoxType == _currentStep.requiredTruckBoxType;
         }
 
         return true;
@@ -626,10 +664,19 @@ public class TutorialManager : NetworkBehaviour
             StopCoroutine(_currentTypewriterCoroutine);
             _currentTypewriterCoroutine = null;
         }
+
+        // State'i de sıfırla
+        _isTyping = false;
+        _skipTyping = false;
     }
 
     private IEnumerator HideInstructionCoroutine()
     {
+        // Önce typewriter'ı durdur
+        StopCurrentTypewriter();
+        _isTyping = false;
+        _skipTyping = false;
+
         if (skipHintText != null)
         {
             skipHintText.gameObject.SetActive(false);
@@ -771,6 +818,18 @@ public class TutorialManager : NetworkBehaviour
     }
 
     /// <summary>
+    /// Rafa item konulduğunda çağrılır
+    /// </summary>
+    public void OnItemPlacedOnShelf()
+    {
+        if (_currentStep == null) return;
+        if (_currentStep.conditionType != TutorialConditionType.PlaceOnShelf) return;
+
+        LogDebug("📦 Item placed on shelf - marking step for completion");
+        _shelfPlacementCompleted = true;
+    }
+
+    /// <summary>
     /// Raftan kutu alındığında NetworkedShelf tarafından çağrılır
     /// </summary>
     public void OnBoxTakenFromShelf(NetworkedShelf.BoxType boxType)
@@ -796,6 +855,48 @@ public class TutorialManager : NetworkBehaviour
                 LogDebug($"📦 {boxType} box taken from shelf - checking tutorial step");
             }
         }
+    }
+
+    /// <summary>
+    /// Araca kutu teslim edildiğinde TutorialTruck tarafından çağrılır
+    /// </summary>
+    public void OnBoxDeliveredToTruck(BoxInfo.BoxType boxType)
+    {
+        if (_currentStep == null) return;
+        if (_currentStep.conditionType != TutorialConditionType.DeliverToTruck) return;
+
+        _lastDeliveredBoxType = boxType;
+
+        // Belirli kutu türü gerekiyorsa ve yanlış türse sayma
+        if (_currentStep.requiresSpecificBoxTypeForTruck && boxType != _currentStep.requiredTruckBoxType)
+        {
+            LogDebug($"🚛 Wrong box type delivered!  Expected: {_currentStep.requiredTruckBoxType}, Got: {boxType}");
+            return;
+        }
+
+        // Teslimat sayacını artır
+        bool isComplete = _currentStep.IncrementDeliveryCount();
+
+        LogDebug($"🚛 {boxType} box delivered to truck!  Progress: {_currentStep.GetDeliveryStatusText()}");
+
+        if (isComplete)
+        {
+            LogDebug("🚛 Truck delivery complete!");
+            _truckDeliveryCompleted = true;
+        }
+    }
+
+    /// <summary>
+    /// Truck teslimatı tamamlandığında çağrılır (alternatif - tüm teslimat bittiğinde)
+    /// </summary>
+    public void OnTruckDeliveryComplete()
+    {
+        if (_currentStep == null) return;
+        if (_currentStep.conditionType != TutorialConditionType.DeliverToTruck) return;
+
+        LogDebug("🚛 Truck delivery marked as complete externally");
+        _currentStep.currentDeliveryCount = _currentStep.requiredDeliveryCount;
+        _truckDeliveryCompleted = true;
     }
 
     private IEnumerator CompleteStepNextFrameCoroutine()
@@ -850,6 +951,7 @@ public class TutorialManager : NetworkBehaviour
         foreach (var step in tutorialSteps)
         {
             step.isCompleted = false;
+            step.currentDeliveryCount = 0;
         }
 
         _currentStepIndex = 0;
@@ -857,6 +959,17 @@ public class TutorialManager : NetworkBehaviour
         _isTransitioning = false;
 
         StartCoroutine(StartTutorialSequenceCoroutine());
+    }
+
+    /// <summary>
+    /// Mevcut step'in teslimat ilerlemesini döndürür
+    /// </summary>
+    public string GetCurrentDeliveryProgress()
+    {
+        if (_currentStep == null) return "";
+        if (_currentStep.conditionType != TutorialConditionType.DeliverToTruck) return "";
+
+        return _currentStep.GetDeliveryStatusText();
     }
 
     #endregion
@@ -900,6 +1013,15 @@ public class TutorialManager : NetworkBehaviour
         CompleteTutorial();
     }
 
+    [ContextMenu("Debug: Simulate Truck Delivery")]
+    private void DebugSimulateTruckDelivery()
+    {
+        if (_currentStep != null && _currentStep.conditionType == TutorialConditionType.DeliverToTruck)
+        {
+            OnBoxDeliveredToTruck(_currentStep.requiredTruckBoxType);
+        }
+    }
+
     [ContextMenu("Debug: Print State")]
     private void DebugPrintState()
     {
@@ -912,6 +1034,8 @@ public class TutorialManager : NetworkBehaviour
         Debug.Log($"Is Typing: {_isTyping}");
         Debug.Log($"Table Interaction Completed: {_tableInteractionCompleted}");
         Debug.Log($"Shelf Interaction Completed: {_shelfInteractionCompleted}");
+        Debug.Log($"Shelf Placement Completed: {_shelfPlacementCompleted}");
+        Debug.Log($"Truck Delivery Completed: {_truckDeliveryCompleted}");
         Debug.Log($"Has Player Inventory: {playerInventory != null}");
         Debug.Log($"Registered Doors: {tutorialDoors.Count}");
 
@@ -922,6 +1046,11 @@ public class TutorialManager : NetworkBehaviour
             Debug.Log($"  Condition: {_currentStep.conditionType}");
             Debug.Log($"  Is Completed: {_currentStep.isCompleted}");
             Debug.Log($"  Start Time: {_currentStep.stepStartTime:F2}");
+
+            if (_currentStep.conditionType == TutorialConditionType.DeliverToTruck)
+            {
+                Debug.Log($"  Delivery Progress: {_currentStep.GetDeliveryStatusText()}");
+            }
         }
     }
 
@@ -934,7 +1063,7 @@ public class TutorialManager : NetworkBehaviour
         {
             var step = tutorialSteps[i];
             string status = step.isCompleted ? "[COMPLETED]" : (i == _currentStepIndex ? "[CURRENT]" : "[PENDING]");
-            Debug.Log($"  [{i}] {step.stepName} - {step.conditionType} {status}");
+            Debug.Log($"  [{i}] {step}");
         }
     }
 

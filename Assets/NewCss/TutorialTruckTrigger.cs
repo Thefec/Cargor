@@ -27,13 +27,10 @@ namespace NewCss
         {
             if (tutorialTruck == null) return;
 
-            // Sadece server'da iþle
-            if (!tutorialTruck.IsServer) return;
-
-            // Kapýlar kapalýysa iþleme
-            if (!tutorialTruck.AreDoorsOpen)
+            // Hazýr deðilse iþleme
+            if (!tutorialTruck.IsReadyForDelivery)
             {
-                Debug.Log($"{LOG_PREFIX} Item entered but doors are CLOSED - ignoring");
+                Debug.Log($"{LOG_PREFIX} Item entered but truck not ready - ignoring");
                 return;
             }
 
@@ -41,7 +38,6 @@ namespace NewCss
             var worldItem = other.GetComponent<NetworkWorldItem>();
             if (worldItem == null)
             {
-                // Parent'ta ara
                 worldItem = other.GetComponentInParent<NetworkWorldItem>();
             }
 
