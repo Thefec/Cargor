@@ -439,6 +439,14 @@ namespace NewCss
             int totalReward = CalculateRewardWithPrestige();
             MoneySystem.Instance?.AddMoney(totalReward);
 
+            // Check if truck is complete
+            if (_deliveredCount.Value >= _networkRequiredCargo.Value && !_isComplete.Value)
+            {
+                _isComplete.Value = true;
+
+                // Notify quest system
+                Quest.QuestTracker.NotifyTruckCompleted();
+            }
         }
 
         private void ProcessWrongDelivery()
@@ -446,7 +454,6 @@ namespace NewCss
             MoneySystem.Instance?.SpendMoney(penaltyPerBox);
         }
 
-       
         #endregion
 
         #region Reward Calculation

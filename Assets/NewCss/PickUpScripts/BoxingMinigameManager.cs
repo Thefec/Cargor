@@ -515,6 +515,9 @@ namespace NewCss
                 TutorialManager.Instance.OnMinigameCompleted();
                 LogDebug("📚 Tutorial notified!");
             }
+
+            // Notify quest system
+            Quest.QuestTracker.NotifyMinigameCompleted();
         }
 
         private void PlaySound(AudioClip clip)

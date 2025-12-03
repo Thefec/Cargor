@@ -555,6 +555,13 @@ namespace NewCss
                 DisableItemPhysics(item);
 
                 Debug.Log($"{LOG_PREFIX} ✅ Item placed on shelf by client {clientId} at slot {slotIndex}");
+
+                // Notify quest system if this is a box
+                var boxInfo = item.GetComponent<BoxInfo>();
+                if (boxInfo != null)
+                {
+                    Quest.QuestTracker.NotifyBoxPlacedOnShelf(boxInfo.boxType);
+                }
             }
         }
 
