@@ -851,7 +851,8 @@ namespace NewCss
             // Spawn boxed product
             StartCoroutine(SpawnBoxedProductCoroutine(boxType));
 
-           
+            // Notify quest system
+            Quest.QuestTracker.NotifyToyPacked(boxType);
         }
 
         /// <summary>

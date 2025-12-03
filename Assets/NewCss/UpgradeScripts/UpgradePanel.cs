@@ -486,7 +486,9 @@ namespace NewCss
                     ApplyMoneyUpgrade(entry, level);
                     break;
 
-                
+                case UPGRADE_QUEST_TIER:
+                    ApplyQuestTierUpgrade(level);
+                    break;
             }
         }
 
@@ -514,7 +516,14 @@ namespace NewCss
             }
         }
 
-        
+        private void ApplyQuestTierUpgrade(int level)
+        {
+            if (Quest.QuestManager.Instance != null)
+            {
+                Quest.QuestManager.Instance.SetQuestTier(level);
+                LogDebug($"Quest tier set to {level}");
+            }
+        }
 
         #endregion
 

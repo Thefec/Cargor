@@ -581,6 +581,12 @@ namespace NewCss
             {
                 PrestigeManager.Instance.ModifyPrestige(-0.03f);
             }
+
+            // Notify quest system about customer timeout
+            if (!_hasInteracted)
+            {
+                Quest.QuestTracker.NotifyCustomerTimeout();
+            }
         }
 
         #endregion
@@ -734,7 +740,8 @@ namespace NewCss
                 PrestigeManager.Instance.ModifyPrestige(0.05f);
             }
 
-           
+            // Notify quest system
+            Quest.QuestTracker.NotifyCustomerServed();
         }
 
         private void HandleFailedInteraction()
