@@ -1,5 +1,6 @@
 using System;
 using Unity.Netcode;
+using UnityEngine;
 
 namespace NewCss.Quest
 {
@@ -67,7 +68,7 @@ namespace NewCss.Quest
         public bool Equals(BuffData other)
         {
             return buffType == other.buffType &&
-                   UnityEngine.Mathf.Approximately(amount, other.amount) &&
+                   Mathf.Approximately(amount, other.amount) &&
                    remainingDays == other.remainingDays &&
                    isActive == other.isActive;
         }
