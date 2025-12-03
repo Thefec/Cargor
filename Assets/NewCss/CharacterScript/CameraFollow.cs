@@ -4,7 +4,7 @@ using UnityEngine;
 namespace NewCss
 {
     /// <summary>
-    /// Kameranın oyuncuyu takip etmesini sağlayan sistem. 
+    /// Kameranın oyuncuyu takip etmesini sağlayan sistem.  
     /// Sabit açılı top-down görünüm ile smooth takip sunar.
     /// Network oyunlarında otomatik olarak local player'ı bulur.
     /// </summary>
@@ -43,6 +43,17 @@ namespace NewCss
         [SerializeField, Tooltip("Sabit Y rotasyonu")]
         private float fixedRotationY = 0f;
 
+        [Header("=== ZOOM SETTINGS ===")]
+        [SerializeField, Tooltip("Zoom tuşu")]
+        private KeyCode zoomKey = KeyCode.Z;
+
+        [SerializeField, Tooltip("Zoom yapıldığında hedef offset")]
+        private Vector3 zoomedOffset = new Vector3(0f, 5f, -5f);
+
+        [SerializeField, Tooltip("Zoom geçiş hızı")]
+        [Range(0.1f, 20f)]
+        private float zoomTransitionSpeed = 8f;
+
         [Header("=== BOUNDS (OPTIONAL) ===")]
         [SerializeField, Tooltip("Kamera sınırlarını kullan")]
         private bool useBounds;
@@ -60,6 +71,9 @@ namespace NewCss
         private bool _isTargetSet;
         private float _lastTargetSearchTime;
         private Vector3 _currentVelocity;
+        private Vector3 _defaultOffset;
+        private Vector3 _currentOffset;
+        private bool _isZooming;
 
         #endregion
 
@@ -80,7 +94,11 @@ namespace NewCss
         public Vector3 Offset
         {
             get => offset;
-            set => offset = value;
+            set
+            {
+                offset = value;
+                _defaultOffset = value;
+            }
         }
 
         /// <summary>
@@ -106,6 +124,11 @@ namespace NewCss
             set => fixedRotationX = Mathf.Clamp(value, 0f, 90f);
         }
 
+        /// <summary>
+        /// Zoom aktif mi?
+        /// </summary>
+        public bool IsZooming => _isZooming;
+
         #endregion
 
         #region Unity Lifecycle
@@ -113,6 +136,11 @@ namespace NewCss
         private void Start()
         {
             Initialize();
+        }
+
+        private void Update()
+        {
+            HandleZoomInput();
         }
 
         private void LateUpdate()
@@ -126,6 +154,10 @@ namespace NewCss
 
         private void Initialize()
         {
+            // Varsayılan offset'i kaydet
+            _defaultOffset = offset;
+            _currentOffset = offset;
+
             if (target != null)
             {
                 _isTargetSet = true;
@@ -137,6 +169,26 @@ namespace NewCss
             {
                 TryFindLocalPlayer();
             }
+        }
+
+        #endregion
+
+        #region Zoom Handling
+
+        private void HandleZoomInput()
+        {
+            // Z tuşuna basılı tutulduğunda zoom yap
+            _isZooming = Input.GetKey(zoomKey);
+
+            // Hedef offset'i belirle
+            Vector3 targetOffset = _isZooming ? zoomedOffset : _defaultOffset;
+
+            // Smooth geçiş
+            _currentOffset = Vector3.Lerp(
+                _currentOffset,
+                targetOffset,
+                zoomTransitionSpeed * Time.deltaTime
+            );
         }
 
         #endregion
@@ -201,7 +253,8 @@ namespace NewCss
 
         private Vector3 CalculateTargetPosition()
         {
-            return target.position + offset;
+            // Zoom durumuna göre güncel offset kullan
+            return target.position + _currentOffset;
         }
 
         private Vector3 ClampToBounds(Vector3 position)
@@ -248,7 +301,7 @@ namespace NewCss
             {
                 if (player.IsOwner)
                 {
-                    SetTargetInternal(player.transform, "PlayerMovement. IsOwner");
+                    SetTargetInternal(player.transform, "PlayerMovement.  IsOwner");
                     return true;
                 }
             }
@@ -269,7 +322,7 @@ namespace NewCss
                 return false;
             }
 
-            SetTargetInternal(localClient.PlayerObject.transform, "NetworkManager.LocalClient");
+            SetTargetInternal(localClient.PlayerObject.transform, "NetworkManager. LocalClient");
             return true;
         }
 
@@ -365,6 +418,17 @@ namespace NewCss
         public void SetOffset(Vector3 newOffset)
         {
             offset = newOffset;
+            _defaultOffset = newOffset;
+            _currentOffset = newOffset;
+        }
+
+        /// <summary>
+        /// Zoom offset'ini değiştirir
+        /// </summary>
+        /// <param name="newZoomedOffset">Yeni zoom offset değeri</param>
+        public void SetZoomedOffset(Vector3 newZoomedOffset)
+        {
+            zoomedOffset = newZoomedOffset;
         }
 
         /// <summary>
@@ -374,6 +438,7 @@ namespace NewCss
         public void Zoom(float zoomAmount)
         {
             offset.y = Mathf.Max(1f, offset.y - zoomAmount);
+            _defaultOffset = offset;
         }
 
         /// <summary>
@@ -435,6 +500,8 @@ namespace NewCss
             Debug.Log($"Is Target Set: {_isTargetSet}");
             Debug.Log($"Has Valid Target: {HasValidTarget()}");
             Debug.Log($"Offset: {offset}");
+            Debug.Log($"Current Offset: {_currentOffset}");
+            Debug.Log($"Is Zooming: {_isZooming}");
             Debug.Log($"Smooth Speed: {smoothSpeed}");
             Debug.Log($"Fixed Rotation X: {fixedRotationX}");
             Debug.Log($"Use Bounds: {useBounds}");
@@ -471,9 +538,14 @@ namespace NewCss
             if (target == null) return;
 
             Gizmos.color = Color.cyan;
-            Vector3 targetPos = target.position + offset;
+            Vector3 targetPos = target.position + _currentOffset;
             Gizmos.DrawWireCube(targetPos, Vector3.one * 0.3f);
             Gizmos.DrawLine(target.position, targetPos);
+
+            // Zoomed offset preview
+            Gizmos.color = new Color(1f, 0.5f, 0f, 0.5f);
+            Vector3 zoomedPos = target.position + zoomedOffset;
+            Gizmos.DrawWireCube(zoomedPos, Vector3.one * 0.2f);
         }
 #endif
 

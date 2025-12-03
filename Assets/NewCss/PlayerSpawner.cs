@@ -22,7 +22,7 @@ public class PlayerSpawner : NetworkBehaviour
     {
         // REMOVED: DontDestroyOnLoad - PlayerSpawner artık scene-specific
         // Bu objeyi sadece Map1 scene'inde kullan
-        if (SceneManager.GetActiveScene().name != "Map1")
+        if (SceneManager.GetActiveScene().name != "The Main Office")
         {
             Debug.LogWarning("PlayerSpawner should only exist in Map1 scene");
         }
@@ -89,7 +89,7 @@ public class PlayerSpawner : NetworkBehaviour
         Debug.Log($"PlayerSpawner NetworkSpawn - Scene: {SceneManager.GetActiveScene().name}");
         
         // Sadece Map1'de çalış
-        if (SceneManager.GetActiveScene().name != "Map1")
+        if (SceneManager.GetActiveScene().name != "The Main Office")
         {
             Debug.LogWarning("PlayerSpawner spawned in wrong scene, will be destroyed");
             return;
@@ -108,7 +108,7 @@ public class PlayerSpawner : NetworkBehaviour
         Debug.Log($"PlayerSpawner NetworkSpawn - IsHost: {IsHost}, IsClient: {IsClient}");
         
         // Eğer zaten Map1'deysek ve host ise
-        if (IsHost && SceneManager.GetActiveScene().name == "Map1")
+        if (IsHost && SceneManager.GetActiveScene().name == "The Main Office")
         {
             StartCoroutine(DelayedSpawnAllPlayers());
         }
@@ -163,7 +163,7 @@ public class PlayerSpawner : NetworkBehaviour
         yield return new WaitForSeconds(1f);
         
         // Scene tamamen yüklenmiş mi kontrol et
-        while (SceneManager.GetActiveScene().name != "Map1")
+        while (SceneManager.GetActiveScene().name != "The Main Office")
         {
             yield return new WaitForSeconds(0.1f);
         }
@@ -189,8 +189,8 @@ public class PlayerSpawner : NetworkBehaviour
         Debug.Log($"Scene load completed: {sceneName}");
         Debug.Log($"Clients completed: {clientsCompleted.Count}");
         Debug.Log($"Clients timed out: {clientsTimedOut.Count}");
-
-        if (IsHost && sceneName == "Map1")
+        
+        if (IsHost && sceneName == "The Main Office")
         {
             // Timed out olan client'ları logla
             foreach (ulong timedOutClient in clientsTimedOut)

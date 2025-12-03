@@ -851,8 +851,7 @@ namespace NewCss
             // Spawn boxed product
             StartCoroutine(SpawnBoxedProductCoroutine(boxType));
 
-            // Update quest
-            NotifyQuestManager(boxType);
+           
         }
 
         /// <summary>
@@ -954,13 +953,7 @@ namespace NewCss
             TutorialManager.Instance?.OnTableInteraction(isPlacing);
         }
 
-        private void NotifyQuestManager(BoxInfo.BoxType boxType)
-        {
-            if (QuestManager.Instance != null && IsServer)
-            {
-                QuestManager.Instance.IncrementQuestProgress(QuestType.PackageBoxes, boxType);
-            }
-        }
+        
 
         #endregion
 

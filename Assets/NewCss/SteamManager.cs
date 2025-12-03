@@ -24,7 +24,7 @@ public class SteamManager : MonoBehaviour
 
     private const string LOG_PREFIX = "[SteamManager]";
     private const int MAX_PLAYERS = 4;
-    private const string GAME_SCENE_NAME = "Map1";
+    private const string GAME_SCENE_NAME = "The Main Office";
     private const string MAIN_MENU_SCENE_NAME = "MainMenu";
     private const string LOBBY_DATA_VERSION_KEY = "game_version";
 

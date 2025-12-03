@@ -1883,8 +1883,6 @@ public class PlayerInventory : NetworkBehaviour
         ClearHeldItemForClientRpc(requesterClientId);
         StartDropAnimationForClientRpc(requesterClientId);
 
-        // Quest güncelle
-        QuestManager.Instance?.IncrementQuestProgress(QuestType.PlaceOnShelf);
 
         Debug.Log($"[PlayerInventory] ✅ Item placed on shelf successfully by client {requesterClientId}!");
         ResetProcessingInteractionForClientRpc(requesterClientId);

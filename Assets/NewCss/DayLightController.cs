@@ -8,9 +8,9 @@ namespace NewCss
         public Light directionalLight;
         
         [Header("Intensity Settings")]
-        [Range(0f, 2f)]
-        public float startIntensity = 0.15f;  // Gün başı intensity
-        [Range(0f, 2f)]
+        [Range(0f, 5f)]
+        public float startIntensity = 3f;  // Gün başı intensity
+        [Range(0f, 5f)]
         public float endIntensity = 0f;       // Gün sonu intensity
         
         [Header("Sun Position Settings")]

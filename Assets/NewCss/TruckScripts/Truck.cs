@@ -439,10 +439,6 @@ namespace NewCss
             int totalReward = CalculateRewardWithPrestige();
             MoneySystem.Instance?.AddMoney(totalReward);
 
-            if (_deliveredCount.Value >= _networkRequiredCargo.Value)
-            {
-                CompleteDelivery();
-            }
         }
 
         private void ProcessWrongDelivery()
@@ -450,12 +446,7 @@ namespace NewCss
             MoneySystem.Instance?.SpendMoney(penaltyPerBox);
         }
 
-        private void CompleteDelivery()
-        {
-            QuestManager.Instance?.IncrementQuestProgress(QuestType.DeliverTrucks);
-            _isComplete.Value = true;
-        }
-
+       
         #endregion
 
         #region Reward Calculation

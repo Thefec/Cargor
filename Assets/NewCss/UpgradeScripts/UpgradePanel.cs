@@ -486,9 +486,7 @@ namespace NewCss
                     ApplyMoneyUpgrade(entry, level);
                     break;
 
-                case UPGRADE_QUEST_TIER:
-                    ApplyQuestTierUpgrade(level);
-                    break;
+                
             }
         }
 
@@ -516,18 +514,7 @@ namespace NewCss
             }
         }
 
-        private void ApplyQuestTierUpgrade(int level)
-        {
-            if (QuestManager.Instance == null) return;
-
-            int targetTier = level + 1;
-
-            if (IsServer && QuestManager.Instance.GetCurrentQuestTier() < targetTier)
-            {
-                QuestManager.Instance.UpgradeQuestTierServerRpc();
-                LogDebug($"Quest Tier upgraded to: Tier {targetTier}");
-            }
-        }
+        
 
         #endregion
 

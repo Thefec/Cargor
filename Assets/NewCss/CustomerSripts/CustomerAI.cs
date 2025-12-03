@@ -734,11 +734,7 @@ namespace NewCss
                 PrestigeManager.Instance.ModifyPrestige(0.05f);
             }
 
-            // Quest güncelleme
-            if (QuestManager.Instance != null && NetworkManager.Singleton.IsServer)
-            {
-                QuestManager.Instance.IncrementQuestProgress(QuestType.ServeCustomers);
-            }
+           
         }
 
         private void HandleFailedInteraction()
