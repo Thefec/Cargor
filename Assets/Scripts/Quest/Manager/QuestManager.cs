@@ -257,11 +257,18 @@ namespace NewCss.Quest
 
             LogDebug("New day - processing incomplete quests and assigning new ones");
 
-            // Apply penalties for incomplete accepted quests
-            ApplyPenaltiesForIncompleteQuests();
+            try
+            {
+                // Apply penalties for incomplete accepted quests
+                ApplyPenaltiesForIncompleteQuests();
 
-            // Assign new daily quests
-            AssignDailyQuests();
+                // Assign new daily quests
+                AssignDailyQuests();
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"{LOG_PREFIX} Error processing new day: {e.Message}");
+            }
         }
 
         #endregion

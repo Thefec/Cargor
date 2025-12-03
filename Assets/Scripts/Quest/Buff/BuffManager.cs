@@ -380,10 +380,7 @@ namespace NewCss.Quest
 
         private void ClearAllBuffsInternal()
         {
-            while (_activeBuffs.Count > 0)
-            {
-                _activeBuffs.RemoveAt(0);
-            }
+            _activeBuffs.Clear();
 
             Debug.Log($"{LOG_PREFIX} Cleared all buffs");
         }

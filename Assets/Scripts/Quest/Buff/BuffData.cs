@@ -67,7 +67,7 @@ namespace NewCss.Quest
         public bool Equals(BuffData other)
         {
             return buffType == other.buffType &&
-                   Mathf.Approximately(amount, other.amount) &&
+                   UnityEngine.Mathf.Approximately(amount, other.amount) &&
                    remainingDays == other.remainingDays &&
                    isActive == other.isActive;
         }
@@ -76,11 +76,5 @@ namespace NewCss.Quest
         public override int GetHashCode() => HashCode.Combine((int)buffType, amount, remainingDays, isActive);
         public static bool operator ==(BuffData left, BuffData right) => left.Equals(right);
         public static bool operator !=(BuffData left, BuffData right) => !left.Equals(right);
-
-        // Mathf compatibility for struct
-        private static class Mathf
-        {
-            public static bool Approximately(float a, float b) => System.Math.Abs(a - b) < 0.0001f;
-        }
     }
 }
