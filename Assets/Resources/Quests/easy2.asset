@@ -1,0 +1,61 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 39e1f32c4d9e44f49962fe088f2a7653, type: 3}
+  m_Name: easy2
+  m_EditorClassIdentifier: Assembly-CSharp::NewCss.Quest.QuestData
+  questId: 2
+  questTitle: "Yeti\u015Ftirici"
+  questDescription: "2 T\u0131r tamamla"
+  tier: 0
+  questType: 2
+  requirement:
+    targetCount: 2
+    requireSpecificBoxType: 0
+    requiredBoxType: 0
+  rewardPool:
+  - rewardType: 0
+    amount: 300
+    durationDays: 0
+  - rewardType: 0
+    amount: 200
+    durationDays: 0
+  - rewardType: 1
+    amount: 0.5
+    durationDays: 0
+  - rewardType: 1
+    amount: 1
+    durationDays: 0
+  - rewardType: 0
+    amount: 150
+    durationDays: 0
+  - rewardType: 0
+    amount: 100
+    durationDays: 0
+  penaltyPool:
+  - rewardType: 0
+    amount: 400
+    durationDays: 0
+  - rewardType: 0
+    amount: 600
+    durationDays: 0
+  - rewardType: 0
+    amount: 300
+    durationDays: 0
+  - rewardType: 1
+    amount: 0.5
+    durationDays: 0
+  - rewardType: 0
+    amount: 2
+    durationDays: 0
+  - rewardType: 0
+    amount: 0.75
+    durationDays: 0

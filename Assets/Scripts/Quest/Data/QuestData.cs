@@ -12,8 +12,8 @@ namespace NewCss.Quest
     {
         #region Constants
 
-        private const int MAX_REWARDS = 2;
-        private const int MAX_PENALTIES = 2;
+        private const int MAX_SELECTED_REWARDS = 2;
+        private const int MAX_SELECTED_PENALTIES = 2;
 
         #endregion
 
@@ -41,13 +41,56 @@ namespace NewCss.Quest
         [Tooltip("Görev gereksinimleri")]
         public QuestRequirement requirement;
 
-        [Header("=== REWARDS ===")]
-        [Tooltip("Görev ödülleri (maks. 2)")]
-        public List<QuestReward> rewards = new List<QuestReward>();
+        [Header("=== REWARDS POOL ===")]
+        [Tooltip("Olası ödüller havuzu (buradan rastgele maks.  2 seçilir)")]
+        public List<QuestReward> rewardPool = new List<QuestReward>();
 
-        [Header("=== PENALTIES ===")]
-        [Tooltip("Başarısızlık cezaları (maks. 2)")]
-        public List<QuestReward> penalties = new List<QuestReward>();
+        [Header("=== PENALTIES POOL ===")]
+        [Tooltip("Olası cezalar havuzu (buradan rastgele maks. 2 seçilir)")]
+        public List<QuestReward> penaltyPool = new List<QuestReward>();
+
+        #endregion
+
+        #region Private Fields
+
+        // Runtime'da seçilen ödüller ve cezalar
+        private List<QuestReward> _selectedRewards;
+        private List<QuestReward> _selectedPenalties;
+        private bool _isInitialized = false;
+
+        #endregion
+
+        #region Public Properties
+
+        /// <summary>
+        /// Seçilmiş ödüller (runtime'da rastgele seçilir)
+        /// </summary>
+        public List<QuestReward> SelectedRewards
+        {
+            get
+            {
+                if (!_isInitialized)
+                {
+                    InitializeRandomSelection();
+                }
+                return _selectedRewards;
+            }
+        }
+
+        /// <summary>
+        /// Seçilmiş cezalar (runtime'da rastgele seçilir)
+        /// </summary>
+        public List<QuestReward> SelectedPenalties
+        {
+            get
+            {
+                if (!_isInitialized)
+                {
+                    InitializeRandomSelection();
+                }
+                return _selectedPenalties;
+            }
+        }
 
         #endregion
 
@@ -56,7 +99,6 @@ namespace NewCss.Quest
         private void OnValidate()
         {
             ValidateQuestId();
-            ValidateRewardsAndPenalties();
         }
 
         private void ValidateQuestId()
@@ -67,21 +109,61 @@ namespace NewCss.Quest
             }
         }
 
-        private void ValidateRewardsAndPenalties()
+        #endregion
+
+        #region Random Selection
+
+        /// <summary>
+        /// Havuzlardan rastgele ödül ve ceza seçer
+        /// </summary>
+        public void InitializeRandomSelection()
         {
-            // Limit rewards to MAX_REWARDS
-            if (rewards.Count > MAX_REWARDS)
+            _selectedRewards = GetRandomFromPool(rewardPool, MAX_SELECTED_REWARDS);
+            _selectedPenalties = GetRandomFromPool(penaltyPool, MAX_SELECTED_PENALTIES);
+            _isInitialized = true;
+        }
+
+        /// <summary>
+        /// Seçimleri sıfırlar ve yeniden rastgele seçim yapar
+        /// </summary>
+        public void RerollSelection()
+        {
+            _isInitialized = false;
+            InitializeRandomSelection();
+        }
+
+        /// <summary>
+        /// Havuzdan rastgele belirtilen sayıda eleman seçer
+        /// </summary>
+        private List<QuestReward> GetRandomFromPool(List<QuestReward> pool, int maxCount)
+        {
+            var result = new List<QuestReward>();
+
+            if (pool == null || pool.Count == 0)
             {
-                rewards = rewards.GetRange(0, MAX_REWARDS);
-                Debug.LogWarning($"[QuestData] {questId}: Rewards limited to {MAX_REWARDS}");
+                return result;
             }
 
-            // Limit penalties to MAX_PENALTIES
-            if (penalties.Count > MAX_PENALTIES)
+            // Havuzun bir kopyasını oluştur (shuffle için)
+            var tempPool = new List<QuestReward>(pool);
+
+            // Fisher-Yates shuffle
+            for (int i = tempPool.Count - 1; i > 0; i--)
             {
-                penalties = penalties.GetRange(0, MAX_PENALTIES);
-                Debug.LogWarning($"[QuestData] {questId}: Penalties limited to {MAX_PENALTIES}");
+                int randomIndex = Random.Range(0, i + 1);
+                var temp = tempPool[i];
+                tempPool[i] = tempPool[randomIndex];
+                tempPool[randomIndex] = temp;
             }
+
+            // İlk maxCount kadar elemanı al
+            int selectCount = Mathf.Min(maxCount, tempPool.Count);
+            for (int i = 0; i < selectCount; i++)
+            {
+                result.Add(tempPool[i]);
+            }
+
+            return result;
         }
 
         #endregion
@@ -102,17 +184,17 @@ namespace NewCss.Quest
         }
 
         /// <summary>
-        /// Ödüllerin özet açıklamasını döndürür
+        /// Seçilmiş ödüllerin özet açıklamasını döndürür
         /// </summary>
         public string GetRewardsSummary()
         {
-            if (rewards == null || rewards.Count == 0)
+            if (SelectedRewards == null || SelectedRewards.Count == 0)
             {
                 return "Ödül Yok";
             }
 
             var descriptions = new List<string>();
-            foreach (var reward in rewards)
+            foreach (var reward in SelectedRewards)
             {
                 descriptions.Add(reward.GetDescription());
             }
@@ -121,17 +203,17 @@ namespace NewCss.Quest
         }
 
         /// <summary>
-        /// Cezaların özet açıklamasını döndürür
+        /// Seçilmiş cezaların özet açıklamasını döndürür
         /// </summary>
         public string GetPenaltiesSummary()
         {
-            if (penalties == null || penalties.Count == 0)
+            if (SelectedPenalties == null || SelectedPenalties.Count == 0)
             {
                 return "Ceza Yok";
             }
 
             var descriptions = new List<string>();
-            foreach (var penalty in penalties)
+            foreach (var penalty in SelectedPenalties)
             {
                 descriptions.Add(penalty.GetDescription());
             }
@@ -149,6 +231,17 @@ namespace NewCss.Quest
         {
             questId = $"quest_{System.Guid.NewGuid().ToString().Substring(0, 8)}";
             UnityEditor.EditorUtility.SetDirty(this);
+        }
+
+        [ContextMenu("Test Random Selection")]
+        private void TestRandomSelection()
+        {
+            RerollSelection();
+            Debug.Log($"=== QUEST: {questTitle} - RANDOM TEST ===\n" +
+                      $"Reward Pool: {rewardPool.Count} items\n" +
+                      $"Selected Rewards: {GetRewardsSummary()}\n" +
+                      $"Penalty Pool: {penaltyPool.Count} items\n" +
+                      $"Selected Penalties: {GetPenaltiesSummary()}");
         }
 
         [ContextMenu("Print Quest Info")]

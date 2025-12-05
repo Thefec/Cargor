@@ -139,7 +139,7 @@ namespace NewCss.Quest
             }
             else
             {
-                Debug.LogWarning($"{LOG_PREFIX} Duplicate instance detected, destroying...");
+                Debug.LogWarning($"{LOG_PREFIX} Duplicate instance detected, destroying.. .");
                 Destroy(gameObject);
             }
         }
@@ -336,10 +336,13 @@ namespace NewCss.Quest
 
             foreach (var quest in selectedQuests)
             {
+                // Her görev için rastgele ödül/ceza seçimi yap
+                quest.RerollSelection();
+
                 var progress = new QuestProgress(quest.questId, quest.requirement.targetCount);
                 _dailyQuests.Add(progress);
 
-                LogDebug($"Assigned quest: {quest.questTitle} (Tier: {quest.tier})");
+                LogDebug($"Assigned quest: {quest.questTitle} (Tier: {quest.tier}) - Rewards: {quest.GetRewardsSummary()}, Penalties: {quest.GetPenaltiesSummary()}");
             }
 
             NotifyQuestsAssignedClientRpc();
@@ -549,8 +552,8 @@ namespace NewCss.Quest
             // Get quest data
             if (!_questDatabase.TryGetValue(progress.questId.ToString(), out QuestData questData)) return;
 
-            // Apply rewards
-            ApplyRewards(questData.rewards);
+            // Apply rewards - SelectedRewards kullanılıyor
+            ApplyRewards(questData.SelectedRewards);
 
             // Update status
             progress.status = QuestStatus.Collected;
@@ -571,8 +574,8 @@ namespace NewCss.Quest
                 // Get quest data
                 if (!_questDatabase.TryGetValue(progress.questId.ToString(), out QuestData questData)) continue;
 
-                // Apply penalties
-                ApplyPenalties(questData.penalties);
+                // Apply penalties - SelectedPenalties kullanılıyor
+                ApplyPenalties(questData.SelectedPenalties);
 
                 // Update status
                 progress.status = QuestStatus.Failed;

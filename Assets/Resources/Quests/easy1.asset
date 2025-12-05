@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 39e1f32c4d9e44f49962fe088f2a7653, type: 3}
+  m_Name: easy1
+  m_EditorClassIdentifier: Assembly-CSharp::NewCss.Quest.QuestData
+  questId: 1
+  questTitle: "Se\xE7ici Paket Canavar\u0131"
+  questDescription: "5 k\u0131rm\u0131z\u0131 kutu paketle"
+  tier: 0
+  questType: 0
+  requirement:
+    targetCount: 5
+    requireSpecificBoxType: 1
+    requiredBoxType: 2
+  rewardPool:
+  - rewardType: 0
+    amount: 50
+    durationDays: 0
+  - rewardType: 0
+    amount: 100
+    durationDays: 0
+  - rewardType: 1
+    amount: 0.5
+    durationDays: 0
+  - rewardType: 1
+    amount: 0.4
+    durationDays: 0
+  - rewardType: 1
+    amount: 0.3
+    durationDays: 0
+  penaltyPool:
+  - rewardType: 0
+    amount: 150
+    durationDays: 0
+  - rewardType: 0
+    amount: 220
+    durationDays: 0
+  - rewardType: 1
+    amount: 0.5
+    durationDays: 0
+  - rewardType: 1
+    amount: 0.2
+    durationDays: 0
+  - rewardType: 1
+    amount: 0.25
+    durationDays: 0
+  - rewardType: 0
+    amount: 350
+    durationDays: 0
