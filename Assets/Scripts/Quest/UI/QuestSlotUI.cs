@@ -13,6 +13,8 @@ namespace NewCss.Quest
         #region Constants
 
         private const string LOG_PREFIX = "[QuestSlotUI]";
+        private const string COMPLETED_TEXT = "Tamamlandı";
+        private const string FAILED_TEXT = "Tamamlanamadı";
 
         #endregion
 
@@ -41,12 +43,12 @@ namespace NewCss.Quest
         [SerializeField, Tooltip("Topla butonu")]
         private Button collectButton;
 
-        [Header("=== PROGRESS BAR ===")]
-        [SerializeField, Tooltip("İlerleme çubuğu dolgu")]
+        [Header("=== PROGRESS BAR (Devre Dışı) ===")]
+        [SerializeField, Tooltip("İlerleme çubuğu dolgu - artık kullanılmıyor")]
         private Image progressFill;
 
-        [Header("=== TIER INDICATOR ===")]
-        [SerializeField, Tooltip("Zorluk tier göstergesi")]
+        [Header("=== TIER INDICATOR (Devre Dışı) ===")]
+        [SerializeField, Tooltip("Zorluk tier göstergesi - artık kullanılmıyor")]
         private Image tierIndicator;
 
         [SerializeField, Tooltip("Easy tier rengi")]
@@ -58,12 +60,22 @@ namespace NewCss.Quest
         [SerializeField, Tooltip("Hard tier rengi")]
         private Color hardColor = Color.red;
 
-        [Header("=== STATUS INDICATOR ===")]
-        [SerializeField, Tooltip("Durum göstergesi")]
+        [Header("=== STATUS INDICATOR (Devre Dışı) ===")]
+        [SerializeField, Tooltip("Durum göstergesi - artık kullanılmıyor")]
         private GameObject completedIndicator;
 
-        [SerializeField, Tooltip("Aktif durum göstergesi")]
+        [SerializeField, Tooltip("Aktif durum göstergesi - artık kullanılmıyor")]
         private GameObject activeIndicator;
+
+        [Header("=== PROGRESS TEXT COLORS ===")]
+        [SerializeField, Tooltip("Tamamlandı rengi")]
+        private Color completedColor = new Color(0.2f, 0.8f, 0.2f); // Yeşil
+
+        [SerializeField, Tooltip("Tamamlanamadı rengi")]
+        private Color failedColor = new Color(0.9f, 0.2f, 0.2f); // Kırmızı
+
+        [SerializeField, Tooltip("Normal ilerleme rengi")]
+        private Color normalProgressColor = Color.white;
 
         #endregion
 
@@ -89,6 +101,7 @@ namespace NewCss.Quest
         private void Awake()
         {
             SetupButtonListeners();
+            HideRemovedElements();
         }
 
         private void OnDestroy()
@@ -126,6 +139,35 @@ namespace NewCss.Quest
             }
         }
 
+        /// <summary>
+        /// Kaldırılan UI elementlerini gizler (Progress Bar, Tier Indicator, Status Indicators)
+        /// </summary>
+        private void HideRemovedElements()
+        {
+            // Progress Bar'ı gizle
+            if (progressFill != null)
+            {
+                progressFill.gameObject.SetActive(false);
+            }
+
+            // Tier Indicator'ı gizle
+            if (tierIndicator != null)
+            {
+                tierIndicator.gameObject.SetActive(false);
+            }
+
+            // Status Indicator'ları gizle
+            if (completedIndicator != null)
+            {
+                completedIndicator.SetActive(false);
+            }
+
+            if (activeIndicator != null)
+            {
+                activeIndicator.SetActive(false);
+            }
+        }
+
         #endregion
 
         #region Public Methods
@@ -156,7 +198,6 @@ namespace NewCss.Quest
             _currentProgress = progress;
             UpdateProgressUI();
             UpdateButtonStates();
-            UpdateStatusIndicators();
         }
 
         #endregion
@@ -166,10 +207,9 @@ namespace NewCss.Quest
         private void UpdateUI()
         {
             UpdateTextElements();
-            UpdateTierIndicator();
             UpdateProgressUI();
             UpdateButtonStates();
-            UpdateStatusIndicators();
+            HideRemovedElements(); // Her güncellemede kaldırılan elementleri gizle
         }
 
         private void UpdateTextElements()
@@ -195,29 +235,42 @@ namespace NewCss.Quest
             }
         }
 
-        private void UpdateTierIndicator()
-        {
-            if (tierIndicator == null) return;
-
-            tierIndicator.color = _currentQuestData.tier switch
-            {
-                QuestTier.Easy => easyColor,
-                QuestTier.Medium => mediumColor,
-                QuestTier.Hard => hardColor,
-                _ => easyColor
-            };
-        }
-
         private void UpdateProgressUI()
         {
-            if (progressText != null)
-            {
-                progressText.text = _currentProgress.GetProgressText();
-            }
+            if (progressText == null) return;
 
-            if (progressFill != null)
+            // Duruma göre progress text'i güncelle
+            switch (_currentProgress.status)
             {
-                progressFill.fillAmount = _currentProgress.ProgressPercent;
+                case QuestStatus.Available:
+                    // Available durumunda boş bırak
+                    progressText.text = "";
+                    progressText.color = normalProgressColor;
+                    break;
+
+                case QuestStatus.Active:
+                    // Aktif durumda ilerlemeyi göster (örn: 0/5)
+                    progressText.text = _currentProgress.GetProgressText();
+                    progressText.color = normalProgressColor;
+                    break;
+
+                case QuestStatus.Completed:
+                case QuestStatus.Collected:
+                    // Tamamlandı - yeşil renk
+                    progressText.text = COMPLETED_TEXT;
+                    progressText.color = completedColor;
+                    break;
+
+                case QuestStatus.Failed:
+                    // Tamamlanamadı - kırmızı renk
+                    progressText.text = FAILED_TEXT;
+                    progressText.color = failedColor;
+                    break;
+
+                default:
+                    progressText.text = "";
+                    progressText.color = normalProgressColor;
+                    break;
             }
         }
 
@@ -239,35 +292,22 @@ namespace NewCss.Quest
             }
         }
 
-        private void UpdateStatusIndicators()
-        {
-            if (completedIndicator != null)
-            {
-                completedIndicator.SetActive(_currentProgress.status == QuestStatus.Completed ||
-                                            _currentProgress.status == QuestStatus.Collected);
-            }
-
-            if (activeIndicator != null)
-            {
-                activeIndicator.SetActive(_currentProgress.status == QuestStatus.Active);
-            }
-        }
-
         private void SetEmptyState()
         {
             if (titleText != null) titleText.text = "Görev Yok";
             if (descriptionText != null) descriptionText.text = "";
             if (rewardsText != null) rewardsText.text = "";
             if (penaltiesText != null) penaltiesText.text = "";
-            if (progressText != null) progressText.text = "";
-
-            if (progressFill != null) progressFill.fillAmount = 0f;
+            if (progressText != null) 
+            {
+                progressText.text = "";
+                progressText.color = normalProgressColor;
+            }
 
             if (acceptButton != null) acceptButton.gameObject.SetActive(false);
             if (collectButton != null) collectButton.gameObject.SetActive(false);
 
-            if (completedIndicator != null) completedIndicator.SetActive(false);
-            if (activeIndicator != null) activeIndicator.SetActive(false);
+            HideRemovedElements();
         }
 
         #endregion

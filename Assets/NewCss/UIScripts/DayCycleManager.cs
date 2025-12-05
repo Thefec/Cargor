@@ -59,7 +59,7 @@ namespace NewCss
         public int startHour = 7;
 
         [Tooltip("Oyun içi bitiş saati")]
-        public int endHour = 15;
+        public int endHour = 18;
 
         [Header("=== UI REFERENCES ===")]
         [SerializeField, Tooltip("Gün ve saat bilgisini gösteren text")]
@@ -155,7 +155,7 @@ namespace NewCss
         public int WeeklyCost => _networkWeeklyCost.Value;
 
         /// <summary>
-        /// Oyun içi mevcut saat (7-15 arası)
+        /// Oyun içi mevcut saat (7-18 arası)
         /// </summary>
         public int CurrentHour => _currentHour;
 

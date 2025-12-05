@@ -67,7 +67,7 @@ namespace NewCss
         public int truckStartHour = 8;
 
         [SerializeField, Tooltip("Kamyon bitiş saati")]
-        public int truckEndHour = 14;
+        public int truckEndHour = 17;
 
         #endregion
 

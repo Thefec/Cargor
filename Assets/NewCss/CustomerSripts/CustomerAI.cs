@@ -933,6 +933,28 @@ namespace NewCss
             }
         }
 
+        /// <summary>
+        /// Gün sonu nedeniyle zorla çıkışa yönlendirir (CustomerManager tarafından çağrılır)
+        /// </summary>
+        public void ForceExitDueToEndOfDay()
+        {
+            if (_state == CustomerState.Exiting) return;
+
+            Debug.Log($"{LOG_PREFIX} Customer forced to exit due to end of day");
+
+            // Mevcut etkileşimleri iptal et
+            if (_isInInteraction)
+            {
+                CancelCurrentInteraction();
+            }
+
+            // Bekleme UI'ını gizle
+            HideWaitUI();
+
+            // Çıkışa yönlendir
+            TransitionToExit();
+        }
+
         private void ProcessExiting()
         {
             if (HasReachedDestination())
