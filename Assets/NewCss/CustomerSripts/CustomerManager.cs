@@ -9,8 +9,8 @@ using UnityEngine.AI;
 namespace NewCss
 {
     /// <summary>
-    /// Müþteri yönetim sistemi - müþteri spawn'lama, kuyruk yönetimi ve günlük müþteri takibini saðlar. 
-    /// Server-authoritative tasarým ile network senkronizasyonu içerir.
+    /// Mï¿½ï¿½teri yï¿½netim sistemi - mï¿½ï¿½teri spawn'lama, kuyruk yï¿½netimi ve gï¿½nlï¿½k mï¿½ï¿½teri takibini saï¿½lar. 
+    /// Server-authoritative tasarï¿½m ile network senkronizasyonu iï¿½erir.
     /// </summary>
     public class CustomerManager : NetworkBehaviour
     {
@@ -19,17 +19,18 @@ namespace NewCss
         private const string LOG_PREFIX = "[CustomerManager]";
         private const int DEFAULT_QUEUE_SIZE = 3;
         private const float DEFAULT_SPAWN_START_HOUR = 8f;
-        private const float DEFAULT_SPAWN_END_HOUR = 14f;
+        private const float DEFAULT_SPAWN_END_HOUR = 17f;
+        private const float CUSTOMER_EXIT_HOUR = 17.5f; // 17:30 - MÃ¼ÅŸterilerin Ã§Ä±kÄ±ÅŸa yÃ¶nlendirileceÄŸi saat
 
         #endregion
 
         #region Serialized Fields - Spawn Settings
 
         [Header("=== SPAWN SETTINGS ===")]
-        [SerializeField, Tooltip("Müþteri prefab'ý")]
+        [SerializeField, Tooltip("Mï¿½ï¿½teri prefab'ï¿½")]
         public GameObject customerPrefab;
 
-        [SerializeField, Tooltip("Spawn noktasý")]
+        [SerializeField, Tooltip("Spawn noktasï¿½")]
         public Transform spawnPoint;
 
         [SerializeField, Tooltip("Maksimum kuyruk boyutu")]
@@ -40,13 +41,13 @@ namespace NewCss
         #region Serialized Fields - Daily Customer Settings
 
         [Header("=== DAILY CUSTOMER SETTINGS ===")]
-        [SerializeField, Tooltip("Ýlk gün müþteri sayýsý")]
+        [SerializeField, Tooltip("ï¿½lk gï¿½n mï¿½ï¿½teri sayï¿½sï¿½")]
         public int baseCustomersPerDay = 10;
 
-        [SerializeField, Tooltip("Günlük müþteri artýþý")]
+        [SerializeField, Tooltip("Gï¿½nlï¿½k mï¿½ï¿½teri artï¿½ï¿½ï¿½")]
         public int customerIncreasePerDay = 2;
 
-        [SerializeField, Range(0f, 1f), Tooltip("Spawn zamaný rastgeleliði")]
+        [SerializeField, Range(0f, 1f), Tooltip("Spawn zamanï¿½ rastgeleliï¿½i")]
         public float spawnTimeRandomness = 0.2f;
 
         #endregion
@@ -54,16 +55,16 @@ namespace NewCss
         #region Serialized Fields - Queue & Tables
 
         [Header("=== QUEUE & TABLES ===")]
-        [SerializeField, Tooltip("Kuyruk pozisyonlarý")]
+        [SerializeField, Tooltip("Kuyruk pozisyonlarï¿½")]
         public Transform[] queuePositions;
 
-        [SerializeField, Tooltip("Çýkýþ noktasý")]
+        [SerializeField, Tooltip("ï¿½ï¿½kï¿½ï¿½ noktasï¿½")]
         public Transform exitPoint;
 
-        [SerializeField, Tooltip("Býrakma masasý")]
+        [SerializeField, Tooltip("Bï¿½rakma masasï¿½")]
         public DisplayTable dropOffTable;
 
-        [SerializeField, Tooltip("Servis masalarý")]
+        [SerializeField, Tooltip("Servis masalarï¿½")]
         public DisplayTable[] serviceTables;
 
         #endregion
@@ -71,10 +72,10 @@ namespace NewCss
         #region Serialized Fields - Time Settings
 
         [Header("=== TIME SETTINGS ===")]
-        [SerializeField, Tooltip("Spawn baþlangýç saati (24 saat formatý)")]
+        [SerializeField, Tooltip("Spawn baï¿½langï¿½ï¿½ saati (24 saat formatï¿½)")]
         public float spawnStartHour = DEFAULT_SPAWN_START_HOUR;
 
-        [SerializeField, Tooltip("Spawn bitiþ saati (24 saat formatý)")]
+        [SerializeField, Tooltip("Spawn bitiï¿½ saati (24 saat formatï¿½)")]
         public float spawnEndHour = DEFAULT_SPAWN_END_HOUR;
 
         #endregion
@@ -82,7 +83,7 @@ namespace NewCss
         #region Serialized Fields - UI Settings
 
         [Header("=== UI SETTINGS ===")]
-        [SerializeField, Tooltip("Kalan müþteri sayýsý text'i")]
+        [SerializeField, Tooltip("Kalan mï¿½ï¿½teri sayï¿½sï¿½ text'i")]
         public TextMeshProUGUI remainingCustomersText;
 
         #endregion
@@ -90,7 +91,7 @@ namespace NewCss
         #region Serialized Fields - Product Assignment
 
         [Header("=== PRODUCT ASSIGNMENT ===")]
-        [SerializeField, Tooltip("Son kullanýlan ürün geçmiþi boyutu")]
+        [SerializeField, Tooltip("Son kullanï¿½lan ï¿½rï¿½n geï¿½miï¿½i boyutu")]
         public int recentProductHistorySize = 3;
 
         #endregion
@@ -98,7 +99,7 @@ namespace NewCss
         #region Serialized Fields - Debug
 
         [Header("=== DEBUG ===")]
-        [SerializeField, Tooltip("Debug loglarýný göster")]
+        [SerializeField, Tooltip("Debug loglarï¿½nï¿½ gï¿½ster")]
         private bool showDebugLogs = true;
 
         #endregion
@@ -117,6 +118,7 @@ namespace NewCss
         private readonly List<float> _scheduledSpawnTimes = new();
         private int _nextScheduledIndex;
         private bool _dayInitialized;
+        private bool _customersExitedToday; // GÃ¼n sonu mÃ¼ÅŸteri Ã§Ä±kÄ±ÅŸÄ± yapÄ±ldÄ± mÄ±
 
         #endregion
 
@@ -134,22 +136,22 @@ namespace NewCss
         public int QueueSize => _customerQueue.Count;
 
         /// <summary>
-        /// Bugün toplam müþteri sayýsý
+        /// Bugï¿½n toplam mï¿½ï¿½teri sayï¿½sï¿½
         /// </summary>
         public int TodaysTotalCustomers => _todaysTotalCustomers;
 
         /// <summary>
-        /// Bugün spawn olan müþteri sayýsý
+        /// Bugï¿½n spawn olan mï¿½ï¿½teri sayï¿½sï¿½
         /// </summary>
         public int CustomersSpawnedToday => _customersSpawnedToday;
 
         /// <summary>
-        /// Kalan müþteri sayýsý
+        /// Kalan mï¿½ï¿½teri sayï¿½sï¿½
         /// </summary>
         public int CustomersRemainingToday => _customersRemainingToday;
 
         /// <summary>
-        /// Müþteri spawn edilebilir mi?
+        /// Mï¿½ï¿½teri spawn edilebilir mi?
         /// </summary>
         public bool CanSpawnCustomers => IsWithinSpawningHours();
 
@@ -186,6 +188,7 @@ namespace NewCss
 
             EnsureDayInitialized();
             TrySpawnScheduledCustomer();
+            CheckEndOfDayCustomerExit();
         }
 
         #endregion
@@ -241,6 +244,7 @@ namespace NewCss
             _customersRemainingToday = _todaysTotalCustomers;
             _nextScheduledIndex = 0;
             _dayInitialized = true;
+            _customersExitedToday = false; // Yeni gÃ¼n iÃ§in Ã§Ä±kÄ±ÅŸ flag'ini sÄ±fÄ±rla
 
             CalculateSpawnSchedule();
             UpdateRemainingCustomersUI();
@@ -347,6 +351,44 @@ namespace NewCss
         private float GetCurrentTime()
         {
             return DayCycleManager.Instance?.CurrentTime ?? 0f;
+        }
+
+        /// <summary>
+        /// GÃ¼n sonu yaklaÅŸtÄ±ÄŸÄ±nda (17:30) tÃ¼m mÃ¼ÅŸterileri Ã§Ä±kÄ±ÅŸa yÃ¶nlendirir
+        /// </summary>
+        private void CheckEndOfDayCustomerExit()
+        {
+            if (_customersExitedToday) return;
+            if (DayCycleManager.Instance == null) return;
+
+            float currentTime = GetCurrentTime();
+
+            // 17:30 veya sonrasÄ± olduÄŸunda tÃ¼m mÃ¼ÅŸterileri Ã§Ä±kÄ±ÅŸa yÃ¶nlendir
+            if (currentTime >= CUSTOMER_EXIT_HOUR)
+            {
+                ForceAllCustomersToExit();
+                _customersExitedToday = true;
+                LogDebug($"End of day customer exit triggered at {currentTime:F2}");
+            }
+        }
+
+        /// <summary>
+        /// Kuyruktaki tÃ¼m mÃ¼ÅŸterileri Ã§Ä±kÄ±ÅŸa yÃ¶nlendirir
+        /// </summary>
+        private void ForceAllCustomersToExit()
+        {
+            if (_customerQueue.Count == 0) return;
+
+            LogDebug($"Forcing {_customerQueue.Count} customers to exit");
+
+            // TÃ¼m mÃ¼ÅŸterilerin bekleme sÃ¼resini sÄ±fÄ±rla ve Ã§Ä±kÄ±ÅŸa yÃ¶nlendir
+            foreach (var customer in _customerQueue.ToList())
+            {
+                if (customer != null)
+                {
+                    customer.ForceExitDueToEndOfDay();
+                }
+            }
         }
 
         #endregion
@@ -519,7 +561,7 @@ namespace NewCss
         #region Queue Management
 
         /// <summary>
-        /// Müþteri iþlemi tamamlandýðýnda çaðrýlýr
+        /// Mï¿½ï¿½teri iï¿½lemi tamamlandï¿½ï¿½ï¿½nda ï¿½aï¿½rï¿½lï¿½r
         /// </summary>
         public void NotifyCustomerDone(CustomerAI customer)
         {
@@ -562,7 +604,7 @@ namespace NewCss
         }
 
         /// <summary>
-        /// Müþteri kuyruðun baþýnda mý kontrol eder
+        /// Mï¿½ï¿½teri kuyruï¿½un baï¿½ï¿½nda mï¿½ kontrol eder
         /// </summary>
         public bool IsFirstInQueue(CustomerAI ai)
         {
@@ -570,7 +612,7 @@ namespace NewCss
         }
 
         /// <summary>
-        /// Müþteriye masa atar
+        /// Mï¿½ï¿½teriye masa atar
         /// </summary>
         public void AssignDropOffTable(CustomerAI customer, DisplayTable table)
         {
@@ -606,7 +648,7 @@ namespace NewCss
         #region Product Assignment
 
         /// <summary>
-        /// Son kullanýlan ürünleri hariç tutarak rastgele ürün index'i döndürür
+        /// Son kullanï¿½lan ï¿½rï¿½nleri hariï¿½ tutarak rastgele ï¿½rï¿½n index'i dï¿½ndï¿½rï¿½r
         /// </summary>
         public int GetRandomProductIndexExcludingRecent(int productCount)
         {
@@ -658,7 +700,7 @@ namespace NewCss
         }
 
         /// <summary>
-        /// Ürün geçmiþini temizler
+        /// ï¿½rï¿½n geï¿½miï¿½ini temizler
         /// </summary>
         public void ClearProductHistory()
         {
@@ -670,7 +712,7 @@ namespace NewCss
         #region Public API
 
         /// <summary>
-        /// Müþteri spawn isteði (ServerRpc)
+        /// Mï¿½ï¿½teri spawn isteï¿½i (ServerRpc)
         /// </summary>
         [ServerRpc(RequireOwnership = false)]
         public void RequestCustomerSpawnServerRpc()
@@ -685,17 +727,17 @@ namespace NewCss
         }
 
         /// <summary>
-        /// Kuyruk boyutunu döndürür
+        /// Kuyruk boyutunu dï¿½ndï¿½rï¿½r
         /// </summary>
         public int GetQueueSize() => QueueSize;
 
         /// <summary>
-        /// Kalan müþteri sayýsýný döndürür
+        /// Kalan mï¿½ï¿½teri sayï¿½sï¿½nï¿½ dï¿½ndï¿½rï¿½r
         /// </summary>
         public int GetRemainingCustomers() => _customersRemainingToday;
 
         /// <summary>
-        /// Spawn durumu bilgisini döndürür
+        /// Spawn durumu bilgisini dï¿½ndï¿½rï¿½r
         /// </summary>
         public string GetSpawningStatusInfo()
         {

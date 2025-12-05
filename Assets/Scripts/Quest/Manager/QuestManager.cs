@@ -535,10 +535,37 @@ namespace NewCss.Quest
 
             if (progress.status != QuestStatus.Available) return;
 
+            // Günde sadece 1 görev kabul edilebilir kontrolü
+            if (HasAcceptedQuestToday())
+            {
+                LogDebug("Already accepted a quest today - limit is 1 per day");
+                return;
+            }
+
             progress.status = QuestStatus.Active;
             _dailyQuests[slotIndex] = progress;
 
             LogDebug($"Quest accepted: {progress.questId}");
+        }
+
+        /// <summary>
+        /// Bugün zaten bir görev kabul edilmiş mi kontrol eder
+        /// </summary>
+        private bool HasAcceptedQuestToday()
+        {
+            for (int i = 0; i < _dailyQuests.Count; i++)
+            {
+                var quest = _dailyQuests[i];
+                // Active, Completed, Collected veya Failed durumunda olan görevler kabul edilmiş sayılır
+                if (quest.status == QuestStatus.Active || 
+                    quest.status == QuestStatus.Completed || 
+                    quest.status == QuestStatus.Collected ||
+                    quest.status == QuestStatus.Failed)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private void CollectQuestRewardInternal(int slotIndex)

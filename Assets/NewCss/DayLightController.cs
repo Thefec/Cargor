@@ -144,10 +144,10 @@ namespace NewCss
         
         private float CalculateSunRotation(float dayProgress)
         {
-            // dayProgress: 0 = 07:00, 0.625 = 12:00, 1 = 15:00
-            // Toplam 8 saat (07:00-15:00), öğlen 5 saat sonra (12:00)
+            // dayProgress: 0 = 07:00, 0.455 = 12:00, 1 = 18:00
+            // Toplam 11 saat (07:00-18:00), öğlen 5 saat sonra (12:00)
             
-            float noonProgress = 5f / 8f; // 0.625 - öğlen zamanı (5 saat / 8 saat)
+            float noonProgress = 5f / 11f; // ~0.455 - öğlen zamanı (5 saat / 11 saat)
             
             // 07:00-12:00 arası (dayProgress 0 - 0.625)
             if (dayProgress <= noonProgress)
@@ -155,7 +155,7 @@ namespace NewCss
                 float morningProgress = dayProgress / noonProgress; // 0-1 arası normalize et
                 return Mathf.Lerp(sunriseRotationX, noonRotationX, morningProgress);
             }
-            // 12:00-15:00 arası (dayProgress 0.625 - 1)
+            // 12:00-18:00 arası (dayProgress ~0.455 - 1)
             else
             {
                 float afternoonProgress = (dayProgress - noonProgress) / (1f - noonProgress); // 0-1 arası normalize et
@@ -222,8 +222,8 @@ namespace NewCss
                 float currentTime = DayCycleManager.Instance.CurrentTime;
                 float rotationX = CalculateSunRotation(progress);
                 
-                // Gerçek saati hesapla (7 + progress * 8)
-                float realTime = 7f + (progress * 8f);
+                // Gerçek saati hesapla (7 + progress * 11)
+                float realTime = 7f + (progress * 11f);
                 
                 Debug.Log($"Day Progress: {progress:F3} ({progress * 100:F1}%)");
                 Debug.Log($"Real Game Time: {realTime:F1}:00");

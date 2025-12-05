@@ -9,7 +9,7 @@ namespace NewCss
         public float openTime = 7.5f;
 
         [Tooltip("Kapının kapanacağı saat (örnek: 14.5 = 14:30, 16.75 = 16:45)")]
-        public float closeTime = 14.5f;
+        public float closeTime = 17.5f;
 
         [Header("Referanslar")]
         public Animator doorAnimator;
