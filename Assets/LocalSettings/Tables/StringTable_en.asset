@@ -472,6 +472,118 @@ MonoBehaviour:
     m_Localized: '({0}/{1} in Break Room)'
     m_Metadata:
       m_Items: []
+  - m_Id: 30570000000000067
+    m_Localized: Expected Customers
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000068
+    m_Localized: Red
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000069
+    m_Localized: Blue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000070
+    m_Localized: Yellow
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000071
+    m_Localized: Green
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000072
+    m_Localized: No Quest
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000073
+    m_Localized: Reward
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000074
+    m_Localized: Penalty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000075
+    m_Localized: Completed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000076
+    m_Localized: Failed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000077
+    m_Localized: Complete minigame {0} times
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000078
+    m_Localized: Place {0} boxes on shelf
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000079
+    m_Localized: Place {0} {1} boxes on shelf
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000080
+    m_Localized: Complete {0} trucks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000081
+    m_Localized: Serve {0} customers
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000082
+    m_Localized: Ignore {0} customers
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000083
+    m_Localized: Pack {0} toys
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000084
+    m_Localized: Capacity 0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000085
+    m_Localized: Capacity +1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000086
+    m_Localized: Capacity +2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000087
+    m_Localized: Capacity +3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000088
+    m_Localized: Table 0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000089
+    m_Localized: Table +1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000090
+    m_Localized: Table +2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000091
+    m_Localized: Queue Capacity 0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000092
+    m_Localized: Queue Capacity +1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000093
+    m_Localized: Queue Capacity +2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000094
+    m_Localized: Queue Capacity +3
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

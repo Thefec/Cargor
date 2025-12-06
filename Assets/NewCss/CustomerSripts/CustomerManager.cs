@@ -630,7 +630,8 @@ namespace NewCss
         {
             if (remainingCustomersText != null)
             {
-                remainingCustomersText.text = $"{_customersRemainingToday}";
+                string label = LocalizationHelper.GetLocalizedString("ExpectedCustomers");
+                remainingCustomersText.text = $"{label}\n{_customersRemainingToday}";
             }
         }
 
@@ -639,7 +640,8 @@ namespace NewCss
         {
             if (remainingCustomersText != null)
             {
-                remainingCustomersText.text = $"{remainingCount}";
+                string label = LocalizationHelper.GetLocalizedString("ExpectedCustomers");
+                remainingCustomersText.text = $"{label}\n{remainingCount}";
             }
         }
 

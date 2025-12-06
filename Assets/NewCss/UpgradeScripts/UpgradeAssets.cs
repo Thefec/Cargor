@@ -25,21 +25,16 @@ namespace NewCss
 
         public static string GetName(ItemType t)
         {
-            switch (t)
+            string key = $"Upgrade_{t}";
+            string localized = LocalizationHelper.GetLocalizedString(key);
+            
+            // If localization key doesn't exist, fall back to enum name
+            if (localized == key)
             {
-                case ItemType.MoreCapacityNone: return "Capacity 0";
-                case ItemType.MoreCapacity_1:   return "Capacity +1";
-                case ItemType.MoreCapacity_2:   return "Capacity +2";
-                case ItemType.MoreCapacity_3:   return "Capacity +3";
-                case ItemType.TableSlotsIncrease_None: return "Table 0";
-                case ItemType.TableSlotsIncrease_1:   return "Table +1";
-                case ItemType.TableSlotsIncrease_2:   return "Table +2";
-                case ItemType.QueueCapacity_None: return "Queue Capacity 0";
-                case ItemType.QueueCapacity_1: return "Queue Capacity +1";
-                case ItemType.QueueCapacity_2: return "Queue Capacity +2";
-                case ItemType.QueueCapacity_3: return "Queue Capacity +3";
-                default:                        return t.ToString();
+                return t.ToString();
             }
+            
+            return localized;
         }
     }
 }

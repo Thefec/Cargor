@@ -23,18 +23,35 @@ namespace NewCss.Quest
         /// </summary>
         public string GetDescription(QuestType questType)
         {
-            string boxTypeStr = requireSpecificBoxType ? $"{requiredBoxType} " : "";
-
-            return questType switch
+            if (requireSpecificBoxType)
             {
-                QuestType.CompleteMinigame => $"{targetCount} kez mini oyunu tamamla",
-                QuestType.PlaceBoxOnShelf => $"Rafa {targetCount} adet {boxTypeStr}kutu koy",
-                QuestType.CompleteTruck => $"{targetCount} adet aracı tamamla",
-                QuestType.ServeCustomer => $"{targetCount} müşteri ile ilgilen",
-                QuestType.IgnoreCustomer => $"{targetCount} müşteriyi görmezden gel",
-                QuestType.PackToy => $"{targetCount} oyuncak paketle",
-                _ => $"{targetCount}x"
-            };
+                string boxColorKey = $"BoxType_{requiredBoxType}";
+                string boxColor = LocalizationHelper.GetLocalizedString(boxColorKey);
+                
+                return questType switch
+                {
+                    QuestType.CompleteMinigame => LocalizationHelper.GetLocalizedStringFormat("Quest_CompleteMinigame", targetCount),
+                    QuestType.PlaceBoxOnShelf => LocalizationHelper.GetLocalizedStringFormat("Quest_PlaceBoxOnShelfSpecific", targetCount, boxColor + " "),
+                    QuestType.CompleteTruck => LocalizationHelper.GetLocalizedStringFormat("Quest_CompleteTruck", targetCount),
+                    QuestType.ServeCustomer => LocalizationHelper.GetLocalizedStringFormat("Quest_ServeCustomer", targetCount),
+                    QuestType.IgnoreCustomer => LocalizationHelper.GetLocalizedStringFormat("Quest_IgnoreCustomer", targetCount),
+                    QuestType.PackToy => LocalizationHelper.GetLocalizedStringFormat("Quest_PackToy", targetCount),
+                    _ => $"{targetCount}x"
+                };
+            }
+            else
+            {
+                return questType switch
+                {
+                    QuestType.CompleteMinigame => LocalizationHelper.GetLocalizedStringFormat("Quest_CompleteMinigame", targetCount),
+                    QuestType.PlaceBoxOnShelf => LocalizationHelper.GetLocalizedStringFormat("Quest_PlaceBoxOnShelf", targetCount),
+                    QuestType.CompleteTruck => LocalizationHelper.GetLocalizedStringFormat("Quest_CompleteTruck", targetCount),
+                    QuestType.ServeCustomer => LocalizationHelper.GetLocalizedStringFormat("Quest_ServeCustomer", targetCount),
+                    QuestType.IgnoreCustomer => LocalizationHelper.GetLocalizedStringFormat("Quest_IgnoreCustomer", targetCount),
+                    QuestType.PackToy => LocalizationHelper.GetLocalizedStringFormat("Quest_PackToy", targetCount),
+                    _ => $"{targetCount}x"
+                };
+            }
         }
     }
 }
