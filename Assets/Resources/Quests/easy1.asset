@@ -39,20 +39,20 @@ MonoBehaviour:
     durationDays: 0
   penaltyPool:
   - rewardType: 0
-    amount: 150
+    amount: -150
     durationDays: 0
   - rewardType: 0
-    amount: 220
+    amount: -220
     durationDays: 0
   - rewardType: 1
-    amount: 0.5
+    amount: -0.5
     durationDays: 0
   - rewardType: 1
-    amount: 0.2
+    amount: -0.2
     durationDays: 0
   - rewardType: 1
-    amount: 0.25
+    amount: -0.25
     durationDays: 0
   - rewardType: 0
-    amount: 350
+    amount: -350
     durationDays: 0

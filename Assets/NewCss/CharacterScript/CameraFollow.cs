@@ -4,7 +4,7 @@ using UnityEngine;
 namespace NewCss
 {
     /// <summary>
-    /// Kameranın oyuncuyu takip etmesini sağlayan sistem.  
+    /// Kameranın oyuncuyu takip etmesini sağlayan sistem.   
     /// Sabit açılı top-down görünüm ile smooth takip sunar.
     /// Network oyunlarında otomatik olarak local player'ı bulur.
     /// </summary>
@@ -44,7 +44,7 @@ namespace NewCss
         private float fixedRotationY = 0f;
 
         [Header("=== ZOOM SETTINGS ===")]
-        [SerializeField, Tooltip("Zoom tuşu")]
+        [SerializeField, Tooltip("Zoom tuşu (yakınlaşma)")]
         private KeyCode zoomKey = KeyCode.Z;
 
         [SerializeField, Tooltip("Zoom yapıldığında hedef offset")]
@@ -53,6 +53,21 @@ namespace NewCss
         [SerializeField, Tooltip("Zoom geçiş hızı")]
         [Range(0.1f, 20f)]
         private float zoomTransitionSpeed = 8f;
+
+        [Header("=== MAP VIEW SETTINGS ===")]
+        [SerializeField, Tooltip("Harita görünümü tuşu (uzaklaşma)")]
+        private KeyCode mapViewKey = KeyCode.X;
+
+        [SerializeField, Tooltip("Harita görünümünde kamera pozisyonu")]
+        private Vector3 mapViewPosition = new Vector3(0f, 50f, 0f);
+
+        [SerializeField, Tooltip("Harita görünümünde kamera rotasyonu (top-down için 90)")]
+        [Range(0f, 90f)]
+        private float mapViewRotationX = 90f;
+
+        [SerializeField, Tooltip("Harita görünümü geçiş hızı")]
+        [Range(0.1f, 20f)]
+        private float mapViewTransitionSpeed = 5f;
 
         [Header("=== BOUNDS (OPTIONAL) ===")]
         [SerializeField, Tooltip("Kamera sınırlarını kullan")]
@@ -74,6 +89,8 @@ namespace NewCss
         private Vector3 _defaultOffset;
         private Vector3 _currentOffset;
         private bool _isZooming;
+        private bool _isMapViewActive;
+        private float _currentRotationX;
 
         #endregion
 
@@ -129,6 +146,11 @@ namespace NewCss
         /// </summary>
         public bool IsZooming => _isZooming;
 
+        /// <summary>
+        /// Harita görünümü aktif mi?
+        /// </summary>
+        public bool IsMapViewActive => _isMapViewActive;
+
         #endregion
 
         #region Unity Lifecycle
@@ -140,7 +162,7 @@ namespace NewCss
 
         private void Update()
         {
-            HandleZoomInput();
+            HandleInput();
         }
 
         private void LateUpdate()
@@ -157,6 +179,7 @@ namespace NewCss
             // Varsayılan offset'i kaydet
             _defaultOffset = offset;
             _currentOffset = offset;
+            _currentRotationX = fixedRotationX;
 
             if (target != null)
             {
@@ -173,10 +196,22 @@ namespace NewCss
 
         #endregion
 
-        #region Zoom Handling
+        #region Input Handling
+
+        private void HandleInput()
+        {
+            HandleZoomInput();
+            HandleMapViewInput();
+        }
 
         private void HandleZoomInput()
         {
+            // Harita görünümü aktifken zoom çalışmasın
+            if (_isMapViewActive)
+            {
+                return;
+            }
+
             // Z tuşuna basılı tutulduğunda zoom yap
             _isZooming = Input.GetKey(zoomKey);
 
@@ -191,12 +226,25 @@ namespace NewCss
             );
         }
 
+        private void HandleMapViewInput()
+        {
+            // X tuşuna basılı tutulduğunda harita görünümüne geç
+            _isMapViewActive = Input.GetKey(mapViewKey);
+        }
+
         #endregion
 
         #region Camera Update
 
         private void UpdateCamera()
         {
+            // Harita görünümü aktifse
+            if (_isMapViewActive)
+            {
+                UpdateMapViewCamera();
+                return;
+            }
+
             // Hedef yoksa ara
             if (!HasValidTarget())
             {
@@ -204,11 +252,28 @@ namespace NewCss
                 return;
             }
 
-            // Kamera pozisyonunu güncelle
+            // Normal takip modu
             UpdatePosition();
-
-            // Kamera rotasyonunu güncelle
             UpdateRotation();
+        }
+
+        private void UpdateMapViewCamera()
+        {
+            // Harita görünümü pozisyonuna smooth geçiş (takip yok)
+            transform.position = Vector3.Lerp(
+                transform.position,
+                mapViewPosition,
+                mapViewTransitionSpeed * Time.deltaTime
+            );
+
+            // Harita görünümü rotasyonuna smooth geçiş
+            _currentRotationX = Mathf.Lerp(
+                _currentRotationX,
+                mapViewRotationX,
+                mapViewTransitionSpeed * Time.deltaTime
+            );
+
+            transform.rotation = Quaternion.Euler(_currentRotationX, fixedRotationY, 0f);
         }
 
         private bool HasValidTarget()
@@ -268,7 +333,14 @@ namespace NewCss
 
         private void UpdateRotation()
         {
-            transform.rotation = Quaternion.Euler(fixedRotationX, fixedRotationY, 0f);
+            // Normal moda dönüşte rotasyonu smooth olarak geri getir
+            _currentRotationX = Mathf.Lerp(
+                _currentRotationX,
+                fixedRotationX,
+                zoomTransitionSpeed * Time.deltaTime
+            );
+
+            transform.rotation = Quaternion.Euler(_currentRotationX, fixedRotationY, 0f);
         }
 
         #endregion
@@ -301,7 +373,7 @@ namespace NewCss
             {
                 if (player.IsOwner)
                 {
-                    SetTargetInternal(player.transform, "PlayerMovement.  IsOwner");
+                    SetTargetInternal(player.transform, "PlayerMovement. IsOwner");
                     return true;
                 }
             }
@@ -322,7 +394,7 @@ namespace NewCss
                 return false;
             }
 
-            SetTargetInternal(localClient.PlayerObject.transform, "NetworkManager. LocalClient");
+            SetTargetInternal(localClient.PlayerObject.transform, "NetworkManager.LocalClient");
             return true;
         }
 
@@ -406,6 +478,7 @@ namespace NewCss
             }
 
             transform.position = targetPosition;
+            _currentRotationX = fixedRotationX;
             UpdateRotation();
 
             LogDebug("Camera snapped to target");
@@ -429,6 +502,15 @@ namespace NewCss
         public void SetZoomedOffset(Vector3 newZoomedOffset)
         {
             zoomedOffset = newZoomedOffset;
+        }
+
+        /// <summary>
+        /// Harita görünümü pozisyonunu değiştirir
+        /// </summary>
+        /// <param name="newMapViewPosition">Yeni harita görünümü pozisyonu</param>
+        public void SetMapViewPosition(Vector3 newMapViewPosition)
+        {
+            mapViewPosition = newMapViewPosition;
         }
 
         /// <summary>
@@ -502,8 +584,10 @@ namespace NewCss
             Debug.Log($"Offset: {offset}");
             Debug.Log($"Current Offset: {_currentOffset}");
             Debug.Log($"Is Zooming: {_isZooming}");
+            Debug.Log($"Is Map View Active: {_isMapViewActive}");
             Debug.Log($"Smooth Speed: {smoothSpeed}");
             Debug.Log($"Fixed Rotation X: {fixedRotationX}");
+            Debug.Log($"Current Rotation X: {_currentRotationX}");
             Debug.Log($"Use Bounds: {useBounds}");
         }
 
@@ -512,6 +596,7 @@ namespace NewCss
             DrawTargetGizmo();
             DrawBoundsGizmo();
             DrawOffsetGizmo();
+            DrawMapViewGizmo();
         }
 
         private void DrawTargetGizmo()
@@ -546,6 +631,18 @@ namespace NewCss
             Gizmos.color = new Color(1f, 0.5f, 0f, 0.5f);
             Vector3 zoomedPos = target.position + zoomedOffset;
             Gizmos.DrawWireCube(zoomedPos, Vector3.one * 0.2f);
+        }
+
+        private void DrawMapViewGizmo()
+        {
+            // Harita görünümü pozisyonunu göster
+            Gizmos.color = new Color(0.5f, 0f, 1f, 0.7f);
+            Gizmos.DrawWireCube(mapViewPosition, Vector3.one * 1f);
+            Gizmos.DrawLine(transform.position, mapViewPosition);
+
+            // Harita görünümünden bakış yönünü göster
+            Vector3 lookDirection = Quaternion.Euler(mapViewRotationX, fixedRotationY, 0f) * Vector3.forward;
+            Gizmos.DrawRay(mapViewPosition, lookDirection * 10f);
         }
 #endif
 
