@@ -9,6 +9,7 @@ using Steamworks.Data;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Localization.Settings;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityColor = UnityEngine.Color;
@@ -27,6 +28,12 @@ public class SteamManager : MonoBehaviour
     private const string GAME_SCENE_NAME = "The Main Office";
     private const string MAIN_MENU_SCENE_NAME = "MainMenu";
     private const string LOBBY_DATA_VERSION_KEY = "game_version";
+    
+    // Localization Keys
+    private const string LOC_TABLE = "StringTable";
+    private const string LOC_KEY_ONLY_HOST_KICK = "OnlyHostCanKick";
+    private const string LOC_KEY_PLAYER_KICKED = "PlayerKicked";
+    private const string LOC_KEY_KICK_FAILED = "KickFailed";
 
     // Loading screen
     private const float LOADING_DOT_INTERVAL = 0.5f;
@@ -942,7 +949,7 @@ public class SteamManager : MonoBehaviour
     {
         if (!NetworkManager.Singleton.IsHost)
         {
-            ShowErrorMessage("Sadece host oyuncuları kickleyebilir!");
+            ShowErrorMessage(GetLocalizedString(LOC_KEY_ONLY_HOST_KICK));
             return;
         }
 
@@ -952,13 +959,13 @@ public class SteamManager : MonoBehaviour
             if (clientId.HasValue)
             {
                 NetworkManager.Singleton.DisconnectClient(clientId.Value);
-                ShowErrorMessage("Oyuncu kicklendi!", 2f);
+                ShowErrorMessage(GetLocalizedString(LOC_KEY_PLAYER_KICKED), 2f);
             }
         }
         catch (Exception ex)
         {
             LogError($"Kick player error: {ex.Message}");
-            ShowErrorMessage("Kick işlemi başarısız!");
+            ShowErrorMessage(GetLocalizedString(LOC_KEY_KICK_FAILED));
         }
     }
 
@@ -1319,6 +1326,37 @@ public class SteamManager : MonoBehaviour
     private static void LogWarning(string message)
     {
         Debug.LogWarning($"{LOG_PREFIX} {message}");
+    }
+
+    /// <summary>
+    /// Gets a localized string from the StringTable
+    /// </summary>
+    private static string GetLocalizedString(string key)
+    {
+        try
+        {
+            if (!LocalizationSettings.InitializationOperation.IsDone)
+            {
+                return key;
+            }
+
+            var stringTable = LocalizationSettings.StringDatabase.GetTable(LOC_TABLE);
+            if (stringTable != null)
+            {
+                var entry = stringTable.GetEntry(key);
+                if (entry != null && !string.IsNullOrEmpty(entry.LocalizedValue))
+                {
+                    return entry.LocalizedValue;
+                }
+            }
+
+            return key;
+        }
+        catch (Exception e)
+        {
+            LogWarning($"Localization error for key '{key}': {e.Message}");
+            return key;
+        }
     }
 
     #endregion

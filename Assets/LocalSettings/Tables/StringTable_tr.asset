@@ -206,6 +206,54 @@ MonoBehaviour:
     m_Localized: "\xC7ok Oyunculu"
     m_Metadata:
       m_Items: []
+  - m_Id: 30570000000000001
+    m_Localized: Lobideki Oyuncular
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000002
+    m_Localized: 'Toplam: {0} oyuncu'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000003
+    m_Localized: Break Room Durumu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000004
+    m_Localized: "\u0130\xE7eride: {0} / {1} oyuncu"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000005
+    m_Localized: "Herkes haz\u0131r!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000006
+    m_Localized: '{0} oyuncu bekleniyor...'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000007
+    m_Localized: Oyuncu bulunamad\u0131
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000008
+    m_Localized: Oyuncu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000009
+    m_Localized: "E\u011Fitim"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000010
+    m_Localized: "Sadece host oyuncular\u0131 kickleyebilir!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000011
+    m_Localized: Oyuncu kicklendi!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000012
+    m_Localized: "Kick i\u015Flemi ba\u015Far\u0131s\u0131z!"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

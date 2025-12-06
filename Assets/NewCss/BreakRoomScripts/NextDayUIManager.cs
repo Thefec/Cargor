@@ -4,6 +4,8 @@ using Steamworks;
 using Steamworks.Data;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
 
 namespace NewCss
@@ -19,17 +21,20 @@ namespace NewCss
         private const string LOG_PREFIX = "[NextDayUI]";
         private const int MAX_PLAYERS = 4;
 
-        // UI Text Templates
-        private const string PLAYER_LIST_HEADER = "🎮 <b>Lobideki Oyuncular</b>\n\n";
+        // UI Text Templates (format strings - localized content will be injected)
         private const string PLAYER_LIST_ITEM_FORMAT = "<color=#4CAF50>►</color> <b>{0}.</b> {1}\n";
         private const string PLAYER_LIST_SEPARATOR = "\n<color=#FFC107>━━━━━━━━━━━━━━━━━</color>";
-        private const string PLAYER_LIST_TOTAL_FORMAT = "\n<b>Toplam:</b> <color=#2196F3>{0}</color> oyuncu";
         private const string BREAK_ROOM_SEPARATOR = "\n\n<color=#FF5722>━━━━━━━━━━━━━━━━━</color>";
-        private const string BREAK_ROOM_STATUS_HEADER = "\n<b>Break Room Durumu:</b>";
-        private const string BREAK_ROOM_COUNT_FORMAT = "\n<color=#4CAF50>►</color> İçeride: <b>{0}</b> / <b>{1}</b> oyuncu";
-        private const string BREAK_ROOM_READY = "\n<color=#4CAF50>✓ Herkes hazır! 🎉</color>";
-        private const string BREAK_ROOM_WAITING_FORMAT = "\n<color=#FFC107>⏳ {0} oyuncu bekleniyor...</color>";
-        private const string NO_PLAYERS_TEXT = "❌ Oyuncu bulunamadı";
+
+        // Localization Keys
+        private const string LOC_TABLE = "StringTable";
+        private const string LOC_KEY_LOBBY_PLAYERS = "LobbyPlayers";
+        private const string LOC_KEY_TOTAL_PLAYERS = "TotalPlayers";
+        private const string LOC_KEY_BREAK_ROOM_STATUS = "BreakRoomStatus";
+        private const string LOC_KEY_PLAYERS_IN_ROOM = "PlayersInRoom";
+        private const string LOC_KEY_EVERYONE_READY = "EveryoneReady";
+        private const string LOC_KEY_WAITING_PLAYERS = "WaitingPlayers";
+        private const string LOC_KEY_NO_PLAYERS = "NoPlayersFound";
 
         #endregion
 
@@ -361,11 +366,11 @@ namespace NewCss
 
         private void ShowEmptyPlayerList()
         {
-            LogWarning("Oyuncu listesi boş!");
+            LogWarning("Player list empty!");
 
             if (playerListDisplay != null)
             {
-                playerListDisplay.text = NO_PLAYERS_TEXT;
+                playerListDisplay.text = GetLocalizedString(LOC_KEY_NO_PLAYERS);
             }
 
             SetPlayerListPanelActive(false);
@@ -375,8 +380,9 @@ namespace NewCss
         {
             var builder = new System.Text.StringBuilder();
 
-            // Header
-            builder.Append(PLAYER_LIST_HEADER);
+            // Header - localized
+            string headerText = GetLocalizedString(LOC_KEY_LOBBY_PLAYERS);
+            builder.Append($"🎮 <b>{headerText}</b>\n\n");
 
             // Player entries
             for (int i = 0; i < playerNames.Count; i++)
@@ -384,9 +390,10 @@ namespace NewCss
                 builder.AppendFormat(PLAYER_LIST_ITEM_FORMAT, i + 1, playerNames[i]);
             }
 
-            // Footer
+            // Footer - localized
             builder.Append(PLAYER_LIST_SEPARATOR);
-            builder.AppendFormat(PLAYER_LIST_TOTAL_FORMAT, playerNames.Count);
+            string totalText = GetLocalizedString(LOC_KEY_TOTAL_PLAYERS);
+            builder.Append($"\n<b>{string.Format(totalText, playerNames.Count)}</b>");
 
             return builder.ToString();
         }
@@ -454,22 +461,26 @@ namespace NewCss
         {
             var builder = new System.Text.StringBuilder();
 
-            // Separator and header
+            // Separator and header - localized
             builder.Append(BREAK_ROOM_SEPARATOR);
-            builder.Append(BREAK_ROOM_STATUS_HEADER);
+            string statusHeader = GetLocalizedString(LOC_KEY_BREAK_ROOM_STATUS);
+            builder.Append($"\n<b>{statusHeader}:</b>");
 
-            // Player count
-            builder.AppendFormat(BREAK_ROOM_COUNT_FORMAT, playersInRoom, requiredPlayers);
+            // Player count - localized
+            string playersInRoomText = GetLocalizedString(LOC_KEY_PLAYERS_IN_ROOM);
+            builder.Append($"\n<color=#4CAF50>►</color> {string.Format(playersInRoomText, playersInRoom, requiredPlayers)}");
 
-            // Status message
+            // Status message - localized
             if (playersInRoom >= requiredPlayers)
             {
-                builder.Append(BREAK_ROOM_READY);
+                string readyText = GetLocalizedString(LOC_KEY_EVERYONE_READY);
+                builder.Append($"\n<color=#4CAF50>✓ {readyText} 🎉</color>");
             }
             else
             {
                 int waiting = requiredPlayers - playersInRoom;
-                builder.AppendFormat(BREAK_ROOM_WAITING_FORMAT, waiting);
+                string waitingText = GetLocalizedString(LOC_KEY_WAITING_PLAYERS);
+                builder.Append($"\n<color=#FFC107>⏳ {string.Format(waitingText, waiting)}</color>");
             }
 
             return builder.ToString();
@@ -483,6 +494,43 @@ namespace NewCss
             if (playerListDisplay != null && !string.IsNullOrEmpty(_currentPlayerListText))
             {
                 playerListDisplay.text = _currentPlayerListText;
+            }
+        }
+
+        #endregion
+
+        #region Localization
+
+        /// <summary>
+        /// Gets a localized string from the StringTable
+        /// </summary>
+        private string GetLocalizedString(string key)
+        {
+            try
+            {
+                if (!LocalizationSettings.InitializationOperation.IsDone)
+                {
+                    // Return key as fallback if localization not ready
+                    return key;
+                }
+
+                var stringTable = LocalizationSettings.StringDatabase.GetTable(LOC_TABLE);
+                if (stringTable != null)
+                {
+                    var entry = stringTable.GetEntry(key);
+                    if (entry != null && !string.IsNullOrEmpty(entry.LocalizedValue))
+                    {
+                        return entry.LocalizedValue;
+                    }
+                }
+
+                // Return key as fallback
+                return key;
+            }
+            catch (System.Exception e)
+            {
+                LogWarning($"Localization error for key '{key}': {e.Message}");
+                return key;
             }
         }
 

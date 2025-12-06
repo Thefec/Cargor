@@ -481,6 +481,13 @@ namespace NewCss
                 return;
             }
 
+            // Box category validation - only allow Box category items on shelf
+            if (!ValidateItemIsBox(itemRef))
+            {
+                Debug.LogWarning($"{LOG_PREFIX} ❌ Only Box category items can be placed on shelf!");
+                return;
+            }
+
             // Boş slot bul
             int slotIndex = FindEmptySlotIndex();
             if (slotIndex == -1)
@@ -503,6 +510,13 @@ namespace NewCss
 
             Debug.Log($"{LOG_PREFIX} 📥 PlaceItemOnShelfFromServer - Client {requesterClientId}");
 
+            // Box category validation - only allow Box category items on shelf
+            if (!ValidateItemIsBox(itemRef))
+            {
+                Debug.LogWarning($"{LOG_PREFIX} ❌ Only Box category items can be placed on shelf!");
+                return;
+            }
+
             // Boş slot bul
             int slotIndex = FindEmptySlotIndex();
             if (slotIndex == -1)
@@ -513,6 +527,46 @@ namespace NewCss
 
             // Item'ı yerleştir
             PlaceItemInSlot(itemRef, slotIndex, requesterClientId);
+        }
+
+        /// <summary>
+        /// Validates that the item is a Box category item.
+        /// Only Box category items can be placed on shelves.
+        /// </summary>
+        private bool ValidateItemIsBox(NetworkObjectReference itemRef)
+        {
+            if (!itemRef.TryGet(out NetworkObject networkObj) || networkObj == null)
+            {
+                Debug.LogWarning($"{LOG_PREFIX} ❌ Invalid item reference for box validation!");
+                return false;
+            }
+
+            // Check NetworkWorldItem for ItemData category
+            var worldItem = networkObj.GetComponent<NetworkWorldItem>();
+            if (worldItem != null && worldItem.ItemData != null)
+            {
+                if (worldItem.ItemData.itemCategory == ItemCategory.Box)
+                {
+                    Debug.Log($"{LOG_PREFIX} ✅ Item category is Box - allowed on shelf");
+                    return true;
+                }
+                else
+                {
+                    Debug.LogWarning($"{LOG_PREFIX} ❌ Item category is {worldItem.ItemData.itemCategory} - NOT allowed on shelf (only Box category)");
+                    return false;
+                }
+            }
+
+            // Fallback: Check for BoxInfo component
+            var boxInfo = networkObj.GetComponent<BoxInfo>();
+            if (boxInfo != null)
+            {
+                Debug.Log($"{LOG_PREFIX} ✅ BoxInfo component found - allowed on shelf");
+                return true;
+            }
+
+            Debug.LogWarning($"{LOG_PREFIX} ❌ No valid category information found - NOT allowed on shelf");
+            return false;
         }
 
         private bool ValidatePlaceItemRequest(ulong clientId, out Transform playerTransform)

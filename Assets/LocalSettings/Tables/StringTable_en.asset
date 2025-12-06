@@ -208,6 +208,54 @@ MonoBehaviour:
     m_Localized: Play Online
     m_Metadata:
       m_Items: []
+  - m_Id: 30570000000000001
+    m_Localized: Players in Lobby
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000002
+    m_Localized: 'Total: {0} players'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000003
+    m_Localized: Break Room Status
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000004
+    m_Localized: 'Inside: {0} / {1} players'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000005
+    m_Localized: Everyone is ready!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000006
+    m_Localized: 'Waiting for {0} players...'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000007
+    m_Localized: No players found
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000008
+    m_Localized: Player
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000009
+    m_Localized: Tutorial
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000010
+    m_Localized: Only host can kick players!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000011
+    m_Localized: Player kicked!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000012
+    m_Localized: Kick failed!
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

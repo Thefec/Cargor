@@ -203,6 +203,54 @@ MonoBehaviour:
     m_Key: PlayOnline
     m_Metadata:
       m_Items: []
+  - m_Id: 30570000000000001
+    m_Key: LobbyPlayers
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000002
+    m_Key: TotalPlayers
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000003
+    m_Key: BreakRoomStatus
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000004
+    m_Key: PlayersInRoom
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000005
+    m_Key: EveryoneReady
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000006
+    m_Key: WaitingPlayers
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000007
+    m_Key: NoPlayersFound
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000008
+    m_Key: Player
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000009
+    m_Key: Tutorial
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000010
+    m_Key: OnlyHostCanKick
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000011
+    m_Key: PlayerKicked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000012
+    m_Key: KickFailed
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
