@@ -201,7 +201,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30568844051787776
-    m_Localized: The Office
+    m_Localized: The Main Office
     m_Metadata:
       m_Items: []
   - m_Id: 30569701396885504
@@ -229,7 +229,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000006
-    m_Localized: 'Waiting for {0} players...'
+    m_Localized: Waiting for {0} players...
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000007
