@@ -220,6 +220,18 @@ namespace NewCss
         private void Awake()
         {
             InitializeNetworkLists();
+            LocalizationHelper.OnLocaleChanged += OnLocaleChanged;
+        }
+
+        private void OnDestroy()
+        {
+            LocalizationHelper.OnLocaleChanged -= OnLocaleChanged;
+        }
+        
+        private void OnLocaleChanged()
+        {
+            // Refresh all upgrade entries when locale changes
+            RefreshAllUpgradeUI();
         }
 
         #endregion

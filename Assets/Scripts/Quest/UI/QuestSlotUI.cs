@@ -100,11 +100,26 @@ namespace NewCss.Quest
         {
             SetupButtonListeners();
             HideRemovedElements();
+            LocalizationHelper.OnLocaleChanged += OnLocaleChanged;
         }
 
         private void OnDestroy()
         {
             RemoveButtonListeners();
+            LocalizationHelper.OnLocaleChanged -= OnLocaleChanged;
+        }
+
+        private void OnLocaleChanged()
+        {
+            // Refresh UI when locale changes
+            if (_currentQuestData != null)
+            {
+                UpdateUI();
+            }
+            else
+            {
+                SetEmptyState();
+            }
         }
 
         #endregion

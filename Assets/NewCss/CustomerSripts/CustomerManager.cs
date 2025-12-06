@@ -167,6 +167,8 @@ namespace NewCss
 
         private void Start()
         {
+            LocalizationHelper.OnLocaleChanged += OnLocaleChanged;
+            
             if (IsServer)
             {
                 SubscribeToDayCycleEvents();
@@ -176,10 +178,18 @@ namespace NewCss
 
         private void OnDestroy()
         {
+            LocalizationHelper.OnLocaleChanged -= OnLocaleChanged;
+            
             if (IsServer)
             {
                 UnsubscribeFromDayCycleEvents();
             }
+        }
+        
+        private void OnLocaleChanged()
+        {
+            // Refresh UI when locale changes
+            UpdateRemainingCustomersUI();
         }
 
         private void Update()
