@@ -251,6 +251,214 @@ MonoBehaviour:
     m_Key: KickFailed
     m_Metadata:
       m_Items: []
+  - m_Id: 30570000000000013
+    m_Key: EmptySlot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000014
+    m_Key: DayFormat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000015
+    m_Key: DayOverWarning
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000016
+    m_Key: RentDay
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000017
+    m_Key: UpgradeLevel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000018
+    m_Key: UpgradeCost
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000019
+    m_Key: UpgradeMax
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000020
+    m_Key: UpgradeBuy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000021
+    m_Key: UpgradeQueue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000022
+    m_Key: UpgradeQueueDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000023
+    m_Key: UpgradeStamina
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000024
+    m_Key: UpgradeStaminaDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000025
+    m_Key: UpgradeMoney
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000026
+    m_Key: UpgradeMoneyDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000027
+    m_Key: UpgradeTruck
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000028
+    m_Key: UpgradeTruckDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000029
+    m_Key: UpgradeQuestTier
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000030
+    m_Key: UpgradeQuestTierDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000031
+    m_Key: EventBusyDay
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000032
+    m_Key: EventBusyDayDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000033
+    m_Key: EventAngryCustomers
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000034
+    m_Key: EventAngryCustomersDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000035
+    m_Key: EventSlowLogistics
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000036
+    m_Key: EventSlowLogisticsDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000037
+    m_Key: EventHeavyBoxes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000038
+    m_Key: EventHeavyBoxesDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000039
+    m_Key: EventFatigueProblem
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000040
+    m_Key: EventFatigueProblemDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000041
+    m_Key: EventSurpriseAudit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000042
+    m_Key: EventSurpriseAuditDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000043
+    m_Key: EventMarketingDay
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000044
+    m_Key: EventMarketingDayDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000045
+    m_Key: EventCustomerSupport
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000046
+    m_Key: EventCustomerSupportDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000047
+    m_Key: EventDeliveryBonus
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000048
+    m_Key: EventDeliveryBonusDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000049
+    m_Key: EventRelaxedDay
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000050
+    m_Key: EventRelaxedDayDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000051
+    m_Key: EventExpressCargo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000052
+    m_Key: EventExpressCargoDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000053
+    m_Key: EventGoldenBoxDay
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000054
+    m_Key: EventGoldenBoxDayDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000055
+    m_Key: EventOpportunityDay
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000056
+    m_Key: EventOpportunityDayDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000057
+    m_Key: EventQuotaDay
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000058
+    m_Key: EventQuotaDayDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000059
+    m_Key: EventVipService
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000060
+    m_Key: EventVipServiceDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000061
+    m_Key: EventRainyDay
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000062
+    m_Key: EventRainyDayDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000063
+    m_Key: EventFestivalDay
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000064
+    m_Key: EventFestivalDayDesc
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

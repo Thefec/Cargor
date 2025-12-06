@@ -256,6 +256,214 @@ MonoBehaviour:
     m_Localized: Kick failed!
     m_Metadata:
       m_Items: []
+  - m_Id: 30570000000000013
+    m_Localized: Empty Slot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000014
+    m_Localized: 'Day {0}  {1}:{2} ({3}s)'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000015
+    m_Localized: Day Over. Go to Break Room.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000016
+    m_Localized: Rent Day
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000017
+    m_Localized: 'Level: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000018
+    m_Localized: 'Cost: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000019
+    m_Localized: Max
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000020
+    m_Localized: Buy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000021
+    m_Localized: Queue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000022
+    m_Localized: Increases maximum customer queue size.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000023
+    m_Localized: Stamina
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000024
+    m_Localized: Increases stamina regeneration rate.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000025
+    m_Localized: Money
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000026
+    m_Localized: Increases reward per box delivery.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000027
+    m_Localized: Truck
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000028
+    m_Localized: Unlocks additional truck hangars.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000029
+    m_Localized: Quest Tier
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000030
+    m_Localized: Unlocks higher tier quests.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000031
+    m_Localized: BUSY DAY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000032
+    m_Localized: Customer spawn rate increases by 30%.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000033
+    m_Localized: ANGRY CUSTOMERS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000034
+    m_Localized: Customer patience decreases by 30%.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000035
+    m_Localized: SLOW LOGISTICS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000036
+    m_Localized: Truck movement speed decreases by 20%.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000037
+    m_Localized: HEAVY BOXES
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000038
+    m_Localized: Overall movement speed slows down by 10%.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000039
+    m_Localized: FATIGUE PROBLEM
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000040
+    m_Localized: Stamina regeneration time increases by 30%.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000041
+    m_Localized: SURPRISE AUDIT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000042
+    m_Localized: All faulty operations penalize double.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000043
+    m_Localized: MARKETING DAY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000044
+    m_Localized: 20% more customers, but 30% less earnings.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000045
+    m_Localized: CUSTOMER SUPPORT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000046
+    m_Localized: Reception phone rings 30% more often.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000047
+    m_Localized: DELIVERY BONUS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000048
+    m_Localized: Earn 20% more money per delivery.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000049
+    m_Localized: RELAXED DAY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000050
+    m_Localized: Customer patience increases by 10%.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000051
+    m_Localized: EXPRESS CARGO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000052
+    m_Localized: Trucks leave the scene 10% faster.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000053
+    m_Localized: GOLDEN BOX DAY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000054
+    m_Localized: Each correct delivered box earns extra 5%.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000055
+    m_Localized: OPPORTUNITY DAY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000056
+    m_Localized: Upgrade costs decrease by 10%.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000057
+    m_Localized: QUOTA DAY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000058
+    m_Localized: All trucks request only one color of box.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000059
+    m_Localized: VIP SERVICE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000060
+    m_Localized: 10% chance boxes are perfect and earn 10% more.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000061
+    m_Localized: RAINY DAY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000062
+    m_Localized: 20% fewer customers arrive.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000063
+    m_Localized: FESTIVAL DAY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000064
+    m_Localized: Random bonus is earned at day start.
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

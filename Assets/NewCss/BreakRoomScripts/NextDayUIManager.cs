@@ -105,6 +105,12 @@ namespace NewCss
         {
             UpdateNextDayUI();
             SetupCursor();
+            LocalizationSettings.SelectedLocaleChanged += HandleLocaleChanged;
+        }
+
+        private void OnDisable()
+        {
+            LocalizationSettings.SelectedLocaleChanged -= HandleLocaleChanged;
         }
 
         private void Update()
@@ -113,6 +119,16 @@ namespace NewCss
 
             SetupCursor();
             HandleEscapeInput();
+        }
+
+        #endregion
+
+        #region Localization
+
+        private void HandleLocaleChanged(Locale newLocale)
+        {
+            Debug.Log($"{LOG_PREFIX} Locale changed to: {newLocale?.Identifier.Code ?? "null"}");
+            RefreshUI();
         }
 
         #endregion
