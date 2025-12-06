@@ -23,35 +23,39 @@ namespace NewCss.Quest
         /// </summary>
         public string GetDescription(QuestType questType)
         {
-            if (requireSpecificBoxType)
+            string boxColor = requireSpecificBoxType 
+                ? LocalizationHelper.GetLocalizedString($"BoxType_{requiredBoxType}") 
+                : null;
+            
+            return GetLocalizedDescription(questType, boxColor);
+        }
+        
+        private string GetLocalizedDescription(QuestType questType, string boxColor)
+        {
+            return questType switch
             {
-                string boxColorKey = $"BoxType_{requiredBoxType}";
-                string boxColor = LocalizationHelper.GetLocalizedString(boxColorKey);
-                
-                return questType switch
-                {
-                    QuestType.CompleteMinigame => LocalizationHelper.GetLocalizedStringFormat("Quest_CompleteMinigame", targetCount),
-                    QuestType.PlaceBoxOnShelf => LocalizationHelper.GetLocalizedStringFormat("Quest_PlaceBoxOnShelfSpecific", targetCount, boxColor + " "),
-                    QuestType.CompleteTruck => LocalizationHelper.GetLocalizedStringFormat("Quest_CompleteTruck", targetCount),
-                    QuestType.ServeCustomer => LocalizationHelper.GetLocalizedStringFormat("Quest_ServeCustomer", targetCount),
-                    QuestType.IgnoreCustomer => LocalizationHelper.GetLocalizedStringFormat("Quest_IgnoreCustomer", targetCount),
-                    QuestType.PackToy => LocalizationHelper.GetLocalizedStringFormat("Quest_PackToy", targetCount),
-                    _ => $"{targetCount}x"
-                };
-            }
-            else
-            {
-                return questType switch
-                {
-                    QuestType.CompleteMinigame => LocalizationHelper.GetLocalizedStringFormat("Quest_CompleteMinigame", targetCount),
-                    QuestType.PlaceBoxOnShelf => LocalizationHelper.GetLocalizedStringFormat("Quest_PlaceBoxOnShelf", targetCount),
-                    QuestType.CompleteTruck => LocalizationHelper.GetLocalizedStringFormat("Quest_CompleteTruck", targetCount),
-                    QuestType.ServeCustomer => LocalizationHelper.GetLocalizedStringFormat("Quest_ServeCustomer", targetCount),
-                    QuestType.IgnoreCustomer => LocalizationHelper.GetLocalizedStringFormat("Quest_IgnoreCustomer", targetCount),
-                    QuestType.PackToy => LocalizationHelper.GetLocalizedStringFormat("Quest_PackToy", targetCount),
-                    _ => $"{targetCount}x"
-                };
-            }
+                QuestType.CompleteMinigame => 
+                    LocalizationHelper.GetLocalizedStringFormat("Quest_CompleteMinigame", targetCount),
+                    
+                QuestType.PlaceBoxOnShelf => 
+                    string.IsNullOrEmpty(boxColor)
+                        ? LocalizationHelper.GetLocalizedStringFormat("Quest_PlaceBoxOnShelf", targetCount)
+                        : LocalizationHelper.GetLocalizedStringFormat("Quest_PlaceBoxOnShelfSpecific", targetCount, boxColor),
+                        
+                QuestType.CompleteTruck => 
+                    LocalizationHelper.GetLocalizedStringFormat("Quest_CompleteTruck", targetCount),
+                    
+                QuestType.ServeCustomer => 
+                    LocalizationHelper.GetLocalizedStringFormat("Quest_ServeCustomer", targetCount),
+                    
+                QuestType.IgnoreCustomer => 
+                    LocalizationHelper.GetLocalizedStringFormat("Quest_IgnoreCustomer", targetCount),
+                    
+                QuestType.PackToy => 
+                    LocalizationHelper.GetLocalizedStringFormat("Quest_PackToy", targetCount),
+                    
+                _ => $"{targetCount}x"
+            };
         }
     }
 }
