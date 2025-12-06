@@ -5,8 +5,8 @@ using UnityEngine.UI;
 namespace NewCss.Quest
 {
     /// <summary>
-    /// Görev panelini açmak için trigger zone ve buton kontrolcüsü
-    /// OfficeTerminal tarzı etkileşim sağlar
+    /// Görev panelini açmak için trigger zone kontrolcüsü
+    /// Collider'a girince otomatik açılır, çıkınca kapanır
     /// </summary>
     [RequireComponent(typeof(Collider))]
     public class QuestTriggerZone : MonoBehaviour
@@ -24,13 +24,13 @@ namespace NewCss.Quest
         [SerializeField, Tooltip("Görev paneli UI kontrolcüsü")]
         private QuestUIController questUIController;
 
-        [SerializeField, Tooltip("Etkileşim butonu")]
-        private Button interactionButton;
-
-        [SerializeField, Tooltip("Buton container (gizlenecek/gösterilecek)")]
-        private GameObject buttonContainer;
-
         [Header("=== SETTINGS ===")]
+        [SerializeField, Tooltip("Girince otomatik aç")]
+        private bool autoOpenOnEnter = true;
+
+        [SerializeField, Tooltip("Çıkınca otomatik kapat")]
+        private bool autoCloseOnExit = true;
+
         [SerializeField, Tooltip("Debug loglarını göster")]
         private bool showDebugLogs = true;
 
@@ -60,20 +60,6 @@ namespace NewCss.Quest
             Initialize();
         }
 
-        private void OnDestroy()
-        {
-            Cleanup();
-        }
-
-        private void Update()
-        {
-            // Check for E key press when in range
-            if (_isPlayerInRange && Input.GetKeyDown(KeyCode.E))
-            {
-                OnInteractionButtonClicked();
-            }
-        }
-
         #endregion
 
         #region Initialization
@@ -81,22 +67,12 @@ namespace NewCss.Quest
         private void Initialize()
         {
             SetupCollider();
-            SetupButton();
-            HideButton();
         }
 
         private void SetupCollider()
         {
             _triggerCollider = GetComponent<Collider>();
             _triggerCollider.isTrigger = true;
-        }
-
-        private void SetupButton()
-        {
-            if (interactionButton != null)
-            {
-                interactionButton.onClick.AddListener(OnInteractionButtonClicked);
-            }
         }
 
         #endregion
@@ -117,12 +93,17 @@ namespace NewCss.Quest
             _isPlayerInRange = true;
             _localPlayerMovement = playerMovement;
 
-            ShowButton();
-
             // Set player reference for UI controller
             if (questUIController != null)
             {
                 questUIController.SetLocalPlayer(playerMovement);
+
+                // Otomatik aç
+                if (autoOpenOnEnter && !questUIController.IsPanelOpen)
+                {
+                    questUIController.OpenPanel();
+                    LogDebug("Panel auto-opened on enter");
+                }
             }
         }
 
@@ -141,12 +122,11 @@ namespace NewCss.Quest
             _isPlayerInRange = false;
             _localPlayerMovement = null;
 
-            HideButton();
-
-            // Close panel if open
-            if (questUIController != null && questUIController.IsPanelOpen)
+            // Otomatik kapat
+            if (questUIController != null && autoCloseOnExit && questUIController.IsPanelOpen)
             {
                 questUIController.ClosePanel();
+                LogDebug("Panel auto-closed on exit");
             }
         }
 
@@ -188,68 +168,6 @@ namespace NewCss.Quest
 
         #endregion
 
-        #region Button Management
-
-        private void ShowButton()
-        {
-            if (buttonContainer != null)
-            {
-                buttonContainer.SetActive(true);
-            }
-            else if (interactionButton != null)
-            {
-                interactionButton.gameObject.SetActive(true);
-            }
-
-            LogDebug("Button shown");
-        }
-
-        private void HideButton()
-        {
-            if (buttonContainer != null)
-            {
-                buttonContainer.SetActive(false);
-            }
-            else if (interactionButton != null)
-            {
-                interactionButton.gameObject.SetActive(false);
-            }
-
-            LogDebug("Button hidden");
-        }
-
-        private void OnInteractionButtonClicked()
-        {
-            if (!_isPlayerInRange)
-            {
-                LogDebug("Not in range, ignoring interaction");
-                return;
-            }
-
-            if (questUIController == null)
-            {
-                LogWarning("QuestUIController not assigned!");
-                return;
-            }
-
-            LogDebug("Interaction button clicked - toggling panel");
-            questUIController.TogglePanel();
-        }
-
-        #endregion
-
-        #region Cleanup
-
-        private void Cleanup()
-        {
-            if (interactionButton != null)
-            {
-                interactionButton.onClick.RemoveListener(OnInteractionButtonClicked);
-            }
-        }
-
-        #endregion
-
         #region Logging
 
         private void LogDebug(string message)
@@ -270,18 +188,6 @@ namespace NewCss.Quest
         #region Editor Debug
 
 #if UNITY_EDITOR
-        [ContextMenu("Show Button")]
-        private void DebugShowButton()
-        {
-            ShowButton();
-        }
-
-        [ContextMenu("Hide Button")]
-        private void DebugHideButton()
-        {
-            HideButton();
-        }
-
         [ContextMenu("Debug: Print State")]
         private void DebugPrintState()
         {
@@ -289,7 +195,8 @@ namespace NewCss.Quest
             Debug.Log($"Is Player In Range: {_isPlayerInRange}");
             Debug.Log($"Has Local Player: {_localPlayerMovement != null}");
             Debug.Log($"Has UI Controller: {questUIController != null}");
-            Debug.Log($"Has Interaction Button: {interactionButton != null}");
+            Debug.Log($"Auto Open On Enter: {autoOpenOnEnter}");
+            Debug.Log($"Auto Close On Exit: {autoCloseOnExit}");
         }
 
         private void OnDrawGizmosSelected()

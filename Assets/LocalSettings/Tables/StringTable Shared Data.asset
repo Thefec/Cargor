@@ -627,6 +627,30 @@ MonoBehaviour:
     m_Key: Upgrade_QueueCapacity_3
     m_Metadata:
       m_Items: []
+  - m_Id: 42431428665192448
+    m_Key: SettingsVsync
+    m_Metadata:
+      m_Items: []
+  - m_Id: 42431953292931072
+    m_Key: SettingsMusic
+    m_Metadata:
+      m_Items: []
+  - m_Id: 42432326804090880
+    m_Key: SettingsRes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 42432451492360192
+    m_Key: SettingsScreen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 42432584829284352
+    m_Key: SettingsEffect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 42434254002892800
+    m_Key: TemelEgit
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

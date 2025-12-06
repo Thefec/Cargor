@@ -7,25 +7,25 @@ using UnityEngine.Events;
 /// </summary>
 public enum TutorialConditionType
 {
-    /// <summary>Item aldı mı?</summary>
+    /// <summary>Item aldı mı? </summary>
     PickupItem,
 
-    /// <summary>Item bıraktı mı?</summary>
+    /// <summary>Item bıraktı mı? </summary>
     DropItem,
 
     /// <summary>Masaya koydu mu?</summary>
     PlaceOnTable,
 
-    /// <summary>Masadan aldı mı?</summary>
+    /// <summary>Masadan aldı mı? </summary>
     TakeFromTable,
 
     /// <summary>Rafa koydu mu?</summary>
     PlaceOnShelf,
 
-    /// <summary>Raftan kutu aldı mı?</summary>
+    /// <summary>Raftan kutu aldı mı? </summary>
     TakeFromShelf,
 
-    /// <summary>Minigame tamamladı mı?</summary>
+    /// <summary>Minigame tamamladı mı? </summary>
     CompleteMinigame,
 
     /// <summary>Belirli bir trigger'a girdi mi?</summary>
@@ -34,7 +34,7 @@ public enum TutorialConditionType
     /// <summary>Belirli süre geçti mi?</summary>
     WaitForTime,
 
-    /// <summary>Belirli tuşa bastı mı?</summary>
+    /// <summary>Belirli tuşa bastı mı? </summary>
     PressKey,
 
     /// <summary>Araca kutu teslim etti mi?</summary>
@@ -46,6 +46,7 @@ public enum TutorialConditionType
 
 /// <summary>
 /// Tutorial adımı - tek bir tutorial adımının tüm bilgilerini içerir. 
+/// Çoklu dil desteği ile Türkçe ve İngilizce metinler içerir.
 /// </summary>
 [Serializable]
 public class TutorialStep
@@ -61,12 +62,17 @@ public class TutorialStep
 
     #endregion
 
-    #region Display Settings
+    #region Display Settings - Localized
 
-    [Header("=== DISPLAY SETTINGS ===")]
+    [Header("=== TURKISH TEXT ===")]
     [TextArea(3, 5)]
-    [Tooltip("Gösterilecek talimat metni")]
-    public string instructionText = "Talimatı buraya yazın... ";
+    [Tooltip("Türkçe talimat metni")]
+    public string instructionText = "Talimatı buraya yazın...";
+
+    [Header("=== ENGLISH TEXT ===")]
+    [TextArea(3, 5)]
+    [Tooltip("İngilizce talimat metni")]
+    public string instructionTextEnglish = "Write instruction here...";
 
     #endregion
 
@@ -96,7 +102,7 @@ public class TutorialStep
     #region Shelf Conditions
 
     [Header("=== SHELF CONDITIONS ===")]
-    [Tooltip("TakeFromShelf koşulu için belirli kutu türü gerekiyor mu?")]
+    [Tooltip("TakeFromShelf koşulu için belirli kutu türü gerekiyor mu? ")]
     public bool requiresSpecificBoxType;
 
     [Tooltip("Gerekli kutu türü (Red, Yellow, Blue)")]
@@ -165,18 +171,56 @@ public class TutorialStep
     {
         stepName = "Step";
         instructionText = "Talimatı buraya yazın...";
+        instructionTextEnglish = "Write instruction here...";
         conditionType = TutorialConditionType.PickupItem;
         waitDuration = 3f;
         requiredDeliveryCount = 1;
     }
 
-    public TutorialStep(string name, string instruction, TutorialConditionType condition)
+    public TutorialStep(string name, string instructionTR, string instructionEN, TutorialConditionType condition)
     {
         stepName = name;
-        instructionText = instruction;
+        instructionText = instructionTR;
+        instructionTextEnglish = instructionEN;
         conditionType = condition;
         waitDuration = 3f;
         requiredDeliveryCount = 1;
+    }
+
+    #endregion
+
+    #region Localization Methods
+
+    /// <summary>
+    /// Seçili dile göre talimat metnini döndürür
+    /// </summary>
+    /// <param name="isTurkish">Türkçe mi? </param>
+    /// <returns>Lokalize edilmiş metin</returns>
+    public string GetLocalizedInstruction(bool isTurkish)
+    {
+        if (isTurkish)
+        {
+            return instructionText;
+        }
+
+        // İngilizce metin boşsa Türkçe'yi döndür (fallback)
+        if (string.IsNullOrEmpty(instructionTextEnglish))
+        {
+            return instructionText;
+        }
+
+        return instructionTextEnglish;
+    }
+
+    /// <summary>
+    /// Dil koduna göre talimat metnini döndürür
+    /// </summary>
+    /// <param name="localeCode">Dil kodu (tr, en, vb. )</param>
+    /// <returns>Lokalize edilmiş metin</returns>
+    public string GetLocalizedInstruction(string localeCode)
+    {
+        bool isTurkish = localeCode.ToLower().StartsWith("tr");
+        return GetLocalizedInstruction(isTurkish);
     }
 
     #endregion

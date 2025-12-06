@@ -39,7 +39,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 27238353776640
-    m_Localized: "Qu\u0131t"
+    m_Localized: Quit
     m_Metadata:
       m_Items: []
   - m_Id: 27356159193088
@@ -47,7 +47,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 27414908809216
-    m_Localized: "Graph\u0131cs"
+    m_Localized: Graphics
     m_Metadata:
       m_Items: []
   - m_Id: 27504130043904
@@ -59,7 +59,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 28147393671168
-    m_Localized: "Cred\u0131ts"
+    m_Localized: Credits
     m_Metadata:
       m_Items: []
   - m_Id: 118380277706752
@@ -67,7 +67,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 4669780596797440
-    m_Localized: "Custom\u0131ze"
+    m_Localized: Customize
     m_Metadata:
       m_Items: []
   - m_Id: 4669983794049024
@@ -261,7 +261,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000014
-    m_Localized: 'Day {0}  {1}:{2} ({3}s)'
+    m_Localized: Day {0}  {1}:{2} ({3}s)
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000015
@@ -469,7 +469,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000066
-    m_Localized: '({0}/{1} in Break Room)'
+    m_Localized: ({0}/{1} in Break Room)
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000067
@@ -630,6 +630,30 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 30570000000000094
     m_Localized: Queue Capacity +3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 42431428665192448
+    m_Localized: Vsync (FPS selection is restricted)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 42431953292931072
+    m_Localized: Music Value
+    m_Metadata:
+      m_Items: []
+  - m_Id: 42432326804090880
+    m_Localized: Resolution
+    m_Metadata:
+      m_Items: []
+  - m_Id: 42432451492360192
+    m_Localized: Screen Mode
+    m_Metadata:
+      m_Items: []
+  - m_Id: 42432584829284352
+    m_Localized: Sfx Value
+    m_Metadata:
+      m_Items: []
+  - m_Id: 42434254002892800
+    m_Localized: Basic Tutorial
     m_Metadata:
       m_Items: []
   references:
