@@ -247,6 +247,10 @@ MonoBehaviour:
     m_Key: PlayerKicked
     m_Metadata:
       m_Items: []
+  - m_Id: 30570000000000012
+    m_Key: KickFailed
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

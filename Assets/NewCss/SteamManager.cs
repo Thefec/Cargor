@@ -33,6 +33,7 @@ public class SteamManager : MonoBehaviour
     private const string LOC_TABLE = "StringTable";
     private const string LOC_KEY_ONLY_HOST_KICK = "OnlyHostCanKick";
     private const string LOC_KEY_PLAYER_KICKED = "PlayerKicked";
+    private const string LOC_KEY_KICK_FAILED = "KickFailed";
 
     // Loading screen
     private const float LOADING_DOT_INTERVAL = 0.5f;
@@ -964,7 +965,7 @@ public class SteamManager : MonoBehaviour
         catch (Exception ex)
         {
             LogError($"Kick player error: {ex.Message}");
-            ShowErrorMessage("Kick failed!");
+            ShowErrorMessage(GetLocalizedString(LOC_KEY_KICK_FAILED));
         }
     }
 

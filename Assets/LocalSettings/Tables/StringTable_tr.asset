@@ -250,6 +250,10 @@ MonoBehaviour:
     m_Localized: Oyuncu kicklendi!
     m_Metadata:
       m_Items: []
+  - m_Id: 30570000000000012
+    m_Localized: "Kick i\u015Flemi ba\u015Far\u0131s\u0131z!"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
