@@ -554,6 +554,54 @@ MonoBehaviour:
     m_Localized: "Kapasite +3"
     m_Metadata:
       m_Items: []
+  - m_Id: 30570000000000095
+    m_Localized: "Kapasite +4"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000096
+    m_Localized: "Kapasite +5"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000097
+    m_Localized: "Kapasite +6"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000098
+    m_Localized: "Kapasite +7"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000099
+    m_Localized: "Kapasite +8"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000100
+    m_Localized: "Kapasite +9"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000101
+    m_Localized: "Kapasite +10"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000102
+    m_Localized: "Kapasite +11"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000103
+    m_Localized: "Kapasite +12"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000104
+    m_Localized: "Kapasite +13"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000105
+    m_Localized: "Kapasite +14"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000106
+    m_Localized: "Kapasite +15"
+    m_Metadata:
+      m_Items: []
   - m_Id: 30570000000000088
     m_Localized: "Masa 0"
     m_Metadata:
