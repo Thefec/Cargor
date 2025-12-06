@@ -462,6 +462,14 @@ MonoBehaviour:
     m_Localized: "G\xFCn ba\u015F\u0131nda rastgele bonus kazan\u0131l\u0131r."
     m_Metadata:
       m_Items: []
+  - m_Id: 30570000000000065
+    m_Localized: Oyuncular
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000066
+    m_Localized: "({0}/{1} Mola Odas\u0131nda)"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

@@ -464,6 +464,14 @@ MonoBehaviour:
     m_Localized: Random bonus is earned at day start.
     m_Metadata:
       m_Items: []
+  - m_Id: 30570000000000065
+    m_Localized: Players
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000066
+    m_Localized: '({0}/{1} in Break Room)'
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

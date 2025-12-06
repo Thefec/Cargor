@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
 
 namespace NewCss
@@ -18,6 +20,10 @@ namespace NewCss
 
         private const string LOG_PREFIX = "[BreakRoom]";
         private const string CHARACTER_TAG = "Character";
+
+        // Localization Keys
+        private const string LOC_KEY_PLAYERS = "Players";
+        private const string LOC_KEY_BREAK_ROOM_COUNT = "BreakRoomCount";
         private const string DEFAULT_LOCAL_PLAYER_NAME = "Local Player";
         private const int DEFAULT_REQUIRED_PLAYERS = 1;
 
@@ -126,11 +132,19 @@ namespace NewCss
         {
             FindNextDayUIManager();
             CheckAndUpdateLobbyPlayers();
+            LocalizationSettings.SelectedLocaleChanged += HandleLocaleChanged;
         }
 
         private void OnDestroy()
         {
             CleanupSingleton();
+            LocalizationSettings.SelectedLocaleChanged -= HandleLocaleChanged;
+        }
+
+        private void HandleLocaleChanged(Locale newLocale)
+        {
+            LogDebug($"Locale changed to: {newLocale?.Identifier.Code ?? "null"}");
+            UpdateBreakRoomUI();
         }
 
         #endregion
@@ -388,14 +402,24 @@ namespace NewCss
             }
 
             string playerList = FormatPlayerList();
-            string countText = $"({_playersInside.Count}/{requiredPlayers} Break Room'da)";
+            string countTemplate = LocalizationHelper.GetLocalizedString(LOC_KEY_BREAK_ROOM_COUNT);
+            string countText;
+            try
+            {
+                countText = string.Format(countTemplate, _playersInside.Count, requiredPlayers);
+            }
+            catch
+            {
+                countText = $"({_playersInside.Count}/{requiredPlayers} in Break Room)";
+            }
 
             playerListText.text = $"{playerList}\n\n{countText}";
         }
 
         private string FormatPlayerList()
         {
-            return "Oyuncular:\n" + string.Join("\n", _currentLobbyPlayerNames);
+            string playersLabel = LocalizationHelper.GetLocalizedString(LOC_KEY_PLAYERS);
+            return playersLabel + ":\n" + string.Join("\n", _currentLobbyPlayerNames);
         }
 
         private void RefreshNextDayUI()

@@ -459,6 +459,14 @@ MonoBehaviour:
     m_Key: EventFestivalDayDesc
     m_Metadata:
       m_Items: []
+  - m_Id: 30570000000000065
+    m_Key: Players
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000066
+    m_Key: BreakRoomCount
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
