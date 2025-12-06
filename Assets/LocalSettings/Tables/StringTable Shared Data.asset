@@ -467,6 +467,166 @@ MonoBehaviour:
     m_Key: BreakRoomCount
     m_Metadata:
       m_Items: []
+  - m_Id: 30570000000000067
+    m_Key: ExpectedCustomers
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000068
+    m_Key: BoxType_Red
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000069
+    m_Key: BoxType_Blue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000070
+    m_Key: BoxType_Yellow
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000071
+    m_Key: BoxType_Green
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000072
+    m_Key: Quest_NoQuest
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000073
+    m_Key: Quest_Reward
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000074
+    m_Key: Quest_Penalty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000075
+    m_Key: Quest_Completed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000076
+    m_Key: Quest_Failed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000077
+    m_Key: Quest_CompleteMinigame
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000078
+    m_Key: Quest_PlaceBoxOnShelf
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000079
+    m_Key: Quest_PlaceBoxOnShelfSpecific
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000080
+    m_Key: Quest_CompleteTruck
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000081
+    m_Key: Quest_ServeCustomer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000082
+    m_Key: Quest_IgnoreCustomer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000083
+    m_Key: Quest_PackToy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000084
+    m_Key: Upgrade_MoreCapacityNone
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000085
+    m_Key: Upgrade_MoreCapacity_1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000086
+    m_Key: Upgrade_MoreCapacity_2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000087
+    m_Key: Upgrade_MoreCapacity_3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000095
+    m_Key: Upgrade_MoreCapacity_4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000096
+    m_Key: Upgrade_MoreCapacity_5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000097
+    m_Key: Upgrade_MoreCapacity_6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000098
+    m_Key: Upgrade_MoreCapacity_7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000099
+    m_Key: Upgrade_MoreCapacity_8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000100
+    m_Key: Upgrade_MoreCapacity_9
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000101
+    m_Key: Upgrade_MoreCapacity_10
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000102
+    m_Key: Upgrade_MoreCapacity_11
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000103
+    m_Key: Upgrade_MoreCapacity_12
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000104
+    m_Key: Upgrade_MoreCapacity_13
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000105
+    m_Key: Upgrade_MoreCapacity_14
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000106
+    m_Key: Upgrade_MoreCapacity_15
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000088
+    m_Key: Upgrade_TableSlotsIncrease_None
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000089
+    m_Key: Upgrade_TableSlotsIncrease_1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000090
+    m_Key: Upgrade_TableSlotsIncrease_2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000091
+    m_Key: Upgrade_QueueCapacity_None
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000092
+    m_Key: Upgrade_QueueCapacity_1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000093
+    m_Key: Upgrade_QueueCapacity_2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000094
+    m_Key: Upgrade_QueueCapacity_3
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

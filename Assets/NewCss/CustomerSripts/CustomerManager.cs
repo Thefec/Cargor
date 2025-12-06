@@ -167,6 +167,8 @@ namespace NewCss
 
         private void Start()
         {
+            LocalizationHelper.OnLocaleChanged += OnLocaleChanged;
+            
             if (IsServer)
             {
                 SubscribeToDayCycleEvents();
@@ -176,10 +178,18 @@ namespace NewCss
 
         private void OnDestroy()
         {
+            LocalizationHelper.OnLocaleChanged -= OnLocaleChanged;
+            
             if (IsServer)
             {
                 UnsubscribeFromDayCycleEvents();
             }
+        }
+        
+        private void OnLocaleChanged()
+        {
+            // Refresh UI when locale changes
+            UpdateRemainingCustomersUI();
         }
 
         private void Update()
@@ -630,7 +640,8 @@ namespace NewCss
         {
             if (remainingCustomersText != null)
             {
-                remainingCustomersText.text = $"{_customersRemainingToday}";
+                string label = LocalizationHelper.GetLocalizedString("ExpectedCustomers");
+                remainingCustomersText.text = $"{label}\n{_customersRemainingToday}";
             }
         }
 
@@ -639,7 +650,8 @@ namespace NewCss
         {
             if (remainingCustomersText != null)
             {
-                remainingCustomersText.text = $"{remainingCount}";
+                string label = LocalizationHelper.GetLocalizedString("ExpectedCustomers");
+                remainingCustomersText.text = $"{label}\n{remainingCount}";
             }
         }
 

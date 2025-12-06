@@ -470,6 +470,166 @@ MonoBehaviour:
     m_Localized: "({0}/{1} Mola Odas\u0131nda)"
     m_Metadata:
       m_Items: []
+  - m_Id: 30570000000000067
+    m_Localized: "Beklenen M\xFC\u015Fteriler"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000068
+    m_Localized: "K\u0131rm\u0131z\u0131"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000069
+    m_Localized: Mavi
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000070
+    m_Localized: "Sar\u0131"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000071
+    m_Localized: "Ye\u015Fil"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000072
+    m_Localized: "G\xF6rev Yok"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000073
+    m_Localized: "\xD6d\xFCl"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000074
+    m_Localized: Ceza
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000075
+    m_Localized: "Tamamland\u0131"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000076
+    m_Localized: "Ba\u015Far\u0131s\u0131z"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000077
+    m_Localized: "{0} kez mini oyunu tamamla"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000078
+    m_Localized: "Rafa {0} adet kutu koy"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000079
+    m_Localized: "Rafa {0} adet {1} kutu koy"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000080
+    m_Localized: "{0} adet arac\u0131 tamamla"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000081
+    m_Localized: "{0} m\xFC\u015Fteri ile ilgilen"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000082
+    m_Localized: "{0} m\xFC\u015Fteriyi g\xF6rmezden gel"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000083
+    m_Localized: "{0} oyuncak paketle"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000084
+    m_Localized: "Kapasite 0"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000085
+    m_Localized: "Kapasite +1"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000086
+    m_Localized: "Kapasite +2"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000087
+    m_Localized: "Kapasite +3"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000095
+    m_Localized: "Kapasite +4"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000096
+    m_Localized: "Kapasite +5"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000097
+    m_Localized: "Kapasite +6"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000098
+    m_Localized: "Kapasite +7"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000099
+    m_Localized: "Kapasite +8"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000100
+    m_Localized: "Kapasite +9"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000101
+    m_Localized: "Kapasite +10"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000102
+    m_Localized: "Kapasite +11"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000103
+    m_Localized: "Kapasite +12"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000104
+    m_Localized: "Kapasite +13"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000105
+    m_Localized: "Kapasite +14"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000106
+    m_Localized: "Kapasite +15"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000088
+    m_Localized: "Masa 0"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000089
+    m_Localized: "Masa +1"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000090
+    m_Localized: "Masa +2"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000091
+    m_Localized: "Kuyruk Kapasitesi 0"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000092
+    m_Localized: "Kuyruk Kapasitesi +1"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000093
+    m_Localized: "Kuyruk Kapasitesi +2"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000094
+    m_Localized: "Kuyruk Kapasitesi +3"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

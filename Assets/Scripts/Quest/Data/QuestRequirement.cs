@@ -23,16 +23,37 @@ namespace NewCss.Quest
         /// </summary>
         public string GetDescription(QuestType questType)
         {
-            string boxTypeStr = requireSpecificBoxType ? $"{requiredBoxType} " : "";
-
+            string boxColor = requireSpecificBoxType 
+                ? LocalizationHelper.GetLocalizedString($"BoxType_{requiredBoxType}") 
+                : null;
+            
+            return GetLocalizedDescription(questType, boxColor);
+        }
+        
+        private string GetLocalizedDescription(QuestType questType, string boxColor)
+        {
             return questType switch
             {
-                QuestType.CompleteMinigame => $"{targetCount} kez mini oyunu tamamla",
-                QuestType.PlaceBoxOnShelf => $"Rafa {targetCount} adet {boxTypeStr}kutu koy",
-                QuestType.CompleteTruck => $"{targetCount} adet aracı tamamla",
-                QuestType.ServeCustomer => $"{targetCount} müşteri ile ilgilen",
-                QuestType.IgnoreCustomer => $"{targetCount} müşteriyi görmezden gel",
-                QuestType.PackToy => $"{targetCount} oyuncak paketle",
+                QuestType.CompleteMinigame => 
+                    LocalizationHelper.GetLocalizedStringFormat("Quest_CompleteMinigame", targetCount),
+                    
+                QuestType.PlaceBoxOnShelf => 
+                    string.IsNullOrEmpty(boxColor)
+                        ? LocalizationHelper.GetLocalizedStringFormat("Quest_PlaceBoxOnShelf", targetCount)
+                        : LocalizationHelper.GetLocalizedStringFormat("Quest_PlaceBoxOnShelfSpecific", targetCount, boxColor),
+                        
+                QuestType.CompleteTruck => 
+                    LocalizationHelper.GetLocalizedStringFormat("Quest_CompleteTruck", targetCount),
+                    
+                QuestType.ServeCustomer => 
+                    LocalizationHelper.GetLocalizedStringFormat("Quest_ServeCustomer", targetCount),
+                    
+                QuestType.IgnoreCustomer => 
+                    LocalizationHelper.GetLocalizedStringFormat("Quest_IgnoreCustomer", targetCount),
+                    
+                QuestType.PackToy => 
+                    LocalizationHelper.GetLocalizedStringFormat("Quest_PackToy", targetCount),
+                    
                 _ => $"{targetCount}x"
             };
         }

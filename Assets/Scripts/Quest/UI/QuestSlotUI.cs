@@ -13,8 +13,6 @@ namespace NewCss.Quest
         #region Constants
 
         private const string LOG_PREFIX = "[QuestSlotUI]";
-        private const string COMPLETED_TEXT = "Tamamlandı";
-        private const string FAILED_TEXT = "Tamamlanamadı";
 
         #endregion
 
@@ -102,11 +100,26 @@ namespace NewCss.Quest
         {
             SetupButtonListeners();
             HideRemovedElements();
+            LocalizationHelper.OnLocaleChanged += OnLocaleChanged;
         }
 
         private void OnDestroy()
         {
             RemoveButtonListeners();
+            LocalizationHelper.OnLocaleChanged -= OnLocaleChanged;
+        }
+
+        private void OnLocaleChanged()
+        {
+            // Refresh UI when locale changes
+            if (_currentQuestData != null)
+            {
+                UpdateUI();
+            }
+            else
+            {
+                SetEmptyState();
+            }
         }
 
         #endregion
@@ -226,12 +239,14 @@ namespace NewCss.Quest
 
             if (rewardsText != null)
             {
-                rewardsText.text = $"Ödül: {_currentQuestData.GetRewardsSummary()}";
+                string rewardLabel = LocalizationHelper.GetLocalizedString("Quest_Reward");
+                rewardsText.text = $"{rewardLabel}: {_currentQuestData.GetRewardsSummary()}";
             }
 
             if (penaltiesText != null)
             {
-                penaltiesText.text = $"Ceza: {_currentQuestData.GetPenaltiesSummary()}";
+                string penaltyLabel = LocalizationHelper.GetLocalizedString("Quest_Penalty");
+                penaltiesText.text = $"{penaltyLabel}: {_currentQuestData.GetPenaltiesSummary()}";
             }
         }
 
@@ -257,13 +272,13 @@ namespace NewCss.Quest
                 case QuestStatus.Completed:
                 case QuestStatus.Collected:
                     // Tamamlandı - yeşil renk
-                    progressText.text = COMPLETED_TEXT;
+                    progressText.text = LocalizationHelper.GetLocalizedString("Quest_Completed");
                     progressText.color = completedColor;
                     break;
 
                 case QuestStatus.Failed:
                     // Tamamlanamadı - kırmızı renk
-                    progressText.text = FAILED_TEXT;
+                    progressText.text = LocalizationHelper.GetLocalizedString("Quest_Failed");
                     progressText.color = failedColor;
                     break;
 
@@ -294,7 +309,7 @@ namespace NewCss.Quest
 
         private void SetEmptyState()
         {
-            if (titleText != null) titleText.text = "Görev Yok";
+            if (titleText != null) titleText.text = LocalizationHelper.GetLocalizedString("Quest_NoQuest");
             if (descriptionText != null) descriptionText.text = "";
             if (rewardsText != null) rewardsText.text = "";
             if (penaltiesText != null) penaltiesText.text = "";
