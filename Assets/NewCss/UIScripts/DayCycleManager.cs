@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 using UnityEngine.SceneManagement;
 using TMPro;
 
@@ -43,6 +45,10 @@ namespace NewCss
         private const int DYNAMIC_DURATION_START_DAY = 3;
         private const float PERIODIC_CHECK_WINDOW = 0.5f;
         private const string LOG_PREFIX = "[DayCycleManager]";
+
+        // Localization Keys
+        private const string LOC_KEY_DAY_FORMAT = "DayFormat";
+        private const string LOC_KEY_DAY_OVER_WARNING = "DayOverWarning";
 
         #endregion
 
@@ -213,11 +219,13 @@ namespace NewCss
         private void OnEnable()
         {
             SceneManager.sceneLoaded += HandleSceneLoaded;
+            LocalizationSettings.SelectedLocaleChanged += HandleLocaleChanged;
         }
 
         private void OnDisable()
         {
             SceneManager.sceneLoaded -= HandleSceneLoaded;
+            LocalizationSettings.SelectedLocaleChanged -= HandleLocaleChanged;
         }
 
         private void Start()
@@ -637,7 +645,16 @@ namespace NewCss
 
         private string FormatTimeDisplay((int hour, int minute) timeInfo)
         {
-            return $"Day {_networkCurrentDay.Value}  {timeInfo.hour:D2}:{timeInfo.minute:D2} ({CurrentDayDuration}s)";
+            string template = LocalizationHelper.GetLocalizedString(LOC_KEY_DAY_FORMAT);
+            try
+            {
+                return string.Format(template, _networkCurrentDay.Value, timeInfo.hour.ToString("D2"), timeInfo.minute.ToString("D2"), CurrentDayDuration);
+            }
+            catch
+            {
+                // Fallback if format string is invalid
+                return $"Day {_networkCurrentDay.Value}  {timeInfo.hour:D2}:{timeInfo.minute:D2} ({CurrentDayDuration}s)";
+            }
         }
 
         private void SetDayEndScreenActive(bool active)
@@ -667,7 +684,7 @@ namespace NewCss
         {
             if (dayTimeText != null)
             {
-                dayTimeText.text = "Day Over.  Go to Break Room. ";
+                dayTimeText.text = LocalizationHelper.GetLocalizedString(LOC_KEY_DAY_OVER_WARNING);
             }
         }
 
@@ -739,6 +756,16 @@ namespace NewCss
         private static bool IsGameScene(string sceneName)
         {
             return sceneName != "MainMenu" && sceneName.Contains("Game");
+        }
+
+        #endregion
+
+        #region Localization
+
+        private void HandleLocaleChanged(Locale newLocale)
+        {
+            Debug.Log($"{LOG_PREFIX} Locale changed to: {newLocale?.Identifier.Code ?? "null"}");
+            UpdateUI();
         }
 
         #endregion

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
 
 namespace NewCss
@@ -17,7 +19,6 @@ namespace NewCss
 
         private const string LOG_PREFIX = "[EventCalendar]";
         private const string CHARACTER_TAG = "Character";
-        private const string RENT_DAY_TEXT = "Rent Day";
         private const int CALENDAR_CELL_COUNT = 16;
         private const int RENT_DAY_INTERVAL = 6;
         private const int EVENT_INTERVAL_MIN = 3;
@@ -31,6 +32,9 @@ namespace NewCss
         // Animator triggers
         private const string TRIGGER_OPEN = "Open";
         private const string TRIGGER_CLOSE = "Close";
+
+        // Localization Keys
+        private const string LOC_KEY_RENT_DAY = "RentDay";
 
         #endregion
 
@@ -51,14 +55,38 @@ namespace NewCss
         public class GameEvent
         {
             public string name;
+            public string nameLocKey;
             public EventType type;
             public string description;
+            public string descLocKey;
 
-            public GameEvent(string name, EventType type, string description)
+            public GameEvent(string name, string nameLocKey, EventType type, string description, string descLocKey)
             {
                 this.name = name;
+                this.nameLocKey = nameLocKey;
                 this.type = type;
                 this.description = description;
+                this.descLocKey = descLocKey;
+            }
+
+            /// <summary>
+            /// Gets the localized event name
+            /// </summary>
+            public string GetLocalizedName()
+            {
+                if (string.IsNullOrEmpty(nameLocKey))
+                    return name;
+                return LocalizationHelper.GetLocalizedString(nameLocKey);
+            }
+
+            /// <summary>
+            /// Gets the localized event description
+            /// </summary>
+            public string GetLocalizedDescription()
+            {
+                if (string.IsNullOrEmpty(descLocKey))
+                    return description;
+                return LocalizationHelper.GetLocalizedString(descLocKey);
             }
         }
 
@@ -120,23 +148,23 @@ namespace NewCss
 
         private readonly List<GameEvent> _allEvents = new()
         {
-            new GameEvent("BUSY DAY", EventType.Negative, "CUSTOMER SPAWN RATE INCREASES BY 30%. "),
-            new GameEvent("DELIVERY BONUS", EventType.Positive, "EARN 20% MORE MONEY PER DELIVERY."),
-            new GameEvent("ANGRY CUSTOMERS", EventType.Negative, "CUSTOMER PATIENCE DECREASES BY 30%."),
-            new GameEvent("RELAXED DAY", EventType.Positive, "CUSTOMER PATIENCE INCREASES BY 10%."),
-            new GameEvent("SLOW LOGISTICS", EventType.Negative, "TRUCK MOVEMENT SPEED DECREASES BY 20%."),
-            new GameEvent("EXPRESS CARGO", EventType.Positive, "TRUCKS LEAVE THE SCENE 10% FASTER."),
-            new GameEvent("HEAVY BOXES", EventType.Negative, "OVERALL MOVEMENT SPEED SLOWS DOWN BY 10%."),
-            new GameEvent("GOLDEN BOX DAY", EventType.Positive, "EACH CORRECT DELIVERED BOX EARNS EXTRA 5%."),
-            new GameEvent("OPPORTUNITY DAY", EventType.Positive, "UPGRADE COSTS DECREASE BY 10%."),
-            new GameEvent("FATIGUE PROBLEM", EventType.Negative, "STAMINA REGENERATION TIME INCREASES BY 30%."),
-            new GameEvent("QUOTA DAY", EventType.Neutral, "ALL TRUCKS REQUEST ONLY ONE COLOR OF BOX."),
-            new GameEvent("VIP SERVICE", EventType. Positive, "10% CHANCE BOXES ARE PERFECT AND EARN 10% MORE."),
-            new GameEvent("SURPRISE AUDIT", EventType.Negative, "ALL FAULTY OPERATIONS PENALIZE DOUBLE. "),
-            new GameEvent("RAINY DAY", EventType. Positive, "20% FEWER CUSTOMERS ARRIVE. "),
-            new GameEvent("MARKETING DAY", EventType. Negative, "20% MORE CUSTOMERS, BUT 30% LESS EARNINGS."),
-            new GameEvent("CUSTOMER SUPPORT", EventType. Negative, "RECEPTION PHONE RINGS 30% MORE OFTEN."),
-            new GameEvent("FESTIVAL DAY", EventType. Positive, "RANDOM BONUS IS EARNED AT DAY START.")
+            new GameEvent("BUSY DAY", "EventBusyDay", EventType.Negative, "CUSTOMER SPAWN RATE INCREASES BY 30%.", "EventBusyDayDesc"),
+            new GameEvent("DELIVERY BONUS", "EventDeliveryBonus", EventType.Positive, "EARN 20% MORE MONEY PER DELIVERY.", "EventDeliveryBonusDesc"),
+            new GameEvent("ANGRY CUSTOMERS", "EventAngryCustomers", EventType.Negative, "CUSTOMER PATIENCE DECREASES BY 30%.", "EventAngryCustomersDesc"),
+            new GameEvent("RELAXED DAY", "EventRelaxedDay", EventType.Positive, "CUSTOMER PATIENCE INCREASES BY 10%.", "EventRelaxedDayDesc"),
+            new GameEvent("SLOW LOGISTICS", "EventSlowLogistics", EventType.Negative, "TRUCK MOVEMENT SPEED DECREASES BY 20%.", "EventSlowLogisticsDesc"),
+            new GameEvent("EXPRESS CARGO", "EventExpressCargo", EventType.Positive, "TRUCKS LEAVE THE SCENE 10% FASTER.", "EventExpressCargoDesc"),
+            new GameEvent("HEAVY BOXES", "EventHeavyBoxes", EventType.Negative, "OVERALL MOVEMENT SPEED SLOWS DOWN BY 10%.", "EventHeavyBoxesDesc"),
+            new GameEvent("GOLDEN BOX DAY", "EventGoldenBoxDay", EventType.Positive, "EACH CORRECT DELIVERED BOX EARNS EXTRA 5%.", "EventGoldenBoxDayDesc"),
+            new GameEvent("OPPORTUNITY DAY", "EventOpportunityDay", EventType.Positive, "UPGRADE COSTS DECREASE BY 10%.", "EventOpportunityDayDesc"),
+            new GameEvent("FATIGUE PROBLEM", "EventFatigueProblem", EventType.Negative, "STAMINA REGENERATION TIME INCREASES BY 30%.", "EventFatigueProblemDesc"),
+            new GameEvent("QUOTA DAY", "EventQuotaDay", EventType.Neutral, "ALL TRUCKS REQUEST ONLY ONE COLOR OF BOX.", "EventQuotaDayDesc"),
+            new GameEvent("VIP SERVICE", "EventVipService", EventType.Positive, "10% CHANCE BOXES ARE PERFECT AND EARN 10% MORE.", "EventVipServiceDesc"),
+            new GameEvent("SURPRISE AUDIT", "EventSurpriseAudit", EventType.Negative, "ALL FAULTY OPERATIONS PENALIZE DOUBLE.", "EventSurpriseAuditDesc"),
+            new GameEvent("RAINY DAY", "EventRainyDay", EventType.Positive, "20% FEWER CUSTOMERS ARRIVE.", "EventRainyDayDesc"),
+            new GameEvent("MARKETING DAY", "EventMarketingDay", EventType.Negative, "20% MORE CUSTOMERS, BUT 30% LESS EARNINGS.", "EventMarketingDayDesc"),
+            new GameEvent("CUSTOMER SUPPORT", "EventCustomerSupport", EventType.Negative, "RECEPTION PHONE RINGS 30% MORE OFTEN.", "EventCustomerSupportDesc"),
+            new GameEvent("FESTIVAL DAY", "EventFestivalDay", EventType.Positive, "RANDOM BONUS IS EARNED AT DAY START.", "EventFestivalDayDesc")
         };
 
         private readonly List<int> _randomEventDays = new();
@@ -199,11 +227,13 @@ namespace NewCss
             GenerateInitialEvents();
             UpdateCalendarUI();
             SubscribeToDayCycleEvents();
+            SubscribeToLocaleEvents();
         }
 
         private void OnDestroy()
         {
             UnsubscribeFromDayCycleEvents();
+            UnsubscribeFromLocaleEvents();
             CleanupExitButton();
             ClearSpawnedEventTexts();
         }
@@ -302,6 +332,22 @@ namespace NewCss
         private void UnsubscribeFromDayCycleEvents()
         {
             DayCycleManager.OnNewDay -= HandleNewDay;
+        }
+
+        private void SubscribeToLocaleEvents()
+        {
+            LocalizationSettings.SelectedLocaleChanged += HandleLocaleChanged;
+        }
+
+        private void UnsubscribeFromLocaleEvents()
+        {
+            LocalizationSettings.SelectedLocaleChanged -= HandleLocaleChanged;
+        }
+
+        private void HandleLocaleChanged(Locale newLocale)
+        {
+            LogDebug($"Locale changed to: {newLocale?.Identifier.Code ?? "null"}");
+            UpdateCalendarUI();
         }
 
         #endregion
@@ -669,7 +715,7 @@ namespace NewCss
             if (!_randomEventDays.Contains(day)) return;
             if (!_eventsByDay.TryGetValue(day, out GameEvent gameEvent)) return;
 
-            var eventObject = SpawnEventText(index, gameEvent.name, Color.white);
+            var eventObject = SpawnEventText(index, gameEvent.GetLocalizedName(), Color.white);
             if (eventObject != null)
             {
                 _spawnedEventTexts.Add(eventObject);
@@ -680,7 +726,8 @@ namespace NewCss
         {
             if (day % RENT_DAY_INTERVAL != 0) return;
 
-            var rentObject = SpawnEventText(index, RENT_DAY_TEXT, Color.red);
+            string rentDayText = LocalizationHelper.GetLocalizedString(LOC_KEY_RENT_DAY);
+            var rentObject = SpawnEventText(index, rentDayText, Color.red);
             if (rentObject != null)
             {
                 _spawnedEventTexts.Add(rentObject);

@@ -254,6 +254,222 @@ MonoBehaviour:
     m_Localized: "Kick i\u015Flemi ba\u015Far\u0131s\u0131z!"
     m_Metadata:
       m_Items: []
+  - m_Id: 30570000000000013
+    m_Localized: "Bo\u015F Slot"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000014
+    m_Localized: "G\xFCn {0}  {1}:{2} ({3}s)"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000015
+    m_Localized: "G\xFCn Bitti. Mola Odas\u0131na Gidin."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000016
+    m_Localized: "Kira G\xFCn\xFC"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000017
+    m_Localized: 'Seviye: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000018
+    m_Localized: 'Maliyet: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000019
+    m_Localized: Maks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000020
+    m_Localized: "Sat\u0131n Al"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000021
+    m_Localized: Kuyruk
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000022
+    m_Localized: "Maksimum m\xFC\u015Fteri kuyruk boyutunu art\u0131r\u0131r."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000023
+    m_Localized: Dayaniklilik
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000024
+    m_Localized: "Dayan\u0131kl\u0131l\u0131k yenileme h\u0131z\u0131n\u0131 art\u0131r\u0131r."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000025
+    m_Localized: Para
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000026
+    m_Localized: "Kutu teslimat\u0131 ba\u015F\u0131na \xF6d\xFCl\xFC art\u0131r\u0131r."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000027
+    m_Localized: Kamyon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000028
+    m_Localized: "Ek kamyon hangarlar\u0131 a\xE7ar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000029
+    m_Localized: "G\xF6rev Seviyesi"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000030
+    m_Localized: "Daha y\xFCksek seviye g\xF6revleri a\xE7ar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000031
+    m_Localized: "YO\u011EUN G\xDCN"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000032
+    m_Localized: "M\xFC\u015Fteri do\u011Fma oran\u0131 %30 artar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000033
+    m_Localized: "SINIRLI M\xDC\u015ETER\u0130LER"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000034
+    m_Localized: "M\xFC\u015Fteri sabr\u0131 %30 azal\u0131r."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000035
+    m_Localized: "YAVA\u015E LOJ\u0130ST\u0130K"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000036
+    m_Localized: "Kamyon hareket h\u0131z\u0131 %20 azal\u0131r."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000037
+    m_Localized: "A\u011EIR KUTULAR"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000038
+    m_Localized: "Genel hareket h\u0131z\u0131 %10 yava\u015Flar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000039
+    m_Localized: YORGUNLUK SORUNU
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000040
+    m_Localized: "Dayan\u0131kl\u0131l\u0131k yenileme s\xFCresi %30 artar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000041
+    m_Localized: "S\xDCRPR\u0130Z DENET\u0130M"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000042
+    m_Localized: "T\xFCm hatalar iki kat ceza al\u0131r."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000043
+    m_Localized: "PAZARLAMA G\xDCN\xDC"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000044
+    m_Localized: "%20 fazla m\xFC\u015Fteri, ama %30 az kazan\xE7."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000045
+    m_Localized: "M\xDC\u015ETER\u0130 DESTE\u011E\u0130"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000046
+    m_Localized: "Resepsiyon telefonu %30 daha s\u0131k \xE7alar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000047
+    m_Localized: TESLIMAT BONUSU
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000048
+    m_Localized: "Teslimat ba\u015F\u0131na %20 daha fazla para kazan."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000049
+    m_Localized: "RAHAT B\u0130R G\xDCN"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000050
+    m_Localized: "M\xFC\u015Fteri sabr\u0131 %10 artar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000051
+    m_Localized: EKSPRES KARGO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000052
+    m_Localized: "Kamyonlar sahneyi %10 daha h\u0131zl\u0131 terk eder."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000053
+    m_Localized: "ALTIN KUTU G\xDCN\xDC"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000054
+    m_Localized: "Do\u011Fru teslim edilen her kutu %5 ekstra kazan\u0131r."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000055
+    m_Localized: "FIRSAT G\xDCN\xDC"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000056
+    m_Localized: "Y\xFCkseltme maliyetleri %10 azal\u0131r."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000057
+    m_Localized: "KOTA G\xDCN\xDC"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000058
+    m_Localized: "T\xFCm kamyonlar tek renk kutu ister."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000059
+    m_Localized: "VIP H\u0130ZMET"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000060
+    m_Localized: "%10 ihtimalle kutular m\xFCkemmel ve %10 daha fazla kazan\u0131r."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000061
+    m_Localized: "YA\u011EMURLU G\xDCN"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000062
+    m_Localized: "%20 daha az m\xFC\u015Fteri gelir."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000063
+    m_Localized: "FEST\u0130VAL G\xDCN\xDC"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000064
+    m_Localized: "G\xFCn ba\u015F\u0131nda rastgele bonus kazan\u0131l\u0131r."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000065
+    m_Localized: Oyuncular
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000066
+    m_Localized: "({0}/{1} Mola Odas\u0131nda)"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

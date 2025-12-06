@@ -6,6 +6,8 @@ using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
 
 namespace NewCss
@@ -22,8 +24,14 @@ namespace NewCss
         [Tooltip("Görünen isim")]
         public string displayName;
 
+        [Tooltip("Localization key for display name")]
+        public string displayNameLocKey;
+
         [Tooltip("Açıklama metni")]
         public string contentText;
+
+        [Tooltip("Localization key for content text")]
+        public string contentTextLocKey;
 
         [Header("=== VALUES ===")]
         [Tooltip("Başlangıç değeri")]
@@ -122,6 +130,12 @@ namespace NewCss
         private const string UI_BUTTON_TEXT = "Text";
         private const string UI_BUTTON_TEXT_TMP = "Text (TMP)";
 
+        // Localization Keys
+        private const string LOC_KEY_LEVEL = "UpgradeLevel";
+        private const string LOC_KEY_COST = "UpgradeCost";
+        private const string LOC_KEY_MAX = "UpgradeMax";
+        private const string LOC_KEY_BUY = "UpgradeBuy";
+
         #endregion
 
         #region Nested Classes
@@ -130,6 +144,7 @@ namespace NewCss
         {
             public UpgradeDefinition Definition;
             public int UpgradeIndex;
+            public TMP_Text NameText;
             public TMP_Text LevelText;
             public TMP_Text CostText;
             public TMP_Text ContentText;
@@ -356,11 +371,19 @@ namespace NewCss
         private void SubscribeToDayCycleEvents()
         {
             DayCycleManager.OnNewDay += HandleNewDay;
+            LocalizationSettings.SelectedLocaleChanged += HandleLocaleChanged;
         }
 
         private void UnsubscribeFromDayCycleEvents()
         {
             DayCycleManager.OnNewDay -= HandleNewDay;
+            LocalizationSettings.SelectedLocaleChanged -= HandleLocaleChanged;
+        }
+
+        private void HandleLocaleChanged(Locale newLocale)
+        {
+            LogDebug($"Locale changed to: {newLocale?.Identifier.Code ?? "null"}");
+            RefreshAllUpgradeUI();
         }
 
         #endregion
@@ -741,12 +764,15 @@ namespace NewCss
 
         private bool TrySetupEntryUI(GameObject go, EntryUI entry, UpgradeDefinition def)
         {
-            // Name Text
-            if (!TrySetTextComponent(go, UI_NAME_TEXT, def.displayName))
+            // Name Text - now capture reference for dynamic localization
+            entry.NameText = FindTextComponent(go, UI_NAME_TEXT);
+            if (entry.NameText == null)
             {
                 LogError($"NameText not found for {def.displayName}");
                 return false;
             }
+            // Set initial localized name
+            entry.NameText.text = GetLocalizedUpgradeName(def);
 
             // Level Text
             entry.LevelText = FindTextComponent(go, UI_LEVEL_TEXT);
@@ -830,8 +856,26 @@ namespace NewCss
         {
             int currentVisualLevel = GetVisualLevel(entry.UpgradeIndex);
 
-            entry.LevelText.text = $"Level: {currentVisualLevel}";
-            entry.ContentText.text = entry.Definition.contentText;
+            // Update name text with localized value
+            if (entry.NameText != null)
+            {
+                string displayName = GetLocalizedUpgradeName(entry.Definition);
+                entry.NameText.text = displayName;
+            }
+
+            // Update level text with localized format
+            string levelTemplate = LocalizationHelper.GetLocalizedString(LOC_KEY_LEVEL);
+            try
+            {
+                entry.LevelText.text = string.Format(levelTemplate, currentVisualLevel);
+            }
+            catch
+            {
+                entry.LevelText.text = $"Level: {currentVisualLevel}";
+            }
+
+            // Update content text with localized value
+            entry.ContentText.text = GetLocalizedUpgradeContent(entry.Definition);
 
             if (currentVisualLevel < entry.Definition.maxLevel)
             {
@@ -843,31 +887,60 @@ namespace NewCss
             }
         }
 
+        private string GetLocalizedUpgradeName(UpgradeDefinition def)
+        {
+            if (!string.IsNullOrEmpty(def.displayNameLocKey))
+            {
+                return LocalizationHelper.GetLocalizedString(def.displayNameLocKey);
+            }
+            return def.displayName;
+        }
+
+        private string GetLocalizedUpgradeContent(UpgradeDefinition def)
+        {
+            if (!string.IsNullOrEmpty(def.contentTextLocKey))
+            {
+                return LocalizationHelper.GetLocalizedString(def.contentTextLocKey);
+            }
+            return def.contentText;
+        }
+
         private void UpdateEntryUIForPurchasable(EntryUI entry, int currentVisualLevel)
         {
             float costMultiplier = GetCostMultiplier();
             int baseCost = entry.Definition.baseCost + currentVisualLevel * entry.Definition.costStep;
             int finalCost = Mathf.RoundToInt(baseCost * costMultiplier);
 
+            string costTemplate = LocalizationHelper.GetLocalizedString(LOC_KEY_COST);
+            string costText;
+            try
+            {
+                costText = string.Format(costTemplate, finalCost);
+            }
+            catch
+            {
+                costText = $"Cost: {finalCost}";
+            }
+
             // Show cost with discount if applicable
             if (costMultiplier < 1f)
             {
-                entry.CostText.text = $"<color=green>Cost: {finalCost}</color> <color=red><s>{baseCost}</s></color>";
+                entry.CostText.text = $"<color=green>{costText}</color> <color=red><s>{baseCost}</s></color>";
             }
             else
             {
-                entry.CostText.text = $"Cost: {finalCost}";
+                entry.CostText.text = costText;
             }
 
             entry.BuyButton.interactable = MoneySystem.Instance.CurrentMoney >= finalCost;
-            SetButtonText(entry.BuyButton, "Buy");
+            SetButtonText(entry.BuyButton, LocalizationHelper.GetLocalizedString(LOC_KEY_BUY));
         }
 
         private void UpdateEntryUIForMaxLevel(EntryUI entry)
         {
-            entry.CostText.text = "Max";
+            entry.CostText.text = LocalizationHelper.GetLocalizedString(LOC_KEY_MAX);
             entry.BuyButton.interactable = false;
-            SetButtonText(entry.BuyButton, "Max");
+            SetButtonText(entry.BuyButton, LocalizationHelper.GetLocalizedString(LOC_KEY_MAX));
         }
 
         private void SetButtonText(Button button, string text)
