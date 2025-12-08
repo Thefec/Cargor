@@ -332,7 +332,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IntroVideo
   videoPlayer: {fileID: 1821799480}
   menuSceneName: MainMenu
-  autoSkipTime: 7
+  autoSkipTime: 6
   fadePanel: {fileID: 315223179}
   fadeDuration: 2
   onlyFirstTime: 0
@@ -781,7 +781,7 @@ VideoPlayer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1821799479}
   m_Enabled: 1
-  m_VideoClip: {fileID: 32900000, guid: 781e3692b5795894181d0b116e7e29da, type: 3}
+  m_VideoClip: {fileID: 32900000, guid: aa9081b894cba5f4fa35d21547e93015, type: 3}
   m_TargetCameraAlpha: 1
   m_TargetCamera3DLayout: 0
   m_TargetCamera: {fileID: 1106551056}

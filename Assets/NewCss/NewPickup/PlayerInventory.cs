@@ -104,6 +104,10 @@ public class PlayerInventory : NetworkBehaviour
     private const int COLLIDER_BUFFER_SIZE = 30;
     private const float MIN_SCROLL_THRESHOLD = 0.01f;
 
+    private Coroutine _currentAnimationCoroutine;
+    private float _lastInputTime;
+    private const float INPUT_SPAM_COOLDOWN = 0.15f;
+
     #endregion
 
     #region Static Fields (Thread-Safe Item Locking)
@@ -209,6 +213,17 @@ public class PlayerInventory : NetworkBehaviour
     {
         UnsubscribeFromNetworkEvents();
         CleanupOutlines();
+
+        // Animasyon temizliği
+        if (_currentAnimationCoroutine != null)
+        {
+            StopCoroutine(_currentAnimationCoroutine);
+            _currentAnimationCoroutine = null;
+        }
+        _isAnimating = false;
+
+        // Carrying state'i sıfırla
+        _playerMovement?.SetCarrying(false);
     }
 
     private void OnDestroy()
@@ -844,6 +859,13 @@ public class PlayerInventory : NetworkBehaviour
     private void HandleInput()
     {
         if (_isProcessingInteraction) return;
+
+        // Animasyon devam ederken input'ları engelle
+        if (_isAnimating) return;
+
+        // Spam koruması
+        if (Time.time - _lastInputTime < INPUT_SPAM_COOLDOWN) return;
+
         if (IsMinigameActive())
         {
             Debug.Log("[PlayerInventory] Minigame active - inputs blocked!");
@@ -852,14 +874,17 @@ public class PlayerInventory : NetworkBehaviour
 
         if (Input.GetKeyDown(KeyCode.E))
         {
+            _lastInputTime = Time.time;
             HandlePickupInteraction();
         }
         else if (Input.GetKeyDown(KeyCode.F))
         {
+            _lastInputTime = Time.time;
             HandleDropInteraction();
         }
         else if (Input.GetMouseButtonDown(0))
         {
+            _lastInputTime = Time.time;
             HandleThrowInteraction();
         }
     }
@@ -1767,7 +1792,7 @@ public class PlayerInventory : NetworkBehaviour
     {
         if (NetworkManager.Singleton.LocalClientId == targetClientId)
         {
-            StartCoroutine(DropAnimationCoroutine());
+            SafeStartAnimation(DropAnimationCoroutine());
         }
     }
 
@@ -1776,7 +1801,7 @@ public class PlayerInventory : NetworkBehaviour
     {
         if (NetworkManager.Singleton.LocalClientId == targetClientId)
         {
-            StartCoroutine(PickupAnimationCoroutine());
+            SafeStartAnimation(PickupAnimationCoroutine());
         }
     }
 
@@ -1984,22 +2009,23 @@ public class PlayerInventory : NetworkBehaviour
         _isProcessingInteraction = false;
     }
 
+
     [ClientRpc]
     private void StartPickupAnimationClientRpc()
     {
-        StartCoroutine(PickupAnimationCoroutine());
+        SafeStartAnimation(PickupAnimationCoroutine());
     }
 
     [ClientRpc]
     private void StartDropAnimationClientRpc()
     {
-        StartCoroutine(DropAnimationCoroutine());
+        SafeStartAnimation(DropAnimationCoroutine());
     }
 
     [ClientRpc]
     private void StartThrowAnimationClientRpc()
     {
-        StartCoroutine(ThrowAnimationCoroutine());
+        SafeStartAnimation(ThrowAnimationCoroutine());
     }
 
     [ClientRpc]
@@ -2007,6 +2033,7 @@ public class PlayerInventory : NetworkBehaviour
     {
         DestroyHeldItemVisual();
     }
+    
 
     #endregion
 
@@ -2034,27 +2061,44 @@ public class PlayerInventory : NetworkBehaviour
         else
         {
             Debug.LogError("[PlayerInventory] Failed to get currentItemData for visual spawning");
+            // Item data gelmezse carrying state'i sıfırla
+            _playerMovement?.SetCarrying(false);
         }
 
         _isAnimating = false;
+        _currentAnimationCoroutine = null;
     }
 
     private IEnumerator DropAnimationCoroutine()
     {
         _isAnimating = true;
 
-        _playerMovement?.SetCarrying(false);
+        // Önce visual'ı temizle
         DestroyHeldItemVisual();
+
+        // Sonra carrying state'i kapat
+        _playerMovement?.SetCarrying(false);
 
         yield return new WaitForSeconds(0.05f);
 
         _isAnimating = false;
+        _currentAnimationCoroutine = null;
+
+        // Güvenlik kontrolü - _hasItem false ise carrying kesinlikle false olmalı
+        if (!_hasItem.Value)
+        {
+            _playerMovement?.SetCarrying(false);
+        }
     }
 
     private IEnumerator ThrowAnimationCoroutine()
     {
         _isAnimating = true;
 
+        // Önce visual'ı temizle
+        DestroyHeldItemVisual();
+
+        // Carrying state'i hemen kapat
         _playerMovement?.SetCarrying(false);
 
         yield return new WaitForSeconds(0.05f);
@@ -2067,11 +2111,32 @@ public class PlayerInventory : NetworkBehaviour
             yield return null;
         }
 
-        DestroyHeldItemVisual();
-
         yield return new WaitForSeconds(0.05f);
 
         _isAnimating = false;
+        _currentAnimationCoroutine = null;
+
+        // Güvenlik kontrolü
+        if (!_hasItem.Value)
+        {
+            _playerMovement?.SetCarrying(false);
+        }
+    }
+
+    private void SafeStartAnimation(IEnumerator animationCoroutine)
+    {
+        // Önceki animasyon varsa iptal et
+        if (_currentAnimationCoroutine != null)
+        {
+            StopCoroutine(_currentAnimationCoroutine);
+            _currentAnimationCoroutine = null;
+        }
+
+        // Flag'leri sıfırla
+        _isAnimating = false;
+
+        // Yeni animasyonu başlat
+        _currentAnimationCoroutine = StartCoroutine(animationCoroutine);
     }
 
     #endregion
@@ -2084,11 +2149,18 @@ public class PlayerInventory : NetworkBehaviour
 
         if (newValue && !previousValue)
         {
-            StartCoroutine(PickupAnimationCoroutine());
+            SafeStartAnimation(PickupAnimationCoroutine());
         }
         else if (!newValue && previousValue)
         {
-            StartCoroutine(DropAnimationCoroutine());
+            SafeStartAnimation(DropAnimationCoroutine());
+        }
+
+        // Ekstra güvenlik: hasItem false ise kesinlikle carrying kapalı olmalı
+        if (!newValue)
+        {
+            _playerMovement?.SetCarrying(false);
+            DestroyHeldItemVisual();
         }
     }
 
