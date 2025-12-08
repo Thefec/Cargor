@@ -99,6 +99,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!64 &4830863902306008752
 MeshCollider:
@@ -409,8 +410,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7c82736062490f40a06cbe5f3b97b31, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NewCss.BoxFallPenalty
-  dropMoneyPenalty: 10
-  dropPrestigePenalty: 0.01
+  dropMoneyPenalty: 5
+  dropPrestigePenalty: 0.05
   boxDropSound: {fileID: 8300000, guid: 016732318ef656a4392c44070b4a51aa, type: 3}
   soundVolume: 1
   minVelocityForSound: 2
+  use2DSound: 0
+  maxSoundDistance: 50

@@ -28,31 +28,31 @@ MonoBehaviour:
   - rewardType: 0
     amount: 100
     durationDays: 0
-  - rewardType: 1
-    amount: 0.5
+  - rewardType: 0
+    amount: 150
     durationDays: 0
   - rewardType: 1
-    amount: 0.4
+    amount: 3
     durationDays: 0
   - rewardType: 1
-    amount: 0.3
+    amount: 3
+    durationDays: 0
+  - rewardType: 1
+    amount: 2
     durationDays: 0
   penaltyPool:
   - rewardType: 0
-    amount: -150
+    amount: -25
     durationDays: 0
   - rewardType: 0
-    amount: -220
-    durationDays: 0
-  - rewardType: 1
-    amount: -0.5
-    durationDays: 0
-  - rewardType: 1
-    amount: -0.2
-    durationDays: 0
-  - rewardType: 1
-    amount: -0.25
+    amount: -40
     durationDays: 0
   - rewardType: 0
-    amount: -350
+    amount: -55
+    durationDays: 0
+  - rewardType: 1
+    amount: -2
+    durationDays: 0
+  - rewardType: 1
+    amount: -1
     durationDays: 0

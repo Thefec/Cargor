@@ -37,7 +37,7 @@ namespace NewCss
 
         #region Constants
 
-        private const int INITIAL_WEEKLY_COST = 1000;
+        private const int INITIAL_WEEKLY_COST = 600;
         private const int MIN_WEEKLY_INCREASE = 200;
         private const int MAX_WEEKLY_INCREASE = 600;
         private const float WEEKLY_COST_MULTIPLIER = 1.2f;
