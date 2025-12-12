@@ -1,58 +1,110 @@
 using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 
-public class ItemFreezeSystem : MonoBehaviour
+/// <summary>
+/// Item'ýn yere düþtükten sonra donmasýný saðlar
+/// Masaya konulan item'lar için devre dýþý býrakýlmalý
+/// </summary>
+public class ItemFreezeSystem : NetworkBehaviour
 {
+    #region Constants
+
+    private const string LOG_PREFIX = "[ItemFreezeSystem]";
+    private const string GROUND_TAG = "Ground";
+    private const float FREEZE_DELAY = 3f;
+
+    #endregion
+
+    #region Private Fields
+
     private Rigidbody rb;
     private bool isGrounded = false;
     private Coroutine freezeCoroutine;
+    private bool isFrozenByTable = false;
 
-    void Start()
+    #endregion
+
+    #region Unity Lifecycle
+
+    private void Start()
     {
-        // Rigidbody componentini al
         rb = GetComponent<Rigidbody>();
 
         if (rb == null)
         {
-            Debug.LogError("ItemFreezeSystem: Rigidbody bulunamadý!");
+            Debug.LogError($"{LOG_PREFIX} Rigidbody bulunamadý!");
+            return;
         }
 
-        // Baþlangýçta constraint'leri kaldýr
-        if (rb != null)
+        // Baþlangýçta constraint'leri kaldýr (masada deðilse)
+        if (!isFrozenByTable)
         {
             rb.constraints = RigidbodyConstraints.None;
         }
     }
 
-    void OnCollisionEnter(Collision collision)
+    private void OnEnable()
     {
-        // Ground taglý objeyle çarpýþma kontrolü
-        if (collision.gameObject.CompareTag("Ground"))
+        // Aktif edildiðinde reset
+        isFrozenByTable = false;
+        isGrounded = false;
+
+        if (freezeCoroutine != null)
+        {
+            StopCoroutine(freezeCoroutine);
+            freezeCoroutine = null;
+        }
+    }
+
+    private void OnDisable()
+    {
+        // Devre dýþý býrakýldýðýnda coroutine'i durdur
+        if (freezeCoroutine != null)
+        {
+            StopCoroutine(freezeCoroutine);
+            freezeCoroutine = null;
+        }
+    }
+
+    #endregion
+
+    #region Collision Handling
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        // Masada ise collision'larý yoksay
+        if (isFrozenByTable) return;
+
+        // Sadece server'da çalýþ
+        if (IsSpawned && !IsServer) return;
+
+        if (collision.gameObject.CompareTag(GROUND_TAG))
         {
             if (!isGrounded)
             {
                 isGrounded = true;
 
-                // Eðer önceden baþlatýlmýþ bir coroutine varsa iptal et
                 if (freezeCoroutine != null)
                 {
                     StopCoroutine(freezeCoroutine);
                 }
 
-                // 3 saniye sonra freeze et
-                freezeCoroutine = StartCoroutine(FreezeAfterDelay(3f));
+                freezeCoroutine = StartCoroutine(FreezeAfterDelay(FREEZE_DELAY));
             }
         }
     }
 
-    void OnCollisionExit(Collision collision)
+    private void OnCollisionExit(Collision collision)
     {
-        // Ground'dan ayrýldýðýnda
-        if (collision.gameObject.CompareTag("Ground"))
+        if (isFrozenByTable) return;
+
+        if (IsSpawned && !IsServer) return;
+
+        if (collision.gameObject.CompareTag(GROUND_TAG))
         {
             isGrounded = false;
 
-            // Freeze coroutine'i iptal et
             if (freezeCoroutine != null)
             {
                 StopCoroutine(freezeCoroutine);
@@ -61,34 +113,68 @@ public class ItemFreezeSystem : MonoBehaviour
         }
     }
 
-    IEnumerator FreezeAfterDelay(float delay)
+    #endregion
+
+    #region Freeze Logic
+
+    private IEnumerator FreezeAfterDelay(float delay)
     {
-        // 3 saniye bekle
         yield return new WaitForSeconds(delay);
 
-        // Rigidbody'yi freeze et
-        if (rb != null)
+        if (rb != null && !isFrozenByTable)
         {
             rb.constraints = RigidbodyConstraints.FreezePosition | RigidbodyConstraints.FreezeRotation;
-            Debug.Log($"{gameObject.name} freeze edildi!");
+            Debug.Log($"{LOG_PREFIX} {gameObject.name} freeze edildi!");
         }
 
         freezeCoroutine = null;
     }
 
-    // Ýsteðe baðlý: Freeze'i manuel olarak kaldýrmak için
+    #endregion
+
+    #region Public API
+
+    /// <summary>
+    /// Freeze'i manuel olarak kaldýrýr
+    /// </summary>
     public void UnfreezeItem()
     {
         if (rb != null)
         {
             rb.constraints = RigidbodyConstraints.None;
-            isGrounded = false;
+        }
 
+        isGrounded = false;
+        isFrozenByTable = false;
+
+        if (freezeCoroutine != null)
+        {
+            StopCoroutine(freezeCoroutine);
+            freezeCoroutine = null;
+        }
+
+        Debug.Log($"{LOG_PREFIX} {gameObject.name} unfreeze edildi!");
+    }
+
+    /// <summary>
+    /// Masaya konulduðunda çaðrýlýr - bu sistem devre dýþý kalýr
+    /// </summary>
+    public void SetTableFrozen(bool frozen)
+    {
+        isFrozenByTable = frozen;
+
+        if (frozen)
+        {
+            // Coroutine'i durdur
             if (freezeCoroutine != null)
             {
                 StopCoroutine(freezeCoroutine);
                 freezeCoroutine = null;
             }
+
+            isGrounded = false;
         }
     }
+
+    #endregion
 }

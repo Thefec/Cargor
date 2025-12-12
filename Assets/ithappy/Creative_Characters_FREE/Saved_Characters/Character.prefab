@@ -14087,7 +14087,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: fdc2329d7bdfb7b4b814352e9e08cd82, type: 3}
   runSounds:
   - {fileID: 8300000, guid: fdc2329d7bdfb7b4b814352e9e08cd82, type: 3}
-  footstepVolume: 0.2
+  footstepVolume: 0.1
 --- !u!114 &7931745989704240134
 MonoBehaviour:
   m_ObjectHideFlags: 0

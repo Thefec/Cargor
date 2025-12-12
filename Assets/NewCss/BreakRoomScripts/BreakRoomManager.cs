@@ -10,7 +10,7 @@ using UnityEngine.UI;
 namespace NewCss
 {
     /// <summary>
-    /// Break room yöneticisi - tüm oyuncuların gün sonu için toplanması gereken alanı yönetir.  
+    /// Break room yöneticisi - tüm oyuncuların gün sonu için toplanması gereken alanı yönetir.   
     /// Steam lobi entegrasyonu ve oyuncu takibi sağlar.
     /// </summary>
     [RequireComponent(typeof(Collider))]
@@ -57,6 +57,7 @@ namespace NewCss
         #region Private Fields
 
         private readonly HashSet<GameObject> _playersInside = new();
+        private readonly HashSet<ulong> _playerNetworkIdsInside = new();
         private List<string> _currentLobbyPlayerNames = new();
         private int _lastCheckedPlayerCount;
         private Collider _triggerCollider;
@@ -100,9 +101,9 @@ namespace NewCss
         public int RequiredPlayersCount => requiredPlayers;
 
         /// <summary>
-        /// Break room hazır mı? 
+        /// Break room hazır mı?  (TÜM oyuncular içeride mi?)
         /// </summary>
-        public bool IsReady => _playersInside.Count >= requiredPlayers;
+        public bool IsReady => AreAllPlayersInRoom();
 
         /// <summary>
         /// Lobideki oyuncu isimleri
@@ -206,8 +207,17 @@ namespace NewCss
                 return;
             }
 
+            // Network ID'yi al
+            var networkObject = other.GetComponent<NetworkObject>();
+            ulong networkId = networkObject != null ? networkObject.NetworkObjectId : 0;
+
             if (_playersInside.Add(other.gameObject))
             {
+                if (networkId != 0)
+                {
+                    _playerNetworkIdsInside.Add(networkId);
+                }
+
                 LogDebug($"Player entered break room.  Count: {_playersInside.Count}/{requiredPlayers}");
 
                 OnPlayerEntered?.Invoke(other.gameObject);
@@ -225,8 +235,17 @@ namespace NewCss
                 return;
             }
 
+            // Network ID'yi al
+            var networkObject = other.GetComponent<NetworkObject>();
+            ulong networkId = networkObject != null ? networkObject.NetworkObjectId : 0;
+
             if (_playersInside.Remove(other.gameObject))
             {
+                if (networkId != 0)
+                {
+                    _playerNetworkIdsInside.Remove(networkId);
+                }
+
                 LogDebug($"Player exited break room.  Count: {_playersInside.Count}/{requiredPlayers}");
 
                 OnPlayerExited?.Invoke(other.gameObject);
@@ -240,6 +259,31 @@ namespace NewCss
 
         #region Player Presence Check
 
+        /// <summary>
+        /// Tüm oyuncuların break room'da olup olmadığını kontrol eder
+        /// </summary>
+        private bool AreAllPlayersInRoom()
+        {
+            int totalPlayersInGame = GetTotalPlayersInGame();
+            return _playersInside.Count >= totalPlayersInGame && totalPlayersInGame > 0;
+        }
+
+        /// <summary>
+        /// Oyundaki toplam oyuncu sayısını döndürür
+        /// </summary>
+        private int GetTotalPlayersInGame()
+        {
+            // Önce NetworkManager'dan connected client sayısını kontrol et
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
+            {
+                return NetworkManager.Singleton.ConnectedClientsList.Count;
+            }
+
+            // Client tarafında Steam lobby'den al
+            int lobbyCount = GetSteamLobbyPlayerCount();
+            return lobbyCount;
+        }
+
         private void CheckIfAllPlayersPresent()
         {
             var dayCycleManager = DayCycleManager.Instance;
@@ -250,14 +294,74 @@ namespace NewCss
 
             CheckAndUpdateLobbyPlayers();
 
-            if (dayCycleManager.IsTimeUp && IsReady)
+            int totalPlayers = GetTotalPlayersInGame();
+            int playersInRoom = _playersInside.Count;
+
+            LogDebug($"Checking players:  {playersInRoom}/{totalPlayers} in break room");
+
+            // TÜM oyuncular break room'da mı?
+            if (dayCycleManager.IsTimeUp && playersInRoom >= totalPlayers && totalPlayers > 0)
             {
                 dayCycleManager.isBreakRoomReady = true;
 
                 LogDebug("All players present!  Break room ready.");
 
                 OnBreakRoomReady?.Invoke();
+
+                // Next Day UI'ı göster ve hareketi kilitle
+                ShowNextDayUIAndLockMovement();
+            }
+        }
+
+        /// <summary>
+        /// Next Day UI'ı gösterir ve tüm oyuncuların hareketini kilitler
+        /// </summary>
+        private void ShowNextDayUIAndLockMovement()
+        {
+            if (nextDayUI != null)
+            {
+                nextDayUI.ShowPanel();
                 RefreshNextDayUI();
+            }
+
+            // Tüm oyuncuların hareketini kilitle
+            LockAllPlayersMovement(true);
+        }
+
+        /// <summary>
+        /// Tüm oyuncuların hareketini kilitler/açar
+        /// </summary>
+        public void LockAllPlayersMovement(bool locked)
+        {
+            if (IsServer)
+            {
+                LockAllPlayersMovementClientRpc(locked);
+            }
+            else
+            {
+                // Local player'ı kilitle
+                LockLocalPlayerMovement(locked);
+            }
+        }
+
+        [ClientRpc]
+        private void LockAllPlayersMovementClientRpc(bool locked)
+        {
+            LockLocalPlayerMovement(locked);
+        }
+
+        private void LockLocalPlayerMovement(bool locked)
+        {
+            // Local player'ın PlayerMovement component'ini bul
+            var localPlayer = NetworkManager.Singleton?.LocalClient?.PlayerObject;
+            if (localPlayer != null)
+            {
+                var playerMovement = localPlayer.GetComponent<PlayerMovement>();
+                if (playerMovement != null)
+                {
+                    playerMovement.LockMovement(locked);
+                    LogDebug($"Local player movement {(locked ? "locked" : "unlocked")}");
+                }
             }
         }
 
@@ -275,7 +379,7 @@ namespace NewCss
 
             if (currentPlayerCount != _lastCheckedPlayerCount)
             {
-                LogDebug($"Player count changed: {_lastCheckedPlayerCount} -> {currentPlayerCount}");
+                LogDebug($"Player count changed:  {_lastCheckedPlayerCount} -> {currentPlayerCount}");
                 _lastCheckedPlayerCount = currentPlayerCount;
             }
 
@@ -299,7 +403,7 @@ namespace NewCss
                 requiredPlayers = lobbyPlayerNames.Count;
             }
 
-            LogDebug($"Updated: {requiredPlayers} players required");
+            LogDebug($"Updated:  {requiredPlayers} players required");
             UpdateBreakRoomUI();
         }
 
@@ -390,7 +494,12 @@ namespace NewCss
         {
             if (nextDayUI != null)
             {
+                // Tüm lobby oyuncularını göster
                 nextDayUI.ShowPlayers(_currentLobbyPlayerNames);
+
+                // Break room durumunu da güncelle
+                int totalPlayers = GetTotalPlayersInGame();
+                nextDayUI.UpdateBreakRoomStatus(_playersInside.Count, totalPlayers);
             }
         }
 
@@ -402,15 +511,17 @@ namespace NewCss
             }
 
             string playerList = FormatPlayerList();
+            int totalPlayers = GetTotalPlayersInGame();
+
             string countTemplate = LocalizationHelper.GetLocalizedString(LOC_KEY_BREAK_ROOM_COUNT);
             string countText;
             try
             {
-                countText = string.Format(countTemplate, _playersInside.Count, requiredPlayers);
+                countText = string.Format(countTemplate, _playersInside.Count, totalPlayers);
             }
             catch
             {
-                countText = $"({_playersInside.Count}/{requiredPlayers} in Break Room)";
+                countText = $"({_playersInside.Count}/{totalPlayers} in Break Room)";
             }
 
             playerListText.text = $"{playerList}\n\n{countText}";
@@ -464,6 +575,7 @@ namespace NewCss
         public void ClearAllPlayers()
         {
             _playersInside.Clear();
+            _playerNetworkIdsInside.Clear();
             UpdateBreakRoomUI();
 
             LogDebug("All players cleared from break room");
@@ -489,6 +601,14 @@ namespace NewCss
             CheckAndUpdateLobbyPlayers();
             CheckIfAllPlayersPresent();
             UpdateBreakRoomUI();
+        }
+
+        /// <summary>
+        /// Next Day UI kapandığında çağrılır - hareketi açar
+        /// </summary>
+        public void OnNextDayUIClosed()
+        {
+            LockAllPlayersMovement(false);
         }
 
         #endregion
@@ -535,6 +655,7 @@ namespace NewCss
         {
             Debug.Log($"{LOG_PREFIX} === BREAK ROOM STATE ===");
             Debug.Log($"Players Inside: {_playersInside.Count}");
+            Debug.Log($"Total Players In Game: {GetTotalPlayersInGame()}");
             Debug.Log($"Required Players: {requiredPlayers}");
             Debug.Log($"Is Ready: {IsReady}");
             Debug.Log($"Last Checked Count: {_lastCheckedPlayerCount}");
@@ -554,9 +675,21 @@ namespace NewCss
             if (dayCycleManager != null)
             {
                 dayCycleManager.isBreakRoomReady = true;
-                RefreshNextDayUI();
+                ShowNextDayUIAndLockMovement();
                 LogDebug("Simulated all players present");
             }
+        }
+
+        [ContextMenu("Test:  Lock All Movement")]
+        private void DebugLockAllMovement()
+        {
+            LockAllPlayersMovement(true);
+        }
+
+        [ContextMenu("Test: Unlock All Movement")]
+        private void DebugUnlockAllMovement()
+        {
+            LockAllPlayersMovement(false);
         }
 
         private void OnDrawGizmosSelected()
@@ -590,7 +723,8 @@ namespace NewCss
         private void DrawStatusGizmo()
         {
             Vector3 labelPos = transform.position + Vector3.up * 3f;
-            string label = $"Break Room\n{_playersInside.Count}/{requiredPlayers}";
+            int totalPlayers = Application.isPlaying ? GetTotalPlayersInGame() : requiredPlayers;
+            string label = $"Break Room\n{_playersInside.Count}/{totalPlayers}";
 
             UnityEditor.Handles.Label(labelPos, label);
         }

@@ -69,6 +69,7 @@ namespace NewCss
 
         #endregion
 
+
         #region Serialized Fields - Time Settings
 
         [Header("=== TIME SETTINGS ===")]
@@ -125,6 +126,7 @@ namespace NewCss
         #region Private Fields - Product History
 
         private readonly Queue<int> _recentProductIndices = new();
+        private int _lastProductIndex = -1; // Ardışık tekrar engeli için
 
         #endregion
 
@@ -660,7 +662,8 @@ namespace NewCss
         #region Product Assignment
 
         /// <summary>
-        /// Son kullan�lan �r�nleri hari� tutarak rastgele �r�n index'i d�nd�r�r
+        /// Son kullanılan ürünleri hariç tutarak rastgele ürün index'i döndürür. 
+        /// Ardışık aynı ürün seçimini kesinlikle engeller.
         /// </summary>
         public int GetRandomProductIndexExcludingRecent(int productCount)
         {
@@ -680,6 +683,13 @@ namespace NewCss
 
             for (int i = 0; i < productCount; i++)
             {
+                // Önce ardışık tekrarı kesinlikle engelle
+                if (i == _lastProductIndex && productCount > 1)
+                {
+                    continue;
+                }
+
+                // Sonra recent history'e bak
                 if (!_recentProductIndices.Contains(i))
                 {
                     candidates.Add(i);
@@ -691,9 +701,25 @@ namespace NewCss
 
         private int SelectProductIndex(List<int> candidates, int productCount)
         {
+            // Eğer hiç aday kalmadıysa, sadece son ürünü hariç tut
             if (candidates.Count == 0)
             {
-                // All indices in recent history - pick any
+                var fallbackCandidates = new List<int>();
+                for (int i = 0; i < productCount; i++)
+                {
+                    // Son ürünü kesinlikle ekleme (2'den fazla ürün varsa)
+                    if (i != _lastProductIndex || productCount <= 1)
+                    {
+                        fallbackCandidates.Add(i);
+                    }
+                }
+
+                if (fallbackCandidates.Count > 0)
+                {
+                    return fallbackCandidates[Random.Range(0, fallbackCandidates.Count)];
+                }
+
+                // Son çare: herhangi birini seç (tek ürün varsa)
                 return Random.Range(0, productCount);
             }
 
@@ -702,8 +728,11 @@ namespace NewCss
 
         private void AddToProductHistory(int productIndex)
         {
+            _lastProductIndex = productIndex; // Ardışık engeli için kaydet
+
             _recentProductIndices.Enqueue(productIndex);
 
+            // History size kontrolü
             int maxHistorySize = Mathf.Max(1, recentProductHistorySize);
             while (_recentProductIndices.Count > maxHistorySize)
             {
@@ -712,11 +741,12 @@ namespace NewCss
         }
 
         /// <summary>
-        /// �r�n ge�mi�ini temizler
+        /// Ürün geçmişini temizler
         /// </summary>
         public void ClearProductHistory()
         {
             _recentProductIndices.Clear();
+            _lastProductIndex = -1;
         }
 
         #endregion

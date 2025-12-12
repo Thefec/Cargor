@@ -183,6 +183,10 @@ namespace NewCss
         /// Mevcut bir GameObject instance'ını slot'a yerleştirir
         /// </summary>
         /// <param name="itemInstance">Yerleştirilecek instantiate edilmiş GameObject</param>
+        /// <summary>
+        /// Mevcut bir GameObject instance'ını slot'a yerleştirir
+        /// </summary>
+        /// <param name="itemInstance">Yerleştirilecek instantiate edilmiş GameObject</param>
         public void PlaceItemInstance(GameObject itemInstance)
         {
             if (!ValidateItemInstance(itemInstance))
@@ -198,13 +202,80 @@ namespace NewCss
             int slotIndex = _placedItems.Count;
             var slot = slotPoints[slotIndex];
 
-            // Sadece pozisyon ve rotation ayarla (parent atama yok)
+            // Pozisyon ve rotation ayarla
             itemInstance.transform.position = slot.position;
             itemInstance.transform.rotation = slot.rotation;
 
+            // Fizik ayarlarını yap - masada sabit kalsın
+            var rb = itemInstance.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.isKinematic = true;
+                rb.useGravity = false;
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+                rb.constraints = RigidbodyConstraints.FreezeAll;
+            }
+
             _placedItems.Add(itemInstance);
 
-            LogDebug($"Item instance placed at slot {slotIndex}: {itemInstance.name}");
+            LogDebug($"Item instance placed at slot {slotIndex}:  {itemInstance.name}");
+        }
+        private void FreezeItemPhysics(GameObject item)
+        {
+            if (item == null) return;
+
+            // Rigidbody
+            var rb = item.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.isKinematic = true;
+                rb.useGravity = false;
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+                rb.constraints = RigidbodyConstraints.FreezeAll;
+            }
+
+            // Alt objelerdeki rigidbody'ler
+            var childRbs = item.GetComponentsInChildren<Rigidbody>();
+            foreach (var childRb in childRbs)
+            {
+                childRb.isKinematic = true;
+                childRb.useGravity = false;
+                childRb.linearVelocity = Vector3.zero;
+                childRb.angularVelocity = Vector3.zero;
+                childRb.constraints = RigidbodyConstraints.FreezeAll;
+            }
+
+            // ItemFreezeSystem varsa devre dışı bırak
+            var freezeSystem = item.GetComponent<ItemFreezeSystem>();
+            if (freezeSystem != null)
+            {
+                freezeSystem.enabled = false;
+            }
+
+            LogDebug($"Item physics frozen: {item.name}");
+        }
+
+        private void UnfreezeItemPhysics(GameObject item)
+        {
+            if (item == null) return;
+
+            var rb = item.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.constraints = RigidbodyConstraints.None;
+                // isKinematic ve gravity'yi AÇMA - pickup sistemi halleder
+            }
+
+            // ItemFreezeSystem'ı tekrar aktif et
+            var freezeSystem = item.GetComponent<ItemFreezeSystem>();
+            if (freezeSystem != null)
+            {
+                freezeSystem.enabled = true;
+            }
+
+            LogDebug($"Item physics unfrozen: {item.name}");
         }
 
         #endregion
@@ -278,9 +349,16 @@ namespace NewCss
             var item = _placedItems[index];
             _placedItems.RemoveAt(index);
 
+            // Parent'ı kaldır ve fizik aç
+            if (item != null)
+            {
+                item.transform.SetParent(null);
+                UnfreezeItemPhysics(item);
+            }
+
             RepositionItems();
 
-            LogDebug($"Item taken at index {index}: {item.name}");
+            LogDebug($"Item taken at index {index}: {item?.name}");
 
             return item;
         }

@@ -3,6 +3,7 @@ using System.Linq;
 using Steamworks;
 using Steamworks.Data;
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
@@ -11,8 +12,8 @@ using UnityEngine.UI;
 namespace NewCss
 {
     /// <summary>
-    /// Sonraki gün UI yöneticisi - oyuncu listesi, break room durumu ve gün geçişi UI'ını yönetir. 
-    /// Steam lobi entegrasyonu ile multiplayer oyuncu gösterimi sağlar.
+    /// Sonraki gün UI yöneticisi - oyuncu listesi, break room durumu ve gün geçişi UI'ını yönetir.  
+    /// Steam lobi entegrasyonu ile multiplayer oyuncu gösterimi sağlar. 
     /// </summary>
     public class NextDayUIManager : MonoBehaviour
     {
@@ -22,7 +23,9 @@ namespace NewCss
         private const int MAX_PLAYERS = 4;
 
         // UI Text Templates (format strings - localized content will be injected)
-        private const string PLAYER_LIST_ITEM_FORMAT = "<color=#4CAF50>►</color> <b>{0}.</b> {1}\n";
+        private const string PLAYER_LIST_ITEM_FORMAT = "<color=#4CAF50>►</color> <b>{0}. </b> {1}\n";
+        private const string PLAYER_IN_ROOM_FORMAT = "<color=#4CAF50>►</color> <b>{0}.</b> {1} <color=#4CAF50>✓</color>\n";
+        private const string PLAYER_NOT_IN_ROOM_FORMAT = "<color=#FF5722>►</color> <b>{0}.</b> {1} <color=#FF5722>✗</color>\n";
         private const string PLAYER_LIST_SEPARATOR = "\n<color=#FFC107>━━━━━━━━━━━━━━━━━</color>";
         private const string BREAK_ROOM_SEPARATOR = "\n\n<color=#FF5722>━━━━━━━━━━━━━━━━━</color>";
 
@@ -77,13 +80,15 @@ namespace NewCss
         #region Private Fields
 
         private string _currentPlayerListText = string.Empty;
+        private bool _wasActive = false;
+        private List<string> _playersInBreakRoom = new List<string>();
 
         #endregion
 
         #region Public Properties
 
         /// <summary>
-        /// UI aktif mi? 
+        /// UI aktif mi?  
         /// </summary>
         public bool IsActive => IsUIActive();
 
@@ -111,14 +116,106 @@ namespace NewCss
         private void OnDisable()
         {
             LocalizationSettings.SelectedLocaleChanged -= HandleLocaleChanged;
+
+            // UI kapandığında hareketi aç
+            if (_wasActive)
+            {
+                UnlockPlayerMovement();
+                _wasActive = false;
+            }
         }
 
         private void Update()
         {
-            if (!IsUIActive()) return;
+            if (!IsUIActive())
+            {
+                // UI kapandıysa hareketi aç
+                if (_wasActive)
+                {
+                    UnlockPlayerMovement();
+                    _wasActive = false;
+                }
+                return;
+            }
+
+            // UI açıldığında hareketi kilitle
+            if (!_wasActive)
+            {
+                LockPlayerMovement();
+                _wasActive = true;
+            }
 
             SetupCursor();
             HandleEscapeInput();
+        }
+
+        #endregion
+
+        #region Movement Lock/Unlock
+
+        /// <summary>
+        /// Local oyuncunun hareketini kilitler
+        /// </summary>
+        private void LockPlayerMovement()
+        {
+            var localPlayer = GetLocalPlayer();
+            if (localPlayer != null)
+            {
+                var playerMovement = localPlayer.GetComponent<PlayerMovement>();
+                if (playerMovement != null)
+                {
+                    playerMovement.LockMovement(true);
+                    LogDebug("Player movement locked - Next Day UI opened");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Local oyuncunun hareketini açar
+        /// </summary>
+        private void UnlockPlayerMovement()
+        {
+            var localPlayer = GetLocalPlayer();
+            if (localPlayer != null)
+            {
+                var playerMovement = localPlayer.GetComponent<PlayerMovement>();
+                if (playerMovement != null)
+                {
+                    playerMovement.LockMovement(false);
+                    LogDebug("Player movement unlocked - Next Day UI closed");
+                }
+            }
+
+            // BreakRoomManager'a da bildir
+            BreakRoomManager.Instance?.OnNextDayUIClosed();
+        }
+
+        /// <summary>
+        /// Local player'ı döndürür
+        /// </summary>
+        private GameObject GetLocalPlayer()
+        {
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.LocalClient != null)
+            {
+                var playerObject = NetworkManager.Singleton.LocalClient.PlayerObject;
+                if (playerObject != null)
+                {
+                    return playerObject.gameObject;
+                }
+            }
+
+            // Fallback: Tag ile bul
+            var players = GameObject.FindGameObjectsWithTag("Character");
+            foreach (var player in players)
+            {
+                var networkObject = player.GetComponent<NetworkObject>();
+                if (networkObject != null && networkObject.IsLocalPlayer)
+                {
+                    return player;
+                }
+            }
+
+            return null;
         }
 
         #endregion
@@ -127,7 +224,7 @@ namespace NewCss
 
         private void HandleLocaleChanged(Locale newLocale)
         {
-            Debug.Log($"{LOG_PREFIX} Locale changed to: {newLocale?.Identifier.Code ?? "null"}");
+            Debug.Log($"{LOG_PREFIX} Locale changed to:  {newLocale?.Identifier.Code ?? "null"}");
             RefreshUI();
         }
 
@@ -163,9 +260,11 @@ namespace NewCss
 
         private void SetupCursor()
         {
-            // Cursor ayarları buraya eklenebilir
-            // Cursor. visible = true;
-            // Cursor.lockState = CursorLockMode.None;
+            if (IsUIActive())
+            {
+                Cursor.visible = true;
+                Cursor.lockState = CursorLockMode.None;
+            }
         }
 
         #endregion
@@ -298,7 +397,7 @@ namespace NewCss
             HidePanel();
 
             // Burada next day logic eklenebilir
-            // DayCycleManager.Instance?. StartNextDay();
+            // DayCycleManager.Instance?.StartNextDay();
             // SceneManager.LoadScene("GameScene");
         }
 
@@ -329,7 +428,7 @@ namespace NewCss
         }
 
         /// <summary>
-        /// Paneli gösterir
+        /// Paneli gösterir ve hareketi kilitler
         /// </summary>
         public void ShowPanel()
         {
@@ -339,10 +438,14 @@ namespace NewCss
             }
 
             UpdateNextDayUI();
+            LockPlayerMovement();
+            _wasActive = true;
+
+            LogDebug("Panel shown, movement locked");
         }
 
         /// <summary>
-        /// Paneli gizler
+        /// Paneli gizler ve hareketi açar
         /// </summary>
         public void HidePanel()
         {
@@ -350,6 +453,11 @@ namespace NewCss
             {
                 nextDayPanel.SetActive(false);
             }
+
+            UnlockPlayerMovement();
+            _wasActive = false;
+
+            LogDebug("Panel hidden, movement unlocked");
         }
 
         #endregion
@@ -357,7 +465,7 @@ namespace NewCss
         #region Break Room Player List
 
         /// <summary>
-        /// Break Room için oyuncu listesini UI'da gösterir
+        /// Break Room için oyuncu listesini UI'da gösterir (TÜM lobby oyuncuları)
         /// </summary>
         /// <param name="playerNames">Lobideki oyuncu isimleri</param>
         public void ShowPlayers(List<string> playerNames)
@@ -373,6 +481,26 @@ namespace NewCss
 
             LogDebug($"✅ Oyuncu listesi güncellendi: {playerNames.Count} oyuncu");
             LogDebug($"Oyuncular: {string.Join(", ", playerNames)}");
+        }
+
+        /// <summary>
+        /// Break Room'daki oyuncuları işaretler
+        /// </summary>
+        /// <param name="allPlayers">Tüm lobby oyuncuları</param>
+        /// <param name="playersInRoom">Break room'daki oyuncu isimleri</param>
+        public void ShowPlayersWithRoomStatus(List<string> allPlayers, List<string> playersInRoom)
+        {
+            if (!ValidatePlayerList(allPlayers))
+            {
+                ShowEmptyPlayerList();
+                return;
+            }
+
+            _playersInBreakRoom = playersInRoom ?? new List<string>();
+            string displayText = BuildPlayerListTextWithStatus(allPlayers, _playersInBreakRoom);
+            DisplayPlayerList(displayText);
+
+            LogDebug($"✅ Oyuncu listesi güncellendi: {allPlayers.Count} oyuncu, {_playersInBreakRoom.Count} break room'da");
         }
 
         private bool ValidatePlayerList(List<string> playerNames)
@@ -414,6 +542,38 @@ namespace NewCss
             return builder.ToString();
         }
 
+        private string BuildPlayerListTextWithStatus(List<string> allPlayers, List<string> playersInRoom)
+        {
+            var builder = new System.Text.StringBuilder();
+
+            // Header - localized
+            string headerText = GetLocalizedString(LOC_KEY_LOBBY_PLAYERS);
+            builder.Append($"🎮 <b>{headerText}</b>\n\n");
+
+            // Player entries with status
+            for (int i = 0; i < allPlayers.Count; i++)
+            {
+                string playerName = allPlayers[i];
+                bool isInRoom = playersInRoom.Contains(playerName);
+
+                if (isInRoom)
+                {
+                    builder.AppendFormat(PLAYER_IN_ROOM_FORMAT, i + 1, playerName);
+                }
+                else
+                {
+                    builder.AppendFormat(PLAYER_NOT_IN_ROOM_FORMAT, i + 1, playerName);
+                }
+            }
+
+            // Footer - localized
+            builder.Append(PLAYER_LIST_SEPARATOR);
+            string totalText = GetLocalizedString(LOC_KEY_TOTAL_PLAYERS);
+            builder.Append($"\n<b>{string.Format(totalText, allPlayers.Count)}</b>");
+
+            return builder.ToString();
+        }
+
         private void DisplayPlayerList(string displayText)
         {
             _currentPlayerListText = displayText;
@@ -424,7 +584,7 @@ namespace NewCss
             }
             else
             {
-                LogWarning("playerListDisplay atanmamış! Inspector'dan TextMeshProUGUI ekleyin.");
+                LogWarning("playerListDisplay atanmamış!  Inspector'dan TextMeshProUGUI ekleyin.");
             }
 
             SetPlayerListPanelActive(true);
@@ -545,7 +705,7 @@ namespace NewCss
             }
             catch (System.Exception e)
             {
-                LogWarning($"Localization error for key '{key}': {e.Message}");
+                LogWarning($"Localization error for key '{key}':  {e.Message}");
                 return key;
             }
         }
@@ -587,11 +747,19 @@ namespace NewCss
             HidePanel();
         }
 
-        [ContextMenu("Test: Show 4 Players")]
+        [ContextMenu("Test:  Show 4 Players")]
         private void DebugShow4Players()
         {
             var testPlayers = new List<string> { "Player1", "Player2", "Player3", "Player4" };
             ShowPlayers(testPlayers);
+        }
+
+        [ContextMenu("Test: Show Players With Status (2/4 in room)")]
+        private void DebugShowPlayersWithStatus()
+        {
+            var allPlayers = new List<string> { "Player1", "Player2", "Player3", "Player4" };
+            var inRoom = new List<string> { "Player1", "Player3" };
+            ShowPlayersWithRoomStatus(allPlayers, inRoom);
         }
 
         [ContextMenu("Test: Update Break Room Status (2/4)")]
@@ -611,6 +779,7 @@ namespace NewCss
         {
             Debug.Log($"{LOG_PREFIX} === NEXT DAY UI STATE ===");
             Debug.Log($"Is Active: {IsUIActive()}");
+            Debug.Log($"Was Active: {_wasActive}");
             Debug.Log($"Active Player Count: {GetActivePlayerCount()}");
             Debug.Log($"Has Panel: {nextDayPanel != null}");
             Debug.Log($"Player Elements: {playerUIElements?.Length ?? 0}");
@@ -618,6 +787,7 @@ namespace NewCss
             Debug.Log($"Player Icons: {playerIcons?.Length ?? 0}");
             Debug.Log($"Has Player List Display: {playerListDisplay != null}");
             Debug.Log($"Current Player List Text Length: {_currentPlayerListText?.Length ?? 0}");
+            Debug.Log($"Players In Break Room: {string.Join(", ", _playersInBreakRoom)}");
         }
 #endif
 

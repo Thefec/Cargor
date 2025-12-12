@@ -24,6 +24,7 @@ namespace NewCss
         private const string ANIMATOR_SPEED_PARAM = "Speed";
         private const float DESTINATION_THRESHOLD = 0.1f;
         private const float PICKUP_CHECK_INTERVAL = 0.1f;
+        private const float PRODUCT_PLACEMENT_DELAY = 0.1f;
 
         #endregion
 
@@ -45,9 +46,12 @@ namespace NewCss
         [Header("=== PLAYER REFERENCE ===")]
         [SerializeField, Tooltip("Cache'lenmiş player movement referansı")]
         public PlayerMovement cachedPlayerMovement;
+        [Header("=== PRODUCT ASSIGNMENT ===")]
+        [SerializeField, Tooltip("Son kullanılan ürün geçmişi boyutu")]
+        public int recentProductHistorySize = 5; // 3'ten 5'e çıkar
 
         [Header("=== PREFAB MODE ===")]
-        [SerializeField, Tooltip("Prefab modunda mı?  (AI devre dışı)")]
+        [SerializeField, Tooltip("Prefab modunda mı? (AI devre dışı)")]
         public bool isPrefabMode = false;
 
         [Header("=== WAIT BAR ===")]
@@ -74,6 +78,14 @@ namespace NewCss
         [Header("=== INTERACTION SETTINGS ===")]
         [SerializeField, Tooltip("Etkileşim menzili")]
         public float interactionRange = 2f;
+
+        #region Private Fields - Product History
+
+        private readonly Queue<int> _recentProductIndices = new();
+        private int _lastProductIndex = -1; // Ardışık tekrar engeli için
+
+#endregion
+
 
         [Header("=== INTERACTION SOUNDS ===")]
         [SerializeField, Tooltip("Etkileşim sesleri")]
@@ -119,6 +131,7 @@ namespace NewCss
         private readonly NetworkVariable<float> _networkAnimatorSpeed = new(0f);
         private readonly NetworkVariable<int> _networkState = new(0);
         private readonly NetworkVariable<int> _networkAssignedProductIndex = new(-1);
+        private readonly NetworkVariable<ulong> _networkPlacedProductId = new(0);
 
         #endregion
 
@@ -149,6 +162,7 @@ namespace NewCss
 
         // Product
         private GameObject _placedProduct;
+        private NetworkObject _placedProductNetworkObject;
 
         #endregion
 
@@ -160,7 +174,7 @@ namespace NewCss
         public int TargetQueueIndex => _targetQueueIndex;
 
         /// <summary>
-        /// Etkileşim tamamlandı mı?
+        /// Etkileşim tamamlandı mı? 
         /// </summary>
         public bool HasInteracted => _hasInteracted;
 
@@ -714,11 +728,23 @@ namespace NewCss
             _waitTimeStarted = false;
             _networkWaitTimeStarted.Value = false;
 
-            // Ürün yerleştir
+            // Ürün yerleştir (Coroutine ile)
+            StartCoroutine(PlaceProductCoroutine());
+        }
+
+        private IEnumerator PlaceProductCoroutine()
+        {
+            // Ürünü yerleştir
             _placedProduct = PlaceProductOnDropOffTable();
+
+            // Kısa bir gecikme - physics'in settle olması için
+            yield return new WaitForSeconds(PRODUCT_PLACEMENT_DELAY);
 
             if (_placedProduct != null)
             {
+                // Physics'i tekrar kontrol et ve sabitle
+                EnsureProductIsStable(_placedProduct);
+
                 HandleSuccessfulInteraction();
                 StartCoroutine(WaitForProductPickupCoroutine());
             }
@@ -769,37 +795,179 @@ namespace NewCss
 
         #endregion
 
-        #region Product Placement
+        #region Product Placement - DÜZELTILMIŞ
 
         private GameObject PlaceProductOnDropOffTable()
         {
             if (dropOffTable == null || !HasValidProductPrefabs())
             {
-                Debug.LogWarning($"{LOG_PREFIX} Cannot place product: dropOffTable or productPrefabs is null");
+                Debug.LogWarning($"{LOG_PREFIX} Cannot place product:  dropOffTable or productPrefabs is null");
                 return null;
             }
 
             int productIndex = GetProductIndex();
-            var spawnTransform = GetProductSpawnTransform();
 
-            var product = Instantiate(productPrefabs[productIndex], spawnTransform.position, spawnTransform.rotation);
+            // Slot pozisyonunu al
+            var slotPoints = dropOffTable.SlotPoints;
+            int currentItemCount = dropOffTable.ItemCount;
+
+            Vector3 spawnPosition;
+            Quaternion spawnRotation;
+            Transform parentSlot = null;
+
+            if (slotPoints != null && slotPoints.Length > currentItemCount && slotPoints[currentItemCount] != null)
+            {
+                parentSlot = slotPoints[currentItemCount];
+                spawnPosition = parentSlot.position;
+                spawnRotation = parentSlot.rotation;
+            }
+            else
+            {
+                // Fallback
+                spawnPosition = dropOffTable.transform.position + Vector3.up * 0.5f;
+                spawnRotation = dropOffTable.transform.rotation;
+                Debug.LogWarning($"{LOG_PREFIX} No valid slot found, using fallback position");
+            }
+
+            // Ürünü oluştur
+            var product = Instantiate(productPrefabs[productIndex], spawnPosition, spawnRotation);
+
+            // ÖNEMLİ:  Fizik ayarlarını HEMEN yap (spawn öncesi)
+            var rb = product.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.isKinematic = true;
+                rb.useGravity = false;
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+                rb.constraints = RigidbodyConstraints.FreezeAll;
+            }
+
+            // ItemFreezeSystem varsa devre dışı bırak
+            var freezeSystem = product.GetComponent<ItemFreezeSystem>();
+            if (freezeSystem != null)
+            {
+                freezeSystem.enabled = false;
+            }
+
+            // Parent ayarla
+            if (parentSlot != null)
+            {
+                product.transform.SetParent(parentSlot, true);
+                product.transform.localPosition = Vector3.zero;
+                product.transform.localRotation = Quaternion.identity;
+            }
+            else
+            {
+                product.transform.SetParent(dropOffTable.transform, true);
+            }
 
             // Network spawn
             var networkObject = product.GetComponent<NetworkObject>();
             if (networkObject != null)
             {
                 networkObject.Spawn();
-            }
 
-            // Parent ayarla
-            SetProductParent(product);
+                // Spawn sonrası fizik ayarlarını tekrar uygula
+                StartCoroutine(EnsureProductFrozenAfterSpawn(product));
+            }
 
             // DisplayTable'a kaydet
             dropOffTable.PlaceItemInstance(product);
 
-            Debug.Log($"{LOG_PREFIX} Placed product: {productPrefabs[productIndex].name} (index: {productIndex})");
+            Debug.Log($"{LOG_PREFIX} Placed product:  {productPrefabs[productIndex].name} at slot {currentItemCount}");
 
             return product;
+        }
+        private IEnumerator EnsureProductFrozenAfterSpawn(GameObject product)
+        {
+            yield return null; // Bir frame bekle
+
+            if (product == null) yield break;
+
+            var rb = product.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.isKinematic = true;
+                rb.useGravity = false;
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+                rb.constraints = RigidbodyConstraints.FreezeAll;
+            }
+
+            var freezeSystem = product.GetComponent<ItemFreezeSystem>();
+            if (freezeSystem != null)
+            {
+                freezeSystem.enabled = false;
+            }
+        }
+
+
+        private IEnumerator SyncProductParentAfterSpawn(NetworkObject networkObject, Transform parentSlot)
+        {
+            // Bir frame bekle
+            yield return null;
+
+            if (networkObject != null && networkObject.IsSpawned)
+            {
+                // Pozisyonu ve rotation'ı tekrar ayarla
+                networkObject.transform.SetParent(parentSlot, true);
+                networkObject.transform.localPosition = Vector3.zero;
+                networkObject.transform.localRotation = Quaternion.identity;
+
+                // Client'lara sync et
+                SyncProductTransformClientRpc(
+                    networkObject.NetworkObjectId,
+                    parentSlot.position,
+                    parentSlot.rotation
+                );
+            }
+        }
+
+        [ClientRpc]
+        private void SyncProductTransformClientRpc(ulong productNetworkId, Vector3 position, Quaternion rotation)
+        {
+            if (IsServer) return;
+
+            // Network object'i bul
+            if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(productNetworkId, out var networkObject))
+            {
+                // Physics'i devre dışı bırak
+                DisableProductPhysics(networkObject.gameObject);
+
+                // Transform'u ayarla
+                networkObject.transform.position = position;
+                networkObject.transform.rotation = rotation;
+            }
+        }
+
+        private (Transform slotTransform, int slotIndex) GetProductSlotInfo()
+        {
+            var slotPoints = dropOffTable.SlotPoints;
+
+            if (slotPoints == null || slotPoints.Length == 0)
+            {
+                Debug.LogError($"{LOG_PREFIX} SlotPoints is null or empty");
+                return (null, -1);
+            }
+
+            int slotIndex = dropOffTable.ItemCount;
+
+            if (slotIndex >= slotPoints.Length)
+            {
+                Debug.LogError($"{LOG_PREFIX} No available slot.  ItemCount: {slotIndex}, SlotPoints:  {slotPoints.Length}");
+                return (null, -1);
+            }
+
+            var slot = slotPoints[slotIndex];
+
+            if (slot == null)
+            {
+                Debug.LogError($"{LOG_PREFIX} Slot at index {slotIndex} is null");
+                return (null, -1);
+            }
+
+            return (slot, slotIndex);
         }
 
         private int GetProductIndex()
@@ -812,32 +980,77 @@ namespace NewCss
             return Random.Range(0, productPrefabs.Length);
         }
 
-        private (Vector3 position, Quaternion rotation) GetProductSpawnTransform()
+        /// <summary>
+        /// Ürünün physics'ini tamamen devre dışı bırakır
+        /// </summary>
+        private void DisableProductPhysics(GameObject product)
         {
-            // SlotPoints property'sini kullan (DisplayTable'dan)
-            var slotPoints = dropOffTable.SlotPoints;
+            if (product == null) return;
 
-            if (slotPoints != null && slotPoints.Length > dropOffTable.ItemCount)
+            // Rigidbody'leri işle
+            var rigidbodies = product.GetComponentsInChildren<Rigidbody>(true);
+            foreach (var rb in rigidbodies)
             {
-                var targetSlot = slotPoints[dropOffTable.ItemCount];
-                return (targetSlot.position, targetSlot.rotation);
+                // Önce velocity'leri sıfırla
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+
+                // Kinematic yap
+                rb.isKinematic = true;
+                rb.useGravity = false;
+
+                // Constraints ekle
+                rb.constraints = RigidbodyConstraints.FreezeAll;
+
+                // Interpolation kapat
+                rb.interpolation = RigidbodyInterpolation.None;
+
+                // Sleep state'e al
+                rb.Sleep();
             }
 
-            return (dropOffTable.transform.position + Vector3.up * 0.5f, Quaternion.identity);
+            // ItemFreezeSystem varsa devre dışı bırak
+            var freezeSystems = product.GetComponentsInChildren<ItemFreezeSystem>(true);
+            foreach (var freezeSystem in freezeSystems)
+            {
+                freezeSystem.enabled = false;
+            }
+
+            // Collider'ları trigger yap (opsiyonel - pickup için gerekebilir)
+            // Eğer pickup için collider gerekiyorsa bu kısmı yorum satırı yap
+            /*
+            var colliders = product.GetComponentsInChildren<Collider>(true);
+            foreach (var col in colliders)
+            {
+                col.isTrigger = true;
+            }
+            */
         }
 
-        private void SetProductParent(GameObject product)
+        /// <summary>
+        /// Ürünün stabil olduğundan emin olur
+        /// </summary>
+        private void EnsureProductIsStable(GameObject product)
         {
-            // SlotPoints property'sini kullan
-            var slotPoints = dropOffTable.SlotPoints;
+            if (product == null) return;
 
-            if (slotPoints != null && slotPoints.Length > dropOffTable.ItemCount)
+            var rigidbodies = product.GetComponentsInChildren<Rigidbody>(true);
+            foreach (var rb in rigidbodies)
             {
-                product.transform.SetParent(slotPoints[dropOffTable.ItemCount], true);
+                // Tekrar kontrol et
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+                rb.isKinematic = true;
+                rb.useGravity = false;
+                rb.constraints = RigidbodyConstraints.FreezeAll;
+                rb.Sleep();
             }
-            else
+
+            // Transform'u parent'a göre sıfırla
+            if (product.transform.parent != null)
             {
-                product.transform.SetParent(dropOffTable.transform, true);
+                product.transform.localPosition = Vector3.zero;
+                product.transform.localRotation = Quaternion.identity;
             }
         }
 
@@ -849,13 +1062,25 @@ namespace NewCss
 
             while (_placedProduct != null && !_hasTimedOut)
             {
+                // Ürün hala var mı?
                 if (_placedProduct == null)
                 {
+                    Debug.Log($"{LOG_PREFIX} Product was picked up (null check)");
                     break;
                 }
 
+                // Ürün hala masada mı?
                 if (!IsProductStillOnTable())
                 {
+                    Debug.Log($"{LOG_PREFIX} Product was picked up (table check)");
+                    _placedProduct = null;
+                    break;
+                }
+
+                // NetworkObject check
+                if (_placedProductNetworkObject != null && !_placedProductNetworkObject.IsSpawned)
+                {
+                    Debug.Log($"{LOG_PREFIX} Product NetworkObject was despawned");
                     _placedProduct = null;
                     break;
                 }
@@ -868,11 +1093,18 @@ namespace NewCss
 
         private bool IsProductStillOnTable()
         {
-            if (_placedProduct == null || _placedProduct.transform.parent == null)
+            if (_placedProduct == null)
             {
                 return false;
             }
 
+            // Parent kontrolü
+            if (_placedProduct.transform.parent == null)
+            {
+                return false;
+            }
+
+            // dropOffTable kontrolü
             if (dropOffTable == null)
             {
                 return false;
@@ -889,18 +1121,19 @@ namespace NewCss
 
             while (parent != null)
             {
+                // Ana tablo kontrolü
                 if (parent == dropOffTable.transform)
                 {
                     return true;
                 }
 
-                // SlotPoints property'sini kullan
+                // Slot kontrolü
                 var slotPoints = dropOffTable.SlotPoints;
                 if (slotPoints != null)
                 {
                     foreach (var slot in slotPoints)
                     {
-                        if (parent == slot)
+                        if (slot != null && parent == slot)
                         {
                             return true;
                         }
@@ -1198,12 +1431,13 @@ namespace NewCss
 
                 if (_placedProduct != null)
                 {
-                    info += $"\nPlaced: {_placedProduct.name}";
+                    info += $"\nPlaced:  {_placedProduct.name}";
+                    info += $"\nParent: {(_placedProduct.transform.parent != null ? _placedProduct.transform.parent.name : "null")}";
                 }
 
                 if (_interactingPlayerId != ulong.MaxValue)
                 {
-                    info += $"\nInteracting: {_interactingPlayerId}";
+                    info += $"\nInteracting:  {_interactingPlayerId}";
                 }
             }
 

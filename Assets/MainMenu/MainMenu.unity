@@ -535,7 +535,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 3286163911610860551, guid: 5cdf28d585380644b90f4a84f1bc5c4d, type: 3}
+  m_Sprite: {fileID: 21300000, guid: f611d79da7768564894c607440caa76b, type: 3}
   m_PreserveAspect: 0
 --- !u!222 &82233816
 CanvasRenderer:
@@ -5421,7 +5421,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 3286163911610860551, guid: 5cdf28d585380644b90f4a84f1bc5c4d, type: 3}
+  m_Sprite: {fileID: 21300000, guid: f611d79da7768564894c607440caa76b, type: 3}
   m_PreserveAspect: 0
 --- !u!222 &461426852
 CanvasRenderer:
@@ -12889,7 +12889,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 3286163911610860551, guid: 5cdf28d585380644b90f4a84f1bc5c4d, type: 3}
+  m_Sprite: {fileID: 21300000, guid: f611d79da7768564894c607440caa76b, type: 3}
   m_PreserveAspect: 0
 --- !u!222 &1076295667
 CanvasRenderer:
@@ -13765,7 +13765,7 @@ VideoPlayer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1150648988}
   m_Enabled: 1
-  m_VideoClip: {fileID: 32900000, guid: 70368ccb42ba84248ad5d807d9f4ab36, type: 3}
+  m_VideoClip: {fileID: 32900000, guid: 47911a622ca51f64986edfbafaaa74ae, type: 3}
   m_TargetCameraAlpha: 1
   m_TargetCamera3DLayout: 0
   m_TargetCamera: {fileID: 0}
@@ -14860,7 +14860,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 3286163911610860551, guid: 5cdf28d585380644b90f4a84f1bc5c4d, type: 3}
+  m_Sprite: {fileID: 21300000, guid: f611d79da7768564894c607440caa76b, type: 3}
   m_PreserveAspect: 0
 --- !u!222 &1189990173
 CanvasRenderer:
@@ -15891,7 +15891,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 3286163911610860551, guid: 5cdf28d585380644b90f4a84f1bc5c4d, type: 3}
+  m_Sprite: {fileID: 21300000, guid: f611d79da7768564894c607440caa76b, type: 3}
   m_PreserveAspect: 0
 --- !u!222 &1249299251
 CanvasRenderer:

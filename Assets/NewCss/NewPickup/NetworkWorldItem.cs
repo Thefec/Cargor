@@ -1,21 +1,43 @@
-using Unity;
 using Unity.Netcode;
 using UnityEngine;
 using System.Collections;
 
-// World'deki pickup edilebilir item (NetworkObject olarak)
+/// <summary>
+/// World'deki pickup edilebilir item (NetworkObject olarak)
+/// </summary>
 public class NetworkWorldItem : NetworkBehaviour
 {
+    #region Constants
+
+    private const string LOG_PREFIX = "[NetworkWorldItem]";
+
+    #endregion
+
+    #region Serialized Fields
+
     [SerializeField] private ItemData itemData;
     [SerializeField] private Rigidbody rb;
     [SerializeField] private Collider itemCollider;
-    
-    // Network variables for synchronized state
+
+    #endregion
+
+    #region Network Variables
+
     private NetworkVariable<int> networkItemID = new NetworkVariable<int>(-1);
     private NetworkVariable<bool> canBePickedUp = new NetworkVariable<bool>(true);
+    private NetworkVariable<bool> isOnTable = new NetworkVariable<bool>(false);
+
+    #endregion
+
+    #region Public Properties
 
     public ItemData ItemData => itemData;
     public bool CanBePickedUp => canBePickedUp.Value;
+    public bool IsOnTable => isOnTable.Value;
+
+    #endregion
+
+    #region Unity Lifecycle
 
     private void Start()
     {
@@ -23,20 +45,23 @@ public class NetworkWorldItem : NetworkBehaviour
         if (itemCollider == null) itemCollider = GetComponent<Collider>();
     }
 
+    #endregion
+
+    #region Network Lifecycle
+
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-        
-        // Initialize pickup state
+
         if (IsServer)
         {
             canBePickedUp.Value = true;
+            isOnTable.Value = false;
         }
-        
-        // Listen for item ID changes to update local ItemData
+
         networkItemID.OnValueChanged += OnItemIDChanged;
-        
-        // Update ItemData if we already have an ID
+        isOnTable.OnValueChanged += OnTableStateChanged;
+
         if (networkItemID.Value != -1)
         {
             UpdateItemDataFromID(networkItemID.Value);
@@ -46,8 +71,13 @@ public class NetworkWorldItem : NetworkBehaviour
     public override void OnNetworkDespawn()
     {
         networkItemID.OnValueChanged -= OnItemIDChanged;
+        isOnTable.OnValueChanged -= OnTableStateChanged;
         base.OnNetworkDespawn();
     }
+
+    #endregion
+
+    #region Network Event Handlers
 
     private void OnItemIDChanged(int previousValue, int newValue)
     {
@@ -57,9 +87,25 @@ public class NetworkWorldItem : NetworkBehaviour
         }
     }
 
+    private void OnTableStateChanged(bool previousValue, bool newValue)
+    {
+        if (newValue)
+        {
+            // Masaya konuldu - fizik dondur
+            FreezePhysics();
+        }
+        else
+        {
+            // Masadan alındı - fizik aç (pickup sistemi yönetecek)
+        }
+    }
+
+    #endregion
+
+    #region ItemData Management
+
     private void UpdateItemDataFromID(int itemID)
     {
-        // Load ItemData from Resources using the ID
         ItemData[] allItems = Resources.LoadAll<ItemData>("Items");
         foreach (ItemData item in allItems)
         {
@@ -71,35 +117,110 @@ public class NetworkWorldItem : NetworkBehaviour
         }
     }
 
+    public void SetItemData(ItemData newItemData)
+    {
+        if (IsServer && newItemData != null)
+        {
+            itemData = newItemData;
+            networkItemID.Value = newItemData.itemID;
+            Debug.Log($"{LOG_PREFIX} Item data set: {newItemData.itemName} (ID: {newItemData.itemID})");
+        }
+    }
+
+    #endregion
+
+    #region Physics Control
+
+    /// <summary>
+    /// Fizik ayarlarını dondurur (masada durması için)
+    /// </summary>
+    public void FreezePhysics()
+    {
+        if (rb == null) rb = GetComponent<Rigidbody>();
+
+        if (rb != null)
+        {
+            rb.isKinematic = true;
+            rb.useGravity = false;
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.constraints = RigidbodyConstraints.FreezeAll;
+        }
+
+        // ItemFreezeSystem varsa devre dışı bırak
+        var freezeSystem = GetComponent<ItemFreezeSystem>();
+        if (freezeSystem != null)
+        {
+            freezeSystem.enabled = false;
+        }
+
+        if (IsServer)
+        {
+            isOnTable.Value = true;
+        }
+
+        Debug.Log($"{LOG_PREFIX} Physics frozen: {gameObject.name}");
+    }
+
+    /// <summary>
+    /// Fizik ayarlarını geri açar (pickup sonrası)
+    /// </summary>
+    public void UnfreezePhysics()
+    {
+        if (rb == null) rb = GetComponent<Rigidbody>();
+
+        if (rb != null)
+        {
+            rb.constraints = RigidbodyConstraints.None;
+            // isKinematic durumunu pickup sistemi yönetsin
+        }
+
+        // ItemFreezeSystem'ı tekrar aktif et
+        var freezeSystem = GetComponent<ItemFreezeSystem>();
+        if (freezeSystem != null)
+        {
+            freezeSystem.enabled = true;
+        }
+
+        if (IsServer)
+        {
+            isOnTable.Value = false;
+        }
+
+        Debug.Log($"{LOG_PREFIX} Physics unfrozen:  {gameObject.name}");
+    }
+
     public void SetThrowForce(Vector3 force)
     {
         if (!IsServer) return;
-        
-        Rigidbody rb = GetComponent<Rigidbody>();
+
+        if (rb == null) rb = GetComponent<Rigidbody>();
+
         if (rb != null)
         {
-            // Eğer kinematic ise, önce kinematic'i kapat
-            if (rb.isKinematic)
-            {
-                rb.isKinematic = false;
-            }
-        
-            // Gravity'yi aç
+            // Önce fizik ayarlarını aç
+            rb.constraints = RigidbodyConstraints.None;
+            rb.isKinematic = false;
             rb.useGravity = true;
-        
-            // Collision detection'ı aç
             rb.detectCollisions = true;
-        
+
+            // Masadan alındı
+            isOnTable.Value = false;
+
             // Force'u uygula
             rb.AddForce(force, ForceMode.VelocityChange);
-        
-            Debug.Log($"Throw force applied: {force} to {gameObject.name}");
+
+            Debug.Log($"{LOG_PREFIX} Throw force applied: {force} to {gameObject.name}");
         }
         else
         {
-            Debug.LogError($"No Rigidbody found on {gameObject.name} - cannot apply throw force");
+            Debug.LogError($"{LOG_PREFIX} No Rigidbody found on {gameObject.name}");
         }
     }
+
+    #endregion
+
+    #region Pickup State
 
     public void DisablePickup()
     {
@@ -117,20 +238,6 @@ public class NetworkWorldItem : NetworkBehaviour
         }
     }
 
-    public void SetItemData(ItemData newItemData)
-    {
-        if (IsServer && newItemData != null)
-        {
-            // Set local reference
-            itemData = newItemData;
-            
-            // Update network variable so all clients know the item ID
-            networkItemID.Value = newItemData.itemID;
-            
-            Debug.Log($"Item data set: {newItemData.itemName} (ID: {newItemData.itemID})");
-        }
-    }
-    
     public void SetCanBePickedUp(bool canPickup)
     {
         if (IsServer)
@@ -138,35 +245,26 @@ public class NetworkWorldItem : NetworkBehaviour
             canBePickedUp.Value = canPickup;
         }
     }
+
     public void SetPickupState(bool canPickup)
     {
-        // NetworkVariable'a değer atarken .Value kullan
         if (IsServer)
         {
-            this.canBePickedUp.Value = canPickup;
+            canBePickedUp.Value = canPickup;
         }
 
-        // Eğer item alınamaz duruma geçerse, collider'ı da deaktive et
-        if (!canPickup)
+        if (itemCollider == null) itemCollider = GetComponent<Collider>();
+
+        if (itemCollider != null)
         {
-            Collider itemCollider = GetComponent<Collider>();
-            if (itemCollider != null)
-            {
-                itemCollider.enabled = false;
-            }
-        }
-        else
-        {
-            // Eğer tekrar alınabilir duruma geçerse, collider'ı aktive et
-            Collider itemCollider = GetComponent<Collider>();
-            if (itemCollider != null)
-            {
-                itemCollider.enabled = true;
-            }
+            itemCollider.enabled = canPickup;
         }
     }
-    
-    
+
+    #endregion
+
+    #region Public API
+
     public void ApplyThrowForce(Vector3 force)
     {
         if (IsServer)
@@ -174,7 +272,7 @@ public class NetworkWorldItem : NetworkBehaviour
             SetThrowForce(force);
         }
     }
-    
+
     public void Initialize(ItemData newItemData, bool canPickup = true)
     {
         if (IsServer)
@@ -183,4 +281,29 @@ public class NetworkWorldItem : NetworkBehaviour
             SetCanBePickedUp(canPickup);
         }
     }
+
+    /// <summary>
+    /// Masaya yerleştirildiğinde çağrılır
+    /// </summary>
+    public void PlaceOnTable()
+    {
+        if (IsServer)
+        {
+            FreezePhysics();
+            EnablePickup();
+        }
+    }
+
+    /// <summary>
+    /// Masadan alındığında çağrılır
+    /// </summary>
+    public void RemoveFromTable()
+    {
+        if (IsServer)
+        {
+            UnfreezePhysics();
+        }
+    }
+
+    #endregion
 }

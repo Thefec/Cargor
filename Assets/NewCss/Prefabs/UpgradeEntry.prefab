@@ -105,6 +105,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -205,8 +206,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: ContentText
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: a2db73fd0cb3a5146a764978b780f090, type: 2}
-  m_sharedMaterial: {fileID: 9133294651196675221, guid: a2db73fd0cb3a5146a764978b780f090, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: d95e1bf731165a244a6b526d9bbae709, type: 2}
+  m_sharedMaterial: {fileID: -6863696139224461478, guid: d95e1bf731165a244a6b526d9bbae709, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -241,6 +242,7 @@ MonoBehaviour:
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -446,8 +448,8 @@ MonoBehaviour:
 
 '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: d95e1bf731165a244a6b526d9bbae709, type: 2}
-  m_sharedMaterial: {fileID: -6863696139224461478, guid: d95e1bf731165a244a6b526d9bbae709, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: f00f6d77295b8244da67e40b5c2bf49d, type: 2}
+  m_sharedMaterial: {fileID: 3646549821621045345, guid: f00f6d77295b8244da67e40b5c2bf49d, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -482,6 +484,7 @@ MonoBehaviour:
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -714,6 +717,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -775,7 +779,7 @@ RectTransform:
   m_GameObject: {fileID: 6823907041773892244}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_LocalScale: {x: 0.75, y: 0.75, z: 0.75}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 5132281246603565947}
@@ -974,6 +978,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: -0.7
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
