@@ -28,20 +28,11 @@ namespace NewCss
         /// </summary>
         public static event Action OnNewDay;
 
-        /// <summary>
-        /// Haftalık kira ödemesi yapıldığında tetiklenir (her 6 günde bir)
-        /// </summary>
-        public static event Action OnWeeklyEvent;
-
         #endregion
 
         #region Constants
 
-        private const int INITIAL_WEEKLY_COST = 600;
-        private const int MIN_WEEKLY_INCREASE = 200;
-        private const int MAX_WEEKLY_INCREASE = 600;
-        private const float WEEKLY_COST_MULTIPLIER = 1.2f;
-        private const int DAYS_PER_WEEK = 6;
+        public const int MAX_DAYS = 16; // Changed from 30 to 16 - made public for GameStateManager
         private const int DYNAMIC_DURATION_START_DAY = 3;
         private const float PERIODIC_CHECK_WINDOW = 0.5f;
         private const string LOG_PREFIX = "[DayCycleManager]";
@@ -82,13 +73,11 @@ namespace NewCss
         private readonly NetworkVariable<int> _networkCurrentDay = new(1);
         private readonly NetworkVariable<bool> _networkIsDayOver = new(false);
         private readonly NetworkVariable<bool> _networkIsBreakRoomReady = new(false);
-        private readonly NetworkVariable<int> _networkWeeklyCost = new(INITIAL_WEEKLY_COST);
 
         #endregion
 
         #region Private Fields
 
-        private int _localWeeklyCost;
         private int _currentHour;
         private bool _lunchNotified;
         private bool _moneyCheckCompleted;
@@ -154,11 +143,6 @@ namespace NewCss
         /// Mevcut gün numarası - 1'den başlar (lowercase - backward compatibility)
         /// </summary>
         public int currentDay => _networkCurrentDay.Value;
-
-        /// <summary>
-        /// Mevcut haftalık kira maliyeti
-        /// </summary>
-        public int WeeklyCost => _networkWeeklyCost.Value;
 
         /// <summary>
         /// Oyun içi mevcut saat (7-18 arası)
@@ -310,9 +294,7 @@ namespace NewCss
 
         private void InitializeServerState()
         {
-            _networkWeeklyCost.Value = INITIAL_WEEKLY_COST;
-            _localWeeklyCost = INITIAL_WEEKLY_COST;
-            Debug.Log($"{LOG_PREFIX} Server: Weekly cost initialized to {INITIAL_WEEKLY_COST}");
+            Debug.Log($"{LOG_PREFIX} Server state initialized successfully");
         }
 
         private void SubscribeToNetworkEvents()
@@ -360,12 +342,10 @@ namespace NewCss
             _networkCurrentDay.Value = 1;
             _networkIsDayOver.Value = false;
             _networkIsBreakRoomReady.Value = false;
-            _networkWeeklyCost.Value = INITIAL_WEEKLY_COST;
         }
 
         private void ResetLocalState()
         {
-            _localWeeklyCost = INITIAL_WEEKLY_COST;
             _currentHour = startHour;
             _lunchNotified = false;
             _moneyCheckCompleted = false;
@@ -461,28 +441,8 @@ namespace NewCss
 
         private bool TryProcessMoneyCheck()
         {
-            if (GameStateManager.Instance == null)
-            {
-                _moneyCheckCompleted = true;
-                return true;
-            }
-
-            if (GameStateManager.Instance.IsDayOver)
-            {
-                Debug.Log($"{LOG_PREFIX} Game already ended - skipping money check");
-                _moneyCheckCompleted = true;
-                return false;
-            }
-
-            GameStateManager.Instance.CheckMoneyAtDayEnd();
+            // No more rent system - money check removed
             _moneyCheckCompleted = true;
-
-            if (GameStateManager.Instance.IsDayOver)
-            {
-                Debug.Log($"{LOG_PREFIX} Game ended after money check - stopping day cycle");
-                return false;
-            }
-
             return true;
         }
 
@@ -527,12 +487,16 @@ namespace NewCss
 
             Debug.Log($"{LOG_PREFIX} Day {_networkCurrentDay.Value} started - Duration: {CurrentDayDuration} seconds");
 
-            // Haftalık kira kontrolü
-            ProcessWeeklyRentIfNeeded();
-
             // Gün durumlarını sıfırla
             _networkIsDayOver.Value = false;
             _networkIsBreakRoomReady.Value = false;
+
+            // Check win condition after completing day (when moving to next day after day 16)
+            if (_networkCurrentDay.Value >= MAX_DAYS)
+            {
+                Debug.Log($"{LOG_PREFIX} Completed day {MAX_DAYS}! Checking win condition...");
+                CheckWinCondition();
+            }
 
             // Event'leri tetikle
             OnNewDay?.Invoke();
@@ -546,54 +510,11 @@ namespace NewCss
             UpdateBreakRoomPlayerCount();
         }
 
-        private void ProcessWeeklyRentIfNeeded()
+        private void CheckWinCondition()
         {
-            int day = _networkCurrentDay.Value;
-
-            if (day % DAYS_PER_WEEK != 0)
-            {
-                return;
-            }
-
-            // Kira artışı hesapla
-            int randomIncrease = UnityEngine.Random.Range(MIN_WEEKLY_INCREASE, MAX_WEEKLY_INCREASE + 1);
-            _localWeeklyCost = Mathf.RoundToInt(_localWeeklyCost * WEEKLY_COST_MULTIPLIER);
-            _localWeeklyCost += randomIncrease;
-            _networkWeeklyCost.Value = _localWeeklyCost;
-
-            // Kirayı öde
-            if (MoneySystem.Instance != null)
-            {
-                MoneySystem.Instance.SpendMoney(_localWeeklyCost);
-                Debug.Log($"{LOG_PREFIX} RENT DAY {day}: Rent paid - {_localWeeklyCost} coins");
-                Debug.Log($"{LOG_PREFIX} Remaining money: {MoneySystem.Instance.CurrentMoney}");
-            }
-
-            int rentPaymentNumber = day / DAYS_PER_WEEK;
-            Debug.Log($"{LOG_PREFIX} ▶ Weekly Rent Event: Day {day}\n" +
-                      $"- Cost increase: +{randomIncrease}\n" +
-                      $"- New weekly cost: {_localWeeklyCost}\n" +
-                      $"- This is rent payment #{rentPaymentNumber} of 5");
-
-            // Haftalık event'i tetikle
-            TriggerWeeklyEventClientRpc();
-
-            // Oyun durumunu kontrol et
-            CheckGameStateAfterRent();
-        }
-
-        private void CheckGameStateAfterRent()
-        {
-            Debug.Log($"{LOG_PREFIX} Calling GameStateManager.CheckGameState after rent payment");
-
             if (GameStateManager.Instance != null)
             {
-                Debug.Log($"{LOG_PREFIX} GameStateManager.Instance found, calling CheckGameState");
-                GameStateManager.Instance.CheckGameState();
-            }
-            else
-            {
-                Debug.LogError($"{LOG_PREFIX} GameStateManager. Instance is NULL!");
+                GameStateManager.Instance.CheckWinCondition();
             }
         }
 
@@ -701,12 +622,6 @@ namespace NewCss
         }
 
         [ClientRpc]
-        private void TriggerWeeklyEventClientRpc()
-        {
-            OnWeeklyEvent?.Invoke();
-        }
-
-        [ClientRpc]
         private void TriggerNewDayEventClientRpc()
         {
             OnNewDay?.Invoke();
@@ -772,14 +687,6 @@ namespace NewCss
 
         #region Public API - Backward Compatibility
 
-        /// <summary>
-        /// Mevcut haftalık kira maliyetini döndürür
-        /// </summary>
-        public int GetCurrentWeeklyCost()
-        {
-            return _networkWeeklyCost.Value;
-        }
-
         #endregion
 
         #region Editor & Debug
@@ -826,7 +733,6 @@ namespace NewCss
                       $"Elapsed Time: {_networkElapsedTime.Value:F2}s / {CurrentDayDuration}s\n" +
                       $"Is Day Over: {_networkIsDayOver.Value}\n" +
                       $"Is Break Room Ready: {_networkIsBreakRoomReady.Value}\n" +
-                      $"Weekly Cost: {_networkWeeklyCost.Value}\n" +
                       $"Current Hour: {_currentHour}");
         }
 #endif
