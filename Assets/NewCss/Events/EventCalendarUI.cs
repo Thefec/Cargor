@@ -22,6 +22,7 @@ namespace NewCss
         private const int CALENDAR_CELL_COUNT = 16;
         private const int EVENT_INTERVAL_MIN = 1; // Changed from 3 to 1
         private const int EVENT_INTERVAL_MAX = 3; // Changed from 5 to 3
+        private const int INITIAL_EVENT_FREE_DAYS = 3; // First 3 days have no events
         private const int INITIAL_POSITIVE_EVENT_COUNT = 2;
         private const int GUARANTEED_NEGATIVE_EVENT_INDEX = 2;
         private const int MAX_PREGENERATED_DAYS = 100;
@@ -605,7 +606,7 @@ namespace NewCss
         private void GenerateInitialEvents()
         {
             int maxDay = startDay + MAX_PREGENERATED_DAYS;
-            int currentDay = startDay + 3; // Start from day 4 (first 3 days have no events)
+            int currentDay = startDay + INITIAL_EVENT_FREE_DAYS; // Start from day 4 (first 3 days have no events)
             int eventCount = 0;
 
             var positiveEvents = _allEvents.FindAll(e => e.type == EventType.Positive);
@@ -613,6 +614,7 @@ namespace NewCss
 
             while (currentDay < maxDay)
             {
+                // Random.Range with integers is exclusive of max, so +1 makes it inclusive
                 currentDay += Random.Range(EVENT_INTERVAL_MIN, EVENT_INTERVAL_MAX + 1);
 
                 if (_randomEventDays.Contains(currentDay)) continue;

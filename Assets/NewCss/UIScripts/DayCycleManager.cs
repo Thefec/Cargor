@@ -28,20 +28,10 @@ namespace NewCss
         /// </summary>
         public static event Action OnNewDay;
 
-        /// <summary>
-        /// Haftalık kira ödemesi yapıldığında tetiklenir (her 6 günde bir)
-        /// </summary>
-        public static event Action OnWeeklyEvent;
-
         #endregion
 
         #region Constants
 
-        private const int INITIAL_WEEKLY_COST = 600;
-        private const int MIN_WEEKLY_INCREASE = 200;
-        private const int MAX_WEEKLY_INCREASE = 600;
-        private const float WEEKLY_COST_MULTIPLIER = 1.2f;
-        private const int DAYS_PER_WEEK = 6;
         public const int MAX_DAYS = 16; // Changed from 30 to 16 - made public for GameStateManager
         private const int DYNAMIC_DURATION_START_DAY = 3;
         private const float PERIODIC_CHECK_WINDOW = 0.5f;
