@@ -359,7 +359,9 @@ namespace NewCss
         [ClientRpc]
         private void ShowWinScreenClientRpc()
         {
-            if (IsServer) return; // Host already showed it
+            // ClientRpc is called on ALL machines including the server
+            // Server already showed the screen in TriggerWin(), so skip it here
+            if (IsServer) return;
             
             gameEnded = true;
             playerWon = true;
@@ -386,7 +388,9 @@ namespace NewCss
         [ClientRpc]
         private void ShowLoseScreenClientRpc()
         {
-            if (IsServer) return; // Host already showed it
+            // ClientRpc is called on ALL machines including the server
+            // Server already showed the screen in TriggerLose(), so skip it here
+            if (IsServer) return;
             
             gameEnded = true;
             playerWon = false;

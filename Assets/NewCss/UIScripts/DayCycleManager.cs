@@ -294,7 +294,7 @@ namespace NewCss
 
         private void InitializeServerState()
         {
-            Debug.Log($"{LOG_PREFIX} Server initialized");
+            Debug.Log($"{LOG_PREFIX} Server state initialized successfully");
         }
 
         private void SubscribeToNetworkEvents()
@@ -486,9 +486,6 @@ namespace NewCss
             _periodicChecks.Reset();
 
             Debug.Log($"{LOG_PREFIX} Day {_networkCurrentDay.Value} started - Duration: {CurrentDayDuration} seconds");
-
-            // Rent system removed - no more weekly rent processing
-            // ProcessWeeklyRentIfNeeded();
 
             // Gün durumlarını sıfırla
             _networkIsDayOver.Value = false;
