@@ -20,9 +20,8 @@ namespace NewCss
         private const string LOG_PREFIX = "[EventCalendar]";
         private const string CHARACTER_TAG = "Character";
         private const int CALENDAR_CELL_COUNT = 16;
-        private const int RENT_DAY_INTERVAL = 6;
-        private const int EVENT_INTERVAL_MIN = 3;
-        private const int EVENT_INTERVAL_MAX = 5;
+        private const int EVENT_INTERVAL_MIN = 1; // Changed from 3 to 1
+        private const int EVENT_INTERVAL_MAX = 3; // Changed from 5 to 3
         private const int INITIAL_POSITIVE_EVENT_COUNT = 2;
         private const int GUARANTEED_NEGATIVE_EVENT_INDEX = 2;
         private const int MAX_PREGENERATED_DAYS = 100;
@@ -32,9 +31,6 @@ namespace NewCss
         // Animator triggers
         private const string TRIGGER_OPEN = "Open";
         private const string TRIGGER_CLOSE = "Close";
-
-        // Localization Keys
-        private const string LOC_KEY_RENT_DAY = "RentDay";
 
         #endregion
 
@@ -100,6 +96,20 @@ namespace NewCss
 
         [SerializeField, Tooltip("Event spawn noktaları (16 adet)")]
         public Transform[] eventSpawnPoints = new Transform[CALENDAR_CELL_COUNT];
+
+        [SerializeField, Tooltip("Gün arka plan imajları (16 adet)")]
+        public Image[] dayBackgrounds = new Image[CALENDAR_CELL_COUNT];
+
+        #endregion
+
+        #region Serialized Fields - Colors
+
+        [Header("=== DAY HIGHLIGHT COLORS ===")]
+        [SerializeField, Tooltip("Bugünün arka plan rengi")]
+        public Color currentDayColor = Color.green;
+
+        [SerializeField, Tooltip("Normal günlerin arka plan rengi")]
+        public Color normalDayColor = Color.white;
 
         #endregion
 
@@ -595,7 +605,7 @@ namespace NewCss
         private void GenerateInitialEvents()
         {
             int maxDay = startDay + MAX_PREGENERATED_DAYS;
-            int currentDay = startDay;
+            int currentDay = startDay + 3; // Start from day 4 (first 3 days have no events)
             int eventCount = 0;
 
             var positiveEvents = _allEvents.FindAll(e => e.type == EventType.Positive);
@@ -603,8 +613,7 @@ namespace NewCss
 
             while (currentDay < maxDay)
             {
-                currentDay += Random.Range(EVENT_INTERVAL_MIN, EVENT_INTERVAL_MAX);
-                currentDay = AdjustForRentDay(currentDay);
+                currentDay += Random.Range(EVENT_INTERVAL_MIN, EVENT_INTERVAL_MAX + 1);
 
                 if (_randomEventDays.Contains(currentDay)) continue;
 
@@ -617,21 +626,6 @@ namespace NewCss
             }
 
             _randomEventDays.Sort();
-        }
-
-        private int AdjustForRentDay(int day)
-        {
-            if (day % RENT_DAY_INTERVAL != 0) return day;
-
-            int adjustment = Random.Range(0, 2) == 0 ? -1 : 1;
-            int adjustedDay = day + adjustment;
-
-            if (adjustedDay % RENT_DAY_INTERVAL != 0 && adjustedDay > 0)
-            {
-                return adjustedDay;
-            }
-
-            return day + 2;
         }
 
         private GameEvent SelectEventByCount(int eventCount, List<GameEvent> positiveEvents, List<GameEvent> negativeEvents)
@@ -674,6 +668,7 @@ namespace NewCss
         {
             ClearSpawnedEventTexts();
             PopulateCalendarCells();
+            HighlightCurrentDay();
         }
 
         private void ClearSpawnedEventTexts()
@@ -698,7 +693,6 @@ namespace NewCss
 
                 UpdateDayNumberText(i, day);
                 TrySpawnEventText(i, day);
-                TrySpawnRentDayText(i, day);
             }
         }
 
@@ -722,15 +716,20 @@ namespace NewCss
             }
         }
 
-        private void TrySpawnRentDayText(int index, int day)
+        /// <summary>
+        /// Highlights the current day in the calendar
+        /// </summary>
+        private void HighlightCurrentDay()
         {
-            if (day % RENT_DAY_INTERVAL != 0) return;
-
-            string rentDayText = LocalizationHelper.GetLocalizedString(LOC_KEY_RENT_DAY);
-            var rentObject = SpawnEventText(index, rentDayText, Color.red);
-            if (rentObject != null)
+            int currentDay = DayCycleManager.Instance?.currentDay ?? 1;
+            
+            for (int i = 0; i < dayBackgrounds.Length && i < CALENDAR_CELL_COUNT; i++)
             {
-                _spawnedEventTexts.Add(rentObject);
+                int day = startDay + i;
+                if (dayBackgrounds[i] != null)
+                {
+                    dayBackgrounds[i].color = (day == currentDay) ? currentDayColor : normalDayColor;
+                }
             }
         }
 
@@ -770,14 +769,6 @@ namespace NewCss
         public GameEvent GetEventForDay(int day)
         {
             return _eventsByDay.TryGetValue(day, out GameEvent gameEvent) ? gameEvent : null;
-        }
-
-        /// <summary>
-        /// Belirli bir günün kira günü olup olmadığını kontrol eder
-        /// </summary>
-        public bool IsRentDay(int day)
-        {
-            return day % RENT_DAY_INTERVAL == 0;
         }
 
         /// <summary>
@@ -870,20 +861,6 @@ namespace NewCss
                 if (day >= startDay && day < startDay + 50 && _eventsByDay.TryGetValue(day, out GameEvent evt))
                 {
                     Debug.Log($"Day {day}: {evt.name} ({evt.type})");
-                }
-            }
-        }
-
-        [ContextMenu("Debug: Print Rent Days")]
-        private void DebugPrintRentDays()
-        {
-            Debug.Log($"{LOG_PREFIX} === RENT DAYS (next 30 days) ===");
-            for (int i = 0; i < 30; i++)
-            {
-                int day = startDay + i;
-                if (IsRentDay(day))
-                {
-                    Debug.Log($"Day {day}: RENT DAY");
                 }
             }
         }

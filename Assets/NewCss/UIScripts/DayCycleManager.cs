@@ -42,6 +42,7 @@ namespace NewCss
         private const int MAX_WEEKLY_INCREASE = 600;
         private const float WEEKLY_COST_MULTIPLIER = 1.2f;
         private const int DAYS_PER_WEEK = 6;
+        private const int MAX_DAYS = 16; // Changed from 30 to 16
         private const int DYNAMIC_DURATION_START_DAY = 3;
         private const float PERIODIC_CHECK_WINDOW = 0.5f;
         private const string LOG_PREFIX = "[DayCycleManager]";
@@ -461,28 +462,8 @@ namespace NewCss
 
         private bool TryProcessMoneyCheck()
         {
-            if (GameStateManager.Instance == null)
-            {
-                _moneyCheckCompleted = true;
-                return true;
-            }
-
-            if (GameStateManager.Instance.IsDayOver)
-            {
-                Debug.Log($"{LOG_PREFIX} Game already ended - skipping money check");
-                _moneyCheckCompleted = true;
-                return false;
-            }
-
-            GameStateManager.Instance.CheckMoneyAtDayEnd();
+            // No more rent system - money check removed
             _moneyCheckCompleted = true;
-
-            if (GameStateManager.Instance.IsDayOver)
-            {
-                Debug.Log($"{LOG_PREFIX} Game ended after money check - stopping day cycle");
-                return false;
-            }
-
             return true;
         }
 
@@ -527,12 +508,19 @@ namespace NewCss
 
             Debug.Log($"{LOG_PREFIX} Day {_networkCurrentDay.Value} started - Duration: {CurrentDayDuration} seconds");
 
-            // Haftalık kira kontrolü
-            ProcessWeeklyRentIfNeeded();
+            // Rent system removed - no more weekly rent processing
+            // ProcessWeeklyRentIfNeeded();
 
             // Gün durumlarını sıfırla
             _networkIsDayOver.Value = false;
             _networkIsBreakRoomReady.Value = false;
+
+            // Check win condition after completing day (day 16 means we completed it)
+            if (_networkCurrentDay.Value > MAX_DAYS)
+            {
+                Debug.Log($"{LOG_PREFIX} Day {MAX_DAYS} completed! Checking win condition...");
+                CheckWinCondition();
+            }
 
             // Event'leri tetikle
             OnNewDay?.Invoke();
@@ -546,54 +534,11 @@ namespace NewCss
             UpdateBreakRoomPlayerCount();
         }
 
-        private void ProcessWeeklyRentIfNeeded()
+        private void CheckWinCondition()
         {
-            int day = _networkCurrentDay.Value;
-
-            if (day % DAYS_PER_WEEK != 0)
-            {
-                return;
-            }
-
-            // Kira artışı hesapla
-            int randomIncrease = UnityEngine.Random.Range(MIN_WEEKLY_INCREASE, MAX_WEEKLY_INCREASE + 1);
-            _localWeeklyCost = Mathf.RoundToInt(_localWeeklyCost * WEEKLY_COST_MULTIPLIER);
-            _localWeeklyCost += randomIncrease;
-            _networkWeeklyCost.Value = _localWeeklyCost;
-
-            // Kirayı öde
-            if (MoneySystem.Instance != null)
-            {
-                MoneySystem.Instance.SpendMoney(_localWeeklyCost);
-                Debug.Log($"{LOG_PREFIX} RENT DAY {day}: Rent paid - {_localWeeklyCost} coins");
-                Debug.Log($"{LOG_PREFIX} Remaining money: {MoneySystem.Instance.CurrentMoney}");
-            }
-
-            int rentPaymentNumber = day / DAYS_PER_WEEK;
-            Debug.Log($"{LOG_PREFIX} ▶ Weekly Rent Event: Day {day}\n" +
-                      $"- Cost increase: +{randomIncrease}\n" +
-                      $"- New weekly cost: {_localWeeklyCost}\n" +
-                      $"- This is rent payment #{rentPaymentNumber} of 5");
-
-            // Haftalık event'i tetikle
-            TriggerWeeklyEventClientRpc();
-
-            // Oyun durumunu kontrol et
-            CheckGameStateAfterRent();
-        }
-
-        private void CheckGameStateAfterRent()
-        {
-            Debug.Log($"{LOG_PREFIX} Calling GameStateManager.CheckGameState after rent payment");
-
             if (GameStateManager.Instance != null)
             {
-                Debug.Log($"{LOG_PREFIX} GameStateManager.Instance found, calling CheckGameState");
-                GameStateManager.Instance.CheckGameState();
-            }
-            else
-            {
-                Debug.LogError($"{LOG_PREFIX} GameStateManager. Instance is NULL!");
+                GameStateManager.Instance.CheckWinCondition();
             }
         }
 

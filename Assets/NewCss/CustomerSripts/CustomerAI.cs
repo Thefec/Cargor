@@ -556,6 +556,12 @@ namespace NewCss
 
             // Prestige cezası
             ApplyPrestigePenalty();
+            
+            // NEW: Customer lost - trigger game over
+            if (IsServer && GameStateManager.Instance != null)
+            {
+                GameStateManager.Instance.OnCustomerLost();
+            }
 
             // Çıkışa geç
             TransitionToExit();

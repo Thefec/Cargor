@@ -7,13 +7,11 @@ using UnityEngine.SceneManagement;
 
 namespace NewCss
 {
-    public class GameStateManager : MonoBehaviour
+    public class GameStateManager : NetworkBehaviour
     {
         public static GameStateManager Instance { get; private set; }
 
         [Header("Win/Lose Settings")]
-        [Tooltip("How many successful rent payments needed to win (5 for 30 days)")]
-        public int requiredRentPayments = 5;
         
         [Header("UI Panels - Assign your existing panels")]
         public GameObject winPanel;
@@ -25,7 +23,6 @@ namespace NewCss
         
         private bool gameEnded = false;
         private bool playerWon = false;
-        private int successfulRentPayments = 0;
         private bool hasGameEverStarted = false; 
         
         public bool HasGameEverStarted => hasGameEverStarted;
@@ -112,7 +109,6 @@ namespace NewCss
             Debug.Log("FORCE RESETTING game state for any game scene load");
             gameEnded = false;           // ZORUNLU RESET
             playerWon = false;           // ZORUNLU RESET  
-            successfulRentPayments = 0;  // ZORUNLU RESET
             Time.timeScale = 1f;         // ZORUNLU RESET
     
             // UI referanslarını tekrar bul (çünkü yeni sahne)
@@ -271,7 +267,6 @@ namespace NewCss
     
             gameEnded = false;
             playerWon = false;
-            successfulRentPayments = 0;
             // hasGameEverStarted'ı resetlemeyin - sadece oyun gerçekten ilk kez başladığında true yapılacak
     
             // Time scale'i normale döndür
@@ -309,95 +304,40 @@ namespace NewCss
             }
         }
 
-        public void CheckGameState()
+        /// <summary>
+        /// Called when a customer is lost (wait bar expired and customer exits)
+        /// </summary>
+        public void OnCustomerLost()
         {
-            Debug.Log("=== CheckGameState called ===");
-            Debug.Log($"Current gameEnded status: {gameEnded}");
-    
-            if (gameEnded) 
+            if (gameEnded)
             {
-                Debug.Log("Game already ended, skipping check");
+                Debug.Log("=== Game already ended, ignoring customer loss ===");
+                return;
+            }
+
+            Debug.Log("=== CUSTOMER LOST - GAME OVER ===");
+            TriggerLose();
+        }
+
+        /// <summary>
+        /// Checks if the player has won after completing day 16 without losing any customers
+        /// </summary>
+        public void CheckWinCondition()
+        {
+            if (gameEnded)
+            {
+                Debug.Log("=== Game already ended, skipping win check ===");
                 return;
             }
 
             int currentDay = DayCycleManager.Instance?.currentDay ?? 1;
-
-            Debug.Log($"CheckGameState - Day: {currentDay}, Rent Payments: {successfulRentPayments}");
-
-            // Kira günü kontrolü
-            bool isRentDay = (currentDay % 6 == 0);
-
-            if (isRentDay)
+            
+            // Win condition: Day 16 completed without losing any customers
+            if (currentDay >= 16)
             {
-                // Kira başarıyla ödendi
-                successfulRentPayments++;
-                Debug.Log($"Rent paid successfully! Total payments: {successfulRentPayments}/{requiredRentPayments}");
-
-                // Win koşulu kontrolü
-                if (currentDay >= 30 || successfulRentPayments >= requiredRentPayments)
-                {
-                    Debug.Log("VICTORY! Survived 30 days / 5 rent payments!");
-                    TriggerWin();
-                }
-                else
-                {
-                    Debug.Log($"Continue playing... Need {requiredRentPayments - successfulRentPayments} more rent payments");
-                }
+                Debug.Log($"=== Day {currentDay} completed without losing customers - VICTORY! ===");
+                TriggerWin();
             }
-        }
-        
-        public void CheckMoneyAtDayEnd()
-        {
-            Debug.Log("=== CheckMoneyAtDayEnd called ===");
-            Debug.Log($"Current gameEnded status: {gameEnded}");
-    
-            if (gameEnded) 
-            {
-                Debug.Log("Game already ended, skipping money check");
-                return;
-            }
-
-            int currentDay = DayCycleManager.Instance?.currentDay ?? 1;
-
-            // Yarın kira günü mü kontrol et
-            int tomorrow = currentDay + 1;
-            bool isTomorrowRentDay = (tomorrow % 6 == 0);
-
-            Debug.Log($"END OF DAY {currentDay} - Tomorrow is day {tomorrow}");
-
-            if (isTomorrowRentDay)
-            {
-                // Yarın kira günü - para yeterli mi kontrol et
-                int weeklyCost = GetCurrentWeeklyCost();
-                int currentMoney = MoneySystem.Instance?.CurrentMoney ?? 0;
-
-                Debug.Log($"Tomorrow is rent day! Money Check:");
-                Debug.Log($"Current Money: {currentMoney}, Required for tomorrow's rent: {weeklyCost}");
-
-                if (currentMoney < weeklyCost)
-                {
-                    // Para yetmiyor - LOSE
-                    Debug.Log("NOT ENOUGH MONEY FOR TOMORROW'S RENT - GAME OVER!");
-                    TriggerLose();
-                }
-                else
-                {
-                    Debug.Log("Money sufficient for tomorrow's rent. Continue playing.");
-                }
-            }
-            else
-            {
-                Debug.Log($"Tomorrow (day {tomorrow}) is not a rent day - no money check needed");
-            }
-        }
-
-        private int GetCurrentWeeklyCost()
-        {
-            if (DayCycleManager.Instance != null)
-            {
-                return DayCycleManager.Instance.WeeklyCost;
-            }
-            return 1000;
         }
 
         private void TriggerWin()
@@ -406,7 +346,23 @@ namespace NewCss
             gameEnded = true;
             playerWon = true;
             
-            // Zamanı durdur
+            Time.timeScale = 0f;
+            ShowWinScreen();
+            
+            // Network sync - notify all clients
+            if (IsServer)
+            {
+                ShowWinScreenClientRpc();
+            }
+        }
+
+        [ClientRpc]
+        private void ShowWinScreenClientRpc()
+        {
+            if (IsServer) return; // Host already showed it
+            
+            gameEnded = true;
+            playerWon = true;
             Time.timeScale = 0f;
             ShowWinScreen();
         }
@@ -417,7 +373,23 @@ namespace NewCss
             gameEnded = true;
             playerWon = false;
             
-            // Zamanı durdur
+            Time.timeScale = 0f;
+            ShowLoseScreen();
+            
+            // Network sync - notify all clients
+            if (IsServer)
+            {
+                ShowLoseScreenClientRpc();
+            }
+        }
+
+        [ClientRpc]
+        private void ShowLoseScreenClientRpc()
+        {
+            if (IsServer) return; // Host already showed it
+            
+            gameEnded = true;
+            playerWon = false;
             Time.timeScale = 0f;
             ShowLoseScreen();
         }
@@ -590,8 +562,6 @@ namespace NewCss
                 Debug.Log($"=== Game State Debug ===");
                 Debug.Log($"Day: {DayCycleManager.Instance.currentDay}");
                 Debug.Log($"Money: {MoneySystem.Instance.CurrentMoney}");
-                Debug.Log($"Weekly Cost: {DayCycleManager.Instance.WeeklyCost}");
-                Debug.Log($"Successful Rent Payments: {successfulRentPayments}/{requiredRentPayments}");
                 Debug.Log($"Game Ended: {gameEnded}");
                 Debug.Log($"Player Won: {playerWon}");
                 Debug.Log($"Current Scene: {SceneManager.GetActiveScene().name}");
@@ -600,11 +570,11 @@ namespace NewCss
             }
         }
 
-        [ContextMenu("Force Check Game State")]
-        public void ForceCheckGameState()
+        [ContextMenu("Force Check Win Condition")]
+        public void ForceCheckWinCondition()
         {
-            Debug.Log("=== FORCE CHECKING GAME STATE ===");
-            CheckGameState();
+            Debug.Log("=== FORCE CHECKING WIN CONDITION ===");
+            CheckWinCondition();
             DebugGameState();
         }
 
