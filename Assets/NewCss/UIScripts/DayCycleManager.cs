@@ -736,7 +736,6 @@ namespace NewCss
                       $"Elapsed Time: {_networkElapsedTime.Value:F2}s / {CurrentDayDuration}s\n" +
                       $"Is Day Over: {_networkIsDayOver.Value}\n" +
                       $"Is Break Room Ready: {_networkIsBreakRoomReady.Value}\n" +
-                      $"Weekly Cost: {_networkWeeklyCost.Value}\n" +
                       $"Current Hour: {_currentHour}");
         }
 #endif
