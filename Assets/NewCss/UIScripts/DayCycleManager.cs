@@ -42,7 +42,7 @@ namespace NewCss
         private const int MAX_WEEKLY_INCREASE = 600;
         private const float WEEKLY_COST_MULTIPLIER = 1.2f;
         private const int DAYS_PER_WEEK = 6;
-        private const int MAX_DAYS = 16; // Changed from 30 to 16
+        public const int MAX_DAYS = 16; // Changed from 30 to 16 - made public for GameStateManager
         private const int DYNAMIC_DURATION_START_DAY = 3;
         private const float PERIODIC_CHECK_WINDOW = 0.5f;
         private const string LOG_PREFIX = "[DayCycleManager]";
@@ -83,13 +83,11 @@ namespace NewCss
         private readonly NetworkVariable<int> _networkCurrentDay = new(1);
         private readonly NetworkVariable<bool> _networkIsDayOver = new(false);
         private readonly NetworkVariable<bool> _networkIsBreakRoomReady = new(false);
-        private readonly NetworkVariable<int> _networkWeeklyCost = new(INITIAL_WEEKLY_COST);
 
         #endregion
 
         #region Private Fields
 
-        private int _localWeeklyCost;
         private int _currentHour;
         private bool _lunchNotified;
         private bool _moneyCheckCompleted;
@@ -155,11 +153,6 @@ namespace NewCss
         /// Mevcut gün numarası - 1'den başlar (lowercase - backward compatibility)
         /// </summary>
         public int currentDay => _networkCurrentDay.Value;
-
-        /// <summary>
-        /// Mevcut haftalık kira maliyeti
-        /// </summary>
-        public int WeeklyCost => _networkWeeklyCost.Value;
 
         /// <summary>
         /// Oyun içi mevcut saat (7-18 arası)
@@ -311,9 +304,7 @@ namespace NewCss
 
         private void InitializeServerState()
         {
-            _networkWeeklyCost.Value = INITIAL_WEEKLY_COST;
-            _localWeeklyCost = INITIAL_WEEKLY_COST;
-            Debug.Log($"{LOG_PREFIX} Server: Weekly cost initialized to {INITIAL_WEEKLY_COST}");
+            Debug.Log($"{LOG_PREFIX} Server initialized");
         }
 
         private void SubscribeToNetworkEvents()
@@ -361,12 +352,10 @@ namespace NewCss
             _networkCurrentDay.Value = 1;
             _networkIsDayOver.Value = false;
             _networkIsBreakRoomReady.Value = false;
-            _networkWeeklyCost.Value = INITIAL_WEEKLY_COST;
         }
 
         private void ResetLocalState()
         {
-            _localWeeklyCost = INITIAL_WEEKLY_COST;
             _currentHour = startHour;
             _lunchNotified = false;
             _moneyCheckCompleted = false;
@@ -515,10 +504,10 @@ namespace NewCss
             _networkIsDayOver.Value = false;
             _networkIsBreakRoomReady.Value = false;
 
-            // Check win condition after completing day (day 16 means we completed it)
-            if (_networkCurrentDay.Value > MAX_DAYS)
+            // Check win condition after completing day (when moving to next day after day 16)
+            if (_networkCurrentDay.Value >= MAX_DAYS)
             {
-                Debug.Log($"{LOG_PREFIX} Day {MAX_DAYS} completed! Checking win condition...");
+                Debug.Log($"{LOG_PREFIX} Completed day {MAX_DAYS}! Checking win condition...");
                 CheckWinCondition();
             }
 
@@ -646,12 +635,6 @@ namespace NewCss
         }
 
         [ClientRpc]
-        private void TriggerWeeklyEventClientRpc()
-        {
-            OnWeeklyEvent?.Invoke();
-        }
-
-        [ClientRpc]
         private void TriggerNewDayEventClientRpc()
         {
             OnNewDay?.Invoke();
@@ -716,14 +699,6 @@ namespace NewCss
         #endregion
 
         #region Public API - Backward Compatibility
-
-        /// <summary>
-        /// Mevcut haftalık kira maliyetini döndürür
-        /// </summary>
-        public int GetCurrentWeeklyCost()
-        {
-            return _networkWeeklyCost.Value;
-        }
 
         #endregion
 

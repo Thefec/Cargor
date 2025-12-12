@@ -332,8 +332,8 @@ namespace NewCss
 
             int currentDay = DayCycleManager.Instance?.currentDay ?? 1;
             
-            // Win condition: Day 16 completed without losing any customers
-            if (currentDay >= 16)
+            // Win condition: Reach day 16 without losing any customers
+            if (currentDay >= DayCycleManager.MAX_DAYS)
             {
                 Debug.Log($"=== Day {currentDay} completed without losing customers - VICTORY! ===");
                 TriggerWin();
