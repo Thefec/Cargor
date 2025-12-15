@@ -27,12 +27,13 @@ namespace NewCss.Quest
     /// </summary>
     public enum QuestType
     {
-        CompleteMinigame = 0,
-        PlaceBoxOnShelf = 1,
-        CompleteTruck = 2,
-        ServeCustomer = 3,
-        IgnoreCustomer = 4,
-        PackToy = 5
+        CompleteMinigame = 0,           // Mini oyunu tamamla
+        PlaceBoxOnShelf = 1,            // Rafa kutu koy
+        CompleteTruck = 2,              // Kamyon tamamla (renk özelleştirilebilir)
+        PackToy = 3,                    // Oyuncak paketle (ürün kategorisi)
+        AnswerPhone = 4,                // Telefonu cevapla
+        MakePackagingMistake = 5,       // Hatalı paketleme yap
+        CompleteSpecificColorTruck = 6  // Belirli renk kamyon tamamla
     }
 
     /// <summary>

@@ -26,6 +26,21 @@ namespace NewCss
         private const float PICKUP_CHECK_INTERVAL = 0.1f;
         private const float PRODUCT_PLACEMENT_DELAY = 0.1f;
 
+        [Header("=== OUTLINE SETTINGS ===")]
+        [SerializeField, Tooltip("Outline eklenecek hedef obje (boş bırakılırsa bu obje kullanılır)")]
+        private GameObject outlineTarget; // Inspector'dan ayarlayabilirsiniz
+
+        [SerializeField, Tooltip("Outline rengi")]
+        private Color outlineColor = Color.green;
+
+        [SerializeField, Tooltip("Outline kalınlığı")]
+        private float outlineWidth = 5f;
+
+        [SerializeField, Tooltip("Outline modu")]
+        private Outline.Mode outlineMode = Outline.Mode.OutlineAll;
+
+        private Outline _outline;
+
         #endregion
 
         #region Enums
@@ -222,6 +237,17 @@ namespace NewCss
         {
             if (!IsSpawned) return;
             InitializeComponents();
+            _outline = GetComponent<Outline>();
+            if (_outline == null)
+            {
+                _outline = gameObject.AddComponent<Outline>();
+            }
+              SetupOutline();
+
+            _outline.OutlineMode = outlineMode;
+            _outline.OutlineColor = outlineColor;
+            _outline.OutlineWidth = outlineWidth;
+            _outline.enabled = false; // Başlangıçta kapalı
         }
 
         private void Update()
@@ -236,6 +262,39 @@ namespace NewCss
             if (IsClient)
             {
                 ClientUpdate();
+            }
+        }
+        private void SetupOutline()
+        {
+            // Eğer outlineTarget belirtilmişse onu kullan, yoksa kendi objesini kullan
+            GameObject targetObject = outlineTarget != null ? outlineTarget : gameObject;
+
+            // Sadece Renderer'ı olan ve mesh'i readable olan objelere outline ekle
+            _outline = targetObject.GetComponent<Outline>();
+
+            if (_outline == null)
+            {
+                // Önce kontrol et, mesh readable mı? 
+                var renderers = targetObject.GetComponentsInChildren<Renderer>();
+                if (renderers == null || renderers.Length == 0)
+                {
+                    Debug.LogWarning($"{LOG_PREFIX} No renderers found for outline on {targetObject.name}");
+                    return;
+                }
+
+                try
+                {
+                    _outline = targetObject.AddComponent<Outline>();
+                    _outline.OutlineMode = outlineMode;
+                    _outline.OutlineColor = outlineColor;
+                    _outline.OutlineWidth = outlineWidth;
+                    _outline.enabled = false;
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogWarning($"{LOG_PREFIX} Could not add outline:  {e.Message}");
+                    _outline = null;
+                }
             }
         }
 
@@ -413,7 +472,15 @@ namespace NewCss
 
         private void CheckForInteractionInput()
         {
-            if (!CheckIfLocalPlayerInRange()) return;
+            bool playerInRange = CheckIfLocalPlayerInRange();
+
+            // Outline'ı aç/kapa
+            if (_outline != null)
+            {
+                _outline.enabled = playerInRange && !_hasInteracted && _state == CustomerState.Service;
+            }
+
+            if (!playerInRange) return;
 
             if (Input.GetKeyDown(KeyCode.E))
             {
@@ -602,11 +669,11 @@ namespace NewCss
                 PrestigeManager.Instance.ModifyPrestige(-0.03f);
             }
 
-            // Notify quest system about customer timeout
-            if (!_hasInteracted)
-            {
-                Quest.QuestTracker.NotifyCustomerTimeout();
-            }
+            // KALDIRILDI:  Customer timeout quest tracking artık yok
+            // if (! _hasInteracted)
+            // {
+            //     Quest.QuestTracker.NotifyCustomerTimeout();
+            // }
         }
 
         #endregion
@@ -684,6 +751,12 @@ namespace NewCss
         {
             if (_hasInteracted || _isInInteraction) return;
 
+            // Outline'ı kapat
+            if (_outline != null)
+            {
+                _outline.enabled = false;
+            }
+
             if (playerId != ulong.MaxValue)
             {
                 _interactingPlayerId = playerId;
@@ -727,6 +800,12 @@ namespace NewCss
 
             _isInInteraction = false;
             _networkIsInInteraction.Value = false;
+
+            // Outline'ı kapat
+            if (_outline != null)
+            {
+                _outline.enabled = false;
+            }
 
             // UI gizle
             HideWaitUI();
@@ -772,8 +851,8 @@ namespace NewCss
                 PrestigeManager.Instance.ModifyPrestige(0.05f);
             }
 
-            // Notify quest system
-            Quest.QuestTracker.NotifyCustomerServed();
+            // KALDIRILDI: Customer served quest tracking artık yok
+            // Quest.QuestTracker.NotifyCustomerServed();
         }
 
         private void HandleFailedInteraction()

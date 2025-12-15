@@ -223,6 +223,7 @@ SkinnedMeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   serializedVersion: 2
   m_Quality: 0
   m_UpdateWhenOffscreen: 0
@@ -559,6 +560,7 @@ SkinnedMeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   serializedVersion: 2
   m_Quality: 0
   m_UpdateWhenOffscreen: 0
@@ -883,6 +885,7 @@ SkinnedMeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   serializedVersion: 2
   m_Quality: 0
   m_UpdateWhenOffscreen: 0
@@ -1329,6 +1332,7 @@ SkinnedMeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   serializedVersion: 2
   m_Quality: 0
   m_UpdateWhenOffscreen: 0
@@ -1938,6 +1942,7 @@ SkinnedMeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   serializedVersion: 2
   m_Quality: 0
   m_UpdateWhenOffscreen: 0
@@ -2073,6 +2078,7 @@ SkinnedMeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   serializedVersion: 2
   m_Quality: 0
   m_UpdateWhenOffscreen: 0
@@ -2287,14 +2293,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+  outlineTarget: {fileID: 5794592504740175552}
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 1
+  outlineMode: 1
   cachedPlayerMovement: {fileID: 0}
+  recentProductHistorySize: 5
   isPrefabMode: 1
   waitBar: {fileID: 3231516756921554553}
   waitCanvas: {fileID: 6339901739819928916}
   hideCanvasUntilTimer: 1
   minWaitTime: 8
   maxWaitTime: 16
-  interactionTime: 1.25
+  interactionTime: 2
   interactionRange: 2
   interactionSounds:
   - {fileID: 8300000, guid: 5a517a2892f655140b922bc242fa8d4d, type: 3}
@@ -2326,7 +2337,6 @@ MonoBehaviour:
   - {fileID: 4258195470075221523, guid: 383ec657876f626409370f4849fb1207, type: 3}
   - {fileID: 5012447057166926047, guid: fe7b6eb1396687d44b68db0e21c7eaa3, type: 3}
   - {fileID: 4269006078838620155, guid: 96d9462d202fa1742b2c5a87349dfb74, type: 3}
-  targetTable: {fileID: 0}
   itemLayerMask:
     serializedVersion: 2
     m_Bits: 128
@@ -2335,6 +2345,7 @@ MonoBehaviour:
   exitPoint: {fileID: 0}
   targetTables:
   - {fileID: 0}
+  targetTable: {fileID: 0}
   dropOffTable: {fileID: 0}
 --- !u!114 &3231516756921554553
 MonoBehaviour:
@@ -2573,6 +2584,7 @@ SkinnedMeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   serializedVersion: 2
   m_Quality: 0
   m_UpdateWhenOffscreen: 0
@@ -2671,6 +2683,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5652529882575230962}
   - component: {fileID: 5907290660177241775}
+  - component: {fileID: 6327968768170038509}
   m_Layer: 0
   m_Name: Body
   m_TagString: Untagged
@@ -2740,6 +2753,7 @@ SkinnedMeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   serializedVersion: 2
   m_Quality: 0
   m_UpdateWhenOffscreen: 0
@@ -2796,6 +2810,24 @@ SkinnedMeshRenderer:
     m_Center: {x: 0, y: 0.9187707, z: 0.0075713545}
     m_Extent: {x: 0.72034204, y: 0.9105047, z: 0.17010164}
   m_DirtyAABB: 0
+--- !u!114 &6327968768170038509
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5794592504740175552}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NewCss.Outline
+  outlineMode: 1
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 1.5
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
 --- !u!1 &6349352439741716895
 GameObject:
   m_ObjectHideFlags: 0
@@ -3040,6 +3072,7 @@ SkinnedMeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   serializedVersion: 2
   m_Quality: 0
   m_UpdateWhenOffscreen: 0
@@ -3365,6 +3398,7 @@ SkinnedMeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   serializedVersion: 2
   m_Quality: 0
   m_UpdateWhenOffscreen: 0
@@ -3532,6 +3566,7 @@ SkinnedMeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   serializedVersion: 2
   m_Quality: 0
   m_UpdateWhenOffscreen: 0
@@ -3763,6 +3798,7 @@ SkinnedMeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   serializedVersion: 2
   m_Quality: 0
   m_UpdateWhenOffscreen: 0
@@ -4004,6 +4040,7 @@ SkinnedMeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   serializedVersion: 2
   m_Quality: 0
   m_UpdateWhenOffscreen: 0
