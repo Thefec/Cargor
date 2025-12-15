@@ -1,4 +1,5 @@
 using UnityEngine;
+using Utils;
 
 namespace Controller
 {
@@ -56,6 +57,17 @@ namespace Controller
 
         public void GatherInput()
         {
+            // Steam overlay açıksa input'ları engelle
+            if (SteamOverlayDetector.IsOverlayActive)
+            {
+                m_Axis = Vector2.zero;
+                m_IsRun = false;
+                m_IsJump = false;
+                m_MouseDelta = Vector2.zero;
+                m_Scroll = 0f;
+                return;
+            }
+
             m_Axis = new Vector2(Input.GetAxis(m_HorizontalAxis), Input.GetAxis(m_VerticalAxis));
             m_IsRun = Input.GetKey(m_RunKey);
             m_IsJump = Input.GetButton(m_JumpButton);

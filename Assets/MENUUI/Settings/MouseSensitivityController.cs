@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Utils;
 
 public class MouseSensitivityController : MonoBehaviour
 {
@@ -77,6 +78,18 @@ public class MouseSensitivityController : MonoBehaviour
     
     void Update()
     {
+        // Steam overlay açıksa cursor yönetimi
+        if (SteamOverlayDetector.IsOverlayActive)
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            if (useCustomCursor && customCursor != null)
+            {
+                customCursor.SetActive(false);
+            }
+            return;
+        }
+
         if (isControllingMouse)
         {
             HandleMouseMovement();
