@@ -1,5 +1,6 @@
 using Unity.Netcode;
 using UnityEngine;
+using Utils;
 
 namespace NewCss
 {
@@ -200,6 +201,9 @@ namespace NewCss
 
         private void HandleInput()
         {
+            // Steam overlay açıksa input'ları engelle
+            if (SteamOverlayDetector.IsOverlayActive) return;
+
             HandleZoomInput();
             HandleMapViewInput();
         }

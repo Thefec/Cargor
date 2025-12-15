@@ -7,6 +7,7 @@ using Steamworks.Data;
 using Unity.Netcode;
 using UnityEngine;
 using Unity.Collections.LowLevel.Unsafe;
+using Utils;
 
 namespace Netcode.Transports.Facepunch
 {
@@ -17,6 +18,10 @@ namespace Netcode.Transports.Facepunch
         private ConnectionManager connectionManager;
         private SocketManager socketManager;
         private Dictionary<ulong, Client> connectedClients;
+
+        // Callback throttling
+        private float _lastCallbackTime;
+        private const float CALLBACK_INTERVAL = 0.016f; // ~60fps
 
         [Space]
         [Tooltip("The Steam App ID of your game. Technically you're not allowed to use 480, but Valve doesn't do anything about it so it's fine for testing purposes.")]
@@ -55,6 +60,9 @@ namespace Netcode.Transports.Facepunch
                 {
                     Debug.Log("Steam client already initialized, skipping initialization");
                 }
+
+                // Steam overlay detector'ı başlat
+                SteamOverlayDetector.Initialize();
             }
             catch (Exception ex)
             {
@@ -65,7 +73,12 @@ namespace Netcode.Transports.Facepunch
 
         private void Update()
         {
-            SteamClient.RunCallbacks();
+            // Callback throttling - Steam overlay açıksa veya belirli aralıklarla çalıştır
+            if (SteamOverlayDetector.IsOverlayActive || Time.unscaledTime - _lastCallbackTime >= CALLBACK_INTERVAL)
+            {
+                SteamClient.RunCallbacks();
+                _lastCallbackTime = Time.unscaledTime;
+            }
         }
 
         private void OnDestroy()
@@ -73,6 +86,7 @@ namespace Netcode.Transports.Facepunch
             // Sadece valide ise kapat
             if (SteamClient.IsValid)
             {
+                SteamOverlayDetector.Shutdown();
                 SteamClient.Shutdown();
             }
         }
