@@ -6502,7 +6502,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  startingMoney: 50
+  startingMoney: 500
 --- !u!114 &146927893
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17452,11 +17452,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  callChance: 0.4
+  callChance: 0.55
   callDuration: 6
-  callAnswerDuration: 4
-  prestigeReward: 1
-  prestigePenalty: 0.5
+  callAnswerDuration: 5
+  prestigeReward: 0.5
+  prestigePenalty: 0.1
   startCallingHour: 8
   phoneCallUI: {fileID: 1263143603}
   answerButton: {fileID: 0}
@@ -26752,11 +26752,11 @@ MonoBehaviour:
     contentTextLocKey: 
     starterValue: 0
     StaminaValue: 1
-    TruckValue: 10
+    TruckValue: 50
     WaitTime: 5
     maxLevel: 9
-    baseCost: 50
-    costStep: 10
+    baseCost: 100
+    costStep: 100
     levelObjects:
     - {fileID: 197001364}
     - {fileID: 443791660}
@@ -26776,11 +26776,11 @@ MonoBehaviour:
     contentTextLocKey: 
     starterValue: 0
     StaminaValue: 1
-    TruckValue: 10
+    TruckValue: 50
     WaitTime: 5
     maxLevel: 3
-    baseCost: 100
-    costStep: 150
+    baseCost: 500
+    costStep: 100
     levelObjects:
     - {fileID: 729050603}
     - {fileID: 457085722}
@@ -26795,7 +26795,7 @@ MonoBehaviour:
     WaitTime: 5
     maxLevel: 3
     baseCost: 250
-    costStep: 100
+    costStep: 400
     levelObjects:
     - {fileID: 75128577}
     - {fileID: 252592239}
@@ -26808,11 +26808,11 @@ MonoBehaviour:
     contentTextLocKey: 
     starterValue: 1
     StaminaValue: 1
-    TruckValue: 15
+    TruckValue: 20
     WaitTime: 10
     maxLevel: 3
-    baseCost: 300
-    costStep: 100
+    baseCost: 500
+    costStep: 300
     levelObjects:
     - {fileID: 161118048}
     - {fileID: 2032713688}
@@ -26824,11 +26824,11 @@ MonoBehaviour:
     contentTextLocKey: 
     starterValue: 1
     StaminaValue: 1
-    TruckValue: 10
+    TruckValue: 50
     WaitTime: 5
     maxLevel: 3
-    baseCost: 100
-    costStep: 75
+    baseCost: 300
+    costStep: 300
     levelObjects:
     - {fileID: 2078412785}
     - {fileID: 2078412785}
@@ -26836,15 +26836,15 @@ MonoBehaviour:
     garageDoorControllers: []
   - displayName: Truck
     displayNameLocKey: 
-    contentText: Opens the warehouse door.
+    contentText: 2. Opens the warehouse door.
     contentTextLocKey: 
     starterValue: 1
     StaminaValue: 1
-    TruckValue: 10
+    TruckValue: 50
     WaitTime: 5
     maxLevel: 2
-    baseCost: 200
-    costStep: 100
+    baseCost: 800
+    costStep: 400
     levelObjects:
     - {fileID: 1477341225}
     - {fileID: 425538936}
@@ -26859,10 +26859,10 @@ MonoBehaviour:
     contentTextLocKey: 
     starterValue: 1
     StaminaValue: 1
-    TruckValue: 10
+    TruckValue: 50
     WaitTime: 5
     maxLevel: 1
-    baseCost: 500
+    baseCost: 1500
     costStep: 200
     levelObjects:
     - {fileID: 1150600358}
@@ -26874,11 +26874,11 @@ MonoBehaviour:
     contentTextLocKey: 
     starterValue: 1
     StaminaValue: 1
-    TruckValue: 10
+    TruckValue: 50
     WaitTime: 3
     maxLevel: 3
-    baseCost: 300
-    costStep: 200
+    baseCost: 1000
+    costStep: 500
     levelObjects:
     - {fileID: 938998739}
     - {fileID: 215373536}
@@ -26890,11 +26890,11 @@ MonoBehaviour:
     contentTextLocKey: 
     starterValue: 0
     StaminaValue: 1
-    TruckValue: 10
+    TruckValue: 50
     WaitTime: 5
     maxLevel: 2
-    baseCost: 200
-    costStep: 150
+    baseCost: 500
+    costStep: 600
     levelObjects: []
     garageDoorControllers: []
   CustomerManager: {fileID: 1958402830}
@@ -166888,25 +166888,6 @@ MonoBehaviour:
   - {fileID: 523948469}
   - {fileID: 1799534596}
   - {fileID: 1412524129}
-  dayBackgrounds:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  currentDayColor: {r: 0.16278034, g: 0.5849056, b: 0.16278034, a: 1}
-  normalDayColor: {r: 1, g: 1, b: 1, a: 1}
   eventTextPrefab: {fileID: 7344238018876752607, guid: 713b037a1dab3d047993541ab8947f5b, type: 3}
   calendarPanel: {fileID: 591848064}
   exitButton: {fileID: 1936047832}
@@ -167566,7 +167547,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15c2b9af0a5cd5d4a9c6affa04f8f675, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
+  requiredRentPayments: 2
   winPanel: {fileID: 1716261273}
   losePanel: {fileID: 1535427852}
   winExitButton: {fileID: 1050371578}

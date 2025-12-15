@@ -194,16 +194,8 @@ MonoBehaviour:
   entryPoint: {fileID: 0}
   exitPoint: {fileID: 0}
   exitDelay: 5
-  rewardPerBox: 10
-  penaltyPerBox: 2
-  prestigePerBonus: 10
-  bonusPerTier: 5
-  enterAudioSource: {fileID: 0}
-  enterAnimationClip: {fileID: 0}
-  exitDelayAudioSource: {fileID: 0}
-  exitDelayClip: {fileID: 0}
-  exitAudioSource: {fileID: 0}
-  exitAnimationClip: {fileID: 0}
+  rewardPerBox: 50
+  penaltyPerBox: 60
   hangarIndex: 0
 --- !u!1 &3361762458871829315
 GameObject:

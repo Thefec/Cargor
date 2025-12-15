@@ -206,16 +206,13 @@ namespace NewCss.Quest
 
         private void SubscribeToGameEvents()
         {
-            // Mevcut eventler
+            // Subscribe to game events for quest tracking
             QuestTracker.OnMinigameCompleted += HandleMinigameCompleted;
             QuestTracker.OnBoxPlacedOnShelf += HandleBoxPlacedOnShelf;
             QuestTracker.OnTruckCompleted += HandleTruckCompleted;
+            QuestTracker.OnCustomerServed += HandleCustomerServed;
+            QuestTracker.OnCustomerTimeout += HandleCustomerTimeout;
             QuestTracker.OnToyPacked += HandleToyPacked;
-
-            // YENİ EVENTLER
-            QuestTracker.OnPhoneAnswered += HandlePhoneAnswered;
-            QuestTracker.OnPackagingMistake += HandlePackagingMistake;
-            QuestTracker.OnSpecificColorTruckCompleted += HandleSpecificColorTruckCompleted;
         }
 
         private void UnsubscribeFromGameEvents()
@@ -223,14 +220,10 @@ namespace NewCss.Quest
             QuestTracker.OnMinigameCompleted -= HandleMinigameCompleted;
             QuestTracker.OnBoxPlacedOnShelf -= HandleBoxPlacedOnShelf;
             QuestTracker.OnTruckCompleted -= HandleTruckCompleted;
+            QuestTracker.OnCustomerServed -= HandleCustomerServed;
+            QuestTracker.OnCustomerTimeout -= HandleCustomerTimeout;
             QuestTracker.OnToyPacked -= HandleToyPacked;
-
-            // YENİ EVENTLER
-            QuestTracker.OnPhoneAnswered -= HandlePhoneAnswered;
-            QuestTracker.OnPackagingMistake -= HandlePackagingMistake;
-            QuestTracker.OnSpecificColorTruckCompleted -= HandleSpecificColorTruckCompleted;
         }
-
 
         #endregion
 
@@ -300,29 +293,22 @@ namespace NewCss.Quest
             UpdateQuestProgress(QuestType.CompleteTruck, BoxInfo.BoxType.Red, 1);
         }
 
+        private void HandleCustomerServed()
+        {
+            if (!IsServer) return;
+            UpdateQuestProgress(QuestType.ServeCustomer, BoxInfo.BoxType.Red, 1);
+        }
+
+        private void HandleCustomerTimeout()
+        {
+            if (!IsServer) return;
+            UpdateQuestProgress(QuestType.IgnoreCustomer, BoxInfo.BoxType.Red, 1);
+        }
+
         private void HandleToyPacked(BoxInfo.BoxType boxType)
         {
             if (!IsServer) return;
             UpdateQuestProgress(QuestType.PackToy, boxType, 1);
-        }
-
-        // YENİ EVENT HANDLERS
-        private void HandlePhoneAnswered()
-        {
-            if (!IsServer) return;
-            UpdateQuestProgress(QuestType.AnswerPhone, BoxInfo.BoxType.Red, 1);
-        }
-
-        private void HandlePackagingMistake()
-        {
-            if (!IsServer) return;
-            UpdateQuestProgress(QuestType.MakePackagingMistake, BoxInfo.BoxType.Red, 1);
-        }
-
-        private void HandleSpecificColorTruckCompleted(BoxInfo.BoxType truckColor)
-        {
-            if (!IsServer) return;
-            UpdateQuestProgress(QuestType.CompleteSpecificColorTruck, truckColor, 1);
         }
 
         #endregion
@@ -422,11 +408,8 @@ namespace NewCss.Quest
                 // Check quest type match
                 if (questData.questType != questType) continue;
 
-                // Check box type if required (PlaceBoxOnShelf, PackToy için)
+                // Check box type if required
                 if (questData.requirement.requireSpecificBoxType && questData.requirement.requiredBoxType != boxType) continue;
-
-                // Check truck color if required (CompleteSpecificColorTruck için)
-                if (questData.requirement.requireSpecificTruckColor && questData.requirement.requiredTruckColor != boxType) continue;
 
                 // Update progress
                 progress.currentProgress += amount;
