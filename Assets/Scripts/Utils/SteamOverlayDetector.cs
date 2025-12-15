@@ -135,6 +135,7 @@ namespace Utils
     public class UnityMainThreadDispatcher : MonoBehaviour
     {
         private static UnityMainThreadDispatcher _instance;
+        private static readonly object _instanceLock = new object();
         private static readonly System.Collections.Generic.Queue<Action> _executionQueue = new System.Collections.Generic.Queue<Action>();
 
         public static void Enqueue(Action action)
@@ -147,12 +148,18 @@ namespace Utils
                 _executionQueue.Enqueue(action);
             }
 
-            // Instance yoksa oluştur
+            // Instance yoksa oluştur - thread-safe singleton pattern
             if (_instance == null)
             {
-                var go = new GameObject("UnityMainThreadDispatcher");
-                _instance = go.AddComponent<UnityMainThreadDispatcher>();
-                DontDestroyOnLoad(go);
+                lock (_instanceLock)
+                {
+                    if (_instance == null)
+                    {
+                        var go = new GameObject("UnityMainThreadDispatcher");
+                        _instance = go.AddComponent<UnityMainThreadDispatcher>();
+                        DontDestroyOnLoad(go);
+                    }
+                }
             }
         }
 
@@ -176,9 +183,12 @@ namespace Utils
 
         private void OnDestroy()
         {
-            if (_instance == this)
+            lock (_instanceLock)
             {
-                _instance = null;
+                if (_instance == this)
+                {
+                    _instance = null;
+                }
             }
         }
     }
