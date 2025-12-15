@@ -2,7 +2,6 @@
 using Unity.Netcode;
 using System.Collections;
 using System.Collections.Generic;
-using Utils;
 
 namespace NewCss
 {
@@ -117,9 +116,6 @@ namespace NewCss
 
         private void ProcessInput()
         {
-            // Steam overlay açıksa input'ları engelle
-            if (SteamOverlayDetector.IsOverlayActive) return;
-
             // ✅ Phone gibi: Sadece minigame'deki local player
             if (!_isLocalPlayerInMinigame || !_isWaitingForInput) return;
 

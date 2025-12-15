@@ -4,7 +4,6 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
-using Utils;
 
 /// <summary>
 /// Oyuncu envanter sistemi - Item alma, bırakma, fırlatma ve raf/masa etkileşimlerini yönetir. 
@@ -858,9 +857,6 @@ public class PlayerInventory : NetworkBehaviour
 
     private void HandleInput()
     {
-        // Steam overlay açıksa input'ları engelle
-        if (SteamOverlayDetector.IsOverlayActive) return;
-
         if (_isProcessingInteraction) return;
 
         // Animasyon devam ederken input'ları engelle
