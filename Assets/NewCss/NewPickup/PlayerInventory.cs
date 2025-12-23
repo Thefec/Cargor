@@ -4,7 +4,6 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
-using NewCss;
 
 /// <summary>
 /// Oyuncu envanter sistemi - Item alma, bırakma, fırlatma ve raf/masa etkileşimlerini yönetir. 

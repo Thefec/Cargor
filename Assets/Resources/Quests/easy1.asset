@@ -23,29 +23,32 @@ MonoBehaviour:
     requiredBoxType: 2
   rewardPool:
   - rewardType: 0
-    amount: 10
+    amount: 50
     durationDays: 0
   - rewardType: 0
-    amount: 20
+    amount: 100
     durationDays: 0
   - rewardType: 0
-    amount: 15
+    amount: 150
     durationDays: 0
   - rewardType: 1
-    amount: 1
+    amount: 3
+    durationDays: 0
+  - rewardType: 1
+    amount: 3
     durationDays: 0
   - rewardType: 1
     amount: 2
     durationDays: 0
   penaltyPool:
   - rewardType: 0
-    amount: -10
+    amount: -25
     durationDays: 0
   - rewardType: 0
-    amount: -15
+    amount: -40
     durationDays: 0
   - rewardType: 0
-    amount: -5
+    amount: -55
     durationDays: 0
   - rewardType: 1
     amount: -2
