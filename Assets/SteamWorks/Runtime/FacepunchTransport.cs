@@ -44,22 +44,16 @@ namespace Netcode.Transports.Facepunch
         {
             try
             {
-                // Eğer SteamClient daha önce initialize edilmemişse initialize et
-                if (!SteamClient.IsValid)
-                {
-                    // Doğru değişken ismi: steamAppId
-                    SteamClient.Init(steamAppId, true);
-                    Debug.Log("Steam client initialized successfully");
-                }
-                else
-                {
-                    Debug.Log("Steam client already initialized, skipping initialization");
-                }
+                SteamClient.Init(steamAppId, false);
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                // Hata varsa logla
-                Debug.LogError($"Steam client initialization failed: {ex}");
+                if (LogLevel <= LogLevel.Error)
+                    Debug.LogError($"[{nameof(FacepunchTransport)}] - Caught an exeption during initialization of Steam client: {e}");
+            }
+            finally
+            {
+                StartCoroutine(InitSteamworks());
             }
         }
 
@@ -70,11 +64,7 @@ namespace Netcode.Transports.Facepunch
 
         private void OnDestroy()
         {
-            // Sadece valide ise kapat
-            if (SteamClient.IsValid)
-            {
-                SteamClient.Shutdown();
-            }
+            SteamClient.Shutdown();
         }
 
         #endregion
@@ -149,14 +139,14 @@ namespace Netcode.Transports.Facepunch
 
         public override void Send(ulong clientId, ArraySegment<byte> data, NetworkDelivery delivery)
         {
-	        var sendType = NetworkDeliveryToSendType(delivery);
+            var sendType = NetworkDeliveryToSendType(delivery);
 
-	        if (clientId == ServerClientId)
-		        connectionManager.Connection.SendMessage(data.Array, data.Offset, data.Count, sendType);
-	        else if (connectedClients.TryGetValue(clientId, out Client user))
-		        user.connection.SendMessage(data.Array, data.Offset, data.Count, sendType);
-	        else if (LogLevel <= LogLevel.Normal)
-		        Debug.LogWarning($"[{nameof(FacepunchTransport)}] - Failed to send packet to remote client with ID {clientId}, client not connected.");
+            if (clientId == ServerClientId)
+                connectionManager.Connection.SendMessage(data.Array, data.Offset, data.Count, sendType);
+            else if (connectedClients.TryGetValue(clientId, out Client user))
+                user.connection.SendMessage(data.Array, data.Offset, data.Count, sendType);
+            else if (LogLevel <= LogLevel.Normal)
+                Debug.LogWarning($"[{nameof(FacepunchTransport)}] - Failed to send packet to remote client with ID {clientId}, client not connected.");
         }
 
         public override NetworkEvent PollEvent(out ulong clientId, out ArraySegment<byte> payload, out float receiveTime)
@@ -272,13 +262,13 @@ namespace Netcode.Transports.Facepunch
         void ISocketManager.OnDisconnected(SocketConnection connection, ConnectionInfo info)
         {
             if (connectedClients.Remove(connection.Id))
-	    {
-	        InvokeOnTransportEvent(NetworkEvent.Disconnect, connection.Id, default, Time.realtimeSinceStartup);
+            {
+                InvokeOnTransportEvent(NetworkEvent.Disconnect, connection.Id, default, Time.realtimeSinceStartup);
 
-	       if (LogLevel <= LogLevel.Developer)
+                if (LogLevel <= LogLevel.Developer)
                     Debug.Log($"[{nameof(FacepunchTransport)}] - Disconnected Steam user {info.Identity.SteamId}");
-	    }
-     	    else if (LogLevel <= LogLevel.Normal)
+            }
+            else if (LogLevel <= LogLevel.Normal)
                 Debug.LogWarning($"[{nameof(FacepunchTransport)}] - Failed to diconnect client with ID {connection.Id}, client not connected.");
         }
 
