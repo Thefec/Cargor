@@ -128,6 +128,10 @@ public class SteamManager : MonoBehaviour
     private Coroutine _errorMessageCoroutine;
     private Coroutine _loadingDotsCoroutine;
 
+    // Player slot update throttling
+    private float _lastPlayerSlotUpdateTime;
+    private const float PLAYER_SLOT_UPDATE_INTERVAL = 0.5f; // Throttle to 2 updates per second
+
     #endregion
 
     #region Public Properties

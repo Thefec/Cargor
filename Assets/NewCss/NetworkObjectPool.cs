@@ -36,8 +36,8 @@ namespace NewCss
 
         #region Private Fields
 
-        private readonly Queue<NetworkObject> _availableObjects = new();
-        private readonly HashSet<NetworkObject> _activeObjects = new();
+        private Queue<NetworkObject> _availableObjects;
+        private HashSet<NetworkObject> _activeObjects;
         private Transform _poolContainer;
 
         #endregion
@@ -65,6 +65,9 @@ namespace NewCss
 
         private void Awake()
         {
+            // Initialize collections with initial capacity to avoid reallocations
+            int initialCapacity = Mathf.Max(10, preWarmCount);
+            
             CreatePoolContainer();
         }
 
@@ -94,6 +97,11 @@ namespace NewCss
 
         private void CreatePoolContainer()
         {
+            // Initialize collections with initial capacity to avoid reallocations
+            int initialCapacity = Mathf.Max(10, preWarmCount);
+            _availableObjects = new Queue<NetworkObject>(initialCapacity);
+            _activeObjects = new HashSet<NetworkObject>(initialCapacity);
+
             _poolContainer = new GameObject($"{name}_Pool").transform;
             _poolContainer.SetParent(transform);
             _poolContainer.gameObject.SetActive(false); // Hide pool container
@@ -222,8 +230,11 @@ namespace NewCss
 
         private NetworkObject GetFromPoolOrCreate()
         {
-            // Try to get from pool
-            while (_availableObjects.Count > 0)
+            // Try to get from pool, skip null objects
+            int nullCheckCount = 0;
+            const int MAX_NULL_CHECKS = 10; // Prevent infinite loop
+            
+            while (_availableObjects.Count > 0 && nullCheckCount < MAX_NULL_CHECKS)
             {
                 var obj = _availableObjects.Dequeue();
                 
@@ -234,9 +245,10 @@ namespace NewCss
                 }
                 
                 LogWarning("Found null object in pool, skipping");
+                nullCheckCount++;
             }
 
-            // Pool is empty, create new
+            // Pool is empty or all objects were null, create new
             return CreateNewPooledObject();
         }
 
