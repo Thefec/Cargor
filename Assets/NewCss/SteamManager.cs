@@ -344,6 +344,13 @@ public class SteamManager : MonoBehaviour
     {
         if (!IsValidLobbyEvent(lobby)) return;
 
+        // Throttle updates to reduce overhead when Steam overlay is open
+        if (Time.time - _lastPlayerSlotUpdateTime < PLAYER_SLOT_UPDATE_INTERVAL)
+        {
+            return;
+        }
+        _lastPlayerSlotUpdateTime = Time.time;
+
         UpdatePlayerSlots();
         UpdateStartButtonVisibility();
         NotifyBreakRoomManager();
@@ -352,6 +359,13 @@ public class SteamManager : MonoBehaviour
     private void HandleLobbyMemberLeave(Lobby lobby, Friend friend)
     {
         if (!IsValidLobbyEvent(lobby)) return;
+
+        // Throttle updates to reduce overhead when Steam overlay is open
+        if (Time.time - _lastPlayerSlotUpdateTime < PLAYER_SLOT_UPDATE_INTERVAL)
+        {
+            return;
+        }
+        _lastPlayerSlotUpdateTime = Time.time;
 
         UpdatePlayerSlots();
         UpdateStartButtonVisibility();

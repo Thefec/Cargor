@@ -109,6 +109,10 @@ namespace NewCss
 
         private readonly List<CustomerAI> _customerQueue = new();
 
+        // Spawn throttling
+        private float _lastSpawnCheckTime;
+        private const float SPAWN_CHECK_INTERVAL = 1.0f; // Check for spawn every second instead of every frame
+
         #endregion
 
         #region Private Fields - Daily Tracking
@@ -199,7 +203,14 @@ namespace NewCss
             if (!IsServer) return;
 
             EnsureDayInitialized();
-            TrySpawnScheduledCustomer();
+            
+            // Throttle spawn checks - only check once per second instead of every frame
+            if (Time.time - _lastSpawnCheckTime >= SPAWN_CHECK_INTERVAL)
+            {
+                TrySpawnScheduledCustomer();
+                _lastSpawnCheckTime = Time.time;
+            }
+            
             CheckEndOfDayCustomerExit();
         }
 

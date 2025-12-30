@@ -85,6 +85,13 @@ namespace NewCss
         // Periyodik kontrol flag'leri
         private PeriodicCheckState _periodicChecks;
 
+        // UI update throttling
+        private float _lastUIUpdateTime;
+        private const float UI_UPDATE_INTERVAL = 0.1f; // Update UI max 10 times per second
+        private int _lastDisplayedDay = -1;
+        private int _lastDisplayedHour = -1;
+        private int _lastDisplayedMinute = -1;
+
         #endregion
 
         #region Nested Types
@@ -228,7 +235,12 @@ namespace NewCss
 
         private void Update()
         {
-            UpdateUI();
+            // Throttle UI updates - only update when values change or interval passed
+            if (Time.time - _lastUIUpdateTime >= UI_UPDATE_INTERVAL)
+            {
+                UpdateUI();
+                _lastUIUpdateTime = Time.time;
+            }
 
             if (!IsSpawned || !IsServer || _networkIsDayOver.Value)
             {
@@ -546,6 +558,19 @@ namespace NewCss
             if (dayTimeText == null) return;
 
             var timeInfo = CalculateDisplayTime();
+            
+            // Only update if values have changed
+            if (_lastDisplayedDay == _networkCurrentDay.Value &&
+                _lastDisplayedHour == timeInfo.hour &&
+                _lastDisplayedMinute == timeInfo.minute)
+            {
+                return;
+            }
+
+            _lastDisplayedDay = _networkCurrentDay.Value;
+            _lastDisplayedHour = timeInfo.hour;
+            _lastDisplayedMinute = timeInfo.minute;
+
             dayTimeText.text = FormatTimeDisplay(timeInfo);
         }
 
