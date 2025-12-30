@@ -65,9 +65,6 @@ namespace NewCss
 
         private void Awake()
         {
-            // Initialize collections with initial capacity to avoid reallocations
-            int initialCapacity = Mathf.Max(10, preWarmCount);
-            
             CreatePoolContainer();
         }
 

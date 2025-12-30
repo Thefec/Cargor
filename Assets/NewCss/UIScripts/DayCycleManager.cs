@@ -557,21 +557,31 @@ namespace NewCss
         {
             if (dayTimeText == null) return;
 
-            var timeInfo = CalculateDisplayTime();
-            
-            // Only update if values have changed
-            if (_lastDisplayedDay == _networkCurrentDay.Value &&
-                _lastDisplayedHour == timeInfo.hour &&
-                _lastDisplayedMinute == timeInfo.minute)
+            // Only calculate if values might have changed
+            if (_lastDisplayedDay == _networkCurrentDay.Value)
             {
-                return;
+                // Day hasn't changed, check if we need to update time
+                var timeInfo = CalculateDisplayTime();
+                
+                if (_lastDisplayedHour == timeInfo.hour &&
+                    _lastDisplayedMinute == timeInfo.minute)
+                {
+                    return; // No changes, skip update
+                }
+
+                _lastDisplayedHour = timeInfo.hour;
+                _lastDisplayedMinute = timeInfo.minute;
+                dayTimeText.text = FormatTimeDisplay(timeInfo);
             }
-
-            _lastDisplayedDay = _networkCurrentDay.Value;
-            _lastDisplayedHour = timeInfo.hour;
-            _lastDisplayedMinute = timeInfo.minute;
-
-            dayTimeText.text = FormatTimeDisplay(timeInfo);
+            else
+            {
+                // Day changed, update everything
+                var timeInfo = CalculateDisplayTime();
+                _lastDisplayedDay = _networkCurrentDay.Value;
+                _lastDisplayedHour = timeInfo.hour;
+                _lastDisplayedMinute = timeInfo.minute;
+                dayTimeText.text = FormatTimeDisplay(timeInfo);
+            }
         }
 
         private (int hour, int minute) CalculateDisplayTime()
