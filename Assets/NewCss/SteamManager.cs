@@ -128,6 +128,10 @@ public class SteamManager : MonoBehaviour
     private Coroutine _errorMessageCoroutine;
     private Coroutine _loadingDotsCoroutine;
 
+    // Player slot update throttling
+    private float _lastPlayerSlotUpdateTime;
+    private const float PLAYER_SLOT_UPDATE_INTERVAL = 0.5f; // Throttle to 2 updates per second
+
     #endregion
 
     #region Public Properties
@@ -344,6 +348,13 @@ public class SteamManager : MonoBehaviour
     {
         if (!IsValidLobbyEvent(lobby)) return;
 
+        // Throttle updates to reduce overhead when Steam overlay is open
+        if (Time.time - _lastPlayerSlotUpdateTime < PLAYER_SLOT_UPDATE_INTERVAL)
+        {
+            return;
+        }
+        _lastPlayerSlotUpdateTime = Time.time;
+
         UpdatePlayerSlots();
         UpdateStartButtonVisibility();
         NotifyBreakRoomManager();
@@ -352,6 +363,13 @@ public class SteamManager : MonoBehaviour
     private void HandleLobbyMemberLeave(Lobby lobby, Friend friend)
     {
         if (!IsValidLobbyEvent(lobby)) return;
+
+        // Throttle updates to reduce overhead when Steam overlay is open
+        if (Time.time - _lastPlayerSlotUpdateTime < PLAYER_SLOT_UPDATE_INTERVAL)
+        {
+            return;
+        }
+        _lastPlayerSlotUpdateTime = Time.time;
 
         UpdatePlayerSlots();
         UpdateStartButtonVisibility();
