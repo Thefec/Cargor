@@ -99,7 +99,7 @@ namespace NewCss
         private readonly Queue<int> _recentProductIndices = new();
         private int _lastProductIndex = -1; // Ardışık tekrar engeli için
 
-#endregion
+        #endregion
 
 
         [Header("=== INTERACTION SOUNDS ===")]
@@ -237,19 +237,86 @@ namespace NewCss
         {
             if (!IsSpawned) return;
             InitializeComponents();
-            _outline = GetComponent<Outline>();
-            if (_outline == null)
-            {
-                _outline = gameObject.AddComponent<Outline>();
-            }
-              SetupOutline();
 
-            _outline.OutlineMode = outlineMode;
-            _outline.OutlineColor = outlineColor;
-            _outline.OutlineWidth = outlineWidth;
-            _outline.enabled = false; // Başlangıçta kapalı
+            // Outline setup'ı güvenli hale getir
+            SetupOutlineSafe();
         }
 
+        private void SetupOutlineSafe()
+        {
+            try
+            {
+                // Sadece Body mesh'ini bul
+                GameObject targetObject = null;
+
+                if (outlineTarget != null)
+                {
+                    targetObject = outlineTarget;
+                }
+                else
+                {
+                    // Body isimli child objeyi bul
+                    Transform bodyTransform = transform.Find("Body_011");
+                    if (bodyTransform == null)
+                    {
+                        // Alternatif isimler dene
+                        foreach (Transform child in transform)
+                        {
+                            if (child.name.Contains("Body") || child.name.Contains("body"))
+                            {
+                                bodyTransform = child;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (bodyTransform != null)
+                    {
+                        targetObject = bodyTransform.gameObject;
+                    }
+                }
+
+                if (targetObject == null)
+                {
+                    Debug.LogWarning($"{LOG_PREFIX} Body mesh not found for outline on {gameObject.name}");
+                    return;
+                }
+
+                // Outline ekle
+                _outline = targetObject.GetComponent<Outline>();
+                if (_outline == null)
+                {
+                    var renderer = targetObject.GetComponent<Renderer>();
+                    if (renderer == null)
+                    {
+                        Debug.LogWarning($"{LOG_PREFIX} No renderer found on {targetObject.name}");
+                        return;
+                    }
+
+                    // Mesh'in Read/Write enabled olup olmadığını kontrol et
+                    var meshFilter = targetObject.GetComponent<MeshFilter>();
+                    if (meshFilter != null && meshFilter.sharedMesh != null)
+                    {
+                        if (!meshFilter.sharedMesh.isReadable)
+                        {
+                            Debug.LogWarning($"{LOG_PREFIX} Mesh '{meshFilter.sharedMesh.name}' is not readable.  Skipping outline.  Enable Read/Write in import settings.");
+                            return;
+                        }
+                    }
+
+                    _outline = targetObject.AddComponent<Outline>();
+                    _outline.OutlineMode = outlineMode;
+                    _outline.OutlineColor = outlineColor;
+                    _outline.OutlineWidth = outlineWidth;
+                    _outline.enabled = false;
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"{LOG_PREFIX} Could not setup outline:  {e.Message}");
+                _outline = null;
+            }
+        }
         private void Update()
         {
             if (isPrefabMode) return;
@@ -266,19 +333,50 @@ namespace NewCss
         }
         private void SetupOutline()
         {
-            // Eğer outlineTarget belirtilmişse onu kullan, yoksa kendi objesini kullan
-            GameObject targetObject = outlineTarget != null ? outlineTarget : gameObject;
+            // Sadece Body mesh'ini bul
+            GameObject targetObject = null;
 
-            // Sadece Renderer'ı olan ve mesh'i readable olan objelere outline ekle
+            if (outlineTarget != null)
+            {
+                targetObject = outlineTarget;
+            }
+            else
+            {
+                // Body isimli child objeyi bul
+                Transform bodyTransform = transform.Find("Body_011");
+                if (bodyTransform == null)
+                {
+                    // Alternatif isimler deneyebiliriz
+                    foreach (Transform child in transform)
+                    {
+                        if (child.name.Contains("Body") || child.name.Contains("body"))
+                        {
+                            bodyTransform = child;
+                            break;
+                        }
+                    }
+                }
+
+                if (bodyTransform != null)
+                {
+                    targetObject = bodyTransform.gameObject;
+                }
+                else
+                {
+                    Debug.LogWarning($"{LOG_PREFIX} Body mesh not found for outline on {gameObject.name}");
+                    return;
+                }
+            }
+
+            // Sadece Renderer'ı olan objeye outline ekle
             _outline = targetObject.GetComponent<Outline>();
 
             if (_outline == null)
             {
-                // Önce kontrol et, mesh readable mı? 
-                var renderers = targetObject.GetComponentsInChildren<Renderer>();
-                if (renderers == null || renderers.Length == 0)
+                var renderer = targetObject.GetComponent<Renderer>();
+                if (renderer == null)
                 {
-                    Debug.LogWarning($"{LOG_PREFIX} No renderers found for outline on {targetObject.name}");
+                    Debug.LogWarning($"{LOG_PREFIX} No renderer found on {targetObject.name}");
                     return;
                 }
 
@@ -292,7 +390,7 @@ namespace NewCss
                 }
                 catch (System.Exception e)
                 {
-                    Debug.LogWarning($"{LOG_PREFIX} Could not add outline:  {e.Message}");
+                    Debug.LogWarning($"{LOG_PREFIX} Could not add outline: {e.Message}");
                     _outline = null;
                 }
             }
@@ -623,7 +721,7 @@ namespace NewCss
 
             // Prestige cezası
             ApplyPrestigePenalty();
-            
+
             // NEW: Customer lost - trigger game over
             if (IsServer && GameStateManager.Instance != null)
             {
@@ -883,87 +981,90 @@ namespace NewCss
         #region Product Placement - DÜZELTILMIŞ
 
         private GameObject PlaceProductOnDropOffTable()
+{
+    if (dropOffTable == null || ! HasValidProductPrefabs())
+    {
+        Debug.LogWarning($"{LOG_PREFIX} Cannot place product:  dropOffTable or productPrefabs is null");
+        return null;
+    }
+
+    int productIndex = GetProductIndex();
+
+    // Slot pozisyonunu al
+    var slotPoints = dropOffTable.SlotPoints;
+    int currentItemCount = dropOffTable.ItemCount;
+
+    Vector3 spawnPosition;
+    Quaternion spawnRotation;
+    Transform parentSlot = null;
+
+    if (slotPoints != null && slotPoints.Length > currentItemCount && slotPoints[currentItemCount] != null)
+    {
+        parentSlot = slotPoints[currentItemCount];
+        spawnPosition = parentSlot.position;
+        spawnRotation = parentSlot.rotation;
+    }
+    else
+    {
+        // Fallback
+        spawnPosition = dropOffTable.transform.position + Vector3.up * 0.5f;
+        spawnRotation = dropOffTable.transform.rotation;
+        Debug.LogWarning($"{LOG_PREFIX} No valid slot found, using fallback position");
+    }
+
+    // ✅ 1. Ürünü WORLD SPACE'te oluştur (PARENT YOK)
+    var product = Instantiate(productPrefabs[productIndex], spawnPosition, spawnRotation);
+
+    // ✅ 2. Fizik ayarlarını yap (spawn öncesi)
+    var rb = product.GetComponent<Rigidbody>();
+    if (rb != null)
+    {
+        rb.isKinematic = true;
+        rb.useGravity = false;
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+        rb.constraints = RigidbodyConstraints.FreezeAll;
+    }
+
+    // ItemFreezeSystem varsa devre dışı bırak
+    var freezeSystem = product.GetComponent<ItemFreezeSystem>();
+    if (freezeSystem != null)
+    {
+        freezeSystem.enabled = false;
+    }
+
+    // ✅ 3. ÖNCE NetworkObject spawn et
+    var networkObject = product.GetComponent<NetworkObject>();
+    if (networkObject != null)
+    {
+        networkObject.Spawn();
+        
+        // ✅ 4. SPAWN SONRASI parent ayarla (Bu hata çözümü!)
+        if (networkObject.IsSpawned)
         {
-            if (dropOffTable == null || !HasValidProductPrefabs())
-            {
-                Debug.LogWarning($"{LOG_PREFIX} Cannot place product:  dropOffTable or productPrefabs is null");
-                return null;
-            }
-
-            int productIndex = GetProductIndex();
-
-            // Slot pozisyonunu al
-            var slotPoints = dropOffTable.SlotPoints;
-            int currentItemCount = dropOffTable.ItemCount;
-
-            Vector3 spawnPosition;
-            Quaternion spawnRotation;
-            Transform parentSlot = null;
-
-            if (slotPoints != null && slotPoints.Length > currentItemCount && slotPoints[currentItemCount] != null)
-            {
-                parentSlot = slotPoints[currentItemCount];
-                spawnPosition = parentSlot.position;
-                spawnRotation = parentSlot.rotation;
-            }
-            else
-            {
-                // Fallback
-                spawnPosition = dropOffTable.transform.position + Vector3.up * 0.5f;
-                spawnRotation = dropOffTable.transform.rotation;
-                Debug.LogWarning($"{LOG_PREFIX} No valid slot found, using fallback position");
-            }
-
-            // Ürünü oluştur
-            var product = Instantiate(productPrefabs[productIndex], spawnPosition, spawnRotation);
-
-            // ÖNEMLİ:  Fizik ayarlarını HEMEN yap (spawn öncesi)
-            var rb = product.GetComponent<Rigidbody>();
-            if (rb != null)
-            {
-                rb.isKinematic = true;
-                rb.useGravity = false;
-                rb.linearVelocity = Vector3.zero;
-                rb.angularVelocity = Vector3.zero;
-                rb.constraints = RigidbodyConstraints.FreezeAll;
-            }
-
-            // ItemFreezeSystem varsa devre dışı bırak
-            var freezeSystem = product.GetComponent<ItemFreezeSystem>();
-            if (freezeSystem != null)
-            {
-                freezeSystem.enabled = false;
-            }
-
-            // Parent ayarla
             if (parentSlot != null)
             {
                 product.transform.SetParent(parentSlot, true);
                 product.transform.localPosition = Vector3.zero;
-                product.transform.localRotation = Quaternion.identity;
+                product. transform.localRotation = Quaternion.identity;
             }
             else
             {
-                product.transform.SetParent(dropOffTable.transform, true);
+                product.transform.SetParent(dropOffTable. transform, true);
             }
-
-            // Network spawn
-            var networkObject = product.GetComponent<NetworkObject>();
-            if (networkObject != null)
-            {
-                networkObject.Spawn();
-
-                // Spawn sonrası fizik ayarlarını tekrar uygula
-                StartCoroutine(EnsureProductFrozenAfterSpawn(product));
-            }
-
-            // DisplayTable'a kaydet
-            dropOffTable.PlaceItemInstance(product);
-
-            Debug.Log($"{LOG_PREFIX} Placed product:  {productPrefabs[productIndex].name} at slot {currentItemCount}");
-
-            return product;
+            
+            // Spawn sonrası fizik ayarlarını tekrar uygula
+            StartCoroutine(EnsureProductFrozenAfterSpawn(product));
         }
+    }
+
+    // DisplayTable'a kaydet
+    dropOffTable.PlaceItemInstance(product);
+
+    Debug.Log($"{LOG_PREFIX} Placed product:  {productPrefabs[productIndex].name} at slot {currentItemCount}");
+
+    return product;
+}
         private IEnumerator EnsureProductFrozenAfterSpawn(GameObject product)
         {
             yield return null; // Bir frame bekle

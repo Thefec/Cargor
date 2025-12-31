@@ -5,10 +5,10 @@ using Steamworks;
 using System.Collections;
 
 /// <summary>
-/// NetworkBehaviour'dan baðýmsýz exit iþlemlerini yöneten helper sýnýf
-/// Shutdown sonrasý da çalýþmaya devam eder
+/// NetworkBehaviour'dan baÄŸÄ±msÄ±z exit iÅŸlemlerini yÃ¶neten helper sÄ±nÄ±f
+/// Shutdown sonrasÄ± da Ã§alÄ±ÅŸmaya devam eder
 /// </summary>
-public class ExitHelper : MonoBehaviour
+public class ExitHelper :  MonoBehaviour
 {
     private static ExitHelper _instance;
     public static ExitHelper Instance
@@ -43,9 +43,9 @@ public class ExitHelper : MonoBehaviour
 
     private IEnumerator ExitCoroutine(bool isHost, bool isHostShutdown)
     {
-        Debug.Log($"[ExitHelper] Starting exit process. IsHost={isHost}, HostShutdown={isHostShutdown}");
+        Debug. Log($"[ExitHelper] Starting exit process. IsHost={isHost}, HostShutdown={isHostShutdown}");
 
-        // 1. Zamaný normale döndür
+        // 1. ZamanÄ± normale dÃ¶ndÃ¼r
         Time.timeScale = 1f;
         yield return new WaitForSecondsRealtime(0.1f);
 
@@ -69,15 +69,15 @@ public class ExitHelper : MonoBehaviour
         if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
         {
             Debug.Log("[ExitHelper] Shutting down NetworkManager");
-            NetworkManager.Singleton.Shutdown();
+            NetworkManager.Singleton. Shutdown();
             yield return new WaitForSecondsRealtime(0.5f);
         }
 
-        // 4. Steam Cleanup
+        // 4. Steam Cleanup (Ã–NEMLÄ°:  Steam client'Ä± da kapatmalÄ±yÄ±z!)
         LeaveSteamLobby();
         yield return new WaitForSecondsRealtime(0.2f);
 
-        // 5. Scene yükle
+        // 5. Scene yÃ¼kle
         Debug.Log("[ExitHelper] Loading MainMenu");
         SceneManager.LoadScene("MainMenu");
     }
@@ -86,7 +86,7 @@ public class ExitHelper : MonoBehaviour
     {
         Debug.Log("=== RESETTING ALL GAME MANAGERS ===");
 
-        if (NewCss.GameStateManager.Instance != null)
+        if (NewCss. GameStateManager.Instance != null)
         {
             NewCss.GameStateManager.Instance.ResetGameState();
         }
@@ -101,16 +101,36 @@ public class ExitHelper : MonoBehaviour
 
     private void LeaveSteamLobby()
     {
+        // Steam lobby'den ayrÄ±l
         SteamManager steamManager = FindObjectOfType<SteamManager>();
         if (steamManager != null)
         {
-            Debug.Log("Leaving Steam lobby");
+            Debug.Log("[ExitHelper] Leaving Steam lobby");
             steamManager.LeaveLobby();
         }
 
         if (LobbySaver.instance != null)
         {
-            LobbySaver.instance.CurrentLobby = null;
+            LobbySaver.instance. CurrentLobby = null;
+        }
+
+        // Ã–NEMLÄ°:  SteamClient'Ä± kapat
+        if (SteamClient.IsValid)
+        {
+            try
+            {
+                Debug.Log("[ExitHelper] Shutting down SteamClient");
+                SteamClient. Shutdown();
+                Debug.Log("[ExitHelper] SteamClient shutdown successful");
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[ExitHelper] Error shutting down SteamClient:  {e}");
+            }
+        }
+        else
+        {
+            Debug. Log("[ExitHelper] SteamClient was not active, skipping shutdown");
         }
     }
 }
