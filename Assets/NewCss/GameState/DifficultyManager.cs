@@ -39,8 +39,11 @@ namespace NewCss
         [Range(0f, 1f)]
         private float basePhoneCallChance = 0.3f;
 
-        [SerializeField, Tooltip("Customer patience time for single player (seconds)")]
-        private float baseCustomerPatience = 20f;
+        [SerializeField, Tooltip("Customer minimum patience time for single player (seconds)")]
+        private float baseMinPatience = 10f;
+
+        [SerializeField, Tooltip("Customer maximum patience time for single player (seconds)")]
+        private float baseMaxPatience = 20f;
 
         [SerializeField, Tooltip("Stamina regeneration rate for single player")]
         private float baseStaminaRegenRate = 1f;
@@ -132,9 +135,14 @@ namespace NewCss
         public float ScaledPhoneCallChance => CalculateScaledPhoneCallChance();
 
         /// <summary>
-        /// Ölçeklenmiş müşteri bekleme süresi
+        /// Ölçeklenmiş müşteri minimum bekleme süresi
         /// </summary>
-        public float ScaledCustomerPatience => CalculateScaledCustomerPatience();
+        public float ScaledMinPatience => CalculateScaledMinPatience();
+
+        /// <summary>
+        /// Ölçeklenmiş müşteri maximum bekleme süresi
+        /// </summary>
+        public float ScaledMaxPatience => CalculateScaledMaxPatience();
 
         /// <summary>
         /// Ölçeklenmiş stamina yenilenme hızı
@@ -311,11 +319,18 @@ namespace NewCss
             return Mathf.Clamp01(scaledChance);
         }
 
-        private float CalculateScaledCustomerPatience()
+        private float CalculateScaledMinPatience()
         {
             int additionalPlayers = _cachedPlayerCount - 1;
-            float scaledPatience = baseCustomerPatience - (additionalPlayers * patienceReductionPerPlayer);
+            float scaledPatience = baseMinPatience - (additionalPlayers * patienceReductionPerPlayer);
             return Mathf.Max(5f, scaledPatience); // Minimum 5 seconds
+        }
+
+        private float CalculateScaledMaxPatience()
+        {
+            int additionalPlayers = _cachedPlayerCount - 1;
+            float scaledPatience = baseMaxPatience - (additionalPlayers * patienceReductionPerPlayer);
+            return Mathf.Max(10f, scaledPatience); // Minimum 10 seconds
         }
 
         private float CalculateScaledStaminaRegenRate()
@@ -359,12 +374,49 @@ namespace NewCss
         {
             if (!IsServer) return;
 
+            // Start coroutine to apply settings with delay
+            StartCoroutine(ApplyDifficultySettingsDelayed());
+        }
+
+        private System.Collections.IEnumerator ApplyDifficultySettingsDelayed()
+        {
+            const float maxWaitTime = 5f;
+            const float checkInterval = 0.1f;
+            float elapsedTime = 0f;
+
+            // Wait for all systems to be ready
+            while (elapsedTime < maxWaitTime)
+            {
+                bool allReady = true;
+
+                // Check MoneySystem
+                if (MoneySystem.Instance == null)
+                {
+                    allReady = false;
+                }
+
+                // Check PhoneCallManager
+                if (PhoneCallManager.Instance == null)
+                {
+                    allReady = false;
+                }
+
+                if (allReady)
+                {
+                    break;
+                }
+
+                yield return new WaitForSeconds(checkInterval);
+                elapsedTime += checkInterval;
+            }
+
+            // Apply settings even if not all systems are ready (timeout)
             ApplyCustomerSettings();
             ApplyMoneySettings();
             ApplyPhoneSettings();
             ApplyStaminaSettings();
 
-            LogDebug($"Applied difficulty settings for {_cachedPlayerCount} players");
+            LogDebug($"Applied difficulty settings for {_cachedPlayerCount} players (waited {elapsedTime:F2}s)");
         }
 
         private void ApplyCustomerSettings()
@@ -379,12 +431,15 @@ namespace NewCss
 
             // Find CustomerAI prefabs and update patience
             var customerAIs = FindObjectsOfType<CustomerAI>();
-            float patience = ScaledCustomerPatience;
+            float minPatience = ScaledMinPatience;
+            float maxPatience = ScaledMaxPatience;
             foreach (var ai in customerAIs)
             {
-                ai.minWaitTime = patience * 0.5f;
-                ai.maxWaitTime = patience;
+                ai.minWaitTime = minPatience;
+                ai.maxWaitTime = maxPatience;
             }
+            
+            LogDebug($"Customer patience set to: {minPatience}s - {maxPatience}s");
         }
 
         private void ApplyMoneySettings()
@@ -393,6 +448,11 @@ namespace NewCss
             if (moneySystem != null)
             {
                 moneySystem.startingMoney = ScaledStartingMoney;
+                // SetMoney is called here because this method is only invoked:
+                // 1. During initial game setup (OnNetworkSpawn)
+                // 2. When player count changes (before gameplay starts)
+                // It will NOT overwrite player earnings during active gameplay
+                moneySystem.SetMoney(ScaledStartingMoney);
                 LogDebug($"Starting money set to: {ScaledStartingMoney}");
             }
         }
@@ -484,7 +544,7 @@ namespace NewCss
                    $"Customers/Day: {ScaledCustomerCount}\n" +
                    $"Starting Money: {ScaledStartingMoney}\n" +
                    $"Phone Chance: {ScaledPhoneCallChance:P0}\n" +
-                   $"Patience: {ScaledCustomerPatience:F1}s\n" +
+                   $"Patience: {ScaledMinPatience:F1}s - {ScaledMaxPatience:F1}s\n" +
                    $"Upgrade Cost: x{UpgradeCostMultiplier:F2}";
         }
 
