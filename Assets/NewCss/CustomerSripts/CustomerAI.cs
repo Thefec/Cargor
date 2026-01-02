@@ -981,97 +981,83 @@ namespace NewCss
         #region Product Placement - DÜZELTILMIŞ
 
         private GameObject PlaceProductOnDropOffTable()
-{
-    if (dropOffTable == null || ! HasValidProductPrefabs())
-    {
-        Debug.LogWarning($"{LOG_PREFIX} Cannot place product:  dropOffTable or productPrefabs is null");
-        return null;
-    }
-
-    int productIndex = GetProductIndex();
-
-    // Slot pozisyonunu al
-    var slotPoints = dropOffTable.SlotPoints;
-    int currentItemCount = dropOffTable.ItemCount;
-
-    Vector3 spawnPosition;
-    Quaternion spawnRotation;
-    Transform parentSlot = null;
-
-    if (slotPoints != null && slotPoints.Length > currentItemCount && slotPoints[currentItemCount] != null)
-    {
-        parentSlot = slotPoints[currentItemCount];
-        spawnPosition = parentSlot.position;
-        spawnRotation = parentSlot.rotation;
-    }
-    else
-    {
-        // Fallback
-        spawnPosition = dropOffTable.transform.position + Vector3.up * 0.5f;
-        spawnRotation = dropOffTable.transform.rotation;
-        Debug.LogWarning($"{LOG_PREFIX} No valid slot found, using fallback position");
-    }
-
-    // ✅ 1. Ürünü WORLD SPACE'te oluştur (PARENT YOK)
-    var product = Instantiate(productPrefabs[productIndex], spawnPosition, spawnRotation);
-
-    // ✅ 2. Fizik ayarlarını yap (spawn öncesi)
-    var rb = product.GetComponent<Rigidbody>();
-    if (rb != null)
-    {
-        rb.isKinematic = true;
-        rb.useGravity = false;
-        rb.linearVelocity = Vector3.zero;
-        rb.angularVelocity = Vector3.zero;
-        rb.constraints = RigidbodyConstraints.FreezeAll;
-    }
-
-    // ItemFreezeSystem varsa devre dışı bırak
-    var freezeSystem = product.GetComponent<ItemFreezeSystem>();
-    if (freezeSystem != null)
-    {
-        freezeSystem.enabled = false;
-    }
-
-    // ✅ 3. ÖNCE NetworkObject spawn et
-    var networkObject = product.GetComponent<NetworkObject>();
-    if (networkObject != null)
-    {
-        networkObject.Spawn();
-        
-        // ✅ 4. SPAWN SONRASI parent ayarla (Bu hata çözümü!)
-        if (networkObject.IsSpawned)
         {
-            if (parentSlot != null)
+            if (dropOffTable == null || !HasValidProductPrefabs())
             {
-                product.transform.SetParent(parentSlot, true);
-                product.transform.localPosition = Vector3.zero;
-                product.transform.localRotation = Quaternion.identity;
+                Debug.LogWarning($"{LOG_PREFIX} Cannot place product: dropOffTable or productPrefabs is null");
+                return null;
+            }
+
+            int productIndex = GetProductIndex();
+
+            // ✅ 1. ÖNCE slot pozisyonunu hesapla ve kaydet (DisplayTable.ItemCount artmadan)
+            var slotPoints = dropOffTable.SlotPoints;
+            int currentItemCount = dropOffTable.ItemCount;
+
+            Vector3 spawnPosition;
+            Quaternion spawnRotation;
+
+            if (slotPoints != null && slotPoints.Length > currentItemCount && slotPoints[currentItemCount] != null)
+            {
+                // Slot pozisyonunu WORLD SPACE'te al
+                Transform slot = slotPoints[currentItemCount];
+                spawnPosition = slot.position;
+                spawnRotation = slot.rotation;
+                Debug.Log($"{LOG_PREFIX} Using slot {currentItemCount} at position {spawnPosition}");
             }
             else
             {
-                // Fallback: Add small random offset to prevent exact overlap
-                Vector3 randomOffset = new Vector3(
-                    UnityEngine.Random.Range(-0.05f, 0.05f),
-                    0.1f, // Slight Y offset to prevent clipping
-                    UnityEngine.Random.Range(-0.05f, 0.05f)
-                );
-                product.transform.SetParent(dropOffTable.transform, true);
-                product.transform.localPosition = randomOffset;
+                // Fallback - masa üzerinde küçük offset ile
+                spawnPosition = dropOffTable.transform.position + Vector3.up * 0.5f;
+                spawnRotation = dropOffTable.transform.rotation;
+                Debug.LogWarning($"{LOG_PREFIX} No valid slot found, using fallback position");
             }
-            
-            // Spawn sonrası fizik ayarlarını tekrar uygula
-            StartCoroutine(EnsureProductFrozenAfterSpawn(product));
+
+            // ✅ 2. Ürünü WORLD SPACE pozisyonunda oluştur
+            var product = Instantiate(productPrefabs[productIndex], spawnPosition, spawnRotation);
+
+            // ✅ 3. Fizik ayarlarını yap (PARENT YOK - world space'te kalacak)
+            var rb = product.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.isKinematic = true;
+                rb.useGravity = false;
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+                rb.constraints = RigidbodyConstraints.FreezeAll;
+            }
+
+            // ItemFreezeSystem varsa devre dışı bırak
+            var freezeSystem = product.GetComponent<ItemFreezeSystem>();
+            if (freezeSystem != null)
+            {
+                freezeSystem.enabled = false;
+            }
+
+            // ✅ 4. NetworkObject spawn et
+            var networkObject = product.GetComponent<NetworkObject>();
+            if (networkObject != null)
+            {
+                networkObject.Spawn();
+
+                // ✅ 5. Spawn sonrası pozisyonu tekrar sabitle (parent kullanmadan)
+                if (networkObject.IsSpawned)
+                {
+                    product.transform.position = spawnPosition;
+                    product.transform.rotation = spawnRotation;
+                    
+                    // Fizik ayarlarını tekrar uygula
+                    StartCoroutine(EnsureProductFrozenAfterSpawn(product));
+                }
+            }
+
+            // ✅ 6. DisplayTable'a kaydet (bu ItemCount'u artıracak)
+            dropOffTable.PlaceItemInstance(product);
+
+            Debug.Log($"{LOG_PREFIX} Placed product: {productPrefabs[productIndex].name} at world position {spawnPosition}, slot index was {currentItemCount}");
+
+            return product;
         }
-    }
-
-    // DisplayTable'a kaydet
-    dropOffTable.PlaceItemInstance(product);
-
-    Debug.Log($"{LOG_PREFIX} Placed product:  {productPrefabs[productIndex].name} at slot {currentItemCount}");
-
-    return product;
-}
         private IEnumerator EnsureProductFrozenAfterSpawn(GameObject product)
         {
             yield return null; // Bir frame bekle
@@ -1291,18 +1277,37 @@ namespace NewCss
                 return false;
             }
 
-            // Parent kontrolü
-            if (_placedProduct.transform.parent == null)
-            {
-                return false;
-            }
-
             // dropOffTable kontrolü
             if (dropOffTable == null)
             {
                 return false;
             }
 
+            // Product hala dünyada var mı kontrol et
+            // Parent yoksa (world space'te), pozisyon kontrolü yap
+            if (_placedProduct.transform.parent == null)
+            {
+                // Ürün hala slot pozisyonuna yakın mı?
+                var slotPoints = dropOffTable.SlotPoints;
+                if (slotPoints != null)
+                {
+                    foreach (var slot in slotPoints)
+                    {
+                        if (slot != null)
+                        {
+                            float distance = Vector3.Distance(_placedProduct.transform.position, slot.position);
+                            if (distance < 0.5f) // Hala slot yakınında
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+                // Slot yakınında değilse, pickup edilmiş demektir
+                return false;
+            }
+
+            // Parent varsa eski yöntemi kullan
             return IsChildOfDropOffTable(_placedProduct);
         }
 
