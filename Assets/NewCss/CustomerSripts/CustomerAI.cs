@@ -25,6 +25,7 @@ namespace NewCss
         private const float DESTINATION_THRESHOLD = 0.1f;
         private const float PICKUP_CHECK_INTERVAL = 0.1f;
         private const float PRODUCT_PLACEMENT_DELAY = 0.1f;
+        private const float PRODUCT_POSITION_TOLERANCE = 0.5f; // Distance threshold for checking if product is still on table
 
         [Header("=== OUTLINE SETTINGS ===")]
         [SerializeField, Tooltip("Outline eklenecek hedef obje (boş bırakılırsa bu obje kullanılır)")]
@@ -178,6 +179,7 @@ namespace NewCss
         // Product
         private GameObject _placedProduct;
         private NetworkObject _placedProductNetworkObject;
+        private int _placedProductSlotIndex = -1; // Cache slot index for faster checking
 
         #endregion
 
@@ -993,6 +995,7 @@ namespace NewCss
             // ✅ 1. ÖNCE slot pozisyonunu hesapla ve kaydet (DisplayTable.ItemCount artmadan)
             var slotPoints = dropOffTable.SlotPoints;
             int currentItemCount = dropOffTable.ItemCount;
+            _placedProductSlotIndex = currentItemCount; // Cache for later checking
 
             Vector3 spawnPosition;
             Quaternion spawnRotation;
@@ -1287,16 +1290,31 @@ namespace NewCss
             // Parent yoksa (world space'te), pozisyon kontrolü yap
             if (_placedProduct.transform.parent == null)
             {
-                // Ürün hala slot pozisyonuna yakın mı?
-                var slotPoints = dropOffTable.SlotPoints;
-                if (slotPoints != null)
+                // Cached slot index kullan (varsa)
+                if (_placedProductSlotIndex >= 0)
                 {
-                    foreach (var slot in slotPoints)
+                    var slotPoints = dropOffTable.SlotPoints;
+                    if (slotPoints != null && _placedProductSlotIndex < slotPoints.Length)
+                    {
+                        Transform slot = slotPoints[_placedProductSlotIndex];
+                        if (slot != null)
+                        {
+                            float distance = Vector3.Distance(_placedProduct.transform.position, slot.position);
+                            return distance < PRODUCT_POSITION_TOLERANCE;
+                        }
+                    }
+                }
+                
+                // Fallback: Tüm slotları kontrol et
+                var slotPoints2 = dropOffTable.SlotPoints;
+                if (slotPoints2 != null)
+                {
+                    foreach (var slot in slotPoints2)
                     {
                         if (slot != null)
                         {
                             float distance = Vector3.Distance(_placedProduct.transform.position, slot.position);
-                            if (distance < 0.5f) // Hala slot yakınında
+                            if (distance < PRODUCT_POSITION_TOLERANCE)
                             {
                                 return true;
                             }

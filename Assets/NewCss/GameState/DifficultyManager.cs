@@ -448,7 +448,11 @@ namespace NewCss
             if (moneySystem != null)
             {
                 moneySystem.startingMoney = ScaledStartingMoney;
-                moneySystem.SetMoney(ScaledStartingMoney); // Actually update the money value
+                // SetMoney is called here because this method is only invoked:
+                // 1. During initial game setup (OnNetworkSpawn)
+                // 2. When player count changes (before gameplay starts)
+                // It will NOT overwrite player earnings during active gameplay
+                moneySystem.SetMoney(ScaledStartingMoney);
                 LogDebug($"Starting money set to: {ScaledStartingMoney}");
             }
         }
