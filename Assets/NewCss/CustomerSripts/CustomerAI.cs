@@ -1046,11 +1046,18 @@ namespace NewCss
             {
                 product.transform.SetParent(parentSlot, true);
                 product.transform.localPosition = Vector3.zero;
-                product. transform.localRotation = Quaternion.identity;
+                product.transform.localRotation = Quaternion.identity;
             }
             else
             {
-                product.transform.SetParent(dropOffTable. transform, true);
+                // Fallback: Add small random offset to prevent exact overlap
+                Vector3 randomOffset = new Vector3(
+                    UnityEngine.Random.Range(-0.05f, 0.05f),
+                    0.1f, // Slight Y offset to prevent clipping
+                    UnityEngine.Random.Range(-0.05f, 0.05f)
+                );
+                product.transform.SetParent(dropOffTable.transform, true);
+                product.transform.localPosition = randomOffset;
             }
             
             // Spawn sonrası fizik ayarlarını tekrar uygula

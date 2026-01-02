@@ -81,6 +81,17 @@ namespace NewCss
 
         #endregion
 
+        #region Serialized Fields - Wave Settings
+
+        [Header("=== WAVE/RUSH HOUR SETTINGS ===")]
+        [SerializeField, Tooltip("Wave ayarları ScriptableObject")]
+        public WaveSettings waveSettings;
+
+        [SerializeField, Tooltip("Wave sistemini etkinleştir")]
+        public bool enableWaveSystem = true;
+
+        #endregion
+
         #region Serialized Fields - UI Settings
 
         [Header("=== UI SETTINGS ===")]
@@ -130,6 +141,12 @@ namespace NewCss
 
         #endregion
 
+        #region Private Fields - Deterministic Loot
+
+        private int _deterministicLootCounter; // Her 3 müşteriden 1'i tır rengine uygun ürün bırakır
+
+        #endregion
+
         #region Public Properties
 
         /// <summary>
@@ -162,6 +179,18 @@ namespace NewCss
         /// </summary>
         public bool IsQueueFull => _customerQueue.Count >= maxQueueSize ||
                                     _customerQueue.Count >= queuePositions.Length;
+
+        /// <summary>
+        /// Şu an rush hour mu?
+        /// </summary>
+        public bool IsRushHour => enableWaveSystem && waveSettings != null && waveSettings.IsRushHour(GetCurrentTime());
+
+        /// <summary>
+        /// Mevcut zaman dilimi adı
+        /// </summary>
+        public string CurrentPeriodName => enableWaveSystem && waveSettings != null 
+            ? waveSettings.GetPeriodForTime(GetCurrentTime()).periodName 
+            : "Normal";
 
         #endregion
 
@@ -257,6 +286,7 @@ namespace NewCss
             _nextScheduledIndex = 0;
             _dayInitialized = true;
             _customersExitedToday = false; // Yeni gün için çıkış flag'ini sıfırla
+            _deterministicLootCounter = 0; // Deterministic loot sayacını sıfırla
 
             CalculateSpawnSchedule();
             UpdateRemainingCustomersUI();
@@ -298,7 +328,21 @@ namespace NewCss
         {
             float baseSpawnTime = spawnStartHour + (index * baseInterval) + (baseInterval * 0.5f);
             float randomOffset = Random.Range(-baseInterval * spawnTimeRandomness, baseInterval * spawnTimeRandomness);
-            return Mathf.Clamp(baseSpawnTime + randomOffset, spawnStartHour, spawnEndHour);
+            float spawnTime = Mathf.Clamp(baseSpawnTime + randomOffset, spawnStartHour, spawnEndHour);
+
+            // Apply wave system spawn rate modifier
+            if (enableWaveSystem && waveSettings != null)
+            {
+                float spawnRateMultiplier = waveSettings.GetSpawnRateMultiplier(spawnTime);
+                // Higher multiplier = faster spawn = reduce interval
+                if (spawnRateMultiplier > 0)
+                {
+                    float adjustment = (baseInterval * (1f - (1f / spawnRateMultiplier))) * 0.5f;
+                    spawnTime = Mathf.Clamp(spawnTime - adjustment, spawnStartHour, spawnEndHour);
+                }
+            }
+
+            return spawnTime;
         }
 
         private void LogSpawnTimesDebug()
@@ -335,6 +379,17 @@ namespace NewCss
             if (!IsWithinSpawningHours()) return false;
             if (_nextScheduledIndex >= _scheduledSpawnTimes.Count) return false;
             if (IsQueueFull) return false;
+
+            // Check wave system queue limit
+            if (enableWaveSystem && waveSettings != null)
+            {
+                float currentTime = GetCurrentTime();
+                int waveMaxCustomers = waveSettings.GetMaxCustomersForTime(currentTime);
+                if (_customerQueue.Count >= waveMaxCustomers)
+                {
+                    return false;
+                }
+            }
 
             return true;
         }
@@ -664,17 +719,54 @@ namespace NewCss
         /// <summary>
         /// Son kullanılan ürünleri hariç tutarak rastgele ürün index'i döndürür. 
         /// Ardışık aynı ürün seçimini kesinlikle engeller.
+        /// Deterministic loot: Her 3 müşteriden 1'i sıradaki tır rengine uygun ürün bırakır.
         /// </summary>
         public int GetRandomProductIndexExcludingRecent(int productCount)
         {
             if (productCount <= 0) return -1;
             if (productCount == 1) return 0;
 
+            _deterministicLootCounter++;
+
+            // Deterministic loot: Her 3. müşteri (1, 4, 7, ...) tır rengine uygun ürün bırakır
+            if (_deterministicLootCounter % 3 == 1)
+            {
+                int deterministicIndex = GetDeterministicProductIndex(productCount);
+                if (deterministicIndex >= 0)
+                {
+                    AddToProductHistory(deterministicIndex);
+                    LogDebug($"Deterministic loot assigned: product index {deterministicIndex}");
+                    return deterministicIndex;
+                }
+            }
+
             var candidates = BuildProductCandidates(productCount);
             int chosen = SelectProductIndex(candidates, productCount);
             AddToProductHistory(chosen);
 
             return chosen;
+        }
+
+        /// <summary>
+        /// Sıradaki kamyon rengine uygun ürün index'ini döndürür
+        /// </summary>
+        private int GetDeterministicProductIndex(int productCount)
+        {
+            if (TruckSpawner.Instance == null) return -1;
+
+            BoxInfo.BoxType? nextTruckColor = TruckSpawner.Instance.NextTruckColor;
+            if (!nextTruckColor.HasValue) return -1;
+
+            // BoxType sıralamasına göre ürün index'i (Red=0, Yellow=1, Blue=2)
+            int targetIndex = (int)nextTruckColor.Value;
+
+            // Ürün sayısı yeterli mi kontrol et
+            if (targetIndex < productCount)
+            {
+                return targetIndex;
+            }
+
+            return -1;
         }
 
         private List<int> BuildProductCandidates(int productCount)
