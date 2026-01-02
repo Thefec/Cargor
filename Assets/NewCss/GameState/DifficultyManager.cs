@@ -29,20 +29,20 @@ namespace NewCss
         #region Serialized Fields - Base Values
 
         [Header("=== BASE VALUES (1 Player) ===")]
-        [SerializeField, Tooltip("Tek oyuncu için günlük müşteri sayısı")]
+        [SerializeField, Tooltip("Daily customer count for single player")]
         private int baseCustomerCount = 10;
 
-        [SerializeField, Tooltip("Tek oyuncu için başlangıç parası")]
+        [SerializeField, Tooltip("Starting money for single player")]
         private int baseStartingMoney = 100000;
 
-        [SerializeField, Tooltip("Tek oyuncu için telefon çalma olasılığı")]
+        [SerializeField, Tooltip("Phone call chance for single player")]
         [Range(0f, 1f)]
         private float basePhoneCallChance = 0.3f;
 
-        [SerializeField, Tooltip("Tek oyuncu için müşteri bekleme süresi (saniye)")]
+        [SerializeField, Tooltip("Customer patience time for single player (seconds)")]
         private float baseCustomerPatience = 20f;
 
-        [SerializeField, Tooltip("Tek oyuncu için stamina yenilenme hızı")]
+        [SerializeField, Tooltip("Stamina regeneration rate for single player")]
         private float baseStaminaRegenRate = 1f;
 
         #endregion
@@ -50,25 +50,25 @@ namespace NewCss
         #region Serialized Fields - Scaling Factors
 
         [Header("=== SCALING FACTORS (Per Additional Player) ===")]
-        [SerializeField, Tooltip("Oyuncu başına ek müşteri sayısı")]
+        [SerializeField, Tooltip("Additional customers per player")]
         private int customerCountPerPlayer = 5;
 
-        [SerializeField, Tooltip("Oyuncu başına para çarpanı (1 = değişim yok)")]
+        [SerializeField, Tooltip("Money multiplier per player (1 = no change)")]
         [Range(0.5f, 1.5f)]
         private float moneyMultiplierPerPlayer = 0.85f;
 
-        [SerializeField, Tooltip("Oyuncu başına ek telefon olasılığı")]
+        [SerializeField, Tooltip("Additional phone chance per player")]
         [Range(0f, 0.3f)]
         private float phoneChancePerPlayer = 0.1f;
 
-        [SerializeField, Tooltip("Oyuncu başına bekleme süresi azalması (saniye)")]
+        [SerializeField, Tooltip("Patience reduction per player (seconds)")]
         private float patienceReductionPerPlayer = 2f;
 
-        [SerializeField, Tooltip("Oyuncu başına stamina tüketim çarpanı")]
+        [SerializeField, Tooltip("Stamina drain multiplier per player")]
         [Range(1f, 2f)]
         private float staminaDrainMultiplierPerPlayer = 1.1f;
 
-        [SerializeField, Tooltip("Oyuncu başına upgrade maliyet çarpanı")]
+        [SerializeField, Tooltip("Upgrade cost multiplier per player")]
         [Range(1f, 2f)]
         private float upgradeCostMultiplierPerPlayer = 1.15f;
 
@@ -77,7 +77,7 @@ namespace NewCss
         #region Serialized Fields - UI
 
         [Header("=== UI REFERENCES ===")]
-        [SerializeField, Tooltip("Zorluk göstergesi text'i (Lobby'de)")]
+        [SerializeField, Tooltip("Difficulty indicator text (in Lobby)")]
         private TextMeshProUGUI difficultyIndicatorText;
 
         #endregion

@@ -83,10 +83,10 @@ namespace NewCss
         #region Serialized Fields - Timer
 
         [Header("=== HANGAR TIMER SETTINGS ===")]
-        [SerializeField, Tooltip("Kamyon hangarda kalma süresi (saniye)")]
+        [SerializeField, Tooltip("Truck hangar stay duration (seconds)")]
         public float hangarStayDuration = 120f;
 
-        [SerializeField, Tooltip("Zamanlayıcı UI text'i")]
+        [SerializeField, Tooltip("Timer UI text")]
         public TextMeshProUGUI timerText;
 
         #endregion
@@ -362,12 +362,16 @@ namespace NewCss
 
                 _networkRemainingTime.Value = Mathf.Max(0f, _networkRemainingTime.Value - 1f);
 
+                // Cache IsFull to avoid multiple network reads
+                bool timerExpired = _networkRemainingTime.Value <= 0;
+                bool truckFull = IsFull;
+
                 // Check departure condition: timer expired OR truck is full
-                if (_networkRemainingTime.Value <= 0 || IsFull)
+                if (timerExpired || truckFull)
                 {
                     if (!_isComplete.Value)
                     {
-                        LogDebug($"Truck departing - Timer: {_networkRemainingTime.Value <= 0}, Full: {IsFull}");
+                        LogDebug($"Truck departing - Timer: {timerExpired}, Full: {truckFull}");
                         TriggerDeparture();
                     }
                     yield break;

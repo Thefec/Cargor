@@ -84,10 +84,10 @@ namespace NewCss
         #region Serialized Fields - Wave Settings
 
         [Header("=== WAVE/RUSH HOUR SETTINGS ===")]
-        [SerializeField, Tooltip("Wave ayarları ScriptableObject")]
+        [SerializeField, Tooltip("Wave settings ScriptableObject")]
         public WaveSettings waveSettings;
 
-        [SerializeField, Tooltip("Wave sistemini etkinleştir")]
+        [SerializeField, Tooltip("Enable wave system")]
         public bool enableWaveSystem = true;
 
         #endregion

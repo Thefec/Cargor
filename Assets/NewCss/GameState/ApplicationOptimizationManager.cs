@@ -5,9 +5,9 @@ using Unity.Netcode;
 namespace NewCss
 {
     /// <summary>
-    /// Steam overlay ve Alt-Tab optimizasyonlarını yönetir.
-    /// Network paketlerinin frame-bound olması nedeniyle FPS'i çok düşürmez.
-    /// Facepunch Steamworks entegrasyonunu bozmadan çalışır.
+    /// Manages Steam overlay and Alt-Tab optimizations.
+    /// Maintains minimum FPS for network stability.
+    /// Does not disrupt Facepunch Steamworks integration.
     /// </summary>
     public class ApplicationOptimizationManager : MonoBehaviour
     {
@@ -222,9 +222,10 @@ namespace NewCss
             {
                 Steamworks.SteamFriends.OnGameOverlayActivated -= HandleSteamOverlayActivated;
             }
-            catch
+            catch (System.Exception)
             {
-                // Ignore - Steam may not be initialized
+                // Steam may not be initialized on shutdown - this is expected behavior
+                LogDebug("Steam unsubscribe skipped - Steam not initialized");
             }
         }
 

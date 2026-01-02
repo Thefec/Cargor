@@ -4,8 +4,8 @@ using UnityEngine;
 namespace NewCss
 {
     /// <summary>
-    /// Zaman bazlı müşteri yoğunluğu ayarları.
-    /// Inspector'dan düzenlenebilir.
+    /// Time-based customer density settings.
+    /// Editable via Inspector.
     /// </summary>
     [CreateAssetMenu(fileName = "WaveSettings", menuName = "NewCss/Wave Settings")]
     public class WaveSettings : ScriptableObject

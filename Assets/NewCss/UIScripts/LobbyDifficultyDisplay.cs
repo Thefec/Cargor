@@ -6,8 +6,8 @@ using Steamworks.Data;
 namespace NewCss
 {
     /// <summary>
-    /// Lobi ekranında zorluk göstergesini yönetir.
-    /// Oyuncu sayısına göre zorluk seviyesini gösterir.
+    /// Displays difficulty level on the lobby screen.
+    /// Shows difficulty based on player count.
     /// </summary>
     public class LobbyDifficultyDisplay : MonoBehaviour
     {
@@ -24,7 +24,7 @@ namespace NewCss
         private TextMeshProUGUI difficultyText;
 
         [Header("=== UPDATE SETTINGS ===")]
-        [SerializeField, Tooltip("Güncelleme aralığı (saniye)")]
+        [SerializeField, Tooltip("Update interval (seconds)")]
         private float updateInterval = 1f;
 
         [Header("=== LOCALIZATION ===")]
@@ -115,9 +115,10 @@ namespace NewCss
                     }
                     if (count > 0) return count;
                 }
-                catch
+                catch (System.Exception ex)
                 {
-                    // Ignore errors
+                    // Steam lobby not accessible - this is expected in some scenarios
+                    Debug.LogWarning($"{LOG_PREFIX} Could not access Steam lobby: {ex.Message}");
                 }
             }
 
@@ -174,7 +175,7 @@ namespace NewCss
         #region Public API
 
         /// <summary>
-        /// Zorluk göstergesini hemen günceller
+        /// Forces immediate display update
         /// </summary>
         public void ForceUpdate()
         {
@@ -183,7 +184,7 @@ namespace NewCss
         }
 
         /// <summary>
-        /// Text referansını ayarlar
+        /// Sets the text reference for the display
         /// </summary>
         public void SetTextReference(TextMeshProUGUI text)
         {

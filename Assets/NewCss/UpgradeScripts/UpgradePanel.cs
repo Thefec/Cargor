@@ -700,7 +700,21 @@ namespace NewCss
 
         private float GetCostMultiplier()
         {
-            return eventEffectManager != null ? eventEffectManager.GetUpgradeCostMultiplier() : 1f;
+            float multiplier = 1f;
+
+            // Apply event effect multiplier
+            if (eventEffectManager != null)
+            {
+                multiplier *= eventEffectManager.GetUpgradeCostMultiplier();
+            }
+
+            // Apply difficulty-based cost multiplier
+            if (DifficultyManager.Instance != null)
+            {
+                multiplier *= DifficultyManager.Instance.UpgradeCostMultiplier;
+            }
+
+            return multiplier;
         }
 
         #endregion
