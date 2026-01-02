@@ -82,6 +82,8 @@ namespace NewCss
 
         private readonly Dictionary<int, Truck> _activeTrucks = new();
         private readonly Dictionary<int, Coroutine> _hangarRespawnCoroutines = new();
+        private readonly Queue<BoxInfo.BoxType> _plannedTruckColors = new();
+        private const int TRUCK_COLOR_QUEUE_SIZE = 5;
 
         #endregion
 
@@ -101,6 +103,16 @@ namespace NewCss
         /// Çalışma saatleri içinde mi? 
         /// </summary>
         public bool IsWithinWorkingHours => CheckWorkingHours();
+
+        /// <summary>
+        /// Planlanan kamyon renkleri kuyruğu (deterministic loot için)
+        /// </summary>
+        public IReadOnlyCollection<BoxInfo.BoxType> PlannedTruckColors => _plannedTruckColors;
+
+        /// <summary>
+        /// Sıradaki kamyon rengi (deterministic loot için)
+        /// </summary>
+        public BoxInfo.BoxType? NextTruckColor => _plannedTruckColors.Count > 0 ? _plannedTruckColors.Peek() : null;
 
         #endregion
 
@@ -169,6 +181,7 @@ namespace NewCss
         private void InitializeHangars()
         {
             UpdateActiveHangars(0);
+            RefillPlannedTruckColors();
             SpawnTrucksForActiveHangars();
         }
 
@@ -485,9 +498,35 @@ namespace NewCss
 
         private (BoxInfo.BoxType boxType, int cargoAmount) GenerateRandomTruckData()
         {
-            BoxInfo.BoxType boxType = (BoxInfo.BoxType)Random.Range(0, BOX_TYPE_COUNT);
+            BoxInfo.BoxType boxType;
+
+            // Use planned color from queue if available
+            if (_plannedTruckColors.Count > 0)
+            {
+                boxType = _plannedTruckColors.Dequeue();
+            }
+            else
+            {
+                boxType = (BoxInfo.BoxType)Random.Range(0, BOX_TYPE_COUNT);
+            }
+
+            // Refill the queue if needed
+            RefillPlannedTruckColors();
+
             int cargoAmount = Random.Range(MIN_CARGO_AMOUNT, MAX_CARGO_AMOUNT);
             return (boxType, cargoAmount);
+        }
+
+        /// <summary>
+        /// Planlanan kamyon renklerini yeniden doldurur
+        /// </summary>
+        private void RefillPlannedTruckColors()
+        {
+            while (_plannedTruckColors.Count < TRUCK_COLOR_QUEUE_SIZE)
+            {
+                BoxInfo.BoxType newColor = (BoxInfo.BoxType)Random.Range(0, BOX_TYPE_COUNT);
+                _plannedTruckColors.Enqueue(newColor);
+            }
         }
 
         private IEnumerator InitializeTruckAfterSpawnCoroutine(Truck truck, BoxInfo.BoxType reqType, int reqAmount)

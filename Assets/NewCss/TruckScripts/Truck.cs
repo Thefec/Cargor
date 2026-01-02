@@ -80,6 +80,17 @@ namespace NewCss
 
         #endregion
 
+        #region Serialized Fields - Timer
+
+        [Header("=== HANGAR TIMER SETTINGS ===")]
+        [SerializeField, Tooltip("Truck hangar stay duration (seconds)")]
+        public float hangarStayDuration = 120f;
+
+        [SerializeField, Tooltip("Timer UI text")]
+        public TextMeshProUGUI timerText;
+
+        #endregion
+
         #region Serialized Fields - Rewards
 
         [Header("=== MONEY REWARDS/PENALTIES ===")]
@@ -119,12 +130,15 @@ namespace NewCss
         private readonly NetworkVariable<bool> _isEntering = new(true);
         private readonly NetworkVariable<bool> _isPlayingExitAnimation = new(false);
         private readonly NetworkVariable<bool> _isPlayingEnterAnimation = new(false);
+        private readonly NetworkVariable<float> _networkRemainingTime = new(120f);
 
         #endregion
 
         #region Private Fields
 
         private bool _hasPreInitialized;
+        private bool _timerStarted;
+        private Coroutine _timerCoroutine;
 
         [HideInInspector]
         public int hangarIndex;
@@ -157,6 +171,16 @@ namespace NewCss
         /// Mevcut prestige bonusu
         /// </summary>
         public int CurrentPrestigeBonus => CalculatePrestigeBonus();
+
+        /// <summary>
+        /// Kalan süre (saniye)
+        /// </summary>
+        public float RemainingTime => _networkRemainingTime.Value;
+
+        /// <summary>
+        /// Kamyon dolu mu?
+        /// </summary>
+        public bool IsFull => _deliveredCount.Value >= _networkRequiredCargo.Value;
 
         #endregion
 
@@ -220,6 +244,7 @@ namespace NewCss
             _isEntering.OnValueChanged += HandleIsEnteringChanged;
             _isPlayingExitAnimation.OnValueChanged += HandleExitAnimationChanged;
             _isPlayingEnterAnimation.OnValueChanged += HandleEnterAnimationChanged;
+            _networkRemainingTime.OnValueChanged += HandleRemainingTimeChanged;
         }
 
         private void UnsubscribeFromNetworkEvents()
@@ -231,6 +256,7 @@ namespace NewCss
             _isEntering.OnValueChanged -= HandleIsEnteringChanged;
             _isPlayingExitAnimation.OnValueChanged -= HandleExitAnimationChanged;
             _isPlayingEnterAnimation.OnValueChanged -= HandleEnterAnimationChanged;
+            _networkRemainingTime.OnValueChanged -= HandleRemainingTimeChanged;
         }
 
         #endregion
@@ -265,7 +291,11 @@ namespace NewCss
 
         private void HandleIsEnteringChanged(bool previousValue, bool newValue)
         {
-            // Reserved for future use
+            // When entering finishes, start the hangar timer
+            if (previousValue && !newValue && IsServer && !_timerStarted)
+            {
+                StartHangarTimer();
+            }
         }
 
         private void HandleEnterAnimationChanged(bool previousValue, bool newValue)
@@ -292,6 +322,82 @@ namespace NewCss
             {
                 StartCoroutine(WaitForExitAnimationCoroutine());
             }
+        }
+
+        private void HandleRemainingTimeChanged(float previousValue, float newValue)
+        {
+            UpdateTimerUI();
+        }
+
+        #endregion
+
+        #region Hangar Timer
+
+        /// <summary>
+        /// Hangar zamanlayıcısını başlatır
+        /// </summary>
+        private void StartHangarTimer()
+        {
+            if (_timerStarted || _isComplete.Value) return;
+
+            _timerStarted = true;
+            _networkRemainingTime.Value = hangarStayDuration;
+
+            if (_timerCoroutine != null)
+            {
+                StopCoroutine(_timerCoroutine);
+            }
+
+            _timerCoroutine = StartCoroutine(HangarTimerCoroutine());
+            LogDebug($"Hangar timer started: {hangarStayDuration} seconds");
+        }
+
+        private IEnumerator HangarTimerCoroutine()
+        {
+            while (_networkRemainingTime.Value > 0 && !_isComplete.Value)
+            {
+                yield return new WaitForSeconds(1f);
+
+                if (!IsServer) yield break;
+
+                _networkRemainingTime.Value = Mathf.Max(0f, _networkRemainingTime.Value - 1f);
+
+                // Cache IsFull to avoid multiple network reads
+                bool timerExpired = _networkRemainingTime.Value <= 0;
+                bool truckFull = IsFull;
+
+                // Check departure condition: timer expired OR truck is full
+                if (timerExpired || truckFull)
+                {
+                    if (!_isComplete.Value)
+                    {
+                        LogDebug($"Truck departing - Timer: {timerExpired}, Full: {truckFull}");
+                        TriggerDeparture();
+                    }
+                    yield break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Kamyonun kalkışını tetikler (timer veya doluluk nedeniyle)
+        /// </summary>
+        private void TriggerDeparture()
+        {
+            if (!IsServer || _isComplete.Value) return;
+
+            _isComplete.Value = true;
+            // ExitSequenceCoroutine will be triggered by HandleIsCompleteChanged
+        }
+
+        private void UpdateTimerUI()
+        {
+            if (timerText == null) return;
+
+            int minutes = Mathf.FloorToInt(_networkRemainingTime.Value / 60f);
+            int seconds = Mathf.FloorToInt(_networkRemainingTime.Value % 60f);
+
+            timerText.text = $"{minutes:D2}:{seconds:D2}";
         }
 
         #endregion
@@ -634,6 +740,7 @@ namespace NewCss
             {
                 truckText.text = $"{requestedBoxType}: {_deliveredCount.Value}/{requiredCargo}";
             }
+            UpdateTimerUI();
         }
 
         #endregion
