@@ -2,6 +2,7 @@ using UnityEngine;
 using TMPro;
 using Unity.Netcode;
 using Steamworks.Data;
+using Color = UnityEngine.Color;
 
 namespace NewCss
 {
@@ -158,17 +159,17 @@ namespace NewCss
             return localizedName;
         }
 
-        private Color GetDifficultyColor(int playerCount)
-        {
-            return playerCount switch
-            {
-                1 => Color.green,
-                2 => Color.yellow,
-                3 => new Color(1f, 0.5f, 0f), // Orange
-                4 => Color.red,
-                _ => Color.white
-            };
-        }
+        private UnityEngine.Color GetDifficultyColor(int playerCount)
+{
+    return playerCount switch
+    {
+        1 => UnityEngine.Color.green,
+        2 => UnityEngine.Color.yellow,
+        3 => new UnityEngine.Color(1f, 0.5f, 0f), // Orange
+        4 => UnityEngine.Color.red,
+        _ => UnityEngine.Color.white
+    };
+}
 
         #endregion
 

@@ -14162,7 +14162,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  detectionRange: 1.5
+  detectionRange: 1.6
   updateInterval: 0.025
   itemLayerMask:
     serializedVersion: 2
@@ -14171,7 +14171,7 @@ MonoBehaviour:
   detectionOffset: {x: 0, y: 1, z: 0}
   useCustomDetectionCenter: 1
   useConeDetection: 1
-  coneAngle: 50
+  coneAngle: 60
   ignoreVerticalAngle: 1
   useItemPriority: 1
   priorityLayers:

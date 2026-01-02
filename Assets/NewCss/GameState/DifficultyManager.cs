@@ -33,7 +33,7 @@ namespace NewCss
         private int baseCustomerCount = 10;
 
         [SerializeField, Tooltip("Starting money for single player")]
-        private int baseStartingMoney = 100000;
+        private int baseStartingMoney = 100;
 
         [SerializeField, Tooltip("Phone call chance for single player")]
         [Range(0f, 1f)]
