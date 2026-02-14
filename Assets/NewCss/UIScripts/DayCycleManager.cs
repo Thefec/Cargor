@@ -450,6 +450,9 @@ namespace NewCss
                 return;
             }
 
+            // Kota kontrolü
+            QuotaManager.Instance?.CheckEndOfDayQuota();
+
             // Para kontrolü yap
             if (!_moneyCheckCompleted)
             {
