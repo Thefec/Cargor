@@ -1240,9 +1240,18 @@ namespace NewCss
         {
             SetState(CustomerState.WaitingForPickup);
 
+            // NavMeshAgent'ı durdur — müşteri yerinde kalmalı
+            if (_navAgent != null)
+            {
+                _navAgent.ResetPath();
+                _navAgent.isStopped = true;
+            }
+
             yield return null;
 
-            while (_placedProduct != null && !_hasTimedOut)
+            // _hasTimedOut kontrolü kaldırıldı: CheckWaitTimeExpired zaten WaitingForPickup state'ini atlıyor.
+            // Müşteri, ürün alınana kadar süresiz bekleyecek.
+            while (_placedProduct != null)
             {
                 // Ürün hala var mı?
                 if (_placedProduct == null)
@@ -1370,6 +1379,12 @@ namespace NewCss
         {
             StopAllCoroutines();
             SetState(CustomerState.Exiting);
+
+            // NavMeshAgent'ı aktifleştir (WaitingForPickup'ta durdurulmuş olabilir)
+            if (_navAgent != null)
+            {
+                _navAgent.isStopped = false;
+            }
 
             if (manager != null)
             {

@@ -15,7 +15,7 @@ namespace NewCss
 
         private const string LOG_PREFIX = "[Table]";
         private const float ITEM_SPAWN_DELAY = 0.1f;
-        private const float BOXED_PRODUCT_SPAWN_DELAY = 0.3f;
+
         private const float ITEM_HEIGHT_OFFSET = 0.5f;
         private const float SPAWN_HEIGHT_OFFSET = 1f;
         private const float PLACE_POINT_GIZMO_SIZE = 0.3f;
@@ -507,8 +507,8 @@ namespace NewCss
             }
             else
             {
-                LogDebug($"🎮 Attempting boxing for player {requesterClientId}");
-                TryBoxingInteraction(player, requesterClientId);
+                LogDebug($"📦 Attempting instant boxing for player {requesterClientId}");
+                PerformInstantBoxing(player, requesterClientId);
             }
         }
 
@@ -575,6 +575,9 @@ namespace NewCss
             netObj.Spawn();
             ConfigureWorldItem(worldItem, itemData);
             SetTableState(false, netObj.NetworkObjectId, false);
+
+            // Trigger placement animation on all clients
+            PlayPlacementAnimationClientRpc(netObj.NetworkObjectId);
 
             LogDebug($"✅ Item {itemData.itemName} placed successfully");
         }
@@ -658,9 +661,13 @@ namespace NewCss
 
         #endregion
 
-        #region Boxing Interaction
+        #region Instant Boxing
 
-        private void TryBoxingInteraction(PlayerInventory player, ulong requesterClientId)
+        /// <summary>
+        /// Anında paketleme - minigame olmadan kutuyu hemen paketler.
+        /// Server authoritative: Tüm doğrulama ve state değişikliği sunucuda yapılır.
+        /// </summary>
+        private void PerformInstantBoxing(PlayerInventory player, ulong requesterClientId)
         {
             var state = _tableState.Value;
 
@@ -678,18 +685,24 @@ namespace NewCss
                 return;
             }
 
-            // Find minigame manager
-            var minigame = GetComponentInChildren<BoxingMinigameManager>();
-            if (minigame == null)
-            {
-                LogError("BoxingMinigameManager not found!");
-                return;
-            }
+            // ✅ Anında paketleme - minigame YOK
+            LogDebug($"📦 Instant boxing: {playerBox.boxType} for client {requesterClientId}");
 
-            // Start minigame - use requesterClientId (correct client ID)
-            ItemData playerItemData = player.CurrentItemData;
-            LogDebug($"🎮 Starting minigame for client {requesterClientId}");
-            StartMinigameClientRpc(requesterClientId, player.NetworkObjectId, (int)playerBox.boxType, playerItemData.itemID);
+            // Clear player inventory (kutu kullanıldı)
+            player.SetInventoryStateServerRpc(false, -1);
+            player.TriggerDropAnimationServerRpc();
+
+            // Masadaki ürünü kaldır
+            DespawnCurrentTableItem();
+
+            // Paketlenmiş ürünü spawn et (gecikme yok)
+            StartCoroutine(SpawnBoxedProductCoroutine(playerBox.boxType));
+
+            // Quest sistemine bildir
+            Quest.QuestTracker.NotifyToyPacked(playerBox.boxType);
+
+            // Tüm clientlara bildir
+            NotifyBoxPackedClientRpc(requesterClientId, (int)playerBox.boxType);
         }
 
         private bool ValidateBoxingRequest(PlayerInventory player, TableState state, out BoxInfo playerBox, out ProductInfo tableProduct)
@@ -697,10 +710,10 @@ namespace NewCss
             playerBox = null;
             tableProduct = null;
 
-            // Already boxed check
+            // Spam-click koruması: Zaten paketlenmiş bir ürünü tekrar paketlemeyi engelle
             if (state.isItemBoxed)
             {
-                LogDebug("⚠️ Item is already boxed");
+                LogDebug("⚠️ Item is already boxed - ignoring duplicate request");
                 return false;
             }
 
@@ -748,77 +761,9 @@ namespace NewCss
 
         #region Client RPCs
 
-        [ClientRpc]
-        private void StartMinigameClientRpc(ulong targetClientId, ulong playerNetworkObjectId, int boxTypeInt, int itemDataID)
-        {
-            LogDebug($"📥 CLIENT {NetworkManager.Singleton.LocalClientId}: Received StartMinigameClientRpc - Target: {targetClientId}");
-
-            // Only target client processes
-            if (NetworkManager.Singleton.LocalClientId != targetClientId)
-            {
-                LogDebug("⏩ Skipping minigame start - not target client");
-                return;
-            }
-
-            LogDebug($"🎮 CLIENT {targetClientId}: I AM the target!  Starting minigame...");
-
-            if (!ValidateMinigameStart(targetClientId, playerNetworkObjectId, itemDataID,
-                out PlayerInventory player, out ItemData itemData))
-            {
-                return;
-            }
-
-            BoxInfo.BoxType boxType = (BoxInfo.BoxType)boxTypeInt;
-
-            var minigame = GetComponentInChildren<BoxingMinigameManager>();
-            if (minigame == null)
-            {
-                LogError($"CLIENT {targetClientId}: BoxingMinigameManager not found!");
-                return;
-            }
-
-            LogDebug($"✅ CLIENT {targetClientId}: All checks passed - Starting minigame for {boxType} box");
-            minigame.StartMinigame(player, boxType, itemData);
-        }
-
-        private bool ValidateMinigameStart(ulong targetClientId, ulong playerNetworkObjectId, int itemDataID,
-            out PlayerInventory player, out ItemData itemData)
-        {
-            player = null;
-            itemData = null;
-
-            // Find player
-            if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(playerNetworkObjectId, out NetworkObject playerObj))
-            {
-                LogError($"CLIENT {targetClientId}: Player NetworkObject {playerNetworkObjectId} not found!");
-                return false;
-            }
-
-            player = playerObj.GetComponent<PlayerInventory>();
-            if (player == null)
-            {
-                LogError($"CLIENT {targetClientId}: PlayerInventory not found!");
-                return false;
-            }
-
-            // Ownership check
-            if (!player.IsOwner)
-            {
-                LogError($"CLIENT {targetClientId}: Player is NOT owned by this client!");
-                return false;
-            }
-
-            // Find ItemData
-            itemData = GetItemDataFromID(itemDataID);
-            if (itemData == null)
-            {
-                LogError($"CLIENT {targetClientId}: ItemData with ID {itemDataID} not found!");
-                return false;
-            }
-
-            return true;
-        }
-
+        /// <summary>
+        /// Kutu-ürün eşleşmesi başarısız olduğunda hedef client'a bildirir.
+        /// </summary>
         [ClientRpc]
         private void NotifyBoxingFailedClientRpc(ulong targetClientId)
         {
@@ -828,47 +773,39 @@ namespace NewCss
             }
         }
 
+        /// <summary>
+        /// Tüm client'lara kutunun paketlendiğini bildirir.
+        /// </summary>
+        [ClientRpc]
+        private void NotifyBoxPackedClientRpc(ulong packerClientId, int boxTypeInt)
+        {
+            LogDebug($"📦 Box packed by client {packerClientId} - Type: {(BoxInfo.BoxType)boxTypeInt}");
+        }
+
+        /// <summary>
+        /// Tüm client'larda yerleştirme animasyonunu tetikler.
+        /// Race condition koruması: obje henüz client'ta spawn olmamışsa animasyon sessizce atlanır.
+        /// </summary>
+        [ClientRpc]
+        private void PlayPlacementAnimationClientRpc(ulong networkObjectId)
+        {
+            if (NetworkManager.Singleton?.SpawnManager == null) return;
+
+            if (!NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(
+                    networkObjectId, out NetworkObject netObj))
+            {
+                LogDebug($"⚠️ PlayPlacementAnimation: NetworkObject {networkObjectId} not found on this client (race condition - safe to ignore)");
+                return;
+            }
+
+            if (netObj == null || netObj.gameObject == null) return;
+
+            ItemPlacementAnimator.PlayOn(this, netObj.gameObject);
+        }
+
         #endregion
 
-        #region Minigame Callbacks
-
-        /// <summary>
-        /// Boxing başarılı olduğunda çağrılır
-        /// </summary>
-        public void CompleteBoxingSuccess(PlayerInventory player, BoxInfo.BoxType boxType)
-        {
-            if (!IsServer) return;
-
-            LogDebug($"✅ Boxing SUCCESS for {boxType} by client {player.OwnerClientId}");
-
-            // Clear player inventory
-            player.SetInventoryStateServerRpc(false, -1);
-            player.TriggerDropAnimationServerRpc();
-
-            // Despawn original product
-            DespawnCurrentTableItem();
-
-            // Spawn boxed product
-            StartCoroutine(SpawnBoxedProductCoroutine(boxType));
-
-            // Notify quest system
-            Quest.QuestTracker.NotifyToyPacked(boxType);
-        }
-
-        /// <summary>
-        /// Boxing başarısız olduğunda çağrılır
-        /// </summary>
-        public void CompleteBoxingFailure(PlayerInventory player)
-        {
-            if (!IsServer) return;
-
-            LogDebug($"❌ Boxing FAILED for client {player.OwnerClientId}");
-
-            player.SetInventoryStateServerRpc(false, -1);
-            player.TriggerDropAnimationServerRpc();
-
-            NotifyBoxingFailedClientRpc(player.OwnerClientId);
-        }
+        #region Boxing Helpers
 
         private void DespawnCurrentTableItem()
         {
@@ -882,7 +819,8 @@ namespace NewCss
 
         private IEnumerator SpawnBoxedProductCoroutine(BoxInfo.BoxType boxType)
         {
-            yield return new WaitForSeconds(BOXED_PRODUCT_SPAWN_DELAY);
+            // Bir frame bekle - DespawnCurrentTableItem'in tamamlanmasını garanti et
+            yield return null;
 
             ItemData boxedProductData = GetBoxedProductData(boxType);
             if (boxedProductData == null)
@@ -904,6 +842,9 @@ namespace NewCss
             netObj.Spawn();
             ConfigureWorldItem(boxedItem, boxedProductData);
             SetTableState(false, netObj.NetworkObjectId, true);
+
+            // Trigger placement animation on all clients
+            PlayPlacementAnimationClientRpc(netObj.NetworkObjectId);
 
             LogDebug($"✅ Boxed product spawned: {boxedProductData.itemName}");
         }

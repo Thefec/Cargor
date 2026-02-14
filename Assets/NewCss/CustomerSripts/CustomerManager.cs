@@ -24,6 +24,24 @@ namespace NewCss
 
         #endregion
 
+        #region Singleton
+
+        public static CustomerManager Instance { get; private set; }
+
+        private void Awake()
+        {
+            if (Instance == null)
+            {
+                Instance = this;
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
+        }
+
+        #endregion
+
         #region Serialized Fields - Spawn Settings
 
         [Header("=== SPAWN SETTINGS ===")]
@@ -38,17 +56,58 @@ namespace NewCss
 
         #endregion
 
-        #region Serialized Fields - Daily Customer Settings
+        #region Serialized Fields - Capacity-Based Spawn Settings
 
-        [Header("=== DAILY CUSTOMER SETTINGS ===")]
-        [SerializeField, Tooltip("�lk g�n m��teri say�s�")]
-        public int baseCustomersPerDay = 10;
+        [Header("=== CAPACITY-BASED SPAWN SETTINGS ===")]
+        [SerializeField, Tooltip("Her aktif raf/masa başına müşteri katkısı")]
+        private float _shelfMultiplier = 2f;
 
-        [SerializeField, Tooltip("G�nl�k m��teri art���")]
-        public int customerIncreasePerDay = 2;
+        [SerializeField, Tooltip("Mağaza seviyesi başına müşteri katkısı")]
+        private float _levelMultiplier = 2f;
 
-        [SerializeField, Range(0f, 1f), Tooltip("Spawn zaman� rastgeleli�i")]
+        [SerializeField, Tooltip("Mağaza seviyesi (ileride XP sistemine bağlanacak)")]
+        private int _storeLevel = 1;
+
+        [SerializeField, Tooltip("Rastgele sapma alt sınırı")]
+        private int _minVariance = -2;
+
+        [SerializeField, Tooltip("Rastgele sapma üst sınırı")]
+        private int _maxVariance = 3;
+
+        [SerializeField, Tooltip("Günlük minimum müşteri sayısı")]
+        private int _minCustomersPerDay = 1;
+
+        [SerializeField, Tooltip("Günlük maksimum müşteri sayısı (Soft Cap - performans koruması)")]
+        private int _maxCustomersPerDay = 50;
+
+        [SerializeField, Range(0f, 1f), Tooltip("Spawn zamanı rastgeleliği")]
         public float spawnTimeRandomness = 0.2f;
+
+        #endregion
+
+        #region Runtime Multipliers (set by other systems)
+
+        /// <summary>
+        /// Event sistemi tarafından set edilen müşteri çarpanı (örn: INTENSIVE DAY = 1.5)
+        /// </summary>
+        [HideInInspector]
+        public float eventCustomerMultiplier = 1f;
+
+        /// <summary>
+        /// DifficultyManager tarafından set edilen oyuncu sayısı çarpanı
+        /// </summary>
+        [HideInInspector]
+        public float playerCountMultiplier = 1f;
+
+        #endregion
+
+        #region Backward Compatibility (Legacy - kullanılmıyor, EventEffectManager uyumu için)
+
+        // Eski lineer sistem field'leri - artık formülde kullanılmıyor.
+        // EventEffectManager ve DifficultyManager bu field'lere doğrudan yazmak yerine
+        // eventCustomerMultiplier ve playerCountMultiplier kullanmalı.
+        [HideInInspector] public int baseCustomersPerDay = 10;
+        [HideInInspector] public int customerIncreasePerDay = 2;
 
         #endregion
 
@@ -295,9 +354,59 @@ namespace NewCss
             LogDebug($"Spawn times calculated between {spawnStartHour:F1} and {spawnEndHour:F1}");
         }
 
+        /// <summary>
+        /// Kapasite ve itibar bazlı müşteri sayısı hesaplama.
+        /// Formül: (ActiveInteractables × shelfMult + StoreLevel × levelMult + Random) × eventMult × playerMult
+        /// Tüm katsayılar Inspector'dan ayarlanabilir. Server-only çalışır.
+        /// </summary>
         private int CalculateTodaysCustomerCount(int currentDay)
         {
-            return baseCustomersPerDay + ((currentDay - 1) * customerIncreasePerDay);
+            // Eski lineer formül (devre dışı):
+            // return baseCustomersPerDay + ((currentDay - 1) * customerIncreasePerDay);
+
+            // 1. Sahnedeki aktif etkileşim noktalarını say
+            int activeInteractables = CountActiveInteractables();
+
+            // 2. Temel kapasite hesabı
+            float capacityBase = (activeInteractables * _shelfMultiplier) + (_storeLevel * _levelMultiplier);
+
+            // 3. Rastgele sapma ekle (her gün farklı hissetsin)
+            float randomVariance = Random.Range(_minVariance, _maxVariance + 1);
+
+            // 4. Ham sonuç
+            float rawCount = capacityBase + randomVariance;
+
+            // 5. Event ve oyuncu sayısı çarpanlarını uygula
+            float multipliedCount = rawCount * eventCustomerMultiplier * playerCountMultiplier;
+
+            // 6. Clamp: asla 0/negatif olmasın, soft cap'i aşmasın
+            int finalCount = Mathf.Clamp(Mathf.RoundToInt(multipliedCount), _minCustomersPerDay, _maxCustomersPerDay);
+
+            LogDebug($"Capacity calc: interactables={activeInteractables}, level={_storeLevel}, " +
+                     $"capacityBase={capacityBase:F1}, random={randomVariance}, " +
+                     $"eventMult={eventCustomerMultiplier:F2}, playerMult={playerCountMultiplier:F2}, " +
+                     $"raw={multipliedCount:F1}, final={finalCount}");
+
+            return finalCount;
+        }
+
+        /// <summary>
+        /// Sahnedeki tüm aktif etkileşim noktalarını (raf + masa) sayar.
+        /// Server-only: Sadece gün başında bir kez çağrılır (performans güvenli).
+        /// </summary>
+        private int CountActiveInteractables()
+        {
+            int count = 0;
+
+            // ShelfState: Oyuncunun item koyabileceği raflar
+            var shelves = FindObjectsOfType<ShelfState>();
+            count += shelves.Length;
+
+            // DisplayTable: Müşteri servis masaları
+            var tables = FindObjectsOfType<DisplayTable>();
+            count += tables.Length;
+
+            return count;
         }
 
         private void CalculateSpawnSchedule()
@@ -492,6 +601,43 @@ namespace NewCss
         #endregion
 
         #region Customer Spawning
+
+        /// <summary>
+        /// Kalan müşteri var mı? (Kota kontrolü için)
+        /// </summary>
+        public bool HasRemainingCustomers => _customersRemainingToday > 0;
+
+        /// <summary>
+        /// Bir sonraki planlanmış müşteriyi anında spawnlamaya zorlar.
+        /// Eğer spawn zamanı henüz gelmemişse bile spawnlar.
+        /// </summary>
+        /// <returns>Spawn başarılı ise true, değilse false</returns>
+        public bool ForceSpawnNextCustomer()
+        {
+            if (!IsServer) return false;
+            if (!IsWithinSpawningHours()) 
+            {
+                LogDebug("ForceSpawnNextCustomer: Outside spawning hours.");
+                return false;
+            }
+            if (_nextScheduledIndex >= _scheduledSpawnTimes.Count) 
+            {
+                LogDebug("ForceSpawnNextCustomer: No more scheduled customers.");
+                return false;
+            }
+
+            // Kuyruk dolu mu?
+            if (IsQueueFull)
+            {
+                 LogDebug("ForceSpawnNextCustomer: Queue full, skipping spawn.");
+                 return false;
+            }
+
+            // Mevcut zamanı göndererek spawnla
+            TryExecuteSpawn(GetCurrentTime());
+            LogDebug("ForceSpawnNextCustomer: Executed forced spawn.");
+            return true;
+        }
 
         private void SpawnCustomer(int queueIndex)
         {

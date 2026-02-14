@@ -382,36 +382,7 @@ namespace NewCss
 
         #region Spawn Logic
 
-        /// <summary>
-        /// Smooth spawn animation for boxes - scales from 0 to 1 over 0.3 seconds
-        /// </summary>
-        private IEnumerator SmoothSpawnBox(GameObject spawnedBox)
-        {
-            if (spawnedBox == null) yield break;
 
-            Vector3 originalScale = spawnedBox.transform.localScale;
-            spawnedBox.transform.localScale = Vector3.zero;
-
-            float elapsed = 0f;
-            float duration = 0.3f;
-
-            while (elapsed < duration)
-            {
-                if (spawnedBox == null) yield break;
-
-                elapsed += Time.deltaTime;
-                float t = elapsed / duration;
-                // Use smooth step for better visual effect
-                float smoothT = t * t * (3f - 2f * t);
-                spawnedBox.transform.localScale = Vector3.Lerp(Vector3.zero, originalScale, smoothT);
-                yield return null;
-            }
-
-            if (spawnedBox != null)
-            {
-                spawnedBox.transform.localScale = originalScale;
-            }
-        }
 
         private void SpawnBoxIfNeeded(BoxType boxType)
         {
@@ -458,8 +429,8 @@ namespace NewCss
                 // Update state
                 SetBoxState(boxType, networkObject);
 
-                // Start smooth spawn animation
-                StartCoroutine(SmoothSpawnBox(spawnedBox));
+                // Start smooth spawn animation via centralized helper
+                ItemPlacementAnimator.PlayOn(this, spawnedBox);
 
                 LogDebug($"Spawned {boxType} box at {slot.name} with NetworkObjectId: {networkObject.NetworkObjectId}");
 

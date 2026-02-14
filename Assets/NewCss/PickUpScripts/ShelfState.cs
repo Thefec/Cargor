@@ -462,6 +462,30 @@ namespace NewCss
 
         #endregion
 
+        #region Client RPCs
+
+        /// <summary>
+        /// Tüm client'larda yerleştirme animasyonunu tetikler (büyükten küçüğe scale animasyonu).
+        /// </summary>
+        [ClientRpc]
+        private void PlayPlacementAnimationClientRpc(ulong networkObjectId)
+        {
+            if (NetworkManager.Singleton?.SpawnManager == null) return;
+
+            if (!NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(
+                    networkObjectId, out NetworkObject netObj))
+            {
+                Debug.Log($"{LOG_PREFIX} ⚠️ PlayPlacementAnimation: NetworkObject {networkObjectId} not found on this client (race condition - safe to ignore)");
+                return;
+            }
+
+            if (netObj == null || netObj.gameObject == null) return;
+
+            ItemPlacementAnimator.PlayOn(this, netObj.gameObject);
+        }
+
+        #endregion
+
         #region Server RPCs - Place Item
 
         /// <summary>
@@ -609,6 +633,9 @@ namespace NewCss
                 DisableItemPhysics(item);
 
                 Debug.Log($"{LOG_PREFIX} ✅ Item placed on shelf by client {clientId} at slot {slotIndex}");
+
+                // Yerleştirme animasyonunu tüm clientlarda tetikle
+                PlayPlacementAnimationClientRpc(networkObj.NetworkObjectId);
 
                 // Notify quest system if this is a box
                 var boxInfo = item.GetComponent<BoxInfo>();

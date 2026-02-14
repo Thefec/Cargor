@@ -155,6 +155,9 @@ namespace NewCss
 
             _placedItems.Add(itemInstance);
 
+            // Play placement animation
+            ItemPlacementAnimator.PlayOn(this, itemInstance);
+
             LogDebug($"Visual item placed at slot {slotIndex}: {visualPrefab.name}");
         }
 
@@ -218,6 +221,9 @@ namespace NewCss
             }
 
             _placedItems.Add(itemInstance);
+
+            // Play placement animation
+            ItemPlacementAnimator.PlayOn(this, itemInstance);
 
             LogDebug($"Item instance placed at slot {slotIndex}:  {itemInstance.name}");
         }

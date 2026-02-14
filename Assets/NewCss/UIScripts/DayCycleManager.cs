@@ -369,6 +369,26 @@ namespace NewCss
             _networkElapsedTime.Value += Time.deltaTime;
         }
 
+        /// <summary>
+        /// Zamanı belirli bir miktar (dakika cinsinden) ileri sarar
+        /// </summary>
+        public void SkipTime(float minutesToSkip)
+        {
+            if (!IsServer) return;
+
+            // Dakikayı saniyeye çevir
+            // realDurationInSeconds = tüm günün (startHour -> endHour) saniye karşılığı
+            float totalGameHours = endHour - startHour;
+            float secondsPerGameHour = realDurationInSeconds / totalGameHours;
+            float secondsPerGameMinute = secondsPerGameHour / 60f;
+            
+            float skipAmountInSeconds = minutesToSkip * secondsPerGameMinute;
+
+            _networkElapsedTime.Value += skipAmountInSeconds;
+            
+            Debug.Log($"{LOG_PREFIX} Time Skipped: {minutesToSkip} minutes ({skipAmountInSeconds:F2} seconds)");
+        }
+
         #endregion
 
         #region Periodic Player Checks

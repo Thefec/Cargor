@@ -44,9 +44,8 @@ namespace NewCss
         private float eventStartPlayerSprintSpeed;
         private float eventStartStaminaRegenRate;
 
-        // NEW: Store customer manager values
-        private int eventStartBaseCustomersPerDay;
-        private int eventStartCustomerIncreasePerDay;
+        // NEW: Store event customer multiplier for restore
+        private float eventStartEventCustomerMultiplier = 1f;
 
         private Dictionary<string, EventMultipliers> eventMultipliers = new Dictionary<string, EventMultipliers>();
 
@@ -318,21 +317,16 @@ namespace NewCss
 
         private void SaveCurrentValuesAndApplyMultipliers(EventMultipliers multipliers, string eventName)
         {
-            // Apply daily customer count changes (NEW)
+            // Apply daily customer count changes via multiplier system
             if (customerManager != null)
             {
-                // Store original values if not already stored
-                if (eventStartBaseCustomersPerDay == 0)
-                {
-                    eventStartBaseCustomersPerDay = customerManager.baseCustomersPerDay;
-                    eventStartCustomerIncreasePerDay = customerManager.customerIncreasePerDay;
-                }
+                // Store original multiplier for restore
+                eventStartEventCustomerMultiplier = customerManager.eventCustomerMultiplier;
 
-                // Apply multiplier to base customers
-                customerManager.baseCustomersPerDay = Mathf.RoundToInt(eventStartBaseCustomersPerDay * multipliers.dailyCustomerMultiplier);
-                customerManager.customerIncreasePerDay = Mathf.RoundToInt(eventStartCustomerIncreasePerDay * multipliers.dailyCustomerMultiplier);
+                // Apply event multiplier (capacity-based system will use this)
+                customerManager.eventCustomerMultiplier = multipliers.dailyCustomerMultiplier;
 
-                Debug.Log($"Event '{eventName}': Daily customers adjusted to {customerManager.baseCustomersPerDay} (multiplier: {multipliers.dailyCustomerMultiplier})");
+                Debug.Log($"Event '{eventName}': Customer multiplier set to {multipliers.dailyCustomerMultiplier}");
             }
 
             // Apply player movement changes
@@ -386,11 +380,10 @@ namespace NewCss
 
         private void RemoveAllEventEffects()
         {
-            // Restore customer manager values (NEW)
-            if (customerManager != null && eventStartBaseCustomersPerDay > 0)
+            // Restore customer multiplier
+            if (customerManager != null)
             {
-                customerManager.baseCustomersPerDay = eventStartBaseCustomersPerDay;
-                customerManager.customerIncreasePerDay = eventStartCustomerIncreasePerDay;
+                customerManager.eventCustomerMultiplier = eventStartEventCustomerMultiplier;
             }
 
             // Restore player movement

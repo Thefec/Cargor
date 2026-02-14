@@ -470,76 +470,8 @@ namespace NewCss
 
         #endregion
 
-        #region WASD Only Movement (Minigame)
 
-        /// <summary>
-        /// Minigame aktifken sadece WASD ile hareket (yön tuşları yok)
-        /// </summary>
-        private void HandleMovementWithWASDOnly()
-        {
-            if (_controller == null) return;
 
-            Vector2 input = GetWASDInput();
-            Vector3 direction = new Vector3(input.x, 0, input.y).normalized;
-
-            float targetSpeed = GetCurrentSpeed();
-
-            if (direction.magnitude >= MOVEMENT_THRESHOLD)
-            {
-                RotateTowardsDirection(direction);
-                _controller.Move(direction * targetSpeed * Time.deltaTime);
-            }
-
-            ApplyGravity();
-        }
-
-        private Vector2 GetWASDInput()
-        {
-            float h = 0f;
-            float v = 0f;
-
-            if (Input.GetKey(KeyCode.A)) h = -1f;
-            if (Input.GetKey(KeyCode.D)) h = 1f;
-            if (Input.GetKey(KeyCode.W)) v = 1f;
-            if (Input.GetKey(KeyCode.S)) v = -1f;
-
-            return new Vector2(h, v);
-        }
-
-        /// <summary>
-        /// Yön tuşları engellenmiş mi kontrol et
-        /// </summary>
-        private bool AreArrowKeysBlocked()
-        {
-            Table nearbyTable = FindNearbyTable();
-
-            if (nearbyTable == null) return false;
-
-            BoxingMinigameManager minigame = nearbyTable.GetComponentInChildren<BoxingMinigameManager>();
-
-            return minigame != null && minigame.IsMinigameActive;
-        }
-
-        /// <summary>
-        /// Yakındaki masayı bul
-        /// </summary>
-        private Table FindNearbyTable()
-        {
-            Collider[] colliders = Physics.OverlapSphere(transform.position, TABLE_DETECTION_RADIUS);
-
-            foreach (var collider in colliders)
-            {
-                Table table = collider.GetComponent<Table>();
-                if (table != null)
-                {
-                    return table;
-                }
-            }
-
-            return null;
-        }
-
-        #endregion
 
         #region Stamina Management
 

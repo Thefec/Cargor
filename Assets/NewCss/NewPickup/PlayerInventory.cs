@@ -866,11 +866,6 @@ public class PlayerInventory : NetworkBehaviour
         // Spam koruması
         if (Time.time - _lastInputTime < INPUT_SPAM_COOLDOWN) return;
 
-        if (IsMinigameActive())
-        {
-            Debug.Log("[PlayerInventory] Minigame active - inputs blocked!");
-            return;
-        }
 
         if (Input.GetKeyDown(KeyCode.E))
         {
@@ -1257,20 +1252,7 @@ public class PlayerInventory : NetworkBehaviour
         _isProcessingInteraction = false;
     }
 
-    private bool IsMinigameActive()
-    {
-        var nearbyTable = GetNearbyTable();
-        if (nearbyTable != null)
-        {
-            var minigame = nearbyTable.GetComponentInChildren<BoxingMinigameManager>();
-            if (minigame != null && minigame.IsMinigameActive)
-            {
-                return true;
-            }
-        }
 
-        return false;
-    }
 
     #endregion
 
