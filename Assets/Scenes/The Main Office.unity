@@ -17835,7 +17835,13 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   timeSkipAmount: 20
   holdDuration: 2
+  phoneStartHour: 8
+  phoneEndHour: 18
+  postCallCooldown: 30
+  maxCallsPerHour: 2
+  callReward: 10
   successCallSound: {fileID: 0}
+  failCallSound: {fileID: 0}
   phoneWaitBar: {fileID: 424799593}
   phoneCollider: {fileID: 424799585}
   playerTag: Character
@@ -40419,6 +40425,84 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 980240545}
   m_CullTransparentMesh: 1
+--- !u!1 &983457992
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 983457995}
+  - component: {fileID: 983457993}
+  - component: {fileID: 983457994}
+  m_Layer: 0
+  m_Name: QuotaManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &983457993
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 983457992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
+  GlobalObjectIdHash: 1849233449
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 0
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
+--- !u!114 &983457994
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 983457992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b506adc1ce114a34e8be989d713d34e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NewCss.QuotaManager
+  ShowTopMostFoldoutHeaderGroup: 1
+  _difficultyRatio: 0.8
+  _minimumQuota: 1
+  _quotaText: {fileID: 1171471758}
+  _completionAudioSource: {fileID: 0}
+  _completionClip: {fileID: 0}
+  _failureClip: {fileID: 0}
+  _showDebugLogs: 1
+--- !u!4 &983457995
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 983457992}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -33.86198, y: 9.69966, z: -0.97759}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &994515066
 GameObject:
   m_ObjectHideFlags: 0
@@ -75662,7 +75746,7 @@ MonoBehaviour:
   spawnEndHour: 17.2
   waveSettings: {fileID: 11400000, guid: 12b94cafe6773c4439477ed5a270ace2, type: 2}
   enableWaveSystem: 1
-  remainingCustomersText: {fileID: 1171471758}
+  remainingCustomersText: {fileID: 0}
   recentProductHistorySize: 3
   showDebugLogs: 1
 --- !u!114 &1958402831
@@ -166058,3 +166142,4 @@ SceneRoots:
   - {fileID: 914346801}
   - {fileID: 422637718}
   - {fileID: 1765099032}
+  - {fileID: 983457995}

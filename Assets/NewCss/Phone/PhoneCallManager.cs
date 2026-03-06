@@ -1,11 +1,11 @@
-using Unity.Netcode;
+﻿using Unity.Netcode;
 using UnityEngine;
 
 namespace NewCss
 {
     /// <summary>
-    /// Telefon Sistemi V2 - Oyuncu inisiyatifinde (E basılı tut) müşteri çağırma.
-    /// Kota kontrolü, mesai saati kısıtlaması, ödül sistemi ve anti-spam koruması içerir.
+    /// Telefon Sistemi V2 - Oyuncu inisiyatifinde (E basÄ±lÄ± tut) mÃ¼ÅŸteri Ã§aÄŸÄ±rma.
+    /// Kota kontrolÃ¼, mesai saati kÄ±sÄ±tlamasÄ±, Ã¶dÃ¼l sistemi ve anti-spam korumasÄ± iÃ§erir.
     /// </summary>
     public class PhoneCallManager : NetworkBehaviour
     {
@@ -109,7 +109,7 @@ namespace NewCss
             // Saatlik limit reset
             UpdateHourlyReset();
 
-            // Sadece local player etkileşimi yönetir
+            // Sadece local player etkileÅŸimi yÃ¶netir
             if (_playerInPhoneArea && NetworkManager.Singleton.IsClient)
             {
                 HandleInput();
@@ -233,10 +233,10 @@ namespace NewCss
                 return false;
             }
 
-            // 4. Kota kontrolu
-            if (CustomerManager.Instance != null && !CustomerManager.Instance.HasRemainingCustomers)
+            // 4. Müşteri spawn kotası kontrolü
+            if (CustomerManager.Instance != null && !CustomerManager.Instance.HasUnspawnedCustomers)
             {
-                reason = "Gunluk musteri kotasi doldu";
+                reason = "Bugün için çağırılabilecek başka müşteri kalmadı";
                 return false;
             }
 
@@ -353,10 +353,10 @@ namespace NewCss
                 return;
             }
 
-            // Server-side kontrol: kota
-            if (CustomerManager.Instance == null || !CustomerManager.Instance.HasRemainingCustomers)
+            // Server-side kontrol: unspawned count
+            if (CustomerManager.Instance == null || !CustomerManager.Instance.HasUnspawnedCustomers)
             {
-                LogDebug("Server rejected: No remaining customers");
+                LogDebug("Server rejected: No actual unspawned customers left");
                 CallFailedClientRpc(clientId);
                 return;
             }

@@ -137,8 +137,6 @@ namespace NewCss
             if (IsServer)
             {
                 SubscribeToDayCycleEvents();
-                // İlk gün kotasını hesapla (CustomerManager hazırsa)
-                InitializeDailyQuota();
             }
 
             // İlk UI güncellemesi
@@ -202,12 +200,12 @@ namespace NewCss
 
         private void SubscribeToDayCycleEvents()
         {
-            DayCycleManager.OnNewDay += HandleNewDay;
+            CustomerManager.OnDailyCustomersCalculated += HandleNewDay;
         }
 
         private void UnsubscribeFromDayCycleEvents()
         {
-            DayCycleManager.OnNewDay -= HandleNewDay;
+            CustomerManager.OnDailyCustomersCalculated -= HandleNewDay;
         }
 
         #endregion
@@ -244,7 +242,7 @@ namespace NewCss
         {
             if (!IsServer) return;
 
-            LogDebug("Yeni gün - Kota sıfırlanıyor");
+            LogDebug("CustomerManager calculated targets - Quota initializing");
             InitializeDailyQuota();
         }
 

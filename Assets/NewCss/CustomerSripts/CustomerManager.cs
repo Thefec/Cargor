@@ -22,6 +22,8 @@ namespace NewCss
         private const float DEFAULT_SPAWN_END_HOUR = 17f;
         private const float CUSTOMER_EXIT_HOUR = 17.5f; // 17:30 - Müşterilerin çıkışa yönlendirileceği saat
 
+        public static event System.Action OnDailyCustomersCalculated;
+
         #endregion
 
         #region Singleton
@@ -114,13 +116,13 @@ namespace NewCss
         #region Serialized Fields - Queue & Tables
 
         [Header("=== QUEUE & TABLES ===")]
-        [SerializeField, Tooltip("Kuyruk pozisyonlar�")]
-        public Transform[] queuePositions;
+        [SerializeField, Tooltip("Kuyruk waypoint yöneticisi")]
+        public QueueWaypoint queueWaypoint;
 
-        [SerializeField, Tooltip("��k�� noktas�")]
+        [SerializeField, Tooltip("k noktas")]
         public Transform exitPoint;
 
-        [SerializeField, Tooltip("B�rakma masas�")]
+        [SerializeField, Tooltip("Brakma masas")]
         public DisplayTable dropOffTable;
 
         [SerializeField, Tooltip("Servis masalar�")]
@@ -234,10 +236,15 @@ namespace NewCss
         public bool CanSpawnCustomers => IsWithinSpawningHours();
 
         /// <summary>
+        /// Sırada henüz spawnlanmamış müşteri var mı? (Telefon sistemi için)
+        /// </summary>
+        public bool HasUnspawnedCustomers => _nextScheduledIndex < _scheduledSpawnTimes.Count;
+
+        /// <summary>
         /// Kuyruk dolu mu?
         /// </summary>
         public bool IsQueueFull => _customerQueue.Count >= maxQueueSize ||
-                                    _customerQueue.Count >= queuePositions.Length;
+                                    (queueWaypoint != null && _customerQueue.Count >= queueWaypoint.WaypointCount);
 
         /// <summary>
         /// Şu an rush hour mu?
@@ -352,6 +359,8 @@ namespace NewCss
 
             LogDebug($"Day {currentDay} - Total customers scheduled: {_todaysTotalCustomers}");
             LogDebug($"Spawn times calculated between {spawnStartHour:F1} and {spawnEndHour:F1}");
+
+            OnDailyCustomersCalculated?.Invoke();
         }
 
         /// <summary>
@@ -573,7 +582,11 @@ namespace NewCss
 
         private int GetNextAvailableQueueIndex()
         {
-            int maxIndex = Mathf.Min(queuePositions.Length, maxQueueSize);
+            int maxIndex = maxQueueSize;
+            if (queueWaypoint != null)
+            {
+                maxIndex = Mathf.Min(queueWaypoint.WaypointCount, maxQueueSize);
+            }
 
             for (int i = 0; i < maxIndex; i++)
             {
@@ -671,7 +684,11 @@ namespace NewCss
             SetupCustomerClientRpc(networkObject.NetworkObjectId, queueIndex);
 
             _customerQueue.Add(customerAI);
-            customerAI.SetQueueTarget(queuePositions[queueIndex].position, queueIndex);
+            
+            if (queueWaypoint != null)
+            {
+                customerAI.SetQueueTarget(queueWaypoint.GetWaypointPosition(queueIndex), queueIndex);
+            }
         }
 
         #endregion
@@ -805,6 +822,8 @@ namespace NewCss
 
         private void ReassignQueuePositions()
         {
+            if (queueWaypoint == null) return;
+
             for (int i = 0; i < _customerQueue.Count; i++)
             {
                 var customer = _customerQueue[i];
@@ -812,7 +831,7 @@ namespace NewCss
                 if (customer.isPrefabMode) continue;
                 if (customer.GetTargetQueueIndex() == i) continue;
 
-                customer.SetQueueTarget(queuePositions[i].position, i);
+                customer.SetQueueTarget(queueWaypoint.GetWaypointPosition(i), i);
             }
         }
 
@@ -1175,17 +1194,18 @@ namespace NewCss
         {
             Debug.Log($"{LOG_PREFIX} === QUEUE POSITIONS ===");
 
-            if (queuePositions == null || queuePositions.Length == 0)
+            if (queueWaypoint == null || queueWaypoint.WaypointCount == 0)
             {
-                Debug.Log("No queue positions assigned!");
+                Debug.Log("No queue waypoint manager assigned!");
                 return;
             }
 
-            for (int i = 0; i < queuePositions.Length; i++)
+            for (int i = 0; i < queueWaypoint.WaypointCount; i++)
             {
                 bool isOccupied = IsQueueSlotOccupied(i);
                 string status = isOccupied ? "[OCCUPIED]" : "[EMPTY]";
-                string posName = queuePositions[i] != null ? queuePositions[i].name : "NULL";
+                var wp = queueWaypoint.GetWaypoint(i);
+                string posName = wp != null ? wp.name : "NULL";
                 Debug.Log($"  [{i}] {posName} {status}");
             }
         }
@@ -1199,20 +1219,25 @@ namespace NewCss
 
         private void DrawQueueGizmos()
         {
-            if (queuePositions == null) return;
+            if (queueWaypoint == null) return;
 
             Gizmos.color = Color.cyan;
-            for (int i = 0; i < queuePositions.Length; i++)
+            for (int i = 0; i < queueWaypoint.WaypointCount; i++)
             {
-                if (queuePositions[i] == null) continue;
+                var pos = queueWaypoint.GetWaypointPosition(i);
+                if (pos == Vector3.zero && queueWaypoint.GetWaypoint(i) == null) continue;
 
-                Gizmos.DrawWireSphere(queuePositions[i].position, 0.5f);
-                UnityEditor.Handles.Label(queuePositions[i].position + Vector3.up, $"Queue {i}");
+                Gizmos.DrawWireSphere(pos, 0.5f);
+                UnityEditor.Handles.Label(pos + Vector3.up, $"Queue {i}");
 
                 // Draw line between queue positions
-                if (i > 0 && queuePositions[i - 1] != null)
+                if (i > 0)
                 {
-                    Gizmos.DrawLine(queuePositions[i - 1].position, queuePositions[i].position);
+                    Transform prevH = queueWaypoint.GetWaypoint(i - 1);
+                    if (prevH != null)
+                    {
+                        Gizmos.DrawLine(prevH.position, pos);
+                    }
                 }
             }
         }

@@ -592,8 +592,7 @@ namespace NewCss
         {
             if (NetworkManager.Singleton == null) return false;
 
-            var localClientId = NetworkManager.Singleton.LocalClientId;
-            var playerTransform = FindPlayerTransform(localClientId);
+            var playerTransform = GetLocalPlayerTransform();
 
             if (playerTransform == null) return false;
 
@@ -601,16 +600,12 @@ namespace NewCss
             return distance <= interactionRange;
         }
 
-        private Transform FindPlayerTransform(ulong clientId)
+        private Transform GetLocalPlayerTransform()
         {
-            foreach (var netObj in FindObjectsOfType<NetworkObject>())
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.LocalClient != null && NetworkManager.Singleton.LocalClient.PlayerObject != null)
             {
-                if (netObj.OwnerClientId == clientId && netObj.CompareTag(PLAYER_TAG))
-                {
-                    return netObj.transform;
-                }
+                 return NetworkManager.Singleton.LocalClient.PlayerObject.transform;
             }
-
             return null;
         }
 
@@ -764,10 +759,12 @@ namespace NewCss
 
         private void ApplyPrestigePenalty()
         {
-            if (!_hasInteracted && PrestigeManager.Instance != null)
-            {
-                PrestigeManager.Instance.ModifyPrestige(-0.03f);
-            }
+            // İPTAL EDİLDİ: Oyuncu müşteri kaçırdığında zaten Game Over olduğu için
+            // prestij düşmesinin bir anlamı yok.
+            // if (!_hasInteracted && PrestigeManager.Instance != null)
+            // {
+            //     PrestigeManager.Instance.ModifyPrestige(-0.03f);
+            // }
 
             // KALDIRILDI:  Customer timeout quest tracking artık yok
             // if (! _hasInteracted)
