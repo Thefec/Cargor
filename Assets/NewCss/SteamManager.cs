@@ -9,6 +9,7 @@ using Steamworks.Data;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.Localization.Settings;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -76,6 +77,19 @@ public class SteamManager : MonoBehaviour
     [SerializeField, Tooltip("Hata mesajı gösterim süresi")]
     private float ErrorMessageDuration = 3f;
 
+    [Header("=== COPY LOBBY CODE ===")]
+    [SerializeField, Tooltip("Kopyalandığında gösterilecek yeşil renk")]
+    private UnityColor lobbyIdCopiedColor = new UnityColor(0.2f, 0.85f, 0.3f, 1f);
+
+    [SerializeField, Tooltip("Varsayılan text rengi (siyah)")]
+    private UnityColor lobbyIdDefaultColor = UnityColor.black;
+
+    [SerializeField, Tooltip("Yeşil renkte kalma süresi (saniye)")]
+    private float copyColorHoldDuration = 0.5f;
+
+    [SerializeField, Tooltip("Renk geçiş süresi (saniye)")]
+    private float copyColorFadeDuration = 0.6f;
+
     [Header("=== START GAME ===")]
     [SerializeField, Tooltip("Oyun başlatma butonu")]
     private Button StartGameButton;
@@ -104,6 +118,10 @@ public class SteamManager : MonoBehaviour
     [SerializeField, Tooltip("Minimum yükleme süresi")]
     private float minimumLoadTime = 1f;
 
+    [Header("=== MENU REFERENCE ===")]
+    [SerializeField, Tooltip("Ana menü referansı (ses sistemi için)")]
+    private Menu menuReference;
+
     #endregion
 
     #region Nested Types
@@ -127,6 +145,7 @@ public class SteamManager : MonoBehaviour
     private bool _isLoadingScene;
     private Coroutine _errorMessageCoroutine;
     private Coroutine _loadingDotsCoroutine;
+    private Coroutine _lobbyIdColorCoroutine;
 
     // Player slot update throttling
     private float _lastPlayerSlotUpdateTime;
@@ -193,6 +212,11 @@ public class SteamManager : MonoBehaviour
         _isLobbyJoinValid = false;
         _isLoadingScene = false;
         _isJoiningLobby = false;
+
+        if (menuReference == null)
+        {
+            menuReference = FindObjectOfType<Menu>();
+        }
     }
 
     private void InitializeUI()
@@ -201,6 +225,36 @@ public class SteamManager : MonoBehaviour
         SetStartButtonActive(false);
         SetErrorMessageActive(false);
         SetLoadingScreenActive(false);
+        InitializeLobbyIdClick();
+    }
+
+    /// <summary>
+    /// LobbyID text'ine tıklama özelliği ekler (EventTrigger ile)
+    /// </summary>
+    private void InitializeLobbyIdClick()
+    {
+        if (LobbyID == null) return;
+
+        // Varsayılan rengi uygula
+        LobbyID.color = lobbyIdDefaultColor;
+
+        // EventTrigger yoksa ekle
+        var trigger = LobbyID.gameObject.GetComponent<EventTrigger>();
+        if (trigger == null)
+        {
+            trigger = LobbyID.gameObject.AddComponent<EventTrigger>();
+        }
+
+        // Tıklama event'i ekle
+        var pointerClick = new EventTrigger.Entry
+        {
+            eventID = EventTriggerType.PointerClick
+        };
+        pointerClick.callback.AddListener((_) => CopyLobbyCode());
+        trigger.triggers.Add(pointerClick);
+
+        // Raycast'i aktif et (tıklama algılaması için gerekli)
+        LobbyID.raycastTarget = true;
     }
 
     #endregion
@@ -658,6 +712,57 @@ public class SteamManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Dışarıdan verilen kod ile lobiye katılır (Menu.cs'den çağrılır)
+    /// </summary>
+    public async void JoinLobbyWithCode(string lobbyCode)
+    {
+        if (_isJoiningLobby) return;
+
+        if (string.IsNullOrEmpty(lobbyCode))
+        {
+            ShowErrorMessage("Lütfen bir Lobi kodu girin!");
+            return;
+        }
+
+        if (!ulong.TryParse(lobbyCode, out ulong lobbyId))
+        {
+            ShowErrorMessage("Geçersiz Lobi ID formatı!");
+            return;
+        }
+
+        _isJoiningLobby = true;
+        _isLobbyJoinValid = false;
+
+        try
+        {
+            SetLoadingScreenActive(true);
+            UpdateLoadingProgress(0.2f, "Lobiye bağlanılıyor...");
+
+            await PrepareForJoin();
+
+            UpdateLoadingProgress(0.5f, "Lobi aranıyor...");
+
+            await ExecuteJoinLobby(lobbyId);
+
+            UpdateLoadingProgress(1f, "Bağlandı!");
+
+            await System.Threading.Tasks.Task.Delay(300);
+            SetLoadingScreenActive(false);
+        }
+        catch (Exception ex)
+        {
+            LogError($"Join lobby error: {ex.Message}");
+            ShowErrorMessage("Beklenmeyen hata oluştu!");
+            _isLobbyJoinValid = false;
+            SetLoadingScreenActive(false);
+        }
+        finally
+        {
+            _isJoiningLobby = false;
+        }
+    }
+
+    /// <summary>
     /// Mevcut lobiden ayrılır
     /// </summary>
     public async void LeaveLobby()
@@ -672,9 +777,17 @@ public class SteamManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Lobi ID'sini panoya kopyalar
+    /// Lobi ID'sini panoya kopyalar (eski method - backward compatibility)
     /// </summary>
     public void CopyID()
+    {
+        CopyLobbyCode();
+    }
+
+    /// <summary>
+    /// Lobi kodunu panoya kopyalar ve ID text'ini yeşile çevirip smooth şekilde siyaha döndürür
+    /// </summary>
+    public void CopyLobbyCode()
     {
         if (!IsLobbyValid)
         {
@@ -682,8 +795,67 @@ public class SteamManager : MonoBehaviour
             return;
         }
 
-        CopyToClipboard(LobbyID.text);
-        ShowErrorMessage("Lobi ID kopyalandı!", 2f);
+        string lobbyCode = _currentLobby.Id.ToString();
+        CopyToClipboard(lobbyCode);
+
+        // Smooth renk geçişi başlat
+        PlayLobbyIdCopyAnimation();
+    }
+
+    /// <summary>
+    /// Lobi ID text'inin renk animasyonunu başlatır: siyah → yeşil → siyah
+    /// </summary>
+    private void PlayLobbyIdCopyAnimation()
+    {
+        if (LobbyID == null) return;
+
+        if (_lobbyIdColorCoroutine != null)
+        {
+            StopCoroutine(_lobbyIdColorCoroutine);
+        }
+
+        _lobbyIdColorCoroutine = StartCoroutine(LobbyIdColorTransitionCoroutine());
+    }
+
+    /// <summary>
+    /// Smooth renk geçiş coroutine'i:
+    /// 1. Mevcut renkten yeşile hızlı geçiş
+    /// 2. Yeşilde kısa süre bekle
+    /// 3. Yeşilden siyaha smooth geçiş
+    /// </summary>
+    private IEnumerator LobbyIdColorTransitionCoroutine()
+    {
+        // Adım 1: Hızlıca yeşile geç (0.15 saniye)
+        float snapDuration = 0.15f;
+        float elapsed = 0f;
+        UnityColor startColor = LobbyID.color;
+
+        while (elapsed < snapDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.SmoothStep(0f, 1f, elapsed / snapDuration);
+            LobbyID.color = UnityColor.Lerp(startColor, lobbyIdCopiedColor, t);
+            yield return null;
+        }
+
+        LobbyID.color = lobbyIdCopiedColor;
+
+        // Adım 2: Yeşilde biraz bekle
+        yield return new WaitForSeconds(copyColorHoldDuration);
+
+        // Adım 3: Smooth şekilde siyaha geri dön
+        elapsed = 0f;
+
+        while (elapsed < copyColorFadeDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.SmoothStep(0f, 1f, elapsed / copyColorFadeDuration);
+            LobbyID.color = UnityColor.Lerp(lobbyIdCopiedColor, lobbyIdDefaultColor, t);
+            yield return null;
+        }
+
+        LobbyID.color = lobbyIdDefaultColor;
+        _lobbyIdColorCoroutine = null;
     }
 
     /// <summary>
@@ -691,6 +863,8 @@ public class SteamManager : MonoBehaviour
     /// </summary>
     public void StartGameServer()
     {
+        PlayButtonSound();
+
         if (!ValidateGameStart()) return;
 
         DisableStartButton();
@@ -1323,6 +1497,18 @@ public class SteamManager : MonoBehaviour
         }
 
         _wasInMainMenu = false;
+    }
+
+    #endregion
+
+    #region UI Sound Effects
+
+    private void PlayButtonSound()
+    {
+        if (menuReference != null)
+        {
+            menuReference.PlayButtonSound();
+        }
     }
 
     #endregion

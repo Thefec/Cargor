@@ -103,15 +103,7 @@ namespace NewCss
 
         #endregion
 
-        #region Backward Compatibility (Legacy - kullanılmıyor, EventEffectManager uyumu için)
 
-        // Eski lineer sistem field'leri - artık formülde kullanılmıyor.
-        // EventEffectManager ve DifficultyManager bu field'lere doğrudan yazmak yerine
-        // eventCustomerMultiplier ve playerCountMultiplier kullanmalı.
-        [HideInInspector] public int baseCustomersPerDay = 10;
-        [HideInInspector] public int customerIncreasePerDay = 2;
-
-        #endregion
 
         #region Serialized Fields - Queue & Tables
 
@@ -370,9 +362,6 @@ namespace NewCss
         /// </summary>
         private int CalculateTodaysCustomerCount(int currentDay)
         {
-            // Eski lineer formül (devre dışı):
-            // return baseCustomersPerDay + ((currentDay - 1) * customerIncreasePerDay);
-
             // 1. Sahnedeki aktif etkileşim noktalarını say
             int activeInteractables = CountActiveInteractables();
 
@@ -1026,12 +1015,7 @@ namespace NewCss
         }
 
         /// <summary>
-        /// Kuyruk boyutunu d�nd�r�r
-        /// </summary>
-        public int GetQueueSize() => QueueSize;
-
-        /// <summary>
-        /// Kalan m��teri say�s�n� d�nd�r�r
+        /// Kalan mteri saysn dndrr
         /// </summary>
         public int GetRemainingCustomers() => _customersRemainingToday;
 

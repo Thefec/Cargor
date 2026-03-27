@@ -1,850 +1,591 @@
-﻿using TMPro;
+using System.Collections;
+using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>
-/// Ana menü sistemi - Panel yönetimi, buton etkileşimleri, sosyal medya bağlantıları ve ses efektlerini yönetir. 
+/// Ana menü sistemi.
+///
+/// ÖNEMLİ: Bu script MainMenuPanel üzerindedir.
+/// mainMenuPanel asla SetActive(false) YAPILMAZ — aksi hâlde coroutine'ler durur.
+///
+/// Hiyerarşi:
+///   MainMenuPanel → mainMenuSlidePanel (butonlar stagger ile soldan gelir)
+///   HAJ           → hajBlackBG (instant) | hajBackButton (instant) | hostOrJoinPanel (top→down)
+///   J             → jBlackBG   (instant) | jBackButton   (instant) | joinPanel       (top→down)
 /// </summary>
 public class Menu : MonoBehaviour
 {
     #region Constants
-
-    private const string LOG_PREFIX = "[MainMenu]";
-    private const float HOVER_SOUND_VOLUME_MULTIPLIER = 0.5f;
-
-    // Scene Names
-    private const string SCENE_MAP_SELECTION = "MapSelection";
-    private const string SCENE_TUTORIAL = "Tutorial";
-
+    private const string LOG_PREFIX  = "[MainMenu]";
+    private const float  SLIDE_DUR   = 0.35f;
+    private const float  STAGGER_DLY = 0.08f;
+    private const string SCENE_MAP   = "MapSelection";
+    private const string SCENE_TUT   = "Tutorial";
     #endregion
 
     #region Enums
-
-    private enum MenuState
-    {
-        MainMenu,
-        HostJoinMenu,
-        Settings,
-        Credits,
-        TutorialConfirm
-    }
-
+    private enum MenuState { MainMenu, HostJoinMenu, JoinRoomPanel, Settings, Credits, TutorialConfirm }
     #endregion
 
-    #region Serialized Fields - Main Menu Buttons
+    // ── Inspector ────────────────────────────────────────────
 
-    [Header("=== ANA MENÜ BUTONLARI ===")]
-    [SerializeField, Tooltip("Online oyna butonu")]
-    public Button playOnlineButton;
-
-    [SerializeField, Tooltip("Offline oyna butonu")]
-    public Button playOfflineButton;
-
-    [SerializeField, Tooltip("Tutorial butonu")]
-    public Button tutorialButton;
-
-    [SerializeField, Tooltip("Ayarlar butonu")]
-    public Button settingsButton;
-
-    [SerializeField, Tooltip("Krediler butonu")]
-    public Button creditsButton;
-
-    [SerializeField, Tooltip("Çıkış butonu")]
-    public Button quitButton;
-
+    #region Main Menu
+    [Header("=== ANA MENÜ ===")]
+    [SerializeField] public GameObject    mainMenuPanel;
+    [SerializeField] public RectTransform mainMenuSlidePanel;  // Buttons parent (VerticalLayoutGroup'lu)
+    [SerializeField] public Button hostGameButton;
+    [SerializeField] public Button tutorialButton;
+    [SerializeField] public Button settingsButton;
+    [SerializeField] public Button creditsButton;
+    [SerializeField] public Button quitButton;
     #endregion
 
-    #region Serialized Fields - Host/Join Buttons
-
-    [Header("=== HOST/JOIN MENÜ BUTONLARI ===")]
-    [SerializeField, Tooltip("Host butonu")]
-    public Button hostButton;
-
-    [SerializeField, Tooltip("Join butonu")]
-    public Button joinButton;
-
-    [SerializeField, Tooltip("Geri butonu")]
-    public Button exitHostJoinButton;
-
+    #region HAJ Group
+    [Header("=== HAJ GRUBU ===")]
+    [SerializeField] public GameObject    hajGroup;
+    [SerializeField] public GameObject    hajBlackBG;
+    [SerializeField] public Button        hajBackButton;
+    [SerializeField] public RectTransform hostOrJoinPanel;
+    [SerializeField] public Button createRoomButton;
+    [SerializeField] public Button joinRoomButton;
     #endregion
 
-    #region Serialized Fields - Tutorial Confirmation Panel
-
-    [Header("=== TUTORIAL ONAY PANELİ ===")]
-    [SerializeField, Tooltip("Tutorial onay paneli")]
-    public GameObject tutorialConfirmPanel;
-
-    [SerializeField, Tooltip("Evet butonu")]
-    public Button tutorialConfirmYesButton;
-
-    [SerializeField, Tooltip("Hayır butonu")]
-    public Button tutorialConfirmNoButton;
-
+    #region J Group
+    [Header("=== J GRUBU ===")]
+    [SerializeField] public GameObject    jGroup;
+    [SerializeField] public GameObject    jBlackBG;
+    [SerializeField] public Button        jBackButton;
+    [SerializeField] public RectTransform joinPanel;
+    [SerializeField] public TMP_InputField roomCodeInputField;
+    [SerializeField] public Button confirmEntryButton;
     #endregion
 
-    #region Serialized Fields - Social Media Buttons
-
-    [Header("=== SOSYAL MEDYA BUTONLARI ===")]
-    [SerializeField, Tooltip("Discord butonu")]
-    public Button discordButton;
-
-    [SerializeField, Tooltip("Steam sayfası butonu")]
-    public Button steamPageButton;
-
-    [SerializeField, Tooltip("Instagram butonu")]
-    public Button instagramButton;
-
+    #region Overlays
+    [Header("=== OVERLAY PANELLERİ ===")]
+    [SerializeField] public GameObject tutorialConfirmPanel;
+    [SerializeField] public Button tutorialConfirmYesButton;
+    [SerializeField] public Button tutorialConfirmNoButton;
+    [SerializeField] public GameObject settingsPanel;
+    [SerializeField] public GameObject creditsPanel;
+    [SerializeField] public Button backFromSettingsButton;
+    [SerializeField] public Button saveSettingsButton;
+    [SerializeField] public Button backFromCreditsButton;
     #endregion
 
-    #region Serialized Fields - UI Panels
+    #region Social / Version / Audio / Managers
+    [Header("=== SOSYAL MEDYA ===")]
+    [SerializeField] public Button discordButton;
+    [SerializeField] public Button steamPageButton;
+    [SerializeField] public Button instagramButton;
 
-    [Header("=== UI PANELLERİ ===")]
-    [SerializeField, Tooltip("Ana menü paneli")]
-    public GameObject mainMenuPanel;
+    [Header("=== VERSİYON ===")]
+    [SerializeField] public TextMeshProUGUI versionText;
+    [SerializeField] public string gameVersion  = "v1.0.0";
+    [SerializeField] public string discordURL   = "https://discord.gg/yourdiscord";
+    [SerializeField] public string steamPageURL = "https://store.steampowered.com/app/YOURAPPID";
+    [SerializeField] public string instagramURL = "https://instagram.com/youraccount";
 
-    [SerializeField, Tooltip("Host/Join paneli")]
-    public GameObject hostJoinPanel;
+    [Header("=== AUDIO ===")]
+    [SerializeField] public AudioSource musicAudioSource;
+    [SerializeField] public AudioSource sfxAudioSource;
+    [SerializeField] public AudioSource uiAudioSource;
+    [SerializeField] public AudioClip   buttonClickSound;
+    [SerializeField] public AudioClip   buttonHoverSound;
+    [SerializeField, Range(0f, 1f)] public float buttonSoundVolume = 1f;
 
-    [SerializeField, Tooltip("Ayarlar paneli")]
-    public GameObject settingsPanel;
-
-    [SerializeField, Tooltip("Krediler paneli")]
-    public GameObject creditsPanel;
-
+    [Header("=== MANAGERS ===")]
+    [SerializeField] public UnifiedSettingsManager settingsManager;
+    [SerializeField] public SteamManager           steamManager;
     #endregion
 
-    #region Serialized Fields - Settings/Credits Panel Buttons
-
-    [Header("=== PANEL BUTONLARI ===")]
-    [SerializeField, Tooltip("Ayarlardan geri butonu")]
-    public Button backFromSettingsButton;
-
-    [SerializeField, Tooltip("Ayarları kaydet butonu")]
-    public Button saveSettingsButton;
-
-    [SerializeField, Tooltip("Kredilerden geri butonu")]
-    public Button backFromCreditsButton;
-
-    #endregion
-
-    #region Serialized Fields - Version & URLs
-
-    [Header("=== VERSİYON & BAĞLANTILAR ===")]
-    [SerializeField, Tooltip("Versiyon text'i")]
-    public TextMeshProUGUI versionText;
-
-    [SerializeField, Tooltip("Oyun versiyonu")]
-    public string gameVersion = "v1.0.0";
-
-    [Header("=== SOSYAL MEDYA LİNKLERİ ===")]
-    [SerializeField, Tooltip("Discord URL")]
-    public string discordURL = "https://discord. gg/yourdiscord";
-
-    [SerializeField, Tooltip("Steam sayfa URL")]
-    public string steamPageURL = "https://store.steampowered.com/app/YOURAPPID";
-
-    [SerializeField, Tooltip("Instagram URL")]
-    public string instagramURL = "https://instagram.com/youraccount";
-
-    #endregion
-
-    #region Serialized Fields - Audio
-
-    [Header("=== AUDIO SOURCES ===")]
-    [SerializeField, Tooltip("Müzik AudioSource")]
-    public AudioSource musicAudioSource;
-
-    [SerializeField, Tooltip("SFX AudioSource")]
-    public AudioSource sfxAudioSource;
-
-    [SerializeField, Tooltip("UI AudioSource")]
-    public AudioSource uiAudioSource;
-
-    [Header("=== UI SES EFEKTLERİ ===")]
-    [SerializeField, Tooltip("Buton tıklama sesi")]
-    public AudioClip buttonClickSound;
-
-    [SerializeField, Tooltip("Buton hover sesi")]
-    public AudioClip buttonHoverSound;
-
-    [SerializeField, Range(0f, 1f), Tooltip("Buton ses seviyesi")]
-    public float buttonSoundVolume = 1f;
-
-    #endregion
-
-    #region Serialized Fields - Managers
-
-    [Header("=== MANAGER REFERANSLARI ===")]
-    [SerializeField, Tooltip("Ayarlar manager'ı")]
-    public UnifiedSettingsManager settingsManager;
-
-    [SerializeField, Tooltip("Steam manager'ı")]
-    public SteamManager steamManager;
-
-    #endregion
+    // ── Private ───────────────────────────────────────────────
 
     #region Private Fields
+    private MenuState _state = MenuState.MainMenu;
+    private Coroutine _slideCoroutine;
+    private Coroutine _staggerCoroutine;
 
-    private MenuState _currentState = MenuState.MainMenu;
-
+    // Cached rest pozisyonlar (Start'ta, herhangi bir SetActive'den önce alınır)
+    private Vector2 _slidePanelRestPos;   // mainMenuSlidePanel container'ının rest pos'u
+    private Vector2 _hajRestPos;
+    private Vector2 _jRestPos;
     #endregion
 
-    #region Public Properties
-
-    /// <summary>
-    /// Ana menü aktif mi?  (backward compatibility)
-    /// </summary>
-    public bool isMainMenuActive => _currentState == MenuState.MainMenu;
-
-    /// <summary>
-    /// Host/Join menüsü aktif mi? (backward compatibility)
-    /// </summary>
-    public bool isHostJoinMenuActive => _currentState == MenuState.HostJoinMenu;
-
+    #region Properties
+    public bool isMainMenuActive     => _state == MenuState.MainMenu;
+    public bool isHostJoinMenuActive => _state == MenuState.HostJoinMenu;
     #endregion
 
-    #region Unity Lifecycle
+    // ── Unity Lifecycle ───────────────────────────────────────
 
     private void Start()
     {
-        Initialize();
-    }
-
-    private void Update()
-    {
-        HandleEscapeInput();
-    }
-
-    private void OnDestroy()
-    {
-        RemoveAllButtonListeners();
-    }
-
-    #endregion
-
-    #region Initialization
-
-    private void Initialize()
-    {
         FindManagers();
-        SetupAllButtonListeners();
+        CacheRestPositions();
+        SetupButtons();
         UpdateVersionText();
-        TransitionToState(MenuState.MainMenu);
+        InitPanels();
+        GoTo(MenuState.MainMenu);
     }
+
+    private void Update()    { HandleEscape(); }
+    private void OnDestroy() { RemoveListeners(); }
+
+    // ── Init ─────────────────────────────────────────────────
 
     private void FindManagers()
     {
-        FindSettingsManager();
-        FindSteamManager();
-    }
-
-    private void FindSettingsManager()
-    {
-        if (settingsManager != null) return;
-
-        settingsManager = FindObjectOfType<UnifiedSettingsManager>();
-    }
-
-    private void FindSteamManager()
-    {
-        if (steamManager != null) return;
-
-        steamManager = FindObjectOfType<SteamManager>();
-
-        if (steamManager == null)
+        if (settingsManager == null) settingsManager = FindObjectOfType<UnifiedSettingsManager>();
+        if (steamManager    == null)
         {
-            Debug.LogWarning($"{LOG_PREFIX} ⚠️ SteamManager bulunamadı!  Online özellikler çalışmayabilir.");
+            steamManager = FindObjectOfType<SteamManager>();
+            if (steamManager == null) Debug.LogWarning($"{LOG_PREFIX} SteamManager bulunamadı!");
         }
     }
 
-    #endregion
-
-    #region Button Setup
-
-    private void SetupAllButtonListeners()
+    private void CacheRestPositions()
     {
-        SetupMainMenuButtons();
-        SetupHostJoinButtons();
-        SetupTutorialConfirmButtons();
-        SetupPanelButtons();
-        SetupSocialMediaButtons();
+        // Container'ların kendi pozisyonlarını sakla.
+        // Buton çocukları cache'lenmez — LayoutGroup Start()'tan sonra hesaplar,
+        // doğru pozisyonlar StaggerCoroutine içinde yield return null'dan sonra okunur.
+        if (mainMenuSlidePanel != null) _slidePanelRestPos = mainMenuSlidePanel.anchoredPosition;
+        if (hostOrJoinPanel    != null) _hajRestPos        = hostOrJoinPanel.anchoredPosition;
+        if (joinPanel          != null) _jRestPos          = joinPanel.anchoredPosition;
     }
 
-    private void SetupMainMenuButtons()
+    private void InitPanels()
     {
-        SetupButton(playOnlineButton, () => TransitionToState(MenuState.HostJoinMenu));
-        SetupButton(playOfflineButton, PlayOffline);
-        SetupButton(tutorialButton, () => TransitionToState(MenuState.TutorialConfirm));
-        SetupButton(settingsButton, () => TransitionToState(MenuState.Settings));
-        SetupButton(creditsButton, () => TransitionToState(MenuState.Credits));
-        SetupButton(quitButton, QuitGame);
+        // mainMenuPanel asla SetActive(false) yapılmaz (Menu script burada).
+        // Container'ı ekranın soluna taşı — görünmez ama gameobject aktif kalır.
+        HideMainMenuInstant();
+
+        // HAJ: panel off-screen üst, grup kapalı
+        SetOffscreenTop(hostOrJoinPanel, _hajRestPos);
+        Go(hajGroup, false);
+
+        // J: panel off-screen üst, grup kapalı
+        SetOffscreenTop(joinPanel, _jRestPos);
+        Go(jGroup, false);
+
+        // Overlay'ler
+        Go(settingsPanel,        false);
+        Go(creditsPanel,         false);
+        Go(tutorialConfirmPanel, false);
     }
 
-    private void SetupHostJoinButtons()
+    // ── Button Setup ──────────────────────────────────────────
+
+    private void SetupButtons()
     {
-        SetupButtonWithClear(hostButton, ExecuteHostLobby);
-        SetupButtonWithClear(joinButton, ExecuteJoinLobby);
-        SetupButton(exitHostJoinButton, () => TransitionToState(MenuState.MainMenu));
+        Btn(hostGameButton,           () => GoTo(MenuState.HostJoinMenu));
+        Btn(tutorialButton,           () => GoTo(MenuState.TutorialConfirm));
+        Btn(settingsButton,           () => GoTo(MenuState.Settings));
+        Btn(creditsButton,            () => GoTo(MenuState.Credits));
+        Btn(quitButton,               QuitGame);
+        Btn(hajBackButton,            () => GoTo(MenuState.MainMenu));
+        Btn(createRoomButton,         ExecuteCreateRoom);
+        Btn(joinRoomButton,           () => GoTo(MenuState.JoinRoomPanel));
+        Btn(jBackButton,              () => GoTo(MenuState.HostJoinMenu));
+        Btn(confirmEntryButton,       ExecuteConfirmEntry);
+        Btn(tutorialConfirmYesButton, ConfirmTutorial);
+        Btn(tutorialConfirmNoButton,  CancelTutorial);
+        Btn(backFromSettingsButton,   BackFromSettings);
+        Btn(saveSettingsButton,       SaveSettings);
+        Btn(backFromCreditsButton,    CloseCredits);
+        Btn(discordButton,            OpenDiscord);
+        Btn(steamPageButton,          OpenSteamPage);
+        Btn(instagramButton,          OpenInstagram);
     }
 
-    private void SetupTutorialConfirmButtons()
+    private void Btn(Button b, System.Action a)
     {
-        SetupButton(tutorialConfirmYesButton, ConfirmTutorial);
-        SetupButton(tutorialConfirmNoButton, CancelTutorial);
+        if (b == null) return;
+        b.onClick.RemoveAllListeners();
+        b.onClick.AddListener(() => { PlayButtonSound(); a?.Invoke(); });
     }
 
-    private void SetupPanelButtons()
-    {
-        SetupButton(backFromSettingsButton, BackFromSettings);
-        SetupButton(saveSettingsButton, SaveSettings);
-        SetupButtonWithClear(backFromCreditsButton, CloseCredits);
-    }
+    // ── State Machine ─────────────────────────────────────────
 
-    private void SetupSocialMediaButtons()
+    private void GoTo(MenuState next)
     {
-        SetupButton(discordButton, OpenDiscord);
-        SetupButton(steamPageButton, OpenSteamPage);
-        SetupButton(instagramButton, OpenInstagram);
-    }
-
-    private void SetupButton(Button button, System.Action action)
-    {
-        if (button == null) return;
-
-        button.onClick.AddListener(() =>
+        MenuState prev = _state;
+        _state = next;
+        switch (next)
         {
-            PlayButtonSound();
-            action?.Invoke();
-        });
-    }
-
-    private void SetupButtonWithClear(Button button, System.Action action)
-    {
-        if (button == null) return;
-
-        button.onClick.RemoveAllListeners();
-        button.onClick.AddListener(() =>
-        {
-            PlayButtonSound();
-            action?.Invoke();
-        });
-    }
-
-    #endregion
-
-    #region State Management
-
-    private void TransitionToState(MenuState newState)
-    {
-        _currentState = newState;
-
-        switch (newState)
-        {
-            case MenuState.MainMenu:
-                ShowMainMenuPanel();
-                break;
-            case MenuState.HostJoinMenu:
-                ShowHostJoinPanel();
-                break;
-            case MenuState.Settings:
-                ShowSettingsPanel();
-                break;
-            case MenuState.Credits:
-                ShowCreditsPanel();
-                break;
-            case MenuState.TutorialConfirm:
-                ShowTutorialConfirmPanel();
-                break;
+            case MenuState.MainMenu:        ShowMainMenu(prev);   break;
+            case MenuState.HostJoinMenu:    ShowHAJ(prev);        break;
+            case MenuState.JoinRoomPanel:   ShowJoin();           break;
+            case MenuState.Settings:        ShowOverlay(settingsPanel);        break;
+            case MenuState.Credits:         ShowOverlay(creditsPanel);         break;
+            case MenuState.TutorialConfirm: ShowOverlay(tutorialConfirmPanel); break;
         }
-
-        Debug.Log($"{LOG_PREFIX} State changed to: {newState}");
+        Debug.Log($"{LOG_PREFIX} {prev} → {next}");
     }
 
-    #endregion
+    // ── Panel Show / Hide ─────────────────────────────────────
 
-    #region Panel Management
+    // ─ MAIN MENU ─────────────────────────────────────────────
 
-    private void ShowMainMenuPanel()
+    private void ShowMainMenu(MenuState prev)
     {
-        SetPanelActive(mainMenuPanel, true);
-        SetPanelActive(hostJoinPanel, false);
-        CloseAllOverlayPanels();
-    }
+        CloseOverlays();
 
-    private void ShowHostJoinPanel()
-    {
-        SetPanelActive(hostJoinPanel, true);
-        CloseAllOverlayPanels();
-    }
-
-    private void ShowSettingsPanel()
-    {
-        SetPanelActive(settingsPanel, true);
-        SetPanelActive(creditsPanel, false);
-        SetPanelActive(tutorialConfirmPanel, false);
-    }
-
-    private void ShowCreditsPanel()
-    {
-        SetPanelActive(creditsPanel, true);
-        SetPanelActive(settingsPanel, false);
-        SetPanelActive(tutorialConfirmPanel, false);
-    }
-
-    private void ShowTutorialConfirmPanel()
-    {
-        SetPanelActive(tutorialConfirmPanel, true);
-        SetPanelActive(settingsPanel, false);
-        SetPanelActive(creditsPanel, false);
-    }
-
-    private void CloseAllOverlayPanels()
-    {
-        SetPanelActive(settingsPanel, false);
-        SetPanelActive(creditsPanel, false);
-        SetPanelActive(tutorialConfirmPanel, false);
-    }
-
-    private void HideAllPanels()
-    {
-        SetPanelActive(mainMenuPanel, false);
-        SetPanelActive(hostJoinPanel, false);
-        CloseAllOverlayPanels();
-    }
-
-    private static void SetPanelActive(GameObject panel, bool active)
-    {
-        if (panel != null)
+        if (prev == MenuState.HostJoinMenu)
         {
-            panel.SetActive(active);
+            SlideOut(hostOrJoinPanel, _hajRestPos, () =>
+            {
+                Go(hajGroup, false);
+                StartStaggeredMainMenu();
+            });
         }
-    }
-
-    #endregion
-
-    #region Lobby Operations
-
-    private void ExecuteHostLobby()
-    {
-        if (steamManager != null)
+        else if (prev == MenuState.JoinRoomPanel)
         {
-            Debug.Log($"{LOG_PREFIX} 🎮 Host lobi oluşturuluyor (Steam).. .");
-            steamManager.HostLobby();
+            SlideOut(joinPanel, _jRestPos, () =>
+            {
+                Go(jGroup,   false);
+                Go(hajGroup, false);
+                StartStaggeredMainMenu();
+            });
         }
         else
         {
-            Debug.LogError($"{LOG_PREFIX} ❌ SteamManager bulunamadı!  Lobi oluşturulamıyor.");
+            StartStaggeredMainMenu();
         }
     }
 
-    private void ExecuteJoinLobby()
+    // ─ HAJ ───────────────────────────────────────────────────
+
+    private void ShowHAJ(MenuState prev)
     {
-        if (steamManager != null)
+        CloseOverlays();
+
+        if (prev == MenuState.JoinRoomPanel)
         {
-            Debug.Log($"{LOG_PREFIX} 🎮 Lobiye katılma işlemi başlatılıyor (Steam)...");
-            steamManager.JoinLobbyWithID();
+            SlideOut(joinPanel, _jRestPos, () =>
+            {
+                Go(jGroup, false);
+                ActivateHAJGroup();
+            });
+            return;
         }
-        else
+
+        HideMainMenuInstant();
+        ActivateHAJGroup();
+    }
+
+    private void ActivateHAJGroup()
+    {
+        SetOffscreenTop(hostOrJoinPanel, _hajRestPos);
+        Go(hajGroup,   true);
+        Go(hajBlackBG, true);
+        if (hajBackButton != null) hajBackButton.gameObject.SetActive(true);
+        SlideIn(hostOrJoinPanel, _hajRestPos);
+    }
+
+    // ─ JOIN ROOM ─────────────────────────────────────────────
+
+    private void ShowJoin()
+    {
+        if (roomCodeInputField != null) roomCodeInputField.text = "";
+
+        SlideOut(hostOrJoinPanel, _hajRestPos, () =>
         {
-            Debug.LogError($"{LOG_PREFIX} ❌ SteamManager bulunamadı!  Lobiye katılınamıyor.");
+            Go(hajBlackBG, false);
+            if (hajBackButton != null) hajBackButton.gameObject.SetActive(false);
+            Go(hajGroup, false);
+
+            SetOffscreenTop(joinPanel, _jRestPos);
+            Go(jGroup,   true);
+            Go(jBlackBG, true);
+            if (jBackButton != null) jBackButton.gameObject.SetActive(true);
+            SlideIn(joinPanel, _jRestPos);
+        });
+    }
+
+    // ─ OVERLAYS ──────────────────────────────────────────────
+
+    private void ShowOverlay(GameObject panel)
+    {
+        Go(settingsPanel,        false);
+        Go(creditsPanel,         false);
+        Go(tutorialConfirmPanel, false);
+        Go(panel, true);
+    }
+
+    private void CloseOverlays()
+    {
+        Go(settingsPanel,        false);
+        Go(creditsPanel,         false);
+        Go(tutorialConfirmPanel, false);
+    }
+
+    // ── Ana Menü Stagger Animasyonu ───────────────────────────
+
+    /// <summary>
+    /// mainMenuSlidePanel container'ını ekranın soluna taşır (instant).
+    /// SetActive kullanılmaz. LayoutGroup aktif kalır.
+    /// </summary>
+    private void HideMainMenuInstant()
+    {
+        if (mainMenuSlidePanel == null) return;
+
+        var lg = mainMenuSlidePanel.GetComponent<LayoutGroup>();
+        if (lg != null) lg.enabled = true;
+
+        mainMenuSlidePanel.anchoredPosition = new Vector2(_slidePanelRestPos.x - 9999f, _slidePanelRestPos.y);
+    }
+
+    private void StartStaggeredMainMenu()
+    {
+        if (_staggerCoroutine != null) StopCoroutine(_staggerCoroutine);
+        _staggerCoroutine = StartCoroutine(StaggerCoroutine());
+    }
+
+    /// <summary>
+    /// Butonları soldan sağa, yukarıdan aşağıya stagger ile getirir.
+    ///   1. Container rest pozisyonuna alınır
+    ///   2. yield return null → LayoutGroup çocukların GERÇEK pozisyonlarını hesaplar
+    ///   3. LayoutGroup kapatılır (animasyon süresince manuel kontrol)
+    ///   4. Butonlar sola alınır, sırayla slide-in başlar
+    ///   5. Animasyon biter → LayoutGroup geri açılır
+    /// </summary>
+    private IEnumerator StaggerCoroutine()
+    {
+        if (mainMenuSlidePanel == null) yield break;
+
+        // 1. Container'ı doğru konuma al
+        mainMenuSlidePanel.anchoredPosition = _slidePanelRestPos;
+
+        // 2. Bir frame bekle — LayoutGroup bu sürede çocukları düzenler
+        yield return null;
+
+        // 3. Aktif çocukların layout tarafından hesaplanmış GERÇEK pozisyonlarını oku
+        var items = new List<(RectTransform rt, Vector2 rest)>();
+        for (int i = 0; i < mainMenuSlidePanel.childCount; i++)
+        {
+            var child = mainMenuSlidePanel.GetChild(i) as RectTransform;
+            if (child != null && child.gameObject.activeSelf)
+                items.Add((child, child.anchoredPosition));
         }
+
+        if (items.Count == 0) yield break;
+
+        float canvasW = GetCanvasW();
+        if (canvasW <= 0f) canvasW = Screen.width;
+
+        // 4. LayoutGroup'u kapat
+        var lg = mainMenuSlidePanel.GetComponent<LayoutGroup>();
+        if (lg != null) lg.enabled = false;
+
+        // 5. Tüm butonları ekranın soluna taşı
+        foreach (var (rt, rest) in items)
+            rt.anchoredPosition = new Vector2(rest.x - canvasW, rest.y);
+
+        // 6. Her butonu sırayla slide-in başlat (yukarıdan aşağıya)
+        foreach (var (rt, rest) in items)
+        {
+            StartCoroutine(SlideCoroutine(rt, rt.anchoredPosition, rest, null));
+            yield return new WaitForSecondsRealtime(STAGGER_DLY);
+        }
+
+        // 7. Son buton animasyonu bitince LayoutGroup'u geri aç
+        yield return new WaitForSecondsRealtime(SLIDE_DUR + 0.05f);
+        if (lg != null) lg.enabled = true;
+        _staggerCoroutine = null;
     }
 
-    #endregion
+    // ── Dikey Slide (HAJ / J) ─────────────────────────────────
 
-    #region Audio
-
-    private void PlayButtonSound()
+    private void SetOffscreenTop(RectTransform panel, Vector2 rest)
     {
-        PlaySound(buttonClickSound, buttonSoundVolume);
+        if (panel == null) return;
+        panel.anchoredPosition = new Vector2(rest.x, rest.y + GetCanvasH());
     }
 
-    private void PlayHoverSound()
+    private void SlideIn(RectTransform panel, Vector2 rest)
     {
-        PlaySound(buttonHoverSound, buttonSoundVolume * HOVER_SOUND_VOLUME_MULTIPLIER);
+        if (panel == null) return;
+        KickCoroutine(SlideCoroutine(panel, panel.anchoredPosition, rest, null));
     }
 
-    private void PlaySound(AudioClip clip, float baseVolume)
+    private void SlideOut(RectTransform panel, Vector2 rest, System.Action onComplete = null)
+    {
+        if (panel == null || !panel.gameObject.activeInHierarchy)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+        Vector2 exit = new Vector2(rest.x, rest.y + GetCanvasH());
+        KickCoroutine(SlideCoroutine(panel, rest, exit, onComplete));
+    }
+
+    // ── Coroutine Core ────────────────────────────────────────
+
+    private void KickCoroutine(IEnumerator routine)
+    {
+        if (_slideCoroutine != null) StopCoroutine(_slideCoroutine);
+        _slideCoroutine = StartCoroutine(routine);
+    }
+
+    private IEnumerator SlideCoroutine(RectTransform rect, Vector2 from, Vector2 to, System.Action onComplete)
+    {
+        float elapsed = 0f;
+        while (elapsed < SLIDE_DUR)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t     = Mathf.Clamp01(elapsed / SLIDE_DUR);
+            float eased = 1f - Mathf.Pow(1f - t, 3f);
+            rect.anchoredPosition = Vector2.Lerp(from, to, eased);
+            yield return null;
+        }
+        rect.anchoredPosition = to;
+        _slideCoroutine = null;
+        onComplete?.Invoke();
+    }
+
+    private float GetCanvasW()
+    {
+        Canvas c = GetComponentInParent<Canvas>();
+        return c != null ? c.GetComponent<RectTransform>().rect.width : 0f;
+    }
+
+    private float GetCanvasH()
+    {
+        Canvas c = GetComponentInParent<Canvas>();
+        return c != null ? c.GetComponent<RectTransform>().rect.height : 0f;
+    }
+
+    // ── Utility ───────────────────────────────────────────────
+    private static void Go(GameObject go, bool active) { if (go != null) go.SetActive(active); }
+
+    // ── Lobby ─────────────────────────────────────────────────
+
+    private void ExecuteCreateRoom()
+    {
+        if (steamManager != null) steamManager.HostLobby();
+        else Debug.LogError($"{LOG_PREFIX} SteamManager yok!");
+    }
+
+    private void ExecuteConfirmEntry()
+    {
+        if (roomCodeInputField == null) { Debug.LogError($"{LOG_PREFIX} Input field yok!"); return; }
+        string code = roomCodeInputField.text.Trim();
+        if (string.IsNullOrEmpty(code)) { Debug.LogWarning($"{LOG_PREFIX} Kod boş!"); return; }
+        if (steamManager != null) steamManager.JoinLobbyWithCode(code);
+        else Debug.LogError($"{LOG_PREFIX} SteamManager yok!");
+    }
+
+    // ── Audio ─────────────────────────────────────────────────
+
+    public void PlayButtonSound() => PlaySound(buttonClickSound, buttonSoundVolume);
+
+    private void PlaySound(AudioClip clip, float vol)
     {
         if (clip == null) return;
-
-        float finalVolume = CalculateFinalVolume(baseVolume);
-        PlaySoundOnAvailableSource(clip, finalVolume);
+        if (settingsManager != null) vol *= settingsManager.GetSFXVolume() * settingsManager.GetMasterVolume();
+        if      (uiAudioSource  != null) uiAudioSource.PlayOneShot(clip, vol);
+        else if (sfxAudioSource != null) sfxAudioSource.PlayOneShot(clip, vol);
+        else if (Camera.main    != null) AudioSource.PlayClipAtPoint(clip, Camera.main.transform.position, vol);
     }
 
-    private float CalculateFinalVolume(float baseVolume)
-    {
-        float volume = baseVolume;
+    // ── Escape ────────────────────────────────────────────────
 
-        if (settingsManager != null)
-        {
-            volume *= settingsManager.GetSFXVolume() * settingsManager.GetMasterVolume();
-        }
-
-        return volume;
-    }
-
-    private void PlaySoundOnAvailableSource(AudioClip clip, float volume)
-    {
-        if (uiAudioSource != null)
-        {
-            uiAudioSource.PlayOneShot(clip, volume);
-        }
-        else if (sfxAudioSource != null)
-        {
-            sfxAudioSource.PlayOneShot(clip, volume);
-        }
-        else if (Camera.main != null)
-        {
-            AudioSource.PlayClipAtPoint(clip, Camera.main.transform.position, volume);
-        }
-    }
-
-    #endregion
-
-    #region Input Handling
-
-    private void HandleEscapeInput()
+    private void HandleEscape()
     {
         if (!Input.GetKeyDown(KeyCode.Escape)) return;
-
         PlayButtonSound();
-
-        switch (_currentState)
+        switch (_state)
         {
-            case MenuState.Settings:
-                BackFromSettings();
-                break;
-
-            case MenuState.Credits:
-                CloseCredits();
-                break;
-
-            case MenuState.HostJoinMenu:
-                TransitionToState(MenuState.MainMenu);
-                break;
-
-            case MenuState.TutorialConfirm:
-                CancelTutorial();
-                break;
+            case MenuState.JoinRoomPanel:   GoTo(MenuState.HostJoinMenu); break;
+            case MenuState.HostJoinMenu:    GoTo(MenuState.MainMenu);     break;
+            case MenuState.Settings:        BackFromSettings();           break;
+            case MenuState.Credits:         CloseCredits();               break;
+            case MenuState.TutorialConfirm: CancelTutorial();             break;
         }
     }
 
-    #endregion
+    // ── Public API ────────────────────────────────────────────
 
-    #region Public API - Menu Actions
+    public void ShowMainMenuPublic()     => GoTo(MenuState.MainMenu);
+    public void ShowHostJoinMenuPublic() => GoTo(MenuState.HostJoinMenu);
+    public void ExitHostJoinMenu()       => GoTo(MenuState.MainMenu);
+    public void PlayOnline()             => GoTo(MenuState.HostJoinMenu);
+    public void BackToMainMenu()         => GoTo(MenuState.MainMenu);
+    public void OpenSettings()           => GoTo(MenuState.Settings);
+    public void OpenCredits()            => GoTo(MenuState.Credits);
+    public void PlayTutorial()           => GoTo(MenuState.TutorialConfirm);
+    public void ShowTutorialConfirm()    => GoTo(MenuState.TutorialConfirm);
+    public void CreateRoom()             => ExecuteCreateRoom();
+    public void JoinRoom()               => GoTo(MenuState.JoinRoomPanel);
 
-    /// <summary>
-    /// Ana menüyü gösterir
-    /// </summary>
-    public void ShowMainMenu()
-    {
-        TransitionToState(MenuState.MainMenu);
-    }
-
-    /// <summary>
-    /// Host/Join menüsünü gösterir
-    /// </summary>
-    public void ShowHostJoinMenu()
-    {
-        TransitionToState(MenuState.HostJoinMenu);
-    }
-
-    /// <summary>
-    /// Host/Join menüsünden çıkar
-    /// </summary>
-    public void ExitHostJoinMenu()
-    {
-        Debug.Log($"{LOG_PREFIX} Host/Join menüsünden ana menüye dönülüyor");
-        TransitionToState(MenuState.MainMenu);
-    }
-
-    /// <summary>
-    /// Online oyun menüsünü açar
-    /// </summary>
-    public void PlayOnline()
-    {
-        TransitionToState(MenuState.HostJoinMenu);
-    }
-
-    /// <summary>
-    /// Offline oyunu başlatır
-    /// </summary>
     public void PlayOffline()
     {
-        Debug.Log($"{LOG_PREFIX} Offline oyun başlatılıyor.. .");
-        SceneManager.LoadScene(SCENE_MAP_SELECTION);
+        Debug.Log($"{LOG_PREFIX} Offline başlatılıyor...");
+        SceneManager.LoadScene(SCENE_MAP);
     }
 
-    /// <summary>
-    /// Tutorial onay ekranını gösterir
-    /// </summary>
-    public void PlayTutorial()
-    {
-        Debug.Log($"{LOG_PREFIX} Tutorial onay ekranı açılıyor...");
-        TransitionToState(MenuState.TutorialConfirm);
-    }
-
-    /// <summary>
-    /// Ayarları açar
-    /// </summary>
-    public void OpenSettings()
-    {
-        TransitionToState(MenuState.Settings);
-    }
-
-    /// <summary>
-    /// Kredileri açar
-    /// </summary>
-    public void OpenCredits()
-    {
-        TransitionToState(MenuState.Credits);
-    }
-
-    /// <summary>
-    /// Oyundan çıkar
-    /// </summary>
     public void QuitGame()
     {
-        Debug.Log($"{LOG_PREFIX} Oyundan çıkılıyor...");
-
+        Debug.Log($"{LOG_PREFIX} Çıkılıyor...");
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else
-        Application. Quit();
+        Application.Quit();
 #endif
     }
 
-    #endregion
-
-    #region Public API - Tutorial Confirmation
-
-    /// <summary>
-    /// Tutorial onay ekranını gösterir
-    /// </summary>
-    public void ShowTutorialConfirm()
-    {
-        TransitionToState(MenuState.TutorialConfirm);
-    }
-
-    /// <summary>
-    /// Tutorial'ı onaylar ve başlatır (Evet butonuna tıklandığında)
-    /// </summary>
     public void ConfirmTutorial()
     {
-        Debug.Log($"{LOG_PREFIX} ✅ Tutorial onaylandı, seviye yükleniyor...");
-        SetPanelActive(tutorialConfirmPanel, false);
-        SceneManager.LoadScene(SCENE_TUTORIAL);
+        Go(tutorialConfirmPanel, false);
+        SceneManager.LoadScene(SCENE_TUT);
     }
 
-    /// <summary>
-    /// Tutorial'ı iptal eder ve ana menüye döner (Hayır butonuna tıklandığında)
-    /// </summary>
     public void CancelTutorial()
     {
-        Debug.Log($"{LOG_PREFIX} ❌ Tutorial iptal edildi, ana menüye dönülüyor...");
-        SetPanelActive(tutorialConfirmPanel, false);
-        TransitionToState(MenuState.MainMenu);
+        Go(tutorialConfirmPanel, false);
+        GoTo(MenuState.MainMenu);
     }
 
-    #endregion
-
-    #region Public API - Settings
-
-    /// <summary>
-    /// Ayarlardan geri döner
-    /// </summary>
     public void BackFromSettings()
     {
         if (settingsManager != null && settingsManager.HasUnsavedChanges())
-        {
             settingsManager.OnBackButtonPressed();
-            Debug.Log($"{LOG_PREFIX} Ayarlar panelinden çıkış: Kaydedilmemiş değişiklikler geri alındı.");
-        }
-
-        SetPanelActive(settingsPanel, false);
-
-        if (_currentState == MenuState.Settings)
-        {
-            _currentState = MenuState.MainMenu;
-        }
+        Go(settingsPanel, false);
+        if (_state == MenuState.Settings) _state = MenuState.MainMenu;
     }
 
-    /// <summary>
-    /// Ayarları kaydeder
-    /// </summary>
     public void SaveSettings()
     {
-        if (settingsManager != null)
-        {
-            settingsManager.SaveAllSettings();
-            Debug.Log($"{LOG_PREFIX} Tüm ayarlar kaydedildi.");
-        }
+        if (settingsManager != null) settingsManager.SaveAllSettings();
     }
 
-    #endregion
-
-    #region Public API - Credits
-
-    /// <summary>
-    /// Krediler panelini kapatır
-    /// </summary>
     public void CloseCredits()
     {
-        SetPanelActive(creditsPanel, false);
-
-        if (_currentState == MenuState.Credits)
-        {
-            _currentState = MenuState.MainMenu;
-        }
+        Go(creditsPanel, false);
+        if (_state == MenuState.Credits) _state = MenuState.MainMenu;
     }
 
-    #endregion
+    public void SetGameVersion(string v) { gameVersion = v; UpdateVersionText(); }
+    private void UpdateVersionText() { if (versionText != null) versionText.text = gameVersion; }
 
-    #region Public API - Social Media
+    public void OpenDiscord()   => Application.OpenURL(discordURL);
+    public void OpenSteamPage() => Application.OpenURL(steamPageURL);
+    public void OpenInstagram() => Application.OpenURL(instagramURL);
 
-    /// <summary>
-    /// Discord'u açar
-    /// </summary>
-    public void OpenDiscord()
+    // ── Cleanup ───────────────────────────────────────────────
+
+    private void RemoveListeners()
     {
-        Debug.Log($"{LOG_PREFIX} Discord açılıyor...");
-        Application.OpenURL(discordURL);
+        foreach (var b in new[] {
+            hostGameButton, tutorialButton, settingsButton, creditsButton, quitButton,
+            hajBackButton, createRoomButton, joinRoomButton,
+            jBackButton, confirmEntryButton,
+            tutorialConfirmYesButton, tutorialConfirmNoButton,
+            backFromSettingsButton, saveSettingsButton, backFromCreditsButton,
+            discordButton, steamPageButton, instagramButton })
+            b?.onClick.RemoveAllListeners();
     }
-
-    /// <summary>
-    /// Steam sayfasını açar
-    /// </summary>
-    public void OpenSteamPage()
-    {
-        Debug.Log($"{LOG_PREFIX} Steam sayfası açılıyor.. .");
-        Application.OpenURL(steamPageURL);
-    }
-
-    /// <summary>
-    /// Instagram'ı açar
-    /// </summary>
-    public void OpenInstagram()
-    {
-        Debug.Log($"{LOG_PREFIX} Instagram açılıyor...");
-        Application.OpenURL(instagramURL);
-    }
-
-    #endregion
-
-    #region Public API - Version
-
-    /// <summary>
-    /// Versiyon text'ini günceller
-    /// </summary>
-    public void SetGameVersion(string newVersion)
-    {
-        gameVersion = newVersion;
-        UpdateVersionText();
-    }
-
-    private void UpdateVersionText()
-    {
-        if (versionText != null)
-        {
-            versionText.text = gameVersion;
-        }
-    }
-
-    #endregion
-
-    #region Public API - Backward Compatibility
-
-    /// <summary>
-    /// Lobi oluşturur (deprecated - ExecuteHostLobby kullanın)
-    /// </summary>
-    [System.Obsolete("CreateLobby is deprecated. Use ExecuteHostLobby instead.")]
-    public void CreateLobby()
-    {
-        Debug.LogWarning($"{LOG_PREFIX} ⚠️ CreateLobby() deprecated!  ExecuteHostLobby() kullanılıyor.");
-        ExecuteHostLobby();
-    }
-
-    /// <summary>
-    /// Lobiye katılır (deprecated - ExecuteJoinLobby kullanın)
-    /// </summary>
-    [System.Obsolete("JoinLobby is deprecated. Use ExecuteJoinLobby instead.")]
-    public void JoinLobby()
-    {
-        Debug.LogWarning($"{LOG_PREFIX} ⚠️ JoinLobby() deprecated! ExecuteJoinLobby() kullanılıyor.");
-        ExecuteJoinLobby();
-    }
-
-    /// <summary>
-    /// Oda oluşturur (deprecated - backward compatibility)
-    /// </summary>
-    public void CreateRoom()
-    {
-        ExecuteHostLobby();
-    }
-
-    /// <summary>
-    /// Odaya katılır (deprecated - backward compatibility)
-    /// </summary>
-    public void JoinRoom()
-    {
-        ExecuteJoinLobby();
-    }
-
-    /// <summary>
-    /// Ana menüye döner
-    /// </summary>
-    public void BackToMainMenu()
-    {
-        TransitionToState(MenuState.MainMenu);
-    }
-
-    /// <summary>
-    /// Ses ile lobi oluşturur (internal)
-    /// </summary>
-    private void CreateLobbyWithSound()
-    {
-        ExecuteHostLobby();
-    }
-
-    /// <summary>
-    /// Ses ile lobiye katılır (internal)
-    /// </summary>
-    private void JoinLobbyWithSound()
-    {
-        ExecuteJoinLobby();
-    }
-
-    #endregion
-
-    #region Cleanup
-
-    private void RemoveAllButtonListeners()
-    {
-        RemoveButtonListener(playOnlineButton);
-        RemoveButtonListener(playOfflineButton);
-        RemoveButtonListener(tutorialButton);
-        RemoveButtonListener(settingsButton);
-        RemoveButtonListener(creditsButton);
-        RemoveButtonListener(quitButton);
-        RemoveButtonListener(hostButton);
-        RemoveButtonListener(joinButton);
-        RemoveButtonListener(exitHostJoinButton);
-        RemoveButtonListener(backFromSettingsButton);
-        RemoveButtonListener(saveSettingsButton);
-        RemoveButtonListener(backFromCreditsButton);
-        RemoveButtonListener(discordButton);
-        RemoveButtonListener(steamPageButton);
-        RemoveButtonListener(instagramButton);
-        RemoveButtonListener(tutorialConfirmYesButton);
-        RemoveButtonListener(tutorialConfirmNoButton);
-    }
-
-    private static void RemoveButtonListener(Button button)
-    {
-        button?.onClick.RemoveAllListeners();
-    }
-
-    #endregion
 }

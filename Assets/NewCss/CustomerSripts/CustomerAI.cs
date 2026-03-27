@@ -59,12 +59,7 @@ namespace NewCss
 
         #region Serialized Fields
 
-        [Header("=== PLAYER REFERENCE ===")]
-        [SerializeField, Tooltip("Cache'lenmiş player movement referansı")]
-        public PlayerMovement cachedPlayerMovement;
-        [Header("=== PRODUCT ASSIGNMENT ===")]
-        [SerializeField, Tooltip("Son kullanılan ürün geçmişi boyutu")]
-        public int recentProductHistorySize = 5; // 3'ten 5'e çıkar
+
 
         [Header("=== PREFAB MODE ===")]
         [SerializeField, Tooltip("Prefab modunda mı? (AI devre dışı)")]
@@ -95,12 +90,7 @@ namespace NewCss
         [SerializeField, Tooltip("Etkileşim menzili")]
         public float interactionRange = 2f;
 
-        #region Private Fields - Product History
 
-        private readonly Queue<int> _recentProductIndices = new();
-        private int _lastProductIndex = -1; // Ardışık tekrar engeli için
-
-        #endregion
 
 
         [Header("=== INTERACTION SOUNDS ===")]
@@ -111,12 +101,7 @@ namespace NewCss
         [SerializeField, Tooltip("Ürün prefab'ları")]
         public GameObject[] productPrefabs;
 
-        [Header("=== ITEM DETECTION ===")]
-        [SerializeField, Tooltip("Item algılama layer mask'i")]
-        public LayerMask itemLayerMask = -1;
 
-        [SerializeField, Tooltip("Algılama yarıçapı")]
-        public float detectionRadius = 1.5f;
 
         [Header("=== MANAGER & POINTS ===")]
         [SerializeField, Tooltip("Müşteri yöneticisi")]
@@ -126,11 +111,6 @@ namespace NewCss
         public Transform exitPoint;
 
         [Header("=== TABLES ===")]
-        [SerializeField, Tooltip("Hedef masalar")]
-        public DisplayTable[] targetTables;
-
-        [SerializeField, Tooltip("Ana hedef masa (legacy)")]
-        public DisplayTable targetTable;
 
         [SerializeField, Tooltip("Ürün bırakma masası")]
         public DisplayTable dropOffTable;
@@ -333,70 +313,7 @@ namespace NewCss
                 ClientUpdate();
             }
         }
-        private void SetupOutline()
-        {
-            // Sadece Body mesh'ini bul
-            GameObject targetObject = null;
 
-            if (outlineTarget != null)
-            {
-                targetObject = outlineTarget;
-            }
-            else
-            {
-                // Body isimli child objeyi bul
-                Transform bodyTransform = transform.Find("Body_011");
-                if (bodyTransform == null)
-                {
-                    // Alternatif isimler deneyebiliriz
-                    foreach (Transform child in transform)
-                    {
-                        if (child.name.Contains("Body") || child.name.Contains("body"))
-                        {
-                            bodyTransform = child;
-                            break;
-                        }
-                    }
-                }
-
-                if (bodyTransform != null)
-                {
-                    targetObject = bodyTransform.gameObject;
-                }
-                else
-                {
-                    Debug.LogWarning($"{LOG_PREFIX} Body mesh not found for outline on {gameObject.name}");
-                    return;
-                }
-            }
-
-            // Sadece Renderer'ı olan objeye outline ekle
-            _outline = targetObject.GetComponent<Outline>();
-
-            if (_outline == null)
-            {
-                var renderer = targetObject.GetComponent<Renderer>();
-                if (renderer == null)
-                {
-                    Debug.LogWarning($"{LOG_PREFIX} No renderer found on {targetObject.name}");
-                    return;
-                }
-
-                try
-                {
-                    _outline = targetObject.AddComponent<Outline>();
-                    _outline.OutlineMode = outlineMode;
-                    _outline.OutlineColor = outlineColor;
-                    _outline.OutlineWidth = outlineWidth;
-                    _outline.enabled = false;
-                }
-                catch (System.Exception e)
-                {
-                    Debug.LogWarning($"{LOG_PREFIX} Could not add outline: {e.Message}");
-                    _outline = null;
-                }
-            }
-        }
 
         #endregion
 
@@ -716,9 +633,6 @@ namespace NewCss
             // UI gizle
             HideWaitUI();
 
-            // Prestige cezası
-            ApplyPrestigePenalty();
-
             // NEW: Customer lost - trigger game over
             if (IsServer && GameStateManager.Instance != null)
             {
@@ -757,21 +671,7 @@ namespace NewCss
             }
         }
 
-        private void ApplyPrestigePenalty()
-        {
-            // İPTAL EDİLDİ: Oyuncu müşteri kaçırdığında zaten Game Over olduğu için
-            // prestij düşmesinin bir anlamı yok.
-            // if (!_hasInteracted && PrestigeManager.Instance != null)
-            // {
-            //     PrestigeManager.Instance.ModifyPrestige(-0.03f);
-            // }
 
-            // KALDIRILDI:  Customer timeout quest tracking artık yok
-            // if (! _hasInteracted)
-            // {
-            //     Quest.QuestTracker.NotifyCustomerTimeout();
-            // }
-        }
 
         #endregion
 
@@ -1058,6 +958,17 @@ namespace NewCss
 
             return product;
         }
+
+        private int GetProductIndex()
+        {
+            if (_assignedProductIndex >= 0 && _assignedProductIndex < productPrefabs.Length)
+            {
+                return _assignedProductIndex;
+            }
+
+            return Random.Range(0, productPrefabs.Length);
+        }
+
         private IEnumerator EnsureProductFrozenAfterSpawn(GameObject product)
         {
             yield return null; // Bir frame bekle
@@ -1082,129 +993,7 @@ namespace NewCss
         }
 
 
-        private IEnumerator SyncProductParentAfterSpawn(NetworkObject networkObject, Transform parentSlot)
-        {
-            // Bir frame bekle
-            yield return null;
 
-            if (networkObject != null && networkObject.IsSpawned)
-            {
-                // Pozisyonu ve rotation'ı tekrar ayarla
-                networkObject.transform.SetParent(parentSlot, true);
-                networkObject.transform.localPosition = Vector3.zero;
-                networkObject.transform.localRotation = Quaternion.identity;
-
-                // Client'lara sync et
-                SyncProductTransformClientRpc(
-                    networkObject.NetworkObjectId,
-                    parentSlot.position,
-                    parentSlot.rotation
-                );
-            }
-        }
-
-        [ClientRpc]
-        private void SyncProductTransformClientRpc(ulong productNetworkId, Vector3 position, Quaternion rotation)
-        {
-            if (IsServer) return;
-
-            // Network object'i bul
-            if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(productNetworkId, out var networkObject))
-            {
-                // Physics'i devre dışı bırak
-                DisableProductPhysics(networkObject.gameObject);
-
-                // Transform'u ayarla
-                networkObject.transform.position = position;
-                networkObject.transform.rotation = rotation;
-            }
-        }
-
-        private (Transform slotTransform, int slotIndex) GetProductSlotInfo()
-        {
-            var slotPoints = dropOffTable.SlotPoints;
-
-            if (slotPoints == null || slotPoints.Length == 0)
-            {
-                Debug.LogError($"{LOG_PREFIX} SlotPoints is null or empty");
-                return (null, -1);
-            }
-
-            int slotIndex = dropOffTable.ItemCount;
-
-            if (slotIndex >= slotPoints.Length)
-            {
-                Debug.LogError($"{LOG_PREFIX} No available slot.  ItemCount: {slotIndex}, SlotPoints:  {slotPoints.Length}");
-                return (null, -1);
-            }
-
-            var slot = slotPoints[slotIndex];
-
-            if (slot == null)
-            {
-                Debug.LogError($"{LOG_PREFIX} Slot at index {slotIndex} is null");
-                return (null, -1);
-            }
-
-            return (slot, slotIndex);
-        }
-
-        private int GetProductIndex()
-        {
-            if (_assignedProductIndex >= 0 && _assignedProductIndex < productPrefabs.Length)
-            {
-                return _assignedProductIndex;
-            }
-
-            return Random.Range(0, productPrefabs.Length);
-        }
-
-        /// <summary>
-        /// Ürünün physics'ini tamamen devre dışı bırakır
-        /// </summary>
-        private void DisableProductPhysics(GameObject product)
-        {
-            if (product == null) return;
-
-            // Rigidbody'leri işle
-            var rigidbodies = product.GetComponentsInChildren<Rigidbody>(true);
-            foreach (var rb in rigidbodies)
-            {
-                // Önce velocity'leri sıfırla
-                rb.linearVelocity = Vector3.zero;
-                rb.angularVelocity = Vector3.zero;
-
-                // Kinematic yap
-                rb.isKinematic = true;
-                rb.useGravity = false;
-
-                // Constraints ekle
-                rb.constraints = RigidbodyConstraints.FreezeAll;
-
-                // Interpolation kapat
-                rb.interpolation = RigidbodyInterpolation.None;
-
-                // Sleep state'e al
-                rb.Sleep();
-            }
-
-            // ItemFreezeSystem varsa devre dışı bırak
-            var freezeSystems = product.GetComponentsInChildren<ItemFreezeSystem>(true);
-            foreach (var freezeSystem in freezeSystems)
-            {
-                freezeSystem.enabled = false;
-            }
-
-            // Collider'ları trigger yap (opsiyonel - pickup için gerekebilir)
-            // Eğer pickup için collider gerekiyorsa bu kısmı yorum satırı yap
-            /*
-            var colliders = product.GetComponentsInChildren<Collider>(true);
-            foreach (var col in colliders)
-            {
-                col.isTrigger = true;
-            }
-            */
-        }
 
         /// <summary>
         /// Ürünün stabil olduğundan emin olur
@@ -1629,10 +1418,6 @@ namespace NewCss
             // Interaction range
             Gizmos.color = Color.yellow;
             Gizmos.DrawWireSphere(transform.position, interactionRange);
-
-            // Detection radius
-            Gizmos.color = new Color(0f, 1f, 0f, 0.3f);
-            Gizmos.DrawWireSphere(transform.position, detectionRadius);
 
             // Debug info
             DrawDebugLabel();

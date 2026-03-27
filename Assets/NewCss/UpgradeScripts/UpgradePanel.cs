@@ -253,12 +253,14 @@ namespace NewCss
             InitializeLevelObjects();
             InitializeBaseValues();
             SubscribeToDayCycleEvents();
+            SubscribeToMoneySystem();
         }
 
         public override void OnNetworkDespawn()
         {
             UnsubscribeFromNetworkEvents();
             UnsubscribeFromDayCycleEvents();
+            UnsubscribeFromMoneySystem();
 
             base.OnNetworkDespawn();
         }
@@ -390,6 +392,53 @@ namespace NewCss
         {
             DayCycleManager.OnNewDay -= HandleNewDay;
             LocalizationSettings.SelectedLocaleChanged -= HandleLocaleChanged;
+        }
+
+        private void SubscribeToMoneySystem()
+        {
+            if (MoneySystem.Instance != null)
+            {
+                MoneySystem.Instance.OnMoneyChanged += HandleMoneyChanged;
+            }
+            else
+            {
+                // MoneySystem henüz spawn olmamış, gecikmeli olarak subscribe ol
+                StartCoroutine(WaitForMoneySystemCoroutine());
+            }
+        }
+
+        private void UnsubscribeFromMoneySystem()
+        {
+            if (MoneySystem.Instance != null)
+            {
+                MoneySystem.Instance.OnMoneyChanged -= HandleMoneyChanged;
+            }
+        }
+
+        private System.Collections.IEnumerator WaitForMoneySystemCoroutine()
+        {
+            float timeout = 10f;
+            while (MoneySystem.Instance == null && timeout > 0f)
+            {
+                timeout -= Time.deltaTime;
+                yield return null;
+            }
+
+            if (MoneySystem.Instance != null)
+            {
+                MoneySystem.Instance.OnMoneyChanged += HandleMoneyChanged;
+                LogDebug("MoneySystem found — refreshing all upgrade buttons");
+                RefreshAllUpgradeUI();
+            }
+            else
+            {
+                LogError("MoneySystem.Instance could not be found within timeout!");
+            }
+        }
+
+        private void HandleMoneyChanged(int newMoney)
+        {
+            RefreshAllUpgradeUI();
         }
 
         private void HandleLocaleChanged(Locale newLocale)
@@ -658,7 +707,7 @@ namespace NewCss
 
             finalCost = CalculateFinalCost(upgrade, currentVisualLevel);
 
-            return MoneySystem.Instance.CurrentMoney >= finalCost;
+            return MoneySystem.Instance != null && MoneySystem.Instance.CurrentMoney >= finalCost;
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -670,7 +719,7 @@ namespace NewCss
             int currentVisualLevel = GetVisualLevel(upgradeIndex);
 
             if (currentVisualLevel >= upgrade.maxLevel) return;
-            if (MoneySystem.Instance.CurrentMoney < cost) return;
+            if (MoneySystem.Instance == null || MoneySystem.Instance.CurrentMoney < cost) return;
 
             // Process purchase
             MoneySystem.Instance.SpendMoney(cost);
@@ -797,6 +846,7 @@ namespace NewCss
                 LogError($"NameText not found for {def.displayName}");
                 return false;
             }
+            entry.NameText.raycastTarget = false;
             // Set initial localized name
             entry.NameText.text = GetLocalizedUpgradeName(def);
 
@@ -807,6 +857,7 @@ namespace NewCss
                 LogError($"LevelText not found for {def.displayName}");
                 return false;
             }
+            entry.LevelText.raycastTarget = false;
 
             // Cost Text
             entry.CostText = FindTextComponent(go, UI_COST_TEXT);
@@ -815,6 +866,7 @@ namespace NewCss
                 LogError($"CostText not found for {def.displayName}");
                 return false;
             }
+            entry.CostText.raycastTarget = false;
 
             // Content Text
             entry.ContentText = FindTextComponent(go, UI_CONTENT_TEXT);
@@ -823,6 +875,7 @@ namespace NewCss
                 LogError($"ContentText not found for {def.displayName}");
                 return false;
             }
+            entry.ContentText.raycastTarget = false;
 
             // Buy Button
             var buyButtonTransform = FindChildRecursive(go.transform, UI_BUY_BUTTON);
@@ -958,7 +1011,17 @@ namespace NewCss
                 entry.CostText.text = costText;
             }
 
-            entry.BuyButton.interactable = MoneySystem.Instance.CurrentMoney >= finalCost;
+            // MoneySystem henüz hazır değilse butonu interactable bırak (iyimser yaklaşım)
+            // Gerçek doğrulama OnBuy() → ValidatePurchase() → PurchaseUpgradeServerRpc() zincirinde yapılır
+            if (MoneySystem.Instance != null)
+            {
+                entry.BuyButton.interactable = MoneySystem.Instance.CurrentMoney >= finalCost;
+            }
+            else
+            {
+                entry.BuyButton.interactable = true;
+            }
+
             SetButtonText(entry.BuyButton, LocalizationHelper.GetLocalizedString(LOC_KEY_BUY));
         }
 

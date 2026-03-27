@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -462,10 +462,9 @@ public class UnifiedSettingsManager : MonoBehaviour
 
     private string FormatResolutionDisplayName(Resolution resolution)
     {
-        string aspectRatio = CalculateAspectRatio(resolution.width, resolution.height);
         string qualityLabel = GetResolutionQualityLabel(resolution.height);
 
-        return $"{resolution.width} x {resolution.height} {qualityLabel} ({aspectRatio})";
+        return $"{resolution.width} x {resolution.height} {qualityLabel}".TrimEnd();
     }
 
     private string CalculateAspectRatio(int width, int height)
