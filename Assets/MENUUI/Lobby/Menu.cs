@@ -335,7 +335,7 @@ public class Menu : MonoBehaviour
         var lg = mainMenuSlidePanel.GetComponent<LayoutGroup>();
         if (lg != null) lg.enabled = true;
 
-        mainMenuSlidePanel.anchoredPosition = new Vector2(_slidePanelRestPos.x - 9999f, _slidePanelRestPos.y);
+        mainMenuSlidePanel.anchoredPosition = new Vector2(_slidePanelRestPos.x + 9999f, _slidePanelRestPos.y);
     }
 
     private void StartStaggeredMainMenu()
@@ -353,49 +353,50 @@ public class Menu : MonoBehaviour
     ///   5. Animasyon biter → LayoutGroup geri açılır
     /// </summary>
     private IEnumerator StaggerCoroutine()
+{
+    if (mainMenuSlidePanel == null) yield break;
+
+    // 1. LayoutGroup'u bir frame beklemeden anında güncelle (Flicker sorununu engeller)
+    Canvas.ForceUpdateCanvases();
+    UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(mainMenuSlidePanel);
+
+    // 2. Aktif çocukların LayoutGroup tarafından hesaplanmış gerçek (rest) pozisyonlarını oku
+    var items = new List<(RectTransform rt, Vector2 rest)>();
+    for (int i = 0; i < mainMenuSlidePanel.childCount; i++)
     {
-        if (mainMenuSlidePanel == null) yield break;
-
-        // 1. Container'ı doğru konuma al
-        mainMenuSlidePanel.anchoredPosition = _slidePanelRestPos;
-
-        // 2. Bir frame bekle — LayoutGroup bu sürede çocukları düzenler
-        yield return null;
-
-        // 3. Aktif çocukların layout tarafından hesaplanmış GERÇEK pozisyonlarını oku
-        var items = new List<(RectTransform rt, Vector2 rest)>();
-        for (int i = 0; i < mainMenuSlidePanel.childCount; i++)
-        {
-            var child = mainMenuSlidePanel.GetChild(i) as RectTransform;
-            if (child != null && child.gameObject.activeSelf)
-                items.Add((child, child.anchoredPosition));
-        }
-
-        if (items.Count == 0) yield break;
-
-        float canvasW = GetCanvasW();
-        if (canvasW <= 0f) canvasW = Screen.width;
-
-        // 4. LayoutGroup'u kapat
-        var lg = mainMenuSlidePanel.GetComponent<LayoutGroup>();
-        if (lg != null) lg.enabled = false;
-
-        // 5. Tüm butonları ekranın soluna taşı
-        foreach (var (rt, rest) in items)
-            rt.anchoredPosition = new Vector2(rest.x - canvasW, rest.y);
-
-        // 6. Her butonu sırayla slide-in başlat (yukarıdan aşağıya)
-        foreach (var (rt, rest) in items)
-        {
-            StartCoroutine(SlideCoroutine(rt, rt.anchoredPosition, rest, null));
-            yield return new WaitForSecondsRealtime(STAGGER_DLY);
-        }
-
-        // 7. Son buton animasyonu bitince LayoutGroup'u geri aç
-        yield return new WaitForSecondsRealtime(SLIDE_DUR + 0.05f);
-        if (lg != null) lg.enabled = true;
-        _staggerCoroutine = null;
+        var child = mainMenuSlidePanel.GetChild(i) as RectTransform;
+        if (child != null && child.gameObject.activeSelf)
+            items.Add((child, child.anchoredPosition));
     }
+
+    if (items.Count == 0) yield break;
+
+    float canvasW = GetCanvasW();
+    if (canvasW <= 0f) canvasW = Screen.width;
+
+    // 3. LayoutGroup'u kapat (animasyon sırasında pozisyonları manuel yöneteceğiz)
+    var lg = mainMenuSlidePanel.GetComponent<LayoutGroup>();
+    if (lg != null) lg.enabled = false;
+
+    // 4. Parent'ı asıl yerine geri getir
+    mainMenuSlidePanel.anchoredPosition = _slidePanelRestPos;
+
+    // 5. Butonların hepsini ekranın SOLUNA taşı (-canvasW soldan sağa gelmesini sağlar)
+    foreach (var (rt, rest) in items)
+        rt.anchoredPosition = new Vector2(rest.x - canvasW, rest.y);
+
+    // 6. Her butonu sırayla soldan sağa doğru slide-in yap
+    foreach (var (rt, rest) in items)
+    {
+        StartCoroutine(SlideCoroutine(rt, rt.anchoredPosition, rest, null));
+        yield return new WaitForSecondsRealtime(STAGGER_DLY);
+    }
+
+    // 7. Animasyon bitince LayoutGroup'u geri aç
+    yield return new WaitForSecondsRealtime(SLIDE_DUR + 0.05f);
+    if (lg != null) lg.enabled = true;
+    _staggerCoroutine = null;
+}
 
     // ── Dikey Slide (HAJ / J) ─────────────────────────────────
 

@@ -27,6 +27,16 @@ public class UnifiedSettingsManager : MonoBehaviour
     private const string PREF_MASTER_VOLUME = "MasterVolume_Setting";
     private const string PREF_MUSIC_VOLUME = "MusicVolume_Setting";
     private const string PREF_SFX_VOLUME = "SFXVolume_Setting";
+    private const string PREF_MUTE_ALL = "MuteAll_Setting";
+
+    // Controls PlayerPrefs Keys
+    private const string PREF_SENSITIVITY = "Sensitivity_Setting";
+    private const string PREF_INVERT_Y = "InvertY_Setting";
+
+    // Controls defaults
+    private const float DEFAULT_SENSITIVITY = 1f;
+    private const float MIN_SENSITIVITY = 0.1f;
+    private const float MAX_SENSITIVITY = 5f;
 
     // Audio defaults
     private const float DEFAULT_VOLUME = 0.5f;
@@ -61,9 +71,44 @@ public class UnifiedSettingsManager : MonoBehaviour
     [SerializeField, Tooltip("Geri butonu")]
     public Button backButton;
 
+    [Header("=== TAB SETTINGS ===")]
+    [SerializeField, Tooltip("Audio sekme butonu")]
+    public Button audioTabButton;
+
+    [SerializeField, Tooltip("Video sekme butonu")]
+    public Button videoTabButton;
+
+    [SerializeField, Tooltip("Controls sekme butonu")]
+    public Button controlsTabButton;
+
+    [SerializeField, Tooltip("Audio sekme paneli")]
+    public GameObject audioPanel;
+
+    [SerializeField, Tooltip("Video sekme paneli")]
+    public GameObject videoPanel;
+
+    [SerializeField, Tooltip("Controls sekme paneli")]
+    public GameObject controlsPanel;
+
     [Header("=== QUALITY SETTINGS ===")]
-    [SerializeField, Tooltip("Grafik kalitesi dropdown'u")]
-    public TMP_Dropdown qualityDropdown;
+    [SerializeField, Tooltip("Grafik kalitesi slider'ı (0=VeryLow .. N=Ultra)")]
+    public Slider graphicsQualitySlider;
+
+    [SerializeField, Tooltip("Grafik kalitesi text'i (preset adı)")]
+    public TextMeshProUGUI graphicsQualityText;
+
+    [Header("=== CONTROLS SETTINGS ===")]
+    [SerializeField, Tooltip("Mouse hassasiyet slider'ı")]
+    public Slider sensitivitySlider;
+
+    [SerializeField, Tooltip("Mouse hassasiyet değer text'i")]
+    public TextMeshProUGUI sensitivityValueText;
+
+    [SerializeField, Tooltip("Y ekseni tersine çevir toggle'ı")]
+    public Toggle invertYAxisToggle;
+
+    [SerializeField, Tooltip("Invert Y durum text'i (ON/OFF)")]
+    public TextMeshProUGUI invertYAxisStatusText;
 
     [Header("=== LANGUAGE SETTINGS ===")]
     [SerializeField, Tooltip("Dil dropdown'u")]
@@ -101,6 +146,10 @@ public class UnifiedSettingsManager : MonoBehaviour
 
     [SerializeField, Tooltip("SFX ses text'i")]
     public TextMeshProUGUI sfxVolumeText;
+
+    [Header("=== MUTE ALL ===")]
+    [SerializeField, Tooltip("Tüm sesleri sustur toggle'ı")]
+    public Toggle muteAllToggle;
 
     #endregion
 
@@ -187,6 +236,11 @@ public class UnifiedSettingsManager : MonoBehaviour
         public float MasterVolume;
         public float MusicVolume;
         public float SFXVolume;
+        public bool IsMuted;
+
+        // Controls
+        public float Sensitivity;
+        public bool InvertYAxis;
 
         public SettingsData Clone()
         {
@@ -200,7 +254,10 @@ public class UnifiedSettingsManager : MonoBehaviour
                 VSyncEnabled = VSyncEnabled,
                 MasterVolume = MasterVolume,
                 MusicVolume = MusicVolume,
-                SFXVolume = SFXVolume
+                SFXVolume = SFXVolume,
+                IsMuted = IsMuted,
+                Sensitivity = Sensitivity,
+                InvertYAxis = InvertYAxis
             };
         }
 
@@ -216,7 +273,10 @@ public class UnifiedSettingsManager : MonoBehaviour
                    VSyncEnabled == other.VSyncEnabled &&
                    Mathf.Approximately(MasterVolume, other.MasterVolume) &&
                    Mathf.Approximately(MusicVolume, other.MusicVolume) &&
-                   Mathf.Approximately(SFXVolume, other.SFXVolume);
+                   Mathf.Approximately(SFXVolume, other.SFXVolume) &&
+                   IsMuted == other.IsMuted &&
+                   Mathf.Approximately(Sensitivity, other.Sensitivity) &&
+                   InvertYAxis == other.InvertYAxis;
         }
     }
 
@@ -257,13 +317,16 @@ public class UnifiedSettingsManager : MonoBehaviour
 
     private void SetupAllUI()
     {
-        SetupQualityDropdown();
+        SetupTabs();
+        SetupQualitySlider();
         SetupScreenModeDropdown();
         SetupResolutionDropdown();
         SetupFPSDropdown();
         SetupVSyncToggle();
         SetupAudioSliders();
+        SetupMuteAllToggle();
         SetupLanguageDropdown();
+        SetupControlsUI();
         SetupButtons();
     }
 
@@ -278,19 +341,19 @@ public class UnifiedSettingsManager : MonoBehaviour
 
     #region Setup Methods - Dropdowns
 
-    private void SetupQualityDropdown()
+    private void SetupQualitySlider()
     {
-        if (qualityDropdown == null) return;
+        if (graphicsQualitySlider == null) return;
 
-        qualityDropdown.ClearOptions();
+        int maxLevel = QualitySettings.names.Length - 1;
+        graphicsQualitySlider.minValue = 0;
+        graphicsQualitySlider.maxValue = maxLevel;
+        graphicsQualitySlider.wholeNumbers = true;
 
-        var options = new List<string>(QualitySettings.names);
-        qualityDropdown.AddOptions(options);
-
-        qualityDropdown.onValueChanged.AddListener(value =>
+        graphicsQualitySlider.onValueChanged.AddListener(value =>
         {
-            PlayDropdownSound();
-            HandleQualityChanged(value);
+            PlaySliderSound();
+            HandleQualityChanged((int)value);
         });
     }
 
@@ -421,6 +484,72 @@ public class UnifiedSettingsManager : MonoBehaviour
         }
 
         UpdateSaveButtonState();
+    }
+
+    private void SetupControlsUI()
+    {
+        // Sensitivity Slider
+        if (sensitivitySlider != null)
+        {
+            sensitivitySlider.minValue = MIN_SENSITIVITY;
+            sensitivitySlider.maxValue = MAX_SENSITIVITY;
+
+            sensitivitySlider.onValueChanged.AddListener(value =>
+            {
+                PlaySliderSound();
+                HandleSensitivityChanged(value);
+            });
+        }
+
+        // Invert Y-Axis Toggle
+        if (invertYAxisToggle != null)
+        {
+            invertYAxisToggle.onValueChanged.AddListener(value =>
+            {
+                PlayButtonSound();
+                HandleInvertYAxisChanged(value);
+            });
+        }
+    }
+
+    #endregion
+
+    #region Setup Methods - Tabs & Mute All
+
+    private void SetupTabs()
+    {
+        if (audioTabButton != null)
+            audioTabButton.onClick.AddListener(() => { PlayButtonSound(); SwitchTab(0); });
+        
+        if (videoTabButton != null)
+            videoTabButton.onClick.AddListener(() => { PlayButtonSound(); SwitchTab(1); });
+            
+        if (controlsTabButton != null)
+            controlsTabButton.onClick.AddListener(() => { PlayButtonSound(); SwitchTab(2); });
+
+        // Default to Audio tab
+        SwitchTab(0);
+    }
+
+    private void SetupMuteAllToggle()
+    {
+        if (muteAllToggle == null) return;
+
+        muteAllToggle.onValueChanged.AddListener(value =>
+        {
+            PlayButtonSound();
+            HandleMuteAllChanged(value);
+        });
+    }
+
+    /// <summary>
+    /// 0: Audio, 1: Video, 2: Controls
+    /// </summary>
+    public void SwitchTab(int tabIndex)
+    {
+        if (audioPanel != null) audioPanel.SetActive(tabIndex == 0);
+        if (videoPanel != null) videoPanel.SetActive(tabIndex == 1);
+        if (controlsPanel != null) controlsPanel.SetActive(tabIndex == 2);
     }
 
     #endregion
@@ -644,6 +773,7 @@ public class UnifiedSettingsManager : MonoBehaviour
         LoadScreenSettings();
         LoadFPSSettings();
         LoadAudioSettings();
+        LoadControlsSettings();
 
         // Selected = Saved (başlangıçta)
         _selectedSettings = _savedSettings.Clone();
@@ -695,6 +825,12 @@ public class UnifiedSettingsManager : MonoBehaviour
         _savedSettings.MasterVolume = PlayerPrefs.GetFloat(PREF_MASTER_VOLUME, DEFAULT_VOLUME);
         _savedSettings.MusicVolume = PlayerPrefs.GetFloat(PREF_MUSIC_VOLUME, DEFAULT_VOLUME);
         _savedSettings.SFXVolume = PlayerPrefs.GetFloat(PREF_SFX_VOLUME, DEFAULT_VOLUME);
+        _savedSettings.IsMuted = PlayerPrefs.GetInt(PREF_MUTE_ALL, 0) == 1;
+    }
+    private void LoadControlsSettings()
+    {
+        _savedSettings.Sensitivity = PlayerPrefs.GetFloat(PREF_SENSITIVITY, DEFAULT_SENSITIVITY);
+        _savedSettings.InvertYAxis = PlayerPrefs.GetInt(PREF_INVERT_Y, 0) == 1;
     }
 
     #endregion
@@ -703,11 +839,28 @@ public class UnifiedSettingsManager : MonoBehaviour
 
     private void HandleQualityChanged(int newValue)
     {
+        int maxLevel = QualitySettings.names.Length - 1;
+        newValue = Mathf.Clamp(newValue, 0, maxLevel);
         _selectedSettings.QualityLevel = newValue;
-        ApplyQualitySettings(_selectedSettings.QualityLevel);
+        ApplyQualitySettings(newValue);
+        UpdateQualityText(newValue);
         CheckForChanges();
 
         Debug.Log($"{LOG_PREFIX} Kalite değiştirildi: {QualitySettings.names[newValue]} (Kaydedilmedi)");
+    }
+
+    private void HandleSensitivityChanged(float newValue)
+    {
+        _selectedSettings.Sensitivity = newValue;
+        UpdateSensitivityText();
+        CheckForChanges();
+    }
+
+    private void HandleInvertYAxisChanged(bool newValue)
+    {
+        _selectedSettings.InvertYAxis = newValue;
+        UpdateInvertYAxisText();
+        CheckForChanges();
     }
 
     private void HandleLanguageChanged(int newValue)
@@ -785,6 +938,13 @@ public class UnifiedSettingsManager : MonoBehaviour
         CheckForChanges();
     }
 
+    private void HandleMuteAllChanged(bool newValue)
+    {
+        _selectedSettings.IsMuted = newValue;
+        ApplyAudioSettings();
+        CheckForChanges();
+    }
+
     private void HandleBackButtonPressed()
     {
         if (_hasUnsavedChanges)
@@ -818,6 +978,8 @@ public class UnifiedSettingsManager : MonoBehaviour
 
     private void ApplyQualitySettings(int qualityLevel)
     {
+        int maxLevel = QualitySettings.names.Length - 1;
+        qualityLevel = Mathf.Clamp(qualityLevel, 0, maxLevel);
         QualitySettings.SetQualityLevel(qualityLevel, true);
     }
 
@@ -884,17 +1046,18 @@ public class UnifiedSettingsManager : MonoBehaviour
         float master = _selectedSettings.MasterVolume;
         float music = _selectedSettings.MusicVolume;
         float sfx = _selectedSettings.SFXVolume;
+        bool isMuted = _selectedSettings.IsMuted;
 
-        AudioListener.volume = master;
+        AudioListener.volume = isMuted ? 0f : master;
 
         if (musicAudioSource != null)
         {
-            musicAudioSource.volume = music * master;
+            musicAudioSource.volume = music * (isMuted ? 0f : master);
         }
 
         if (sfxAudioSource != null)
         {
-            sfxAudioSource.volume = sfx * master;
+            sfxAudioSource.volume = sfx * (isMuted ? 0f : master);
         }
     }
 
@@ -930,11 +1093,13 @@ public class UnifiedSettingsManager : MonoBehaviour
         UpdateSlidersWithoutNotify();
         UpdateFPSDropdownInteractable(!_savedSettings.VSyncEnabled);
         UpdateAudioTexts();
+        UpdateQualityText(_savedSettings.QualityLevel);
+        UpdateSensitivityText();
+        UpdateInvertYAxisText();
     }
 
     private void UpdateDropdownsWithoutNotify()
     {
-        qualityDropdown?.SetValueWithoutNotify(_savedSettings.QualityLevel);
         languageDropdown?.SetValueWithoutNotify(_savedSettings.LocaleID);
         screenModeDropdown?.SetValueWithoutNotify((int)_savedSettings.ScreenMode);
         resolutionDropdown?.SetValueWithoutNotify(_savedSettings.ResolutionIndex);
@@ -944,6 +1109,8 @@ public class UnifiedSettingsManager : MonoBehaviour
     private void UpdateToggleWithoutNotify()
     {
         vSyncToggle?.SetIsOnWithoutNotify(_savedSettings.VSyncEnabled);
+        muteAllToggle?.SetIsOnWithoutNotify(_savedSettings.IsMuted);
+        invertYAxisToggle?.SetIsOnWithoutNotify(_savedSettings.InvertYAxis);
     }
 
     private void UpdateSlidersWithoutNotify()
@@ -951,6 +1118,8 @@ public class UnifiedSettingsManager : MonoBehaviour
         masterVolumeSlider?.SetValueWithoutNotify(_savedSettings.MasterVolume);
         musicVolumeSlider?.SetValueWithoutNotify(_savedSettings.MusicVolume);
         sfxVolumeSlider?.SetValueWithoutNotify(_savedSettings.SFXVolume);
+        graphicsQualitySlider?.SetValueWithoutNotify(_savedSettings.QualityLevel);
+        sensitivitySlider?.SetValueWithoutNotify(_savedSettings.Sensitivity);
     }
 
     private void UpdateAudioTexts()
@@ -963,6 +1132,26 @@ public class UnifiedSettingsManager : MonoBehaviour
 
         if (sfxVolumeText != null)
             sfxVolumeText.text = Mathf.RoundToInt(_selectedSettings.SFXVolume * 100).ToString();
+    }
+
+    private void UpdateQualityText(int qualityLevel)
+    {
+        if (graphicsQualityText == null) return;
+        int maxLevel = QualitySettings.names.Length - 1;
+        qualityLevel = Mathf.Clamp(qualityLevel, 0, maxLevel);
+        graphicsQualityText.text = QualitySettings.names[qualityLevel];
+    }
+
+    private void UpdateSensitivityText()
+    {
+        if (sensitivityValueText != null)
+            sensitivityValueText.text = _selectedSettings.Sensitivity.ToString("F1");
+    }
+
+    private void UpdateInvertYAxisText()
+    {
+        if (invertYAxisStatusText != null)
+            invertYAxisStatusText.text = _selectedSettings.InvertYAxis ? "ON" : "OFF";
     }
 
     private void UpdateFPSDropdownInteractable(bool enabled)
@@ -1026,6 +1215,12 @@ public class UnifiedSettingsManager : MonoBehaviour
         PlayerPrefs.SetFloat(PREF_MASTER_VOLUME, _savedSettings.MasterVolume);
         PlayerPrefs.SetFloat(PREF_MUSIC_VOLUME, _savedSettings.MusicVolume);
         PlayerPrefs.SetFloat(PREF_SFX_VOLUME, _savedSettings.SFXVolume);
+        PlayerPrefs.SetInt(PREF_MUTE_ALL, _savedSettings.IsMuted ? 1 : 0);
+
+        // Controls
+        PlayerPrefs.SetFloat(PREF_SENSITIVITY, _savedSettings.Sensitivity);
+        PlayerPrefs.SetInt(PREF_INVERT_Y, _savedSettings.InvertYAxis ? 1 : 0);
+
         PlayerPrefs.Save();
     }
 
@@ -1046,15 +1241,21 @@ public class UnifiedSettingsManager : MonoBehaviour
 
     private void UpdateAllUIFromSelected()
     {
-        qualityDropdown?.SetValueWithoutNotify(_selectedSettings.QualityLevel);
+        graphicsQualitySlider?.SetValueWithoutNotify(_selectedSettings.QualityLevel);
+        UpdateQualityText(_selectedSettings.QualityLevel);
         languageDropdown?.SetValueWithoutNotify(_selectedSettings.LocaleID);
         screenModeDropdown?.SetValueWithoutNotify((int)_selectedSettings.ScreenMode);
         resolutionDropdown?.SetValueWithoutNotify(_selectedSettings.ResolutionIndex);
         fpsDropdown?.SetValueWithoutNotify(_selectedSettings.FPSIndex);
         vSyncToggle?.SetIsOnWithoutNotify(_selectedSettings.VSyncEnabled);
+        muteAllToggle?.SetIsOnWithoutNotify(_selectedSettings.IsMuted);
         masterVolumeSlider?.SetValueWithoutNotify(_selectedSettings.MasterVolume);
         musicVolumeSlider?.SetValueWithoutNotify(_selectedSettings.MusicVolume);
         sfxVolumeSlider?.SetValueWithoutNotify(_selectedSettings.SFXVolume);
+        sensitivitySlider?.SetValueWithoutNotify(_selectedSettings.Sensitivity);
+        invertYAxisToggle?.SetIsOnWithoutNotify(_selectedSettings.InvertYAxis);
+        UpdateSensitivityText();
+        UpdateInvertYAxisText();
     }
 
     private void ApplyAllSettingsFromSaved()
@@ -1066,6 +1267,9 @@ public class UnifiedSettingsManager : MonoBehaviour
         ApplyFPSSettings(_savedSettings.FPSIndex, _savedSettings.VSyncEnabled);
         ApplyAudioSettings();
         UpdateAudioTexts();
+        UpdateQualityText(_savedSettings.QualityLevel);
+        UpdateSensitivityText();
+        UpdateInvertYAxisText();
     }
 
     #endregion
@@ -1084,15 +1288,21 @@ public class UnifiedSettingsManager : MonoBehaviour
 
     private void RemoveAllListeners()
     {
-        qualityDropdown?.onValueChanged.RemoveAllListeners();
+        graphicsQualitySlider?.onValueChanged.RemoveAllListeners();
         languageDropdown?.onValueChanged.RemoveAllListeners();
         screenModeDropdown?.onValueChanged.RemoveAllListeners();
         resolutionDropdown?.onValueChanged.RemoveAllListeners();
         fpsDropdown?.onValueChanged.RemoveAllListeners();
         vSyncToggle?.onValueChanged.RemoveAllListeners();
+        muteAllToggle?.onValueChanged.RemoveAllListeners();
+        audioTabButton?.onClick.RemoveAllListeners();
+        videoTabButton?.onClick.RemoveAllListeners();
+        controlsTabButton?.onClick.RemoveAllListeners();
         masterVolumeSlider?.onValueChanged.RemoveAllListeners();
         musicVolumeSlider?.onValueChanged.RemoveAllListeners();
         sfxVolumeSlider?.onValueChanged.RemoveAllListeners();
+        sensitivitySlider?.onValueChanged.RemoveAllListeners();
+        invertYAxisToggle?.onValueChanged.RemoveAllListeners();
         saveButton?.onClick.RemoveAllListeners();
         backButton?.onClick.RemoveAllListeners();
     }
@@ -1109,7 +1319,11 @@ public class UnifiedSettingsManager : MonoBehaviour
     /// <summary>
     /// Mevcut kalite seviyesi adı
     /// </summary>
-    public string GetCurrentQualityName() => QualitySettings.names[_savedSettings.QualityLevel];
+    public string GetCurrentQualityName()
+    {
+        int level = Mathf.Clamp(_savedSettings.QualityLevel, 0, QualitySettings.names.Length - 1);
+        return QualitySettings.names[level];
+    }
 
     /// <summary>
     /// Mevcut ekran modu adı
@@ -1147,6 +1361,16 @@ public class UnifiedSettingsManager : MonoBehaviour
     /// SFX ses seviyesi (0-1)
     /// </summary>
     public float GetSFXVolume() => _savedSettings.SFXVolume;
+
+    /// <summary>
+    /// Mouse hassasiyet değeri
+    /// </summary>
+    public float GetSensitivity() => _savedSettings.Sensitivity;
+
+    /// <summary>
+    /// Y ekseni ters mi?
+    /// </summary>
+    public bool GetInvertYAxis() => _savedSettings.InvertYAxis;
 
     public void OnBackButtonPressed()
     {
