@@ -499,7 +499,7 @@ namespace NewCss
 
             if (!playerInRange) return;
 
-            if (Input.GetKeyDown(KeyCode.E))
+            if (InputBindingManager.GetActionDown(InputBindingManager.GameAction.Interact))
             {
                 RequestInteractionServerRpc(NetworkManager.Singleton.LocalClientId);
             }

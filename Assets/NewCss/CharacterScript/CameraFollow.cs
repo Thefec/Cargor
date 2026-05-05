@@ -43,10 +43,11 @@ namespace NewCss
         [SerializeField, Tooltip("Sabit Y rotasyonu")]
         private float fixedRotationY = 0f;
 
-        [Header("=== ZOOM SETTINGS ===")]
-        [SerializeField, Tooltip("Zoom tuşu (yakınlaşma)")]
-        private KeyCode zoomKey = KeyCode.Z;
+        [Header("=== CONTROLS ===")]
+        [Tooltip("Note: Kontroller artık InputBindingManager üzerinden yönetiliyor. Keys kaldırıldı.")]
+        [SerializeField] private bool useInputManager = true;
 
+        [Header("=== ZOOM SETTINGS ===")]
         [SerializeField, Tooltip("Zoom yapıldığında hedef offset")]
         private Vector3 zoomedOffset = new Vector3(0f, 5f, -5f);
 
@@ -213,7 +214,7 @@ namespace NewCss
             }
 
             // Z tuşuna basılı tutulduğunda zoom yap
-            _isZooming = Input.GetKey(zoomKey);
+            _isZooming = InputBindingManager.GetAction(InputBindingManager.GameAction.Zoom);
 
             // Hedef offset'i belirle
             Vector3 targetOffset = _isZooming ? zoomedOffset : _defaultOffset;
@@ -229,7 +230,7 @@ namespace NewCss
         private void HandleMapViewInput()
         {
             // X tuşuna basılı tutulduğunda harita görünümüne geç
-            _isMapViewActive = Input.GetKey(mapViewKey);
+            _isMapViewActive = InputBindingManager.GetAction(InputBindingManager.GameAction.MapView);
         }
 
         #endregion

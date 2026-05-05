@@ -17,6 +17,75 @@ using UnityColor = UnityEngine.Color;
 using UnityImage = UnityEngine.UI.Image;
 
 /// <summary>
+/// Steam Lobby ID'lerini kısa alfanumerik kodlara dönüştüren utility sınıfı.
+/// Base36 encoding kullanarak 18 haneli ulong ID'leri ~10-12 karakterlik kodlara çevirir.
+/// </summary>
+public static class LobbyCodeConverter
+{
+    private const string BASE36_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    /// <summary>
+    /// ulong Lobby ID'yi Base36 kısa koda çevirir.
+    /// Örnek: 76561198012345678 → "1NJCHS1W3I"
+    /// </summary>
+    public static string Encode(ulong lobbyId)
+    {
+        if (lobbyId == 0) return "0";
+
+        var result = new System.Text.StringBuilder();
+        ulong value = lobbyId;
+
+        while (value > 0)
+        {
+            result.Insert(0, BASE36_CHARS[(int)(value % 36)]);
+            value /= 36;
+        }
+
+        return result.ToString();
+    }
+
+    /// <summary>
+    /// Base36 kısa kodu ulong Lobby ID'ye çevirir.
+    /// Örnek: "1NJCHS1W3I" → 76561198012345678
+    /// </summary>
+    public static ulong Decode(string code)
+    {
+        if (string.IsNullOrEmpty(code)) return 0;
+
+        code = code.Trim().ToUpperInvariant();
+        ulong result = 0;
+
+        for (int i = 0; i < code.Length; i++)
+        {
+            int charIndex = BASE36_CHARS.IndexOf(code[i]);
+            if (charIndex < 0)
+                throw new System.FormatException($"Geçersiz karakter: '{code[i]}'");
+
+            result = result * 36 + (ulong)charIndex;
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Güvenli decode denemesi. Başarısız olursa false döner.
+    /// </summary>
+    public static bool TryDecode(string code, out ulong lobbyId)
+    {
+        lobbyId = 0;
+        try
+        {
+            lobbyId = Decode(code);
+            return lobbyId != 0;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+}
+
+/// <summary>
 /// Steam lobi yönetimi, oyuncu slot sistemi, oyun başlatma ve network bağlantılarını yöneten ana sınıf.
 /// Steamworks. NET ve Unity Netcode entegrasyonu sağlar.
 /// </summary>
@@ -379,6 +448,7 @@ public class SteamManager : MonoBehaviour
         try
         {
             var joinResult = await lobby.Join();
+            if (this == null || !Application.isPlaying) return;
 
             if (joinResult != RoomEnter.Success)
             {
@@ -612,7 +682,7 @@ public class SteamManager : MonoBehaviour
 
         if (LobbyID != null)
         {
-            LobbyID.text = lobby.Id.ToString();
+            LobbyID.text = LobbyCodeConverter.Encode(lobby.Id);
         }
     }
 
@@ -632,10 +702,12 @@ public class SteamManager : MonoBehaviour
             UpdateLoadingProgress(0.2f, "Lobi oluşturuluyor...");
 
             await ForceNetworkCleanup();
+            if (this == null || !Application.isPlaying) return;
 
             UpdateLoadingProgress(0.5f, "Steam'e bağlanılıyor...");
 
             var lobby = await SteamMatchmaking.CreateLobbyAsync(MAX_PLAYERS);
+            if (this == null || !Application.isPlaying) return;
 
             if (!lobby.HasValue)
             {
@@ -649,11 +721,13 @@ public class SteamManager : MonoBehaviour
 
             // Kısa bir bekleme - UI'ın güncelenmesi için
             await System.Threading.Tasks.Task.Delay(300);
+            if (this == null || !Application.isPlaying) return;
 
             UpdateLoadingProgress(1f, "Hazır!");
 
             // Loading ekranını kapat
             await System.Threading.Tasks.Task.Delay(200);
+            if (this == null || !Application.isPlaying) return;
             SetLoadingScreenActive(false);
         }
         catch (Exception ex)
@@ -687,15 +761,18 @@ public class SteamManager : MonoBehaviour
             UpdateLoadingProgress(0.2f, "Lobiye bağlanılıyor...");
 
             await PrepareForJoin();
+            if (this == null || !Application.isPlaying) return;
 
             UpdateLoadingProgress(0.5f, "Lobi aranıyor...");
 
             await ExecuteJoinLobby(lobbyId);
+            if (this == null || !Application.isPlaying) return;
 
             UpdateLoadingProgress(1f, "Bağlandı!");
 
             // Loading ekranını kapat
             await System.Threading.Tasks.Task.Delay(300);
+            if (this == null || !Application.isPlaying) return;
             SetLoadingScreenActive(false);
         }
         catch (Exception ex)
@@ -724,9 +801,9 @@ public class SteamManager : MonoBehaviour
             return;
         }
 
-        if (!ulong.TryParse(lobbyCode, out ulong lobbyId))
+        if (!LobbyCodeConverter.TryDecode(lobbyCode.Trim().ToUpper(), out ulong lobbyId))
         {
-            ShowErrorMessage("Geçersiz Lobi ID formatı!");
+            ShowErrorMessage("Geçersiz Lobi kodu!");
             return;
         }
 
@@ -739,14 +816,17 @@ public class SteamManager : MonoBehaviour
             UpdateLoadingProgress(0.2f, "Lobiye bağlanılıyor...");
 
             await PrepareForJoin();
+            if (this == null || !Application.isPlaying) return;
 
             UpdateLoadingProgress(0.5f, "Lobi aranıyor...");
 
             await ExecuteJoinLobby(lobbyId);
+            if (this == null || !Application.isPlaying) return;
 
             UpdateLoadingProgress(1f, "Bağlandı!");
 
             await System.Threading.Tasks.Task.Delay(300);
+            if (this == null || !Application.isPlaying) return;
             SetLoadingScreenActive(false);
         }
         catch (Exception ex)
@@ -767,9 +847,11 @@ public class SteamManager : MonoBehaviour
     /// </summary>
     public async void LeaveLobby()
     {
+        if (this == null || !Application.isPlaying) return;
         _isLobbyJoinValid = false;
 
         await ForceNetworkCleanup();
+        if (this == null || !Application.isPlaying) return;
 
         ClearAllPlayerSlots();
         SetStartButtonActive(false);
@@ -795,7 +877,7 @@ public class SteamManager : MonoBehaviour
             return;
         }
 
-        string lobbyCode = _currentLobby.Id.ToString();
+        string lobbyCode = LobbyCodeConverter.Encode(_currentLobby.Id);
         CopyToClipboard(lobbyCode);
 
         // Smooth renk geçişi başlat
@@ -884,13 +966,13 @@ public class SteamManager : MonoBehaviour
 
         if (string.IsNullOrEmpty(LobbyIDInputField?.text))
         {
-            ShowErrorMessage("Lütfen bir Lobi ID girin!");
+            ShowErrorMessage("Lütfen bir Lobi kodu girin!");
             return false;
         }
 
-        if (!ulong.TryParse(LobbyIDInputField.text, out lobbyId))
+        if (!LobbyCodeConverter.TryDecode(LobbyIDInputField.text.Trim().ToUpper(), out lobbyId))
         {
-            ShowErrorMessage("Geçersiz Lobi ID formatı!");
+            ShowErrorMessage("Geçersiz Lobi kodu!");
             return false;
         }
 
@@ -903,6 +985,7 @@ public class SteamManager : MonoBehaviour
             (NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsClient))
         {
             await ForceNetworkCleanup();
+            if (this == null || !Application.isPlaying) return;
         }
     }
 
@@ -910,6 +993,7 @@ public class SteamManager : MonoBehaviour
     {
         var targetLobby = new Lobby(lobbyId);
         var joinResult = await targetLobby.Join();
+        if (this == null || !Application.isPlaying) return;
 
         if (joinResult == RoomEnter.Success)
         {
@@ -975,12 +1059,17 @@ public class SteamManager : MonoBehaviour
         _isLobbyJoinValid = false;
 
         await ShutdownNetworkManager();
+        if (this == null || !Application.isPlaying) return;
+        
         ResetSceneManager();
         await ResetTransport();
+        if (this == null || !Application.isPlaying) return;
+        
         LeaveCurrentLobby();
         ClearLobbySaver();
 
         await Task.Delay(CLEANUP_FINAL_DELAY_MS);
+        if (this == null || !Application.isPlaying) return;
     }
 
     private async Task ShutdownNetworkManager()
@@ -992,10 +1081,12 @@ public class SteamManager : MonoBehaviour
         NetworkManager.Singleton.Shutdown();
 
         int waitTime = 0;
-        while ((NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsClient) &&
+        while (NetworkManager.Singleton != null && 
+               (NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsClient) &&
                waitTime < NETWORK_SHUTDOWN_TIMEOUT_MS)
         {
             await Task.Delay(NETWORK_SHUTDOWN_CHECK_INTERVAL_MS);
+            if (this == null || !Application.isPlaying) return;
             waitTime += NETWORK_SHUTDOWN_CHECK_INTERVAL_MS;
         }
     }
@@ -1021,8 +1112,12 @@ public class SteamManager : MonoBehaviour
         transport.enabled = false;
 
         await Task.Delay(TRANSPORT_RESET_DELAY_MS);
+        if (this == null || !Application.isPlaying) return;
 
-        transport.enabled = true;
+        if (transport != null)
+        {
+            transport.enabled = true;
+        }
     }
 
     private void LeaveCurrentLobby()
@@ -1102,6 +1197,9 @@ public class SteamManager : MonoBehaviour
             slot.kickButton.onClick.RemoveAllListeners();
             slot.kickButton.onClick.AddListener(() => KickPlayer(steamId));
         }
+
+        // Dolu slot: arka plan tıklamasını kapat
+        MakeSlotBackgroundClickable(slot, false);
     }
 
     private void SetSlotEmpty(int slotIndex)
@@ -1117,6 +1215,84 @@ public class SteamManager : MonoBehaviour
         if (slot.kickButton != null)
         {
             slot.kickButton.gameObject.SetActive(false);
+        }
+
+        // Boş slot: arka planın tamamı tıklanabilir buton olsun (Steam davet overlay'i açar)
+        MakeSlotBackgroundClickable(slot, true);
+    }
+
+    /// <summary>
+    /// Steam arkadaş davet overlay'ini açar
+    /// </summary>
+    private void OpenSteamInviteOverlay()
+    {
+        Debug.Log($"{LOG_PREFIX} OpenSteamInviteOverlay çağrıldı. IsLobbyValid={IsLobbyValid}, LobbyId={_currentLobby.Id}, _isLobbyJoinValid={_isLobbyJoinValid}");
+
+        if (!IsLobbyValid)
+        {
+            ShowErrorMessage("Önce bir lobi oluşturmalısınız!");
+            return;
+        }
+
+        try
+        {
+            Debug.Log($"{LOG_PREFIX} Steam invite overlay açılıyor. LobbyId={_currentLobby.Id}");
+            SteamFriends.OpenGameInviteOverlay(_currentLobby.Id);
+            Debug.Log($"{LOG_PREFIX} ✅ Steam invite overlay komutu gönderildi.");
+        }
+        catch (Exception ex)
+        {
+            LogError($"Steam invite overlay error: {ex.Message}");
+            
+            // Fallback: Genel Steam arkadaş listesini aç
+            try
+            {
+                Debug.Log($"{LOG_PREFIX} Fallback: Steam friends overlay açılıyor...");
+                SteamFriends.OpenOverlay("friends");
+            }
+            catch (Exception fallbackEx)
+            {
+                LogError($"Steam friends overlay fallback error: {fallbackEx.Message}");
+                ShowErrorMessage("Steam davet menüsü açılamadı!");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Slot arka planını tıklanabilir yapar veya kaldırır.
+    /// Boş slotlara tıklanınca Steam davet overlay'i açılır.
+    /// </summary>
+    private void MakeSlotBackgroundClickable(PlayerSlot slot, bool clickable)
+    {
+        if (slot.backgroundImage == null) return;
+
+        var bgButton = slot.backgroundImage.GetComponent<Button>();
+
+        if (clickable)
+        {
+            // Button component yoksa ekle
+            if (bgButton == null)
+            {
+                bgButton = slot.backgroundImage.gameObject.AddComponent<Button>();
+                // Görsel geçiş efektini kapat (sprite'ı bozmasın)
+                bgButton.transition = Selectable.Transition.None;
+            }
+
+            bgButton.onClick.RemoveAllListeners();
+            bgButton.onClick.AddListener(OpenSteamInviteOverlay);
+            bgButton.interactable = true;
+
+            // Raycast hedefi olsun
+            slot.backgroundImage.raycastTarget = true;
+        }
+        else
+        {
+            // Dolu slotta tıklamayı kapat
+            if (bgButton != null)
+            {
+                bgButton.onClick.RemoveAllListeners();
+                bgButton.interactable = false;
+            }
         }
     }
 

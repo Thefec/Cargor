@@ -151,6 +151,11 @@ public class PlayerInventory : NetworkBehaviour
     // State Flags
     private bool _isAnimating;
     private bool _isProcessingInteraction;
+    
+    // Throw Mechanic
+    private float _leftClickHoldTimer;
+    private bool _throwExecuted;
+    private const float THROW_HOLD_DURATION = 3f;
 
     // Detection System
     private Collider[] _colliderBuffer;
@@ -238,7 +243,38 @@ public class PlayerInventory : NetworkBehaviour
         if (!IsOwner) return;
 
         UpdateShelfItemSystem();
+        HandleHoldToThrow();
         HandleInput();
+    }
+
+    private void HandleHoldToThrow()
+    {
+        if (!_hasItem.Value || _isProcessingInteraction || _isAnimating) 
+        {
+            _leftClickHoldTimer = 0f;
+            _throwExecuted = false;
+            return;
+        }
+
+        if (InputBindingManager.GetAction(InputBindingManager.GameAction.Pickup))
+        {
+            if (!_throwExecuted)
+            {
+                _leftClickHoldTimer += Time.deltaTime;
+                
+                if (_leftClickHoldTimer >= THROW_HOLD_DURATION)
+                {
+                    _throwExecuted = true;
+                    _lastInputTime = Time.time;
+                    HandleThrowInteraction();
+                }
+            }
+        }
+        else
+        {
+            _leftClickHoldTimer = 0f;
+            _throwExecuted = false;
+        }
     }
 
     #endregion
@@ -866,22 +902,27 @@ public class PlayerInventory : NetworkBehaviour
         // Spam koruması
         if (Time.time - _lastInputTime < INPUT_SPAM_COOLDOWN) return;
 
-
-        if (Input.GetKeyDown(KeyCode.E))
+        if (InputBindingManager.GetActionDown(InputBindingManager.GameAction.Pickup))
         {
             _lastInputTime = Time.time;
             HandlePickupInteraction();
         }
-        else if (Input.GetKeyDown(KeyCode.F))
+        else if (InputBindingManager.GetActionDown(InputBindingManager.GameAction.Drop))
         {
             _lastInputTime = Time.time;
             HandleDropInteraction();
         }
-        else if (Input.GetMouseButtonDown(0))
+        else if (InputBindingManager.GetActionDown(InputBindingManager.GameAction.Interact))
         {
             _lastInputTime = Time.time;
-            HandleThrowInteraction();
+            HandleEInteraction();
         }
+    }
+
+    private void HandleEInteraction()
+    {
+        // Burada sadece müşteri, telefon vb gibi E tuşuna özel etkileşimler olabilir.
+        // Masa vb eşya işlemleri Left/Right click'e taşındı.
     }
     [ServerRpc(RequireOwnership = false)]
     private void RequestTakeFromTutorialShelfServerRpc(ulong itemNetworkId, ServerRpcParams rpcParams = default)
@@ -998,18 +1039,21 @@ public class PlayerInventory : NetworkBehaviour
             }
         }
 
-        // Priority 3: Table interaction
-        var nearbyTable = GetNearbyTable();
-        if (nearbyTable != null)
+        // Priority 3: Table interaction (Masadan alma)
+        if (!_hasItem.Value)
         {
-            _isProcessingInteraction = true;
-            PlaySound(_hasItem.Value ? SoundType.PlaceOnTable : SoundType.TakeFromTable);
-            nearbyTable.InteractWithTable(this);
-            StartCoroutine(ResetInteractionFlagAfterDelay());
-            return;
+            var nearbyTable = GetNearbyTable();
+            if (nearbyTable != null)
+            {
+                _isProcessingInteraction = true;
+                PlaySound(SoundType.TakeFromTable);
+                nearbyTable.InteractWithTable(this);
+                StartCoroutine(ResetInteractionFlagAfterDelay());
+                return;
+            }
         }
 
-        Debug.Log("[PlayerInventory] No valid interaction target found");
+        Debug.Log("[PlayerInventory] No valid pickup target found");
     }
 
     private bool IsValidWorldItem(NetworkWorldItem item)
@@ -1084,6 +1128,17 @@ public class PlayerInventory : NetworkBehaviour
             _isProcessingInteraction = true;
             RequestPlaceOnShelfServerRpc();
             PlaySound(SoundType.PlaceOnShelf);
+            return;
+        }
+
+        // Table yerleştirme (Masaya koyma)
+        var nearbyTable = GetNearbyTable();
+        if (nearbyTable != null)
+        {
+            _isProcessingInteraction = true;
+            PlaySound(SoundType.PlaceOnTable);
+            nearbyTable.InteractWithTable(this);
+            StartCoroutine(ResetInteractionFlagAfterDelay());
             return;
         }
 

@@ -27,7 +27,7 @@ public class Menu : MonoBehaviour
     #endregion
 
     #region Enums
-    private enum MenuState { MainMenu, HostJoinMenu, JoinRoomPanel, Settings, Credits, TutorialConfirm }
+    private enum MenuState { MainMenu, HostJoinMenu, JoinRoomPanel, Settings, Credits, TutorialConfirm, Lobby }
     #endregion
 
     // ── Inspector ────────────────────────────────────────────
@@ -61,6 +61,14 @@ public class Menu : MonoBehaviour
     [SerializeField] public RectTransform joinPanel;
     [SerializeField] public TMP_InputField roomCodeInputField;
     [SerializeField] public Button confirmEntryButton;
+    #endregion
+
+    #region Lobby Group
+    [Header("=== LOBBY GRUBU ===")]
+    [SerializeField] public GameObject    lobbyGroup;
+    [SerializeField] public GameObject    lobbyBlackBG;
+    [SerializeField] public Button        lobbyBackButton;
+    [SerializeField] public RectTransform lobbyPanel;
     #endregion
 
     #region Overlays
@@ -112,6 +120,7 @@ public class Menu : MonoBehaviour
     private Vector2 _slidePanelRestPos;   // mainMenuSlidePanel container'ının rest pos'u
     private Vector2 _hajRestPos;
     private Vector2 _jRestPos;
+    private Vector2 _lobbyRestPos;
     #endregion
 
     #region Properties
@@ -154,6 +163,7 @@ public class Menu : MonoBehaviour
         if (mainMenuSlidePanel != null) _slidePanelRestPos = mainMenuSlidePanel.anchoredPosition;
         if (hostOrJoinPanel    != null) _hajRestPos        = hostOrJoinPanel.anchoredPosition;
         if (joinPanel          != null) _jRestPos          = joinPanel.anchoredPosition;
+        if (lobbyPanel         != null) _lobbyRestPos      = lobbyPanel.anchoredPosition;
     }
 
     private void InitPanels()
@@ -169,6 +179,10 @@ public class Menu : MonoBehaviour
         // J: panel off-screen üst, grup kapalı
         SetOffscreenTop(joinPanel, _jRestPos);
         Go(jGroup, false);
+
+        // LOBBY: panel off-screen üst, grup kapalı
+        SetOffscreenTop(lobbyPanel, _lobbyRestPos);
+        Go(lobbyGroup, false);
 
         // Overlay'ler
         Go(settingsPanel,        false);
@@ -190,6 +204,7 @@ public class Menu : MonoBehaviour
         Btn(joinRoomButton,           () => GoTo(MenuState.JoinRoomPanel));
         Btn(jBackButton,              () => GoTo(MenuState.HostJoinMenu));
         Btn(confirmEntryButton,       ExecuteConfirmEntry);
+        Btn(lobbyBackButton,          () => { if (steamManager != null) steamManager.LeaveLobby(); else GoTo(MenuState.HostJoinMenu); });
         Btn(tutorialConfirmYesButton, ConfirmTutorial);
         Btn(tutorialConfirmNoButton,  CancelTutorial);
         Btn(backFromSettingsButton,   BackFromSettings);
@@ -221,6 +236,7 @@ public class Menu : MonoBehaviour
             case MenuState.Settings:        ShowOverlay(settingsPanel);        break;
             case MenuState.Credits:         ShowOverlay(creditsPanel);         break;
             case MenuState.TutorialConfirm: ShowOverlay(tutorialConfirmPanel); break;
+            case MenuState.Lobby:           ShowLobby();          break;
         }
         Debug.Log($"{LOG_PREFIX} {prev} → {next}");
     }
@@ -250,6 +266,14 @@ public class Menu : MonoBehaviour
                 StartStaggeredMainMenu();
             });
         }
+        else if (prev == MenuState.Lobby)
+        {
+            SlideOut(lobbyPanel, _lobbyRestPos, () =>
+            {
+                Go(lobbyGroup, false);
+                StartStaggeredMainMenu();
+            });
+        }
         else
         {
             StartStaggeredMainMenu();
@@ -267,6 +291,15 @@ public class Menu : MonoBehaviour
             SlideOut(joinPanel, _jRestPos, () =>
             {
                 Go(jGroup, false);
+                ActivateHAJGroup();
+            });
+            return;
+        }
+        else if (prev == MenuState.Lobby)
+        {
+            SlideOut(lobbyPanel, _lobbyRestPos, () =>
+            {
+                Go(lobbyGroup, false);
                 ActivateHAJGroup();
             });
             return;
@@ -303,6 +336,47 @@ public class Menu : MonoBehaviour
             if (jBackButton != null) jBackButton.gameObject.SetActive(true);
             SlideIn(joinPanel, _jRestPos);
         });
+    }
+
+    // ─ LOBBY ─────────────────────────────────────────────────
+
+    private void ShowLobby()
+    {
+        CloseOverlays();
+
+        // HAJ'ı gizle
+        if (hajGroup != null && hajGroup.activeSelf)
+        {
+            SlideOut(hostOrJoinPanel, _hajRestPos, () =>
+            {
+                Go(hajGroup, false);
+                Go(hajBlackBG, false);
+                if (hajBackButton != null) hajBackButton.gameObject.SetActive(false);
+            });
+        }
+        
+        // J'yi gizle
+        if (jGroup != null && jGroup.activeSelf)
+        {
+            SlideOut(joinPanel, _jRestPos, () =>
+            {
+                Go(jGroup, false);
+                Go(jBlackBG, false);
+                if (jBackButton != null) jBackButton.gameObject.SetActive(false);
+            });
+        }
+
+        HideMainMenuInstant();
+
+        // Lobby panelini göster
+        if (lobbyPanel != null)
+        {
+            SetOffscreenTop(lobbyPanel, _lobbyRestPos);
+            Go(lobbyGroup, true);
+            if (lobbyBlackBG != null) Go(lobbyBlackBG, true);
+            if (lobbyBackButton != null) lobbyBackButton.gameObject.SetActive(true);
+            SlideIn(lobbyPanel, _lobbyRestPos);
+        }
     }
 
     // ─ OVERLAYS ──────────────────────────────────────────────
@@ -502,6 +576,7 @@ public class Menu : MonoBehaviour
         {
             case MenuState.JoinRoomPanel:   GoTo(MenuState.HostJoinMenu); break;
             case MenuState.HostJoinMenu:    GoTo(MenuState.MainMenu);     break;
+            case MenuState.Lobby:           if (steamManager != null) steamManager.LeaveLobby(); else GoTo(MenuState.HostJoinMenu); break;
             case MenuState.Settings:        BackFromSettings();           break;
             case MenuState.Credits:         CloseCredits();               break;
             case MenuState.TutorialConfirm: CancelTutorial();             break;
@@ -513,6 +588,7 @@ public class Menu : MonoBehaviour
     public void ShowMainMenuPublic()     => GoTo(MenuState.MainMenu);
     public void ShowHostJoinMenuPublic() => GoTo(MenuState.HostJoinMenu);
     public void ExitHostJoinMenu()       => GoTo(MenuState.MainMenu);
+    public void OpenLobby()              => GoTo(MenuState.Lobby);
     public void PlayOnline()             => GoTo(MenuState.HostJoinMenu);
     public void BackToMainMenu()         => GoTo(MenuState.MainMenu);
     public void OpenSettings()           => GoTo(MenuState.Settings);
@@ -583,7 +659,7 @@ public class Menu : MonoBehaviour
         foreach (var b in new[] {
             hostGameButton, tutorialButton, settingsButton, creditsButton, quitButton,
             hajBackButton, createRoomButton, joinRoomButton,
-            jBackButton, confirmEntryButton,
+            jBackButton, confirmEntryButton, lobbyBackButton,
             tutorialConfirmYesButton, tutorialConfirmNoButton,
             backFromSettingsButton, saveSettingsButton, backFromCreditsButton,
             discordButton, steamPageButton, instagramButton })

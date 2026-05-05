@@ -397,8 +397,14 @@ namespace NewCss
 
         private Vector2 GetMovementInput()
         {
-            float h = Input.GetAxisRaw("Horizontal");
-            float v = Input.GetAxisRaw("Vertical");
+            float h = 0f;
+            if (InputBindingManager.GetAction(InputBindingManager.GameAction.MoveRight)) h += 1f;
+            if (InputBindingManager.GetAction(InputBindingManager.GameAction.MoveLeft)) h -= 1f;
+
+            float v = 0f;
+            if (InputBindingManager.GetAction(InputBindingManager.GameAction.MoveUp)) v += 1f;
+            if (InputBindingManager.GetAction(InputBindingManager.GameAction.MoveDown)) v -= 1f;
+
             return new Vector2(h, v);
         }
 
@@ -507,7 +513,7 @@ namespace NewCss
         private void HandleNormalStaminaState()
         {
             bool isMoving = IsMoving;
-            bool wantsSprint = Input.GetKey(KeyCode.LeftShift);
+            bool wantsSprint = InputBindingManager.GetAction(InputBindingManager.GameAction.Sprint);
 
             if (wantsSprint && _currentStamina > 0f && isMoving)
             {

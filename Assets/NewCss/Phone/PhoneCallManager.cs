@@ -1,4 +1,4 @@
-﻿using Unity.Netcode;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace NewCss
@@ -279,8 +279,8 @@ namespace NewCss
             // Kontrol et: telefon kullanilabilir mi?
             if (!CanUsePhone(out string reason))
             {
-                // E'ye basilsa bile bar gosterme
-                if (Input.GetKeyDown(KeyCode.E) && reason.Length > 0)
+                // Etkileşime basilsa bile bar gosterme
+                if (InputBindingManager.GetActionDown(InputBindingManager.GameAction.Interact) && reason.Length > 0)
                 {
                     LogDebug("Telefon kullanilamaz: " + reason);
                     PlayFailSound();
@@ -288,8 +288,8 @@ namespace NewCss
                 return;
             }
 
-            // Oyuncu E tusuna basili tutuyor mu?
-            if (Input.GetKey(KeyCode.E))
+            // Oyuncu Etkileşim tusuna basili tutuyor mu?
+            if (InputBindingManager.GetAction(InputBindingManager.GameAction.Interact))
             {
                 if (!_isActionExecuted)
                 {

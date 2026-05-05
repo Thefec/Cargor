@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -30,7 +30,7 @@ namespace Netcode.Transports.Facepunch
         [Tooltip("When in play mode, this will display your Steam ID.")]
         [SerializeField] private ulong userSteamId;
 
-        private LogLevel LogLevel => NetworkManager.Singleton.LogLevel;
+        private LogLevel LogLevel => NetworkManager.Singleton != null ? NetworkManager.Singleton.LogLevel : LogLevel.Developer;
 
         private class Client
         {

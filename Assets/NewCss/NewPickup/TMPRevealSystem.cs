@@ -5,33 +5,33 @@ using TMPro;
 namespace NewCss
 {
     /// <summary>
-    /// C tuþuna basýlý tutunca belirtilen TMP elementlerini gösterir. 
-    /// Tuþ býrakýldýðýnda gizler.  Inspector'dan TMP listesi yönetilebilir.
+    /// C tuÅŸuna basÄ±lÄ± tutunca belirtilen TMP elementlerini gÃ¶sterir. 
+    /// TuÅŸ bÄ±rakÄ±ldÄ±ÄŸÄ±nda gizler.  Inspector'dan TMP listesi yÃ¶netilebilir.
     /// </summary>
     public class TMPRevealSystem : MonoBehaviour
     {
         #region Serialized Fields
 
         [Header("=== INPUT SETTINGS ===")]
-        [SerializeField, Tooltip("TMP'leri göstermek için kullanýlacak tuþ")]
-        private KeyCode revealKey = KeyCode.C;
+        [Tooltip("Note: Kontroller artik InputBindingManager uzerinden yonetiliyor. RevealKey kaldirildi.")]
+        [SerializeField] private bool useInputManager = true;
 
         [Header("=== TMP REFERENCES ===")]
-        [SerializeField, Tooltip("Gösterilecek/gizlenecek TMP listesi")]
+        [SerializeField, Tooltip("GÃ¶sterilecek/gizlenecek TMP listesi")]
         private List<TextMeshProUGUI> tmpElements = new List<TextMeshProUGUI>();
 
         [Header("=== TRANSITION SETTINGS ===")]
-        [SerializeField, Tooltip("Smooth geçiþ kullan")]
+        [SerializeField, Tooltip("Smooth geÃ§iÅŸ kullan")]
         private bool useFadeTransition = true;
 
-        [SerializeField, Range(1f, 20f), Tooltip("Fade geçiþ hýzý")]
+        [SerializeField, Range(1f, 20f), Tooltip("Fade geÃ§iÅŸ hÄ±zÄ±")]
         private float fadeSpeed = 10f;
 
         [Header("=== OPTIONAL SETTINGS ===")]
-        [SerializeField, Tooltip("Oyun baþladýðýnda TMP'leri gizle")]
+        [SerializeField, Tooltip("Oyun baÅŸladÄ±ÄŸÄ±nda TMP'leri gizle")]
         private bool hideOnStart = true;
 
-        [SerializeField, Tooltip("Canvas Group kullan (tüm child'larý etkiler)")]
+        [SerializeField, Tooltip("Canvas Group kullan (tÃ¼m child'larÄ± etkiler)")]
         private List<CanvasGroup> canvasGroups = new List<CanvasGroup>();
 
         #endregion
@@ -42,7 +42,7 @@ namespace NewCss
         private float _currentAlpha;
         private float _targetAlpha;
 
-        // Her TMP için orijinal alpha deðerlerini sakla
+        // Her TMP iÃ§in orijinal alpha deÄŸerlerini sakla
         private Dictionary<TextMeshProUGUI, float> _originalAlphas = new Dictionary<TextMeshProUGUI, float>();
         private Dictionary<CanvasGroup, float> _originalCanvasAlphas = new Dictionary<CanvasGroup, float>();
 
@@ -51,7 +51,7 @@ namespace NewCss
         #region Public Properties
 
         /// <summary>
-        /// TMP'ler þu anda görünür mü?
+        /// TMP'ler ÅŸu anda gÃ¶rÃ¼nÃ¼r mÃ¼?
         /// </summary>
         public bool IsRevealing => _isRevealing;
 
@@ -81,7 +81,7 @@ namespace NewCss
 
         private void Initialize()
         {
-            // Orijinal alpha deðerlerini kaydet
+            // Orijinal alpha deÄŸerlerini kaydet
             foreach (var tmp in tmpElements)
             {
                 if (tmp != null)
@@ -98,7 +98,7 @@ namespace NewCss
                 }
             }
 
-            // Baþlangýçta gizle
+            // BaÅŸlangÄ±Ã§ta gizle
             if (hideOnStart)
             {
                 _currentAlpha = 0f;
@@ -118,8 +118,8 @@ namespace NewCss
 
         private void HandleInput()
         {
-            // C tuþuna basýlý tutulduðunda göster
-            _isRevealing = Input.GetKey(revealKey);
+            // C tuÅŸuna basÄ±lÄ± tutulduÄŸunda gÃ¶ster
+            _isRevealing = InputBindingManager.GetAction(InputBindingManager.GameAction.Reveal);
             _targetAlpha = _isRevealing ? 1f : 0f;
         }
 
@@ -131,15 +131,15 @@ namespace NewCss
         {
             if (useFadeTransition)
             {
-                // Smooth geçiþ
+                // Smooth geÃ§iÅŸ
                 _currentAlpha = Mathf.Lerp(_currentAlpha, _targetAlpha, fadeSpeed * Time.deltaTime);
 
-                // Çok küçük deðerleri sýfýrla
+                // Ã‡ok kÃ¼Ã§Ã¼k deÄŸerleri sÄ±fÄ±rla
                 if (_currentAlpha < 0.01f && _targetAlpha == 0f)
                 {
                     _currentAlpha = 0f;
                 }
-                // Çok büyük deðerleri tamamla
+                // Ã‡ok bÃ¼yÃ¼k deÄŸerleri tamamla
                 else if (_currentAlpha > 0.99f && _targetAlpha == 1f)
                 {
                     _currentAlpha = 1f;
@@ -147,7 +147,7 @@ namespace NewCss
             }
             else
             {
-                // Anýnda geçiþ
+                // AnÄ±nda geÃ§iÅŸ
                 _currentAlpha = _targetAlpha;
             }
 
@@ -156,18 +156,18 @@ namespace NewCss
 
         private void SetAllAlpha(float alpha)
         {
-            // TMP elementlerini güncelle
+            // TMP elementlerini gÃ¼ncelle
             foreach (var tmp in tmpElements)
             {
                 if (tmp != null)
                 {
-                    // Orijinal alpha ile çarp
+                    // Orijinal alpha ile Ã§arp
                     float originalAlpha = _originalAlphas.ContainsKey(tmp) ? _originalAlphas[tmp] : 1f;
                     tmp.alpha = alpha * originalAlpha;
                 }
             }
 
-            // Canvas Group'larý güncelle
+            // Canvas Group'larÄ± gÃ¼ncelle
             foreach (var canvasGroup in canvasGroups)
             {
                 if (canvasGroup != null)
@@ -175,7 +175,7 @@ namespace NewCss
                     float originalAlpha = _originalCanvasAlphas.ContainsKey(canvasGroup) ? _originalCanvasAlphas[canvasGroup] : 1f;
                     canvasGroup.alpha = alpha * originalAlpha;
 
-                    // Alpha 0 iken etkileþimi kapat
+                    // Alpha 0 iken etkileÅŸimi kapat
                     canvasGroup.interactable = alpha > 0.01f;
                     canvasGroup.blocksRaycasts = alpha > 0.01f;
                 }
@@ -196,7 +196,7 @@ namespace NewCss
                 tmpElements.Add(tmp);
                 _originalAlphas[tmp] = tmp.alpha;
 
-                // Mevcut duruma göre alpha ayarla
+                // Mevcut duruma gÃ¶re alpha ayarla
                 tmp.alpha = _currentAlpha * _originalAlphas[tmp];
 
                 Debug.Log($"[TMPRevealSystem] TMP added: {tmp.name}");
@@ -204,13 +204,13 @@ namespace NewCss
         }
 
         /// <summary>
-        /// TMP elementi kaldýr
+        /// TMP elementi kaldÄ±r
         /// </summary>
         public void RemoveTMPElement(TextMeshProUGUI tmp)
         {
             if (tmp != null && tmpElements.Contains(tmp))
             {
-                // Orijinal alpha'ya döndür
+                // Orijinal alpha'ya dÃ¶ndÃ¼r
                 if (_originalAlphas.ContainsKey(tmp))
                 {
                     tmp.alpha = _originalAlphas[tmp];
@@ -238,7 +238,7 @@ namespace NewCss
         }
 
         /// <summary>
-        /// Canvas Group kaldýr
+        /// Canvas Group kaldÄ±r
         /// </summary>
         public void RemoveCanvasGroup(CanvasGroup group)
         {
@@ -256,11 +256,11 @@ namespace NewCss
         }
 
         /// <summary>
-        /// Tüm TMP'leri temizle
+        /// TÃ¼m TMP'leri temizle
         /// </summary>
         public void ClearAllElements()
         {
-            // Orijinal alpha'lara döndür
+            // Orijinal alpha'lara dÃ¶ndÃ¼r
             foreach (var tmp in tmpElements)
             {
                 if (tmp != null && _originalAlphas.ContainsKey(tmp))
@@ -286,7 +286,7 @@ namespace NewCss
         }
 
         /// <summary>
-        /// Manuel olarak göster/gizle
+        /// Manuel olarak gÃ¶ster/gizle
         /// </summary>
         public void SetRevealState(bool reveal)
         {
@@ -294,14 +294,7 @@ namespace NewCss
             _targetAlpha = reveal ? 1f : 0f;
         }
 
-        /// <summary>
-        /// Reveal tuþunu deðiþtir
-        /// </summary>
-        public void SetRevealKey(KeyCode newKey)
-        {
-            revealKey = newKey;
-            Debug.Log($"[TMPRevealSystem] Reveal key changed to: {newKey}");
-        }
+
 
         #endregion
 
@@ -332,7 +325,7 @@ namespace NewCss
 
         private void OnValidate()
         {
-            // Editor'da null elemanlarý temizle
+            // Editor'da null elemanlarÄ± temizle
             tmpElements.RemoveAll(item => item == null);
             canvasGroups.RemoveAll(item => item == null);
         }
