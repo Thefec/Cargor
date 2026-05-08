@@ -431,3 +431,37 @@ Etki: 16 günlük süre için daha insaflı olur.
 | Yere Bırakma Cezasının Artırılması | Orta | Kolay | **P1** |
 | 3 Strike (Hak) Sistemi | Yüksek | Orta | **P2** |
 | Acil Müşteri Mekaniği | Orta | Orta | **P3** |
+
+## 9. Sektör Örnekleri: PlateUp! ve Overcooked! Analizi
+
+Kargo ve restoran yönetimi oyunlarında (PlateUp! ve Overcooked!), Cargor'da karşılaştığımız tasarım sorunları (tezgah/raf kullanımı, zorluk ölçeklemesi, döngü tekrarı ve gerilim) şu şekilde çözülmüştür:
+
+### 1. Raf/Tezgah Kullanımı ve Yere Eşya Bırakma
+**Sorun:** Cargor'da oyuncu ufak bir ceza (-10) ödeyip ürünü yere atabiliyor, bu da rafları anlamsız kılıyor.
+**PlateUp! & Overcooked Çözümü:**
+- **Yere Atmanın İmkansızlığı / Ciddi Cezası:** Bu oyunlarda genel kural, eşyaların **sadece tezgahlara** konabilmesidir. Eğer bir ürün yere düşerse (Overcooked'da uçurumdan düşmek vb.) ürün yok olur veya ciddi bir zaman kaybı yaratır.
+- **Tezgah (Counter) Yönetimi:** PlateUp!'ta alan çok kısıtlıdır. Oyuncunun elindeki ürünü bırakabileceği tezgahlar sınırlıdır. Oyuncu tezgah alanını doğru yönetmezse kilitlenir. Tezgah satın almak bir lüks değil, operasyonun büyümesi için bir zorunluluktur.
+**Cargor'a Uyarlama:** Yere ürün bırakma cezası çok sertleştirilmeli (ürün yok olmalı, ya da ceza geliri sıfırlayacak kadar büyük olmalı). Veya yere eşya bırakmak tamamen engellenip, oyuncu elindeki eşyayla sadece rafa/masaya veya kamyona yönlendirilmeli. Böylece raf (capacity) upgrade'i zorunlu hale gelir.
+
+### 2. Çok Oyunculu Ölçekleme (Multiplayer Scaling)
+**Sorun:** Cargor'da 4 oyunculu mod, oyuncu gücü x4 artmasına rağmen zorluğun yeterince artmaması sebebiyle çok kolay kalıyor.
+**PlateUp! & Overcooked Çözümü:**
+- **Asimetrik Harita Tasarımı (Overcooked):** Overcooked, oyuncuları ayırır. Örneğin; malzemeler bir tarafta, kesme tahtaları diğer taraftadır. 4 kişi oynarken mekanik olarak herkesin bir şeyler taşıması ve fırlatması gerekir. Koordinasyon bozulduğunda oyun zorlaşır.
+- **Müşteri/Sipariş Ölçeklemesi (PlateUp!):** PlateUp!, oyuncu sayısı arttıkça sadece müşteri sayısını artırmakla kalmaz, yemeklerin karmaşıklığını da artırabilir veya müşteri gruplarının boyutunu büyütür. Ayrıca, kalabalık oynamak mutfakta çarpışmalara (tıkanıklığa) sebep olur.
+**Cargor'a Uyarlama:** Sadece müşteri sayısını x2 yapmak yerine, 4P modunda **aynı anda** farklı renk kutular isteyen, farklı kamyonlara eşya taşıtmayı zorlayan veya oyuncuların birbiriyle çarpışmasını/dar yollardan geçmesini gerektiren bölüm tasarımları (veya görevler) kullanılabilir.
+
+### 3. Gameplay Loop Varyasyonu
+**Sorun:** 16 gün boyunca Al → Kutula → Yükle döngüsü tekrar ediyor.
+**PlateUp! & Overcooked Çözümü:**
+- **Dinamik Tarifler ve Yeni Engeller:** Her iki oyunda da ilerledikçe tarifler zorlaşır (Örn: Sadece et pişirmek yerine, soğan doğra + et pişir + ekmeğe koy). Bölümlerde hareket eden bantlar, yangınlar, dönen zeminler çıkar.
+- **Kart Seçimi (PlateUp! Roguelite):** PlateUp!, her günün sonunda oyuncuya kalıcı bir pozitif veya negatif kart seçtirir (Örn: "Müşteriler sipariş değiştirir" vs "Müşteriler daha çok bahşiş verir"). Bu, run'ın kaderini belirler.
+**Cargor'a Uyarlama:** Kutulama adımına ufak bir ekstra adım eklenebilir (Örn: Kırılacak eşyalar için ekstra bantlama). Event sistemi, PlateUp'taki roguelite kart sistemine benzer şekilde, oyuncunun gün sonunda seçeceği kalıcı mutasyonlar haline getirilebilir.
+
+### 4. Kazanma Koşulu ve Gerilim (Patience / Wait Time)
+**Sorun:** 1 müşteri kaçırmama koşulu, oyuncu az kapasiteyle (raf almayarak) oynarsa çok risksiz.
+**PlateUp! & Overcooked Çözümü:**
+- **PlateUp! (1 Kaçırma = Game Over):** PlateUp!'ta da bir müşteri çok beklerse oyun biter. Ancak oyun, oyuncuyu **büyümeye zorlar**. Franchise kurmak için çok müşteri çekmek ve yeni masalar almak zorundasınızdır. Oyuncu bilerek az masa alıp ilerleyemez, çünkü oyun gün geçtikçe müşteri sayısını formülle (franchise/gün sayısı) artırır.
+- **Overcooked (Yıldız Sistemi):** Overcooked süre bitiminde puana göre 1-3 yıldız verir. Kaybetmek, yıldız sınırını geçememektir.
+**Cargor'a Uyarlama:** PlateUp!'ı referans alıyorsanız, müşteri sayısını oyuncunun aldığı raf sayısından (interactables) **bağımsız** hale getirmelisiniz. Müşteri sayısı gün sayısına bağlı olarak agresif şekilde artmalı. Böylece oyuncu 16 günü atlatmak için **mecburen** raf, masa ve hız upgrade'leri satın almak zorunda kalır. Müşteri kaçırma riskini bu şekilde stresli ve kaçınılmaz bir hale getirebilirsiniz.
+
+> **Özet PlateUp! Formülü:** Oyun, oyuncuyu sürekli sınırlarını zorlamaya iter. Cargor'daki en büyük tasarım boşluğu, `CapacityBase` formülünün oyuncunun aldığı eşyalara bağlı olmasıdır. Bu formül, PlateUp'taki gibi "Güne/Seviyeye bağlı sürekli artan talep" olarak değiştirilirse, oyunun roguelite/management gerilimi mükemmel şekilde çalışacaktır.
