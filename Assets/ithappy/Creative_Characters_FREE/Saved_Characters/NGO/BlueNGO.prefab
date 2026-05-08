@@ -77,7 +77,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 3348014577058127082, guid: 61ef206f86db2814196510fd749312c6, type: 3}
+  - {fileID: 2100000, guid: 9c4bf7acc3f817a4088ec0db8675d8da, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -282,13 +282,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  targetTags:
-  - Ground
-  targetLayers:
-    serializedVersion: 2
-    m_Bits: 1024
+  impactSpeedThreshold: 3
   onlyIfEmpty: 1
-  allowNonOwnerRequests: 0
+  showDebugLogs: 0
 --- !u!114 &-5178031523107943929
 MonoBehaviour:
   m_ObjectHideFlags: 0

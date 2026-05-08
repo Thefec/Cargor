@@ -7623,7 +7623,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: dbc0ac3b2e21dbd4aaface70d26b6083, type: 2}
+  - {fileID: 2100000, guid: f43ba25988af7024b8e7adae488e3bff, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -7759,7 +7759,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: dbc0ac3b2e21dbd4aaface70d26b6083, type: 2}
+  - {fileID: 2100000, guid: 9c4bf7acc3f817a4088ec0db8675d8da, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -7990,6 +7990,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 0
+  m_UseReflectionProbes: 0
   m_AdditionalShaderChannelsFlag: 1
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
@@ -14101,8 +14102,29 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  TransitionStateInfoList: []
+  NetworkAnimatorExpanded: 0
+  AuthorityMode: 0
   m_Animator: {fileID: 7267320106377128634}
+  TransitionStateInfoList: []
+  AnimatorParameterEntries:
+    ParameterEntries:
+    - name: X
+      NameHash: -1213057461
+      Synchronize: 1
+      ParameterType: 1
+    - name: Z
+      NameHash: 1505515367
+      Synchronize: 1
+      ParameterType: 1
+    - name: IsRun
+      NameHash: 2100427109
+      Synchronize: 1
+      ParameterType: 4
+    - name: IsPickup
+      NameHash: 2038452593
+      Synchronize: 1
+      ParameterType: 4
+  AnimatorParametersExpanded: 0
 --- !u!114 &7949397384189401449
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14251,7 +14273,7 @@ MonoBehaviour:
   - {fileID: -5648626978545720014, guid: bfab5a5ca14002a469bd5912e025f274, type: 3}
   - {fileID: 2990419855401034948, guid: 0fc9184e885899c408b2467848981766, type: 3}
   skinColors:
-  - {r: 1, g: 0.8, b: 0.7, a: 1}
+  - {r: 0.8773585, g: 0.5661354, b: 0.4014329, a: 1}
   - {r: 0.9, g: 0.7, b: 0.5, a: 1}
   - {r: 0.8, g: 0.6, b: 0.4, a: 1}
   - {r: 0.6, g: 0.4, b: 0.3, a: 1}

@@ -13,6 +13,7 @@ public static class InputBindingManager
     {
         Pickup,     // Eşya Al (default: Sol Tık)
         Drop,       // Eşya Bırak (default: Sağ Tık)
+        Throw,      // Eşya Fırlat (default: Orta Tık)
         Interact,   // Etkileşim (default: E)
         Sprint,     // Koşma (default: Left Shift)
         Zoom,       // Yakınlaştır (default: Z)
@@ -57,6 +58,7 @@ public static class InputBindingManager
     {
         { GameAction.Pickup,   new Binding(0) },                    // Sol Tık
         { GameAction.Drop,     new Binding(1) },                    // Sağ Tık
+        { GameAction.Throw,    new Binding(2) },                    // Orta Tık (Scroll basma)
         { GameAction.Interact, new Binding(KeyCode.E) },            // E
         { GameAction.Sprint,   new Binding(KeyCode.LeftShift) },    // Left Shift
         { GameAction.Zoom,     new Binding(KeyCode.Z) },            // Z
@@ -268,6 +270,7 @@ public static class InputBindingManager
         {
             GameAction.Pickup   => "Eşya Al",
             GameAction.Drop     => "Eşya Bırak",
+            GameAction.Throw    => "Eşya Fırlat",
             GameAction.Interact => "Etkileşim",
             GameAction.Sprint   => "Koşma",
             GameAction.Zoom     => "Yakınlaştır",

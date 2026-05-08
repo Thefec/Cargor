@@ -9,9 +9,9 @@ namespace NewCss
         
         [Header("Intensity Settings")]
         [Range(0f, 5f)]
-        public float startIntensity = 3f;  // Gün başı intensity
+        public float startIntensity = 0.5f;  // Gün başı intensity (düşük = iç mekan ışıkları baskın)
         [Range(0f, 5f)]
-        public float endIntensity = 0f;       // Gün sonu intensity
+        public float endIntensity = 0.05f;      // Gün sonu intensity (neredeyse karanlık)
         
         [Header("Sun Position Settings")]
         [Tooltip("Güneşin doğduğu pozisyon (X rotasyon açısı)")]
@@ -30,9 +30,9 @@ namespace NewCss
         public float sunZRotation = 0f;
         
         [Header("Optional: Color Settings")]
-        public bool changeColor = false;
-        public Color startColor = Color.white;     // Gün başı renk
-        public Color endColor = new Color(1f, 0.5f, 0f); // Gün sonu renk (turuncu)
+        public bool changeColor = true;
+        public Color startColor = new Color(1f, 0.98f, 0.95f);     // Gün başı renk (hafif sıcak beyaz)
+        public Color endColor = new Color(1f, 0.6f, 0.3f); // Gün sonu renk (sıcak turuncu)
         
         [Header("Smooth Transition")]
         public bool smoothTransition = true;

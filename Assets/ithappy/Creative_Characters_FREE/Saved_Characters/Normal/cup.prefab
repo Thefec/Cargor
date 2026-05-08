@@ -73,7 +73,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -9164601111527362948, guid: 394b3807cb1f1e34bacaae54177b50dd, type: 3}
+  - {fileID: 2100000, guid: 9c4bf7acc3f817a4088ec0db8675d8da, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -95,6 +95,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!114 &646642869375474822
 MonoBehaviour:
@@ -189,9 +190,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   dropMoneyPenalty: 10
   dropPrestigePenalty: 0.01
-  fullBoxHitSound: {fileID: 8300000, guid: 7f88947550140ed479dd6a8ab3c5e144, type: 3}
-  emptyBoxHitSound: {fileID: 8300000, guid: 016732318ef656a4392c44070b4a51aa, type: 3}
-  baseSoundVolume: 1
+  boxDropSound: {fileID: 0}
+  soundVolume: 1
+  minVelocityForSound: 2
+  use2DSound: 0
+  maxSoundDistance: 50
 --- !u!114 &-6240494177136197814
 MonoBehaviour:
   m_ObjectHideFlags: 0

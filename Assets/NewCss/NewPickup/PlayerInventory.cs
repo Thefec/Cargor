@@ -152,10 +152,7 @@ public class PlayerInventory : NetworkBehaviour
     private bool _isAnimating;
     private bool _isProcessingInteraction;
     
-    // Throw Mechanic
-    private float _leftClickHoldTimer;
-    private bool _throwExecuted;
-    private const float THROW_HOLD_DURATION = 3f;
+    // Throw Mechanic - Orta tık ile fırlatma
 
     // Detection System
     private Collider[] _colliderBuffer;
@@ -243,37 +240,18 @@ public class PlayerInventory : NetworkBehaviour
         if (!IsOwner) return;
 
         UpdateShelfItemSystem();
-        HandleHoldToThrow();
+        HandleThrowInput();
         HandleInput();
     }
 
-    private void HandleHoldToThrow()
+    private void HandleThrowInput()
     {
-        if (!_hasItem.Value || _isProcessingInteraction || _isAnimating) 
-        {
-            _leftClickHoldTimer = 0f;
-            _throwExecuted = false;
-            return;
-        }
+        if (!_hasItem.Value || _isProcessingInteraction || _isAnimating) return;
 
-        if (InputBindingManager.GetAction(InputBindingManager.GameAction.Pickup))
+        if (InputBindingManager.GetActionDown(InputBindingManager.GameAction.Throw))
         {
-            if (!_throwExecuted)
-            {
-                _leftClickHoldTimer += Time.deltaTime;
-                
-                if (_leftClickHoldTimer >= THROW_HOLD_DURATION)
-                {
-                    _throwExecuted = true;
-                    _lastInputTime = Time.time;
-                    HandleThrowInteraction();
-                }
-            }
-        }
-        else
-        {
-            _leftClickHoldTimer = 0f;
-            _throwExecuted = false;
+            _lastInputTime = Time.time;
+            HandleThrowInteraction();
         }
     }
 

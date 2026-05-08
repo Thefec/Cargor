@@ -1003,6 +1003,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 0
+  m_UseReflectionProbes: 0
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
@@ -2224,7 +2225,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1250103159
+  GlobalObjectIdHash: 2151631666
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -2293,8 +2294,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  cachedPlayerMovement: {fileID: 0}
-  recentProductHistorySize: 5
+  outlineTarget: {fileID: 0}
+  outlineColor: {r: 0, g: 1, b: 0, a: 1}
+  outlineWidth: 5
+  outlineMode: 0
   isPrefabMode: 1
   waitBar: {fileID: 3231516756921554553}
   waitCanvas: {fileID: 6339901739819928916}
@@ -2333,15 +2336,8 @@ MonoBehaviour:
   - {fileID: 4258195470075221523, guid: 383ec657876f626409370f4849fb1207, type: 3}
   - {fileID: 5012447057166926047, guid: fe7b6eb1396687d44b68db0e21c7eaa3, type: 3}
   - {fileID: 4269006078838620155, guid: 96d9462d202fa1742b2c5a87349dfb74, type: 3}
-  itemLayerMask:
-    serializedVersion: 2
-    m_Bits: 128
-  detectionRadius: 1.5
   manager: {fileID: 0}
   exitPoint: {fileID: 0}
-  targetTables:
-  - {fileID: 0}
-  targetTable: {fileID: 0}
   dropOffTable: {fileID: 0}
 --- !u!114 &3231516756921554553
 MonoBehaviour:
@@ -2727,7 +2723,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: dbc0ac3b2e21dbd4aaface70d26b6083, type: 2}
+  - {fileID: 2100000, guid: f43ba25988af7024b8e7adae488e3bff, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3372,7 +3368,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: dbc0ac3b2e21dbd4aaface70d26b6083, type: 2}
+  - {fileID: 2100000, guid: 9c4bf7acc3f817a4088ec0db8675d8da, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

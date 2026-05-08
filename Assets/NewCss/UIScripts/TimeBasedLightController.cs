@@ -1,87 +1,98 @@
-﻿using UnityEngine;
+using UnityEngine;
 using Unity.Netcode;
 using System.Collections.Generic;
 
 namespace NewCss
 {
+    /// <summary>
+    /// PlateUp! tarzı iç mekan ışık kontrolcüsü.
+    /// İç mekan ışıkları her zaman yanar (7/24).
+    /// Akşam saatlerinde ek sıcak mood ışıkları devreye girer.
+    /// NOT: Directional Light (güneş) ayrı DayLightController tarafından yönetilir.
+    /// </summary>
     public class AutoLightController : NetworkBehaviour
     {
-        [Header("Light Groups")]
-        [Tooltip("Işıklar max 0.15 intensity'ye ulaşacak")]
-        public List<Light> lightGroupA = new List<Light>();
+        [Header("Indoor Lights - Always On")]
+        [Tooltip("Ana iç mekan ışıkları (spot/point) — her zaman yanar")]
+        public List<Light> indoorLights = new List<Light>();
 
-        [Tooltip("Işıklar max 0.3 intensity'ye ulaşacak")]
-        public List<Light> lightGroupB = new List<Light>();
+        [Tooltip("İç mekan ışıkları için intensity")]
+        public float indoorIntensity = 60f;
 
-        [Header("Time Settings")]
-        [Tooltip("Bu saati geçince ışıklar yanacak (örn: 12 = öğlen 12:00'den sonra yanacak)")]
-        public int lightTriggerHour = 12;
+        [Header("Ambient/Fill Lights")]
+        [Tooltip("Dolgu ışıkları — her zaman yanar, daha düşük intensity")]
+        public List<Light> fillLights = new List<Light>();
 
-        [Header("Intensity Settings")]
-        [Tooltip("Grup A için maksimum intensity")]
-        public float maxIntensityGroupA = 0.15f;
+        [Tooltip("Dolgu ışıkları için intensity")]
+        public float fillIntensity = 20f;
 
-        [Tooltip("Grup B için maksimum intensity")]
-        public float maxIntensityGroupB = 0.3f;
+        [Header("Evening Mood Lights")]
+        [Tooltip("Akşam olunca ek olarak yanan sıcak ışıklar (opsiyonel)")]
+        public List<Light> eveningLights = new List<Light>();
 
-        [Tooltip("Işıkların açılıp kapanma hızı (saniye)")]
-        public float transitionSpeed = 2f;
+        [Tooltip("Akşam ışıkları intensity")]
+        public float eveningIntensity = 30f;
+
+        [Tooltip("Akşam ışıkları bu saatten sonra yanar")]
+        public int eveningTriggerHour = 14;
+
+        [Header("Transition")]
+        [Tooltip("Akşam ışık geçiş hızı (saniye)")]
+        public float transitionSpeed = 3f;
 
         [Header("Debug")]
         public bool showDebugLogs = false;
 
-        // Network variable for light state
-        private NetworkVariable<bool> networkLightsOn = new NetworkVariable<bool>(false);
+        // Network variable for evening state
+        private NetworkVariable<bool> networkEveningOn = new NetworkVariable<bool>(false);
 
         // Internal state
-        private bool lightsOn = false;
-        private float currentTransitionA = 0f;
-        private float currentTransitionB = 0f;
-
-        // Başlangıç intensity değerlerini sakla
-        private Dictionary<Light, float> originalIntensitiesA = new Dictionary<Light, float>();
-        private Dictionary<Light, float> originalIntensitiesB = new Dictionary<Light, float>();
+        private bool eveningOn = false;
+        private float currentEveningTransition = 0f;
 
         void Start()
         {
-            // Kapalı durumdaki intensity'leri 0 olarak kaydet
-            // Çünkü kapalı = tamamen sönük olmalı
-            foreach (var light in lightGroupA)
+            // İç mekan ışıklarını hemen aç — PlateUp! tarzı, her zaman yanar
+            foreach (var light in indoorLights)
             {
                 if (light != null)
                 {
-                    originalIntensitiesA[light] = 0f;
-                    light.intensity = 0f; // Hemen 0 yap
+                    light.intensity = indoorIntensity;
+                    light.enabled = true;
                 }
             }
 
-            foreach (var light in lightGroupB)
+            // Fill ışıklarını aç
+            foreach (var light in fillLights)
             {
                 if (light != null)
                 {
-                    originalIntensitiesB[light] = 0f;
-                    light.intensity = 0f; // Hemen 0 yap
+                    light.intensity = fillIntensity;
+                    light.enabled = true;
                 }
             }
 
-            // Başlangıçta ışıkları kapat
-            SetLightsImmediate(false);
+            // Akşam ışıklarını başlangıçta kapat (saat gelince açılır)
+            foreach (var light in eveningLights)
+            {
+                if (light != null)
+                {
+                    light.intensity = 0f;
+                    light.enabled = true;
+                }
+            }
         }
 
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
-
-            // Network variable değişikliklerini dinle
-            networkLightsOn.OnValueChanged += OnLightsStateChanged;
-
-            // Mevcut durumu uygula
-            lightsOn = networkLightsOn.Value;
+            networkEveningOn.OnValueChanged += OnEveningStateChanged;
+            eveningOn = networkEveningOn.Value;
         }
 
         public override void OnNetworkDespawn()
         {
-            networkLightsOn.OnValueChanged -= OnLightsStateChanged;
+            networkEveningOn.OnValueChanged -= OnEveningStateChanged;
             base.OnNetworkDespawn();
         }
 
@@ -89,124 +100,76 @@ namespace NewCss
         {
             if (DayCycleManager.Instance == null) return;
 
-            // Sadece server saati kontrol eder ve karar verir
+            // Server saati kontrol eder
             if (IsServer)
             {
-                CheckTimeAndUpdateLights();
+                CheckEveningState();
             }
 
-            // Tüm client'lar (server dahil) smooth geçişi uygular
-            ApplySmoothTransition();
+            // Tüm client'lar akşam ışık geçişini uygular
+            ApplyEveningTransition();
         }
 
-        private void CheckTimeAndUpdateLights()
+        private void CheckEveningState()
         {
             int currentHour = DayCycleManager.Instance.CurrentHour;
-            bool shouldLightsBeOn = ShouldLightsBeOn(currentHour);
+            bool shouldEveningBeOn = currentHour >= eveningTriggerHour;
 
-            // Durum değiştiyse network variable'ı güncelle
-            if (shouldLightsBeOn != networkLightsOn.Value)
+            if (shouldEveningBeOn != networkEveningOn.Value)
             {
-                networkLightsOn.Value = shouldLightsBeOn;
+                networkEveningOn.Value = shouldEveningBeOn;
 
                 if (showDebugLogs)
                 {
-                    Debug.Log($"[AutoLightController] Hour: {currentHour}:00 - Lights turning {(shouldLightsBeOn ? "ON" : "OFF")} (Trigger: {lightTriggerHour}:00)");
+                    Debug.Log($"[AutoLightController] Hour: {currentHour}:00 - Evening lights {(shouldEveningBeOn ? "ON" : "OFF")}");
                 }
             }
         }
 
-        private bool ShouldLightsBeOn(int hour)
+        private void ApplyEveningTransition()
         {
-            // Belirlenen saati geçince ışıklar yanar
-            // Örnek: lightTriggerHour=12
-            // Saat 11:00 → Kapalı
-            // Saat 12:00 ve sonrası → Açık
-            return hour >= lightTriggerHour;
+            float eveningTarget = eveningOn ? 1f : 0f;
+            currentEveningTransition = Mathf.MoveTowards(currentEveningTransition, eveningTarget,
+                Time.deltaTime / transitionSpeed);
+
+            foreach (var light in eveningLights)
+            {
+                if (light != null)
+                {
+                    light.intensity = Mathf.Lerp(0f, eveningIntensity, currentEveningTransition);
+                }
+            }
         }
 
-        private void OnLightsStateChanged(bool previousValue, bool newValue)
+        private void OnEveningStateChanged(bool previousValue, bool newValue)
         {
-            lightsOn = newValue;
+            eveningOn = newValue;
 
             if (showDebugLogs)
             {
-                Debug.Log($"[AutoLightController] Lights state changed to: {(newValue ? "ON" : "OFF")}");
+                Debug.Log($"[AutoLightController] Evening lights: {(newValue ? "ON" : "OFF")}");
             }
         }
 
-        private void ApplySmoothTransition()
-        {
-            float targetA = lightsOn ? 1f : 0f;
-            float targetB = lightsOn ? 1f : 0f;
+        // ─── Debug Metodları ───
 
-            // Smooth geçiş
-            currentTransitionA = Mathf.MoveTowards(currentTransitionA, targetA, Time.deltaTime / transitionSpeed);
-            currentTransitionB = Mathf.MoveTowards(currentTransitionB, targetB, Time.deltaTime / transitionSpeed);
-
-            // Grup A'yı güncelle
-            foreach (var light in lightGroupA)
-            {
-                if (light != null)
-                {
-                    float baseIntensity = originalIntensitiesA.ContainsKey(light) ? originalIntensitiesA[light] : 0f;
-                    light.intensity = Mathf.Lerp(baseIntensity, maxIntensityGroupA, currentTransitionA);
-                }
-            }
-
-            // Grup B'yi güncelle
-            foreach (var light in lightGroupB)
-            {
-                if (light != null)
-                {
-                    float baseIntensity = originalIntensitiesB.ContainsKey(light) ? originalIntensitiesB[light] : 0f;
-                    light.intensity = Mathf.Lerp(baseIntensity, maxIntensityGroupB, currentTransitionB);
-                }
-            }
-        }
-
-        private void SetLightsImmediate(bool on)
-        {
-            currentTransitionA = on ? 1f : 0f;
-            currentTransitionB = on ? 1f : 0f;
-
-            foreach (var light in lightGroupA)
-            {
-                if (light != null)
-                {
-                    float baseIntensity = originalIntensitiesA.ContainsKey(light) ? originalIntensitiesA[light] : 0f;
-                    light.intensity = on ? maxIntensityGroupA : baseIntensity;
-                }
-            }
-
-            foreach (var light in lightGroupB)
-            {
-                if (light != null)
-                {
-                    float baseIntensity = originalIntensitiesB.ContainsKey(light) ? originalIntensitiesB[light] : 0f;
-                    light.intensity = on ? maxIntensityGroupB : baseIntensity;
-                }
-            }
-        }
-
-        // Debug metodları
-        [ContextMenu("Test - Turn Lights ON")]
-        public void TestLightsOn()
+        [ContextMenu("Test - Force Evening ON")]
+        public void TestEveningOn()
         {
             if (IsServer)
             {
-                networkLightsOn.Value = true;
-                Debug.Log("Test: Lights turned ON");
+                networkEveningOn.Value = true;
+                Debug.Log("Test: Evening lights forced ON");
             }
         }
 
-        [ContextMenu("Test - Turn Lights OFF")]
-        public void TestLightsOff()
+        [ContextMenu("Test - Force Evening OFF")]
+        public void TestEveningOff()
         {
             if (IsServer)
             {
-                networkLightsOn.Value = false;
-                Debug.Log("Test: Lights turned OFF");
+                networkEveningOn.Value = false;
+                Debug.Log("Test: Evening lights forced OFF");
             }
         }
 
@@ -216,13 +179,13 @@ namespace NewCss
             if (DayCycleManager.Instance != null)
             {
                 int hour = DayCycleManager.Instance.CurrentHour;
-                bool shouldBeOn = ShouldLightsBeOn(hour);
                 Debug.Log($"Current Hour: {hour}:00\n" +
-                         $"Trigger Hour: {lightTriggerHour}:00\n" +
-                         $"Lights Should Be: {(shouldBeOn ? "ON" : "OFF")} (hour >= {lightTriggerHour})\n" +
-                         $"Lights Currently: {(lightsOn ? "ON" : "OFF")}\n" +
-                         $"Transition A: {currentTransitionA:F2}\n" +
-                         $"Transition B: {currentTransitionB:F2}");
+                         $"Evening Lights: {(eveningOn ? "ON" : "OFF")}\n" +
+                         $"Evening Trigger: {eveningTriggerHour}:00\n" +
+                         $"Evening Transition: {currentEveningTransition:F2}\n" +
+                         $"Indoor Lights Count: {indoorLights.Count}\n" +
+                         $"Fill Lights Count: {fillLights.Count}\n" +
+                         $"Evening Lights Count: {eveningLights.Count}");
             }
         }
     }

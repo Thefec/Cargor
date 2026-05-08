@@ -76,7 +76,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -4404516402601226969, guid: 3c33dd315e081ab4fbf9dc8894216c0b, type: 3}
+  - {fileID: 2100000, guid: 9afba03972c733a4eb34e233c4ca33f2, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -278,6 +278,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c08fdd9dd710b4d46918672bbdc31b71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemFreezeSystem
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!114 &7406122498066340033
 MonoBehaviour:
   m_ObjectHideFlags: 0

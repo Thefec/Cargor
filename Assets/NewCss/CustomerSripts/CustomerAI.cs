@@ -887,36 +887,24 @@ namespace NewCss
                 return null;
             }
 
+            // Masa dolu mu kontrol et
+            if (dropOffTable.IsFull)
+            {
+                Debug.LogWarning($"{LOG_PREFIX} Drop-off table is full! Cannot place product.");
+                return null;
+            }
+
             int productIndex = GetProductIndex();
 
-            // ✅ 1. ÖNCE slot pozisyonunu hesapla ve kaydet (DisplayTable.ItemCount artmadan)
-            var slotPoints = dropOffTable.SlotPoints;
-            int currentItemCount = dropOffTable.ItemCount;
-            _placedProductSlotIndex = currentItemCount; // Cache for later checking
+            // ✅ 1. Slot index'ini DisplayTable.ItemCount üzerinden al
+            //    PlaceItemInstance() aynı index'i kullanacak çünkü _placedItems.Count == ItemCount
+            int slotIndex = dropOffTable.ItemCount;
+            _placedProductSlotIndex = slotIndex; // Cache for later checking
 
-            Vector3 spawnPosition;
-            Quaternion spawnRotation;
+            // ✅ 2. Ürünü geçici pozisyonda oluştur (PlaceItemInstance pozisyonu ayarlayacak)
+            var product = Instantiate(productPrefabs[productIndex]);
 
-            if (slotPoints != null && slotPoints.Length > currentItemCount && slotPoints[currentItemCount] != null)
-            {
-                // Slot pozisyonunu WORLD SPACE'te al
-                Transform slot = slotPoints[currentItemCount];
-                spawnPosition = slot.position;
-                spawnRotation = slot.rotation;
-                Debug.Log($"{LOG_PREFIX} Using slot {currentItemCount} at position {spawnPosition}");
-            }
-            else
-            {
-                // Fallback - masa üzerinde küçük offset ile
-                spawnPosition = dropOffTable.transform.position + Vector3.up * 0.5f;
-                spawnRotation = dropOffTable.transform.rotation;
-                Debug.LogWarning($"{LOG_PREFIX} No valid slot found, using fallback position");
-            }
-
-            // ✅ 2. Ürünü WORLD SPACE pozisyonunda oluştur
-            var product = Instantiate(productPrefabs[productIndex], spawnPosition, spawnRotation);
-
-            // ✅ 3. Fizik ayarlarını yap (PARENT YOK - world space'te kalacak)
+            // ✅ 3. Fizik ayarlarını yap
             var rb = product.GetComponent<Rigidbody>();
             if (rb != null)
             {
@@ -939,22 +927,16 @@ namespace NewCss
             if (networkObject != null)
             {
                 networkObject.Spawn();
-
-                // ✅ 5. Spawn sonrası pozisyonu tekrar sabitle (parent kullanmadan)
-                if (networkObject.IsSpawned)
-                {
-                    product.transform.position = spawnPosition;
-                    product.transform.rotation = spawnRotation;
-                    
-                    // Fizik ayarlarını tekrar uygula
-                    StartCoroutine(EnsureProductFrozenAfterSpawn(product));
-                }
             }
 
-            // ✅ 6. DisplayTable'a kaydet (bu ItemCount'u artıracak)
+            // ✅ 5. DisplayTable'a kaydet — bu hem pozisyonu doğru slot'a ayarlar hem ItemCount'u artırır
+            //    PlaceItemInstance, _placedItems.Count'u kullanarak slotPoints[slotIndex]'e yerleştirir
             dropOffTable.PlaceItemInstance(product);
 
-            Debug.Log($"{LOG_PREFIX} Placed product: {productPrefabs[productIndex].name} at world position {spawnPosition}, slot index was {currentItemCount}");
+            // ✅ 6. Spawn sonrası pozisyonu sabitle (network replication sonrası kayma önlemi)
+            StartCoroutine(EnsureProductFrozenAfterSpawn(product));
+
+            Debug.Log($"{LOG_PREFIX} Placed product: {productPrefabs[productIndex].name} at slot {slotIndex}, position {product.transform.position}");
 
             return product;
         }
@@ -1033,20 +1015,25 @@ namespace NewCss
                 _navAgent.isStopped = true;
             }
 
+            // NetworkObject referansını cache'le
+            if (_placedProduct != null)
+            {
+                _placedProductNetworkObject = _placedProduct.GetComponent<NetworkObject>();
+            }
+
             yield return null;
 
-            // _hasTimedOut kontrolü kaldırıldı: CheckWaitTimeExpired zaten WaitingForPickup state'ini atlıyor.
             // Müşteri, ürün alınana kadar süresiz bekleyecek.
             while (_placedProduct != null)
             {
-                // Ürün hala var mı?
+                // Ürün hala var mı? (Destroy edilmiş olabilir)
                 if (_placedProduct == null)
                 {
                     Debug.Log($"{LOG_PREFIX} Product was picked up (null check)");
                     break;
                 }
 
-                // Ürün hala masada mı?
+                // Ürün hala masada mı? (DisplayTable listesinden kontrol)
                 if (!IsProductStillOnTable())
                 {
                     Debug.Log($"{LOG_PREFIX} Product was picked up (table check)");
@@ -1081,47 +1068,20 @@ namespace NewCss
                 return false;
             }
 
-            // Product hala dünyada var mı kontrol et
-            // Parent yoksa (world space'te), pozisyon kontrolü yap
-            if (_placedProduct.transform.parent == null)
+            // ✅ Güvenilir kontrol: DisplayTable'ın kendi item listesinde ürün hala var mı?
+            //    Pozisyon karşılaştırması yerine doğrudan referans kontrolü.
+            //    Bu yöntem, ürünün hangi pozisyonda olursa olsun doğru sonuç verir.
+            var allItems = dropOffTable.GetAllItems();
+            foreach (var item in allItems)
             {
-                // Cached slot index kullan (varsa)
-                if (_placedProductSlotIndex >= 0)
+                if (item == _placedProduct)
                 {
-                    var slotPoints = dropOffTable.SlotPoints;
-                    if (slotPoints != null && _placedProductSlotIndex < slotPoints.Length)
-                    {
-                        Transform slot = slotPoints[_placedProductSlotIndex];
-                        if (slot != null)
-                        {
-                            float distance = Vector3.Distance(_placedProduct.transform.position, slot.position);
-                            return distance < PRODUCT_POSITION_TOLERANCE;
-                        }
-                    }
+                    return true;
                 }
-                
-                // Fallback: Tüm slotları kontrol et
-                var slotPoints2 = dropOffTable.SlotPoints;
-                if (slotPoints2 != null)
-                {
-                    foreach (var slot in slotPoints2)
-                    {
-                        if (slot != null)
-                        {
-                            float distance = Vector3.Distance(_placedProduct.transform.position, slot.position);
-                            if (distance < PRODUCT_POSITION_TOLERANCE)
-                            {
-                                return true;
-                            }
-                        }
-                    }
-                }
-                // Slot yakınında değilse, pickup edilmiş demektir
-                return false;
             }
 
-            // Parent varsa eski yöntemi kullan
-            return IsChildOfDropOffTable(_placedProduct);
+            // Item listesinde bulunamadı = pickup edilmiş
+            return false;
         }
 
         private bool IsChildOfDropOffTable(GameObject product)

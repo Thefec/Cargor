@@ -1,9 +1,74 @@
 fileFormatVersion: 2
 guid: c958a8493f773fb478a2e47aa3c0c47e
 ModelImporter:
-  serializedVersion: 22200
+  serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Black Box
+    second: {fileID: 2100000, guid: 5e8782abf168c8a41b9bd34a41cc28cd, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Corrugated_PVC_Grey
+    second: {fileID: 2100000, guid: bbd100c317af2124689dd1c5a97dcbd7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: DarkGreen
+    second: {fileID: 2100000, guid: f860be1dfc9f2b74d9246061025e4cd4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Green
+    second: {fileID: 2100000, guid: 6ee68c802cd9a494192ce7af14338183, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Green.001
+    second: {fileID: 2100000, guid: 4d8e176eb10c30b4c93efe305fa45361, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Bricks_Var_1
+    second: {fileID: 2100000, guid: c58d72a75337a1b488333b9f974f75e5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Bricks_Var_2
+    second: {fileID: 2100000, guid: abdaec0ed339b2642bcb11049167ec1d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Bricks_Var_3
+    second: {fileID: 2100000, guid: b257648648cec6b4cbffce4f6e275db7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Bricks_Var_4
+    second: {fileID: 2100000, guid: e1e73c18da8dce64391dd3946a1e0878, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Main_Texture
+    second: {fileID: 2100000, guid: c14518fb3429e02478a212e2a01ffce6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Mat.002
+    second: {fileID: 2100000, guid: 495e39b1b1ae9534da6358ca86f8d1b0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Wall_Texture
+    second: {fileID: 2100000, guid: 1d3679589f0cc984296c3f2cd37ad67d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Wood
+    second: {fileID: 2100000, guid: d94e346634727c04e8f3b30bd0ca7afe, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -56,6 +121,9 @@ ModelImporter:
     maxBonesPerVertex: 4
     minBoneWeight: 0.001
     optimizeBones: 1
+    generateMeshLods: 0
+    meshLodGenerationFlags: 0
+    maximumMeshLod: -1
     meshOptimizationFlags: -1
     indexFormat: 0
     secondaryUVAngleDistortion: 8

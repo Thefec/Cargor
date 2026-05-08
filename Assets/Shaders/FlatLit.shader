@@ -1,0 +1,285 @@
+Shader "Custom/FlatLit"
+{
+    Properties
+    {
+        [Header(Base)]
+        _BaseColor ("Base Color", Color) = (1,1,1,1)
+        _BaseMap ("Base Texture", 2D) = "white" {}
+        _AmbientStrength ("Ambient Strength", Range(0,1)) = 0.35
+
+        [Header(Outline)]
+        _OutlineColor ("Outline Color", Color) = (0,0,0,1)
+        _OutlineWidth ("Outline Width", Range(0, 0.03)) = 0.005
+
+        [Header(Edge Lines)]
+        [Toggle(_USE_EDGE_LINES)] _UseEdgeLines ("Enable Edge Lines", Float) = 0
+        _EdgeColor ("Edge Color", Color) = (0, 0, 0, 1)
+        _EdgeWidth ("Edge Width", Range(0.0001, 0.01)) = 0.002
+        _EdgeSensitivity ("Edge Sensitivity", Range(0.001, 0.3)) = 0.05
+
+        [Header(Detail)]
+        _DetailStrength ("Detail Visibility", Range(0, 1)) = 0.3
+
+        [Header(Lighting)]
+        _ShadowSharpness ("Shadow Sharpness", Range(0.01, 1.0)) = 0.5
+        _LightSteps ("Light Steps (Cel)", Range(1, 5)) = 3
+        _NormalInfluence ("Normal Influence", Range(0, 1)) = 0.6
+    }
+
+    SubShader
+    {
+        Tags 
+        { 
+            "RenderType"="Opaque" 
+            "RenderPipeline"="UniversalPipeline" 
+            "Queue"="Geometry" 
+        }
+
+        // ─── PASS 1: OUTLINE ───────────────────────────────
+        Pass
+        {
+            Name "Outline"
+            Tags { "LightMode" = "SRPDefaultUnlit" }
+            Cull Front
+            ZWrite On
+            ZTest LEqual
+
+            HLSLPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+            #pragma multi_compile_instancing
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+
+            CBUFFER_START(UnityPerMaterial)
+                float4 _BaseColor;
+                float4 _BaseMap_ST;
+                float4 _BaseMap_TexelSize;
+                float4 _OutlineColor;
+                float  _OutlineWidth;
+                float  _AmbientStrength;
+                float  _ShadowSharpness;
+                float  _LightSteps;
+                float  _NormalInfluence;
+                float4 _EdgeColor;
+                float  _EdgeWidth;
+                float  _EdgeSensitivity;
+                float  _DetailStrength;
+            CBUFFER_END
+
+            struct Attributes {
+                float4 positionOS : POSITION;
+                float3 normalOS   : NORMAL;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
+            };
+
+            struct Varyings {
+                float4 positionCS : SV_POSITION;
+            };
+
+            Varyings vert(Attributes IN) {
+                Varyings OUT;
+                UNITY_SETUP_INSTANCE_ID(IN);
+
+                float3 posWS    = TransformObjectToWorld(IN.positionOS.xyz);
+                float3 normalWS = normalize(TransformObjectToWorldNormal(IN.normalOS));
+
+                float4 posCS    = TransformWorldToHClip(posWS);
+                float3 normalCS = TransformWorldToHClipDir(normalWS);
+
+                float2 offset = normalize(normalCS.xy) * _OutlineWidth * posCS.w;
+                offset.x *= _ScreenParams.y / _ScreenParams.x;
+                posCS.xy += offset;
+
+                OUT.positionCS = posCS;
+                return OUT;
+            }
+
+            half4 frag(Varyings IN) : SV_Target {
+                return _OutlineColor;
+            }
+            ENDHLSL
+        }
+
+        // ─── PASS 2: FLAT LIT + TEXTURE EDGE ──────────────
+        Pass
+        {
+            Name "FlatForward"
+            Tags { "LightMode" = "UniversalForward" }
+            Cull Back
+            ZWrite On
+            ZTest LEqual
+
+            HLSLPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
+            #pragma multi_compile _ _SHADOWS_SOFT
+            #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
+            #pragma multi_compile _ _FORWARD_PLUS
+            #pragma shader_feature_local _USE_EDGE_LINES
+            #pragma multi_compile_instancing
+
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+
+            CBUFFER_START(UnityPerMaterial)
+                float4 _BaseColor;
+                float4 _BaseMap_ST;
+                float4 _BaseMap_TexelSize;
+                float4 _OutlineColor;
+                float  _OutlineWidth;
+                float  _AmbientStrength;
+                float  _ShadowSharpness;
+                float  _LightSteps;
+                float  _NormalInfluence;
+                float4 _EdgeColor;
+                float  _EdgeWidth;
+                float  _EdgeSensitivity;
+                float  _DetailStrength;
+            CBUFFER_END
+
+            TEXTURE2D(_BaseMap);
+            SAMPLER(sampler_BaseMap);
+
+            struct Attributes {
+                float4 positionOS : POSITION;
+                float3 normalOS   : NORMAL;
+                float2 uv         : TEXCOORD0;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
+            };
+
+            struct Varyings {
+                float4 positionCS : SV_POSITION;
+                float3 positionWS : TEXCOORD0;
+                float3 normalWS   : TEXCOORD1;
+                float2 uv         : TEXCOORD2;
+            };
+
+            // Luminance hesapla
+            float Luminance3(float3 color) {
+                return dot(color, float3(0.299, 0.587, 0.114));
+            }
+
+            Varyings vert(Attributes IN) {
+                Varyings OUT;
+                UNITY_SETUP_INSTANCE_ID(IN);
+
+                VertexPositionInputs posInputs = GetVertexPositionInputs(IN.positionOS.xyz);
+                OUT.positionCS = posInputs.positionCS;
+                OUT.positionWS = posInputs.positionWS;
+                OUT.normalWS   = normalize(TransformObjectToWorldNormal(IN.normalOS));
+                OUT.uv = TRANSFORM_TEX(IN.uv, _BaseMap);
+                return OUT;
+            }
+
+            half4 frag(Varyings IN) : SV_Target {
+                // ── Texture oku ──
+                half4 texColor = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, IN.uv);
+
+                // ── Detail: flat ve detayli renk arasi gecis ──
+                float texLum = Luminance3(texColor.rgb);
+                half3 flatColor = _BaseColor.rgb * texLum;
+                half3 detailColor = texColor.rgb * _BaseColor.rgb;
+                half3 baseColor = lerp(flatColor, detailColor, _DetailStrength);
+
+                // ── Shadow coord ──
+                #if defined(_MAIN_LIGHT_SHADOWS) || defined(_MAIN_LIGHT_SHADOWS_CASCADE)
+                    float4 shadowCoord = TransformWorldToShadowCoord(IN.positionWS);
+                #else
+                    float4 shadowCoord = float4(0,0,0,0);
+                #endif
+
+                Light mainLight = GetMainLight(shadowCoord);
+
+                // ── NdotL cel-shading ──
+                float3 normalWS = normalize(IN.normalWS);
+                float NdotL = dot(normalWS, mainLight.direction);
+                NdotL = NdotL * 0.5 + 0.5;
+
+                float steps = max(1.0, _LightSteps);
+                float celShade = floor(NdotL * steps) / steps;
+                float lightFactor = lerp(1.0, celShade, _NormalInfluence);
+
+                // ── Shadow sharpness ──
+                float shadow = mainLight.shadowAttenuation;
+                shadow = smoothstep(0.5 - _ShadowSharpness * 0.5, 
+                                    0.5 + _ShadowSharpness * 0.5, shadow);
+
+                float totalLight = lightFactor * shadow;
+
+                // ── Ambient + lit ──
+                half3 ambient = baseColor * _AmbientStrength;
+                half3 lit     = baseColor * totalLight * (1.0 - _AmbientStrength);
+                half3 finalColor = ambient + lit;
+
+                // ── Additional lights (Forward+ compatible) ──
+                #if defined(_ADDITIONAL_LIGHTS)
+                    InputData inputData = (InputData)0;
+                    inputData.positionWS = IN.positionWS;
+                    inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(IN.positionCS);
+
+                    uint additionalLightsCount = GetAdditionalLightsCount();
+                    LIGHT_LOOP_BEGIN(additionalLightsCount)
+                        Light addLight = GetAdditionalLight(lightIndex, IN.positionWS);
+                        float addNdotL = saturate(dot(normalWS, addLight.direction));
+                        float addCel   = floor(addNdotL * steps) / steps;
+                        float addFactor = lerp(1.0, addCel, _NormalInfluence);
+                        finalColor += baseColor * addLight.color * addFactor 
+                                 * addLight.distanceAttenuation 
+                                 * addLight.shadowAttenuation * 0.5;
+                    LIGHT_LOOP_END
+                #endif
+
+                // ── Texture-based Edge Detection ──
+                #ifdef _USE_EDGE_LINES
+                    float texelOffset = _EdgeWidth;
+
+                    // 4 komsu pikselden texture oku (Sobel-lite)
+                    float lumC = Luminance3(texColor.rgb);
+                    float lumR = Luminance3(SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, 
+                                 IN.uv + float2(texelOffset, 0)).rgb);
+                    float lumL = Luminance3(SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, 
+                                 IN.uv + float2(-texelOffset, 0)).rgb);
+                    float lumU = Luminance3(SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, 
+                                 IN.uv + float2(0, texelOffset)).rgb);
+                    float lumD = Luminance3(SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, 
+                                 IN.uv + float2(0, -texelOffset)).rgb);
+
+                    // Capraz ornekler (daha iyi kenar algilama)
+                    float lumTR = Luminance3(SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, 
+                                  IN.uv + float2(texelOffset, texelOffset)).rgb);
+                    float lumTL = Luminance3(SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, 
+                                  IN.uv + float2(-texelOffset, texelOffset)).rgb);
+                    float lumBR = Luminance3(SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, 
+                                  IN.uv + float2(texelOffset, -texelOffset)).rgb);
+                    float lumBL = Luminance3(SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, 
+                                  IN.uv + float2(-texelOffset, -texelOffset)).rgb);
+
+                    // Sobel operatoru
+                    float sobelX = (-lumTL - 2.0 * lumL - lumBL) 
+                                 + ( lumTR + 2.0 * lumR + lumBR);
+                    float sobelY = (-lumTL - 2.0 * lumU - lumTR) 
+                                 + ( lumBL + 2.0 * lumD + lumBR);
+
+                    float edgeMagnitude = sqrt(sobelX * sobelX + sobelY * sobelY);
+
+                    // Sensitivity ile esikleme
+                    float edgeLine = smoothstep(_EdgeSensitivity * 0.5, 
+                                               _EdgeSensitivity, edgeMagnitude);
+
+                    // Kenar rengini uygula
+                    finalColor = lerp(finalColor, _EdgeColor.rgb, edgeLine * _EdgeColor.a);
+                #endif
+
+                return half4(finalColor, texColor.a * _BaseColor.a);
+            }
+            ENDHLSL
+        }
+
+        UsePass "Universal Render Pipeline/Lit/ShadowCaster"
+        UsePass "Universal Render Pipeline/Lit/DepthOnly"
+    }
+
+    FallBack "Universal Render Pipeline/Lit"
+}

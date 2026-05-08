@@ -1,9 +1,34 @@
 fileFormatVersion: 2
 guid: f99e8d2528fb2364a9e5b59361b8a228
 ModelImporter:
-  serializedVersion: 22200
+  serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Corrugated_PVC_Grey
+    second: {fileID: 2100000, guid: f35d363e5e4c4594294a7a01b3a65842, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Bricks_Var_1
+    second: {fileID: 2100000, guid: 62fd9f48b23cfa7438f2c7d2f8a5d1c3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Bricks_Var_2
+    second: {fileID: 2100000, guid: 8b2546e0b4e5cdd43a87287a5f708dae, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Bricks_Var_3
+    second: {fileID: 2100000, guid: 065adf14303728c4ca1c17137846b76d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Bricks_Var_4
+    second: {fileID: 2100000, guid: 4b97ff263869ec04fa407a97e5600a76, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -56,6 +81,9 @@ ModelImporter:
     maxBonesPerVertex: 4
     minBoneWeight: 0.001
     optimizeBones: 1
+    generateMeshLods: 0
+    meshLodGenerationFlags: 0
+    maximumMeshLod: -1
     meshOptimizationFlags: -1
     indexFormat: 0
     secondaryUVAngleDistortion: 8
