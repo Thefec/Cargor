@@ -27,7 +27,7 @@ public class Menu : MonoBehaviour
     #endregion
 
     #region Enums
-    private enum MenuState { MainMenu, HostJoinMenu, JoinRoomPanel, Settings, Credits, TutorialConfirm, Lobby }
+    private enum MenuState { MainMenu, HostJoinMenu, JoinRoomPanel, Settings, Credits, TutorialConfirm, Lobby, Customization }
     #endregion
 
     // ── Inspector ────────────────────────────────────────────
@@ -83,6 +83,17 @@ public class Menu : MonoBehaviour
     [SerializeField] public Button backFromCreditsButton;
     #endregion
 
+    #region Customization
+    [Header("=== CUSTOMIZATION GRUBU ===")]
+    [SerializeField] public RectTransform customizationSlidePanel;
+    [SerializeField] public RectTransform customizationStaggerPanel; // İçindeki butonların listesi (VerticalLayoutGroup)
+    [SerializeField] public RectTransform customizationPreviewPanel; // Önizleme kısmı (Yukarıdan inecek)
+    [SerializeField] public GameObject    customizationBlackBG;
+    [SerializeField] public Button        customizationBackButton;
+    [SerializeField] public Button        customizeButton;
+    [SerializeField] public NewCss.UIScripts.MainMenuCustomizationUI customizationUI;
+    #endregion
+
     #region Social / Version / Audio / Managers
     [Header("=== SOSYAL MEDYA ===")]
     [SerializeField] public Button discordButton;
@@ -121,6 +132,10 @@ public class Menu : MonoBehaviour
     private Vector2 _hajRestPos;
     private Vector2 _jRestPos;
     private Vector2 _lobbyRestPos;
+    private Vector2 _customizationRestPos;
+    private Vector2 _customizationStaggerRestPos;
+    private Vector2 _customizationPreviewRestPos;
+    private Coroutine _customizationStaggerCoroutine;
     #endregion
 
     #region Properties
@@ -164,6 +179,9 @@ public class Menu : MonoBehaviour
         if (hostOrJoinPanel    != null) _hajRestPos        = hostOrJoinPanel.anchoredPosition;
         if (joinPanel          != null) _jRestPos          = joinPanel.anchoredPosition;
         if (lobbyPanel         != null) _lobbyRestPos      = lobbyPanel.anchoredPosition;
+        if (customizationSlidePanel != null) _customizationRestPos = customizationSlidePanel.anchoredPosition;
+        if (customizationStaggerPanel != null) _customizationStaggerRestPos = customizationStaggerPanel.anchoredPosition;
+        if (customizationPreviewPanel != null) _customizationPreviewRestPos = customizationPreviewPanel.anchoredPosition;
     }
 
     private void InitPanels()
@@ -183,6 +201,14 @@ public class Menu : MonoBehaviour
         // LOBBY: panel off-screen üst, grup kapalı
         SetOffscreenTop(lobbyPanel, _lobbyRestPos);
         Go(lobbyGroup, false);
+
+        // CUSTOMIZATION: panel off-screen üst, başlangıçta kapalı
+        if (customizationSlidePanel != null)
+        {
+            SetOffscreenTop(customizationSlidePanel, _customizationRestPos);
+            customizationSlidePanel.gameObject.SetActive(false);
+        }
+        Go(customizationBlackBG, false);
 
         // Overlay'ler
         Go(settingsPanel,        false);
@@ -213,6 +239,8 @@ public class Menu : MonoBehaviour
         Btn(discordButton,            OpenDiscord);
         Btn(steamPageButton,          OpenSteamPage);
         Btn(instagramButton,          OpenInstagram);
+        Btn(customizeButton,          () => GoTo(MenuState.Customization));
+        Btn(customizationBackButton,  () => GoTo(MenuState.MainMenu));
     }
 
     private void Btn(Button b, System.Action a)
@@ -237,6 +265,7 @@ public class Menu : MonoBehaviour
             case MenuState.Credits:         ShowOverlay(creditsPanel);         break;
             case MenuState.TutorialConfirm: ShowOverlay(tutorialConfirmPanel); break;
             case MenuState.Lobby:           ShowLobby();          break;
+            case MenuState.Customization:   ShowCustomization();  break;
         }
         Debug.Log($"{LOG_PREFIX} {prev} → {next}");
     }
@@ -273,6 +302,27 @@ public class Menu : MonoBehaviour
                 Go(lobbyGroup, false);
                 StartStaggeredMainMenu();
             });
+        }
+        else if (prev == MenuState.Customization)
+        {
+            if (customizationUI != null) customizationUI.ClosePanel();
+
+            System.Action onCustomizationClosed = () =>
+            {
+                if (customizationSlidePanel != null) customizationSlidePanel.gameObject.SetActive(false);
+                Go(customizationBlackBG, false);
+                StartStaggeredMainMenu();
+            };
+
+            // Eğer preview paneli varsa onu yukarı kaydırarak kapatalım
+            if (customizationPreviewPanel != null)
+            {
+                SlideOut(customizationPreviewPanel, _customizationPreviewRestPos, onCustomizationClosed);
+            }
+            else
+            {
+                SlideOut(customizationSlidePanel, _customizationRestPos, onCustomizationClosed);
+            }
         }
         else
         {
@@ -379,6 +429,44 @@ public class Menu : MonoBehaviour
         }
     }
 
+    // ─ CUSTOMIZATION ─────────────────────────────────────────
+
+    private void ShowCustomization()
+    {
+        CloseOverlays();
+        HideMainMenuInstant();
+
+        if (customizationSlidePanel != null)
+        {
+            // Panel anında rest pozisyonunda açılır (siyah arka plan vs)
+            customizationSlidePanel.anchoredPosition = _customizationRestPos;
+            customizationSlidePanel.gameObject.SetActive(true);
+            Go(customizationBlackBG, true);
+            if (customizationBackButton != null) customizationBackButton.gameObject.SetActive(true);
+            
+            // Eğer stagger panel atanmışsa butonları soldan kaydır, yoksa klasik slide-in yap
+            if (customizationStaggerPanel != null)
+            {
+                if (_customizationStaggerCoroutine != null) StopCoroutine(_customizationStaggerCoroutine);
+                _customizationStaggerCoroutine = StartCoroutine(GenericStaggerCoroutine(customizationStaggerPanel, _customizationStaggerRestPos));
+            }
+            else
+            {
+                SetOffscreenTop(customizationSlidePanel, _customizationRestPos);
+                SlideIn(customizationSlidePanel, _customizationRestPos);
+            }
+
+            // Önizleme ekranını (Karakter + Drag alanı) yukarıdan aşağıya kaydır
+            if (customizationPreviewPanel != null)
+            {
+                SetOffscreenTop(customizationPreviewPanel, _customizationPreviewRestPos);
+                SlideIn(customizationPreviewPanel, _customizationPreviewRestPos);
+            }
+        }
+
+        if (customizationUI != null) customizationUI.OpenPanel();
+    }
+
     // ─ OVERLAYS ──────────────────────────────────────────────
 
     private void ShowOverlay(GameObject panel)
@@ -415,7 +503,7 @@ public class Menu : MonoBehaviour
     private void StartStaggeredMainMenu()
     {
         if (_staggerCoroutine != null) StopCoroutine(_staggerCoroutine);
-        _staggerCoroutine = StartCoroutine(StaggerCoroutine());
+        _staggerCoroutine = StartCoroutine(GenericStaggerCoroutine(mainMenuSlidePanel, _slidePanelRestPos));
     }
 
     /// <summary>
@@ -426,51 +514,53 @@ public class Menu : MonoBehaviour
     ///   4. Butonlar sola alınır, sırayla slide-in başlar
     ///   5. Animasyon biter → LayoutGroup geri açılır
     /// </summary>
-    private IEnumerator StaggerCoroutine()
-{
-    if (mainMenuSlidePanel == null) yield break;
-
-    // 1. LayoutGroup'u bir frame beklemeden anında güncelle (Flicker sorununu engeller)
-    Canvas.ForceUpdateCanvases();
-    UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(mainMenuSlidePanel);
-
-    // 2. Aktif çocukların LayoutGroup tarafından hesaplanmış gerçek (rest) pozisyonlarını oku
-    var items = new List<(RectTransform rt, Vector2 rest)>();
-    for (int i = 0; i < mainMenuSlidePanel.childCount; i++)
+    private IEnumerator GenericStaggerCoroutine(RectTransform container, Vector2 containerRestPos)
     {
-        var child = mainMenuSlidePanel.GetChild(i) as RectTransform;
-        if (child != null && child.gameObject.activeSelf)
-            items.Add((child, child.anchoredPosition));
+        if (container == null) yield break;
+
+        // 1. LayoutGroup'u bir frame beklemeden anında güncelle (Flicker sorununu engeller)
+        Canvas.ForceUpdateCanvases();
+        UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(container);
+
+        // 2. Aktif çocukların LayoutGroup tarafından hesaplanmış gerçek (rest) pozisyonlarını oku
+        var items = new List<(RectTransform rt, Vector2 rest)>();
+        for (int i = 0; i < container.childCount; i++)
+        {
+            var child = container.GetChild(i) as RectTransform;
+            if (child != null && child.gameObject.activeSelf)
+                items.Add((child, child.anchoredPosition));
+        }
+
+        if (items.Count == 0) yield break;
+
+        float canvasW = GetCanvasW();
+        if (canvasW <= 0f) canvasW = Screen.width;
+
+        // 3. LayoutGroup'u kapat (animasyon sırasında pozisyonları manuel yöneteceğiz)
+        var lg = container.GetComponent<LayoutGroup>();
+        if (lg != null) lg.enabled = false;
+
+        // 4. Parent'ı asıl yerine geri getir
+        container.anchoredPosition = containerRestPos;
+
+        // 5. Butonların hepsini ekranın SOLUNA taşı (-canvasW soldan sağa gelmesini sağlar)
+        foreach (var (rt, rest) in items)
+            rt.anchoredPosition = new Vector2(rest.x - canvasW, rest.y);
+
+        // 6. Her butonu sırayla soldan sağa doğru slide-in yap
+        foreach (var (rt, rest) in items)
+        {
+            StartCoroutine(SlideCoroutine(rt, rt.anchoredPosition, rest, null));
+            yield return new WaitForSecondsRealtime(STAGGER_DLY);
+        }
+
+        // 7. Animasyon bitince LayoutGroup'u geri aç
+        yield return new WaitForSecondsRealtime(SLIDE_DUR + 0.05f);
+        if (lg != null) lg.enabled = true;
+        
+        if (container == mainMenuSlidePanel) _staggerCoroutine = null;
+        if (container == customizationStaggerPanel) _customizationStaggerCoroutine = null;
     }
-
-    if (items.Count == 0) yield break;
-
-    float canvasW = GetCanvasW();
-    if (canvasW <= 0f) canvasW = Screen.width;
-
-    // 3. LayoutGroup'u kapat (animasyon sırasında pozisyonları manuel yöneteceğiz)
-    var lg = mainMenuSlidePanel.GetComponent<LayoutGroup>();
-    if (lg != null) lg.enabled = false;
-
-    // 4. Parent'ı asıl yerine geri getir
-    mainMenuSlidePanel.anchoredPosition = _slidePanelRestPos;
-
-    // 5. Butonların hepsini ekranın SOLUNA taşı (-canvasW soldan sağa gelmesini sağlar)
-    foreach (var (rt, rest) in items)
-        rt.anchoredPosition = new Vector2(rest.x - canvasW, rest.y);
-
-    // 6. Her butonu sırayla soldan sağa doğru slide-in yap
-    foreach (var (rt, rest) in items)
-    {
-        StartCoroutine(SlideCoroutine(rt, rt.anchoredPosition, rest, null));
-        yield return new WaitForSecondsRealtime(STAGGER_DLY);
-    }
-
-    // 7. Animasyon bitince LayoutGroup'u geri aç
-    yield return new WaitForSecondsRealtime(SLIDE_DUR + 0.05f);
-    if (lg != null) lg.enabled = true;
-    _staggerCoroutine = null;
-}
 
     // ── Dikey Slide (HAJ / J) ─────────────────────────────────
 
@@ -580,6 +670,7 @@ public class Menu : MonoBehaviour
             case MenuState.Settings:        BackFromSettings();           break;
             case MenuState.Credits:         CloseCredits();               break;
             case MenuState.TutorialConfirm: CancelTutorial();             break;
+            case MenuState.Customization:   GoTo(MenuState.MainMenu);     break;
         }
     }
 
@@ -595,6 +686,7 @@ public class Menu : MonoBehaviour
     public void OpenCredits()            => GoTo(MenuState.Credits);
     public void PlayTutorial()           => GoTo(MenuState.TutorialConfirm);
     public void ShowTutorialConfirm()    => GoTo(MenuState.TutorialConfirm);
+    public void OpenCustomization()      => GoTo(MenuState.Customization);
     public void CreateRoom()             => ExecuteCreateRoom();
     public void JoinRoom()               => GoTo(MenuState.JoinRoomPanel);
 
@@ -662,7 +754,8 @@ public class Menu : MonoBehaviour
             jBackButton, confirmEntryButton, lobbyBackButton,
             tutorialConfirmYesButton, tutorialConfirmNoButton,
             backFromSettingsButton, saveSettingsButton, backFromCreditsButton,
-            discordButton, steamPageButton, instagramButton })
+            discordButton, steamPageButton, instagramButton,
+            customizeButton, customizationBackButton })
             b?.onClick.RemoveAllListeners();
     }
 }

@@ -191,6 +191,10 @@ public class SteamManager : MonoBehaviour
     [SerializeField, Tooltip("Ana menü referansı (ses sistemi için)")]
     private Menu menuReference;
 
+    [Header("=== CHARACTER CUSTOMIZATION ===")]
+    [SerializeField, Tooltip("Ana menü özelleştirme UI scripti")]
+    private NewCss.UIScripts.MainMenuCustomizationUI mainMenuCustomizationUI;
+
     #endregion
 
     #region Nested Types
@@ -1579,6 +1583,33 @@ public class SteamManager : MonoBehaviour
         LeaveCurrentLobby();
 
         LobbySaver.instance?.ForceClearLobby();
+    }
+
+    /// <summary>
+    /// Ana menüden özelleştirme panelini açar.
+    /// Bu metodu "Customize" butonunun onClick event'ine bağlayın.
+    /// </summary>
+    public void OpenCustomization()
+    {
+        if (mainMenuCustomizationUI != null)
+        {
+            mainMenuCustomizationUI.OpenPanel();
+        }
+        else
+        {
+            Debug.LogWarning("[SteamManager] mainMenuCustomizationUI referansı atanmamış!");
+        }
+    }
+
+    /// <summary>
+    /// Özelleştirme panelini kapatır ve ana menüyü geri getirir.
+    /// </summary>
+    public void CloseCustomization()
+    {
+        if (mainMenuCustomizationUI != null)
+        {
+            mainMenuCustomizationUI.ClosePanel();
+        }
     }
 
     private void SetStartButtonActive(bool active)

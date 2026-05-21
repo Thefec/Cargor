@@ -619,6 +619,9 @@ namespace NewCss
 
                 if (_randomEventDays.Contains(currentDay)) continue;
 
+                // Kira günlerinde event atama (4, 8, 12, 16...)
+                if (currentDay % 4 == 0) continue;
+
                 _randomEventDays.Add(currentDay);
 
                 GameEvent selectedEvent = SelectEventByCount(eventCount, positiveEvents, negativeEvents);

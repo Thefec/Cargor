@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -681,6 +681,18 @@ namespace NewCss
             if (!IsValidBoxProductCombination(playerBox.boxType, tableProduct.productType))
             {
                 LogDebug($"❌ Box type {playerBox.boxType} doesn't match product type {tableProduct.productType}");
+
+                // Oyuncunun elindeki kutuyu temizle ve idle formuna döndür
+                player.SetInventoryStateServerRpc(false, -1);
+                player.TriggerDropAnimationServerRpc();
+
+                // Oyuncunun pozisyonunda parçalanma efekti tetikle
+                if (TryGetPlayerTransform(requesterClientId, out Transform playerTransform))
+                {
+                    Vector3 shatterPos = playerTransform.position + Vector3.up * 0.5f;
+                    PlayBoxShatterOnFailClientRpc(shatterPos, (int)playerBox.boxType, requesterClientId);
+                }
+
                 NotifyBoxingFailedClientRpc(requesterClientId);
                 return;
             }
@@ -769,7 +781,22 @@ namespace NewCss
         {
             if (NetworkManager.Singleton.LocalClientId == targetClientId)
             {
-                LogDebug($"❌ Boxing failed - box and product don't match");
+                LogDebug($"❌ Boxing failed - box and product don't match!");
+            }
+        }
+
+        /// <summary>
+        /// Yanlış eşleşmede oyuncunun pozisyonunda kutu parçalanma efekti tetikler.
+        /// </summary>
+        [ClientRpc]
+        private void PlayBoxShatterOnFailClientRpc(Vector3 position, int boxTypeInt, ulong targetClientId)
+        {
+            LogDebug($"💥 Box shatter effect at {position} for box type {(BoxInfo.BoxType)boxTypeInt}");
+
+            // Parçalanma efekti
+            if (NewCss.BoxDestructionEffectManager.Instance != null)
+            {
+                NewCss.BoxDestructionEffectManager.Instance.PlayEffect((BoxInfo.BoxType)boxTypeInt, position);
             }
         }
 

@@ -67,6 +67,26 @@ namespace NewCss
 
         #endregion
 
+        #region Serialized Fields - Rent System
+
+        [Header("=== RENT SETTINGS ===")]
+        [SerializeField, Tooltip("Oyuncu sayısına göre temel kira miktarları (1P, 2P, 3P, 4P)")]
+        private int[] baseRentByPlayerCount = { 500, 900, 1200, 1500 };
+
+        [SerializeField, Tooltip("Her kira döneminde artış çarpanı")]
+        private float rentGrowthMultiplier = 1.3f;
+
+        [SerializeField, Tooltip("Sahip olunan upgrade'lerin toplam değerinin yüzdesi olarak ek vergi")]
+        private float wealthTaxRate = 0.1f;
+
+        [SerializeField, Tooltip("Kaç günde bir kira ödenir")]
+        private int rentIntervalDays = 4;
+
+        [SerializeField, Tooltip("Grace period'da alınacak para yüzdesi (0-1)")]
+        private float gracePaymentPercent = 0.8f;
+
+        #endregion
+
         #region Network Variables
 
         private readonly NetworkVariable<float> _networkElapsedTime = new(0f);
@@ -81,6 +101,8 @@ namespace NewCss
         private int _currentHour;
         private bool _lunchNotified;
         private bool _moneyCheckCompleted;
+        private int _rentPaymentCount;   // Kaçıncı kira ödemesi
+        private bool _graceUsed;         // İlk kira affı kullanıldı mı
 
         // Periyodik kontrol flag'leri
         private PeriodicCheckState _periodicChecks;
@@ -450,10 +472,7 @@ namespace NewCss
                 return;
             }
 
-            // Kota kontrolü
-            QuotaManager.Instance?.CheckEndOfDayQuota();
-
-            // Para kontrolü yap
+            // Para kontrolü yap (kira sistemi)
             if (!_moneyCheckCompleted)
             {
                 if (!TryProcessMoneyCheck())
@@ -474,11 +493,112 @@ namespace NewCss
             ShowDayEndScreenClientRpc();
         }
 
+        /// <summary>
+        /// Kira ödeme kontrolü — her 4 günde bir tetiklenir.
+        /// İlk kirada grace period: para yetmezse eldekinin %80'i alınır.
+        /// 2+ kirada para yetmezse Game Over.
+        /// </summary>
         private bool TryProcessMoneyCheck()
         {
-            // No more rent system - money check removed
+            if (MoneySystem.Instance == null)
+            {
+                _moneyCheckCompleted = true;
+                return true;
+            }
+
+            int currentDay = _networkCurrentDay.Value;
+
+            // Kira günü değilse geç
+            if (currentDay % rentIntervalDays != 0)
+            {
+                _moneyCheckCompleted = true;
+                return true;
+            }
+
+            int rentAmount = CalculateRent();
+            int currentMoney = MoneySystem.Instance.CurrentMoney;
+
+            Debug.Log($"{LOG_PREFIX} === RENT DAY {currentDay} === Rent: {rentAmount}, Money: {currentMoney}");
+
+            if (currentMoney >= rentAmount)
+            {
+                // Tam ödeme
+                MoneySystem.Instance.SpendMoney(rentAmount);
+                _rentPaymentCount++;
+                Debug.Log($"{LOG_PREFIX} Rent paid in full: {rentAmount}");
+            }
+            else if (!_graceUsed)
+            {
+                // İlk kira affı — eldeki paranın %80'i alınır, ödenmiş sayılır
+                int graceAmount = Mathf.RoundToInt(currentMoney * gracePaymentPercent);
+                MoneySystem.Instance.SpendMoney(graceAmount);
+                _graceUsed = true;
+                _rentPaymentCount++;
+                Debug.Log($"{LOG_PREFIX} Grace period used. Took {graceAmount} ({gracePaymentPercent * 100}% of {currentMoney}). Needed: {rentAmount}");
+            }
+            else
+            {
+                // 2. kez ödeyememe → Game Over
+                Debug.Log($"{LOG_PREFIX} Cannot pay rent: {rentAmount}. Available: {currentMoney}. GAME OVER!");
+                GameStateManager.Instance?.TriggerLose();
+                return false;
+            }
+
             _moneyCheckCompleted = true;
             return true;
+        }
+
+        /// <summary>
+        /// Kira hesaplama: (TemelKira × 1.3^dönem) + (UpgradeDeğeri × %10)
+        /// </summary>
+        private int CalculateRent()
+        {
+            int playerCount = GetPlayerCount();
+            int playerIndex = Mathf.Clamp(playerCount - 1, 0, baseRentByPlayerCount.Length - 1);
+            int baseRent = baseRentByPlayerCount[playerIndex];
+
+            // Dönem çarpanı: 1.3^n
+            float growthMultiplier = Mathf.Pow(rentGrowthMultiplier, _rentPaymentCount);
+            int scaledRent = Mathf.RoundToInt(baseRent * growthMultiplier);
+
+            // Wealth Tax: Sahip olunan upgrade'lerin toplam değeri × 0.1
+            int totalUpgradeValue = GetTotalUpgradeValue();
+            int wealthTax = Mathf.RoundToInt(totalUpgradeValue * wealthTaxRate);
+
+            int finalRent = scaledRent + wealthTax;
+            Debug.Log($"{LOG_PREFIX} Rent calc: Base={baseRent} × {growthMultiplier:F2} = {scaledRent} + WealthTax={wealthTax} = {finalRent} (Players: {playerCount})");
+
+            return finalRent;
+        }
+
+        /// <summary>
+        /// Bağlı oyuncu sayısını döndürür
+        /// </summary>
+        private int GetPlayerCount()
+        {
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
+            {
+                return NetworkManager.Singleton.ConnectedClientsList.Count;
+            }
+            return 1;
+        }
+
+        /// <summary>
+        /// Satın alınan tüm upgrade'lerin toplam maliyetini döndürür
+        /// </summary>
+        private int GetTotalUpgradeValue()
+        {
+            if (UpgradeManager.Instance == null) return 0;
+
+            int total = 0;
+            foreach (ItemType t in Enum.GetValues(typeof(ItemType)))
+            {
+                if (UpgradeManager.Instance.IsPurchased(t))
+                {
+                    total += UpgradeAssets.GetCost(t);
+                }
+            }
+            return total;
         }
 
         #endregion

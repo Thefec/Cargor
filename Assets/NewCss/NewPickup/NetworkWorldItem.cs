@@ -1,6 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 using System.Collections;
+using NewCss;
 
 /// <summary>
 /// World'deki pickup edilebilir item (NetworkObject olarak)
@@ -18,6 +19,10 @@ public class NetworkWorldItem : NetworkBehaviour
     [SerializeField] private ItemData itemData;
     [SerializeField] private Rigidbody rb;
     [SerializeField] private Collider itemCollider;
+
+    [Header("=== PARÇALANMA AYARLARI ===")]
+    [SerializeField, Tooltip("Kırılma için gereken minimum çarpma hızı (m/s)")]
+    private float impactSpeedThreshold = 3f;
 
     #endregion
 
@@ -43,6 +48,9 @@ public class NetworkWorldItem : NetworkBehaviour
     {
         if (rb == null) rb = GetComponent<Rigidbody>();
         if (itemCollider == null) itemCollider = GetComponent<Collider>();
+
+        // BoxDestroyOnCollisionNetcode varsa, parçalanmayı o yönetir
+        _hasBoxDestroyScript = GetComponent<BoxDestroyOnCollisionNetcode>() != null;
     }
 
     #endregion
@@ -303,6 +311,185 @@ public class NetworkWorldItem : NetworkBehaviour
         {
             UnfreezePhysics();
         }
+    }
+
+    #endregion
+
+    #region Destruction on Collision
+
+    /// <summary>
+    /// Fırlatılma bayrağı. Sadece fırlatılan eşyalar çarpışma sonrası kırılır.
+    /// Bırakılan eşyalar güvenle yere konulur.
+    /// </summary>
+    private bool _wasThrown = false;
+
+    /// <summary>
+    /// Çift tetiklenme koruması.
+    /// </summary>
+    private bool _isBeingDestroyed = false;
+
+    /// <summary>
+    /// BoxDestroyOnCollisionNetcode varsa parçalanmayı o yönetir.
+    /// </summary>
+    private bool _hasBoxDestroyScript = false;
+
+    /// <summary>
+    /// Eşyayı fırlatılmış olarak işaretler.
+    /// Sadece fırlatılan eşyalar çarpışma sonrası parçalanır.
+    /// PlayerInventory tarafından fırlatma sırasında çağrılır.
+    /// </summary>
+    public void MarkAsThrown()
+    {
+        _wasThrown = true;
+        Debug.Log($"{LOG_PREFIX} Item fırlatılmış olarak işaretlendi: {gameObject.name}");
+    }
+
+    /// <summary>
+    /// Çarpışma algılama — sadece fırlatılan ürünler (product) için.
+    /// Kutular BoxDestroyOnCollisionNetcode tarafından yönetilir.
+    /// </summary>
+    private void OnCollisionEnter(Collision collision)
+    {
+        // BoxDestroyOnCollisionNetcode varsa, parçalanmayı o yönetir — burada atla
+        if (_hasBoxDestroyScript) return;
+
+        // Zaten yok ediliyor mu?
+        if (_isBeingDestroyed) return;
+
+        // Sadece server karar verir
+        if (!IsServer) return;
+
+        // Sadece fırlatılan eşyalar kırılır
+        if (!_wasThrown) return;
+
+        // Hız kontrolü
+        float impactSpeed = collision.relativeVelocity.magnitude;
+        if (impactSpeed < impactSpeedThreshold) return;
+
+        Debug.Log($"{LOG_PREFIX} Ürün çarpışma ile kırılıyor! Hız: {impactSpeed:F2} m/s | Obje: {gameObject.name}");
+
+        HandleItemDestruction();
+    }
+
+    /// <summary>
+    /// Ürün parçalanma sürecini başlatır.
+    /// 1. Pozisyon ve renk bilgisini kaydet
+    /// 2. ClientRpc ile tüm client'larda efekt tetikle
+    /// 3. NetworkObject'i Despawn et
+    /// </summary>
+    private void HandleItemDestruction()
+    {
+        _isBeingDestroyed = true;
+
+        Vector3 destroyPosition = transform.position;
+
+        // Renk bilgisini çek — Renderer'dan otomatik algılama
+        Color itemColor = GetItemColor();
+
+        Debug.Log($"{LOG_PREFIX} Ürün kırılıyor: {gameObject.name} | Pozisyon: {destroyPosition}");
+
+        // Tüm client'larda efekt oynat
+        if (NetworkObject != null && NetworkObject.IsSpawned)
+        {
+            PlayItemDestructionEffectClientRpc(destroyPosition, new Vector3(itemColor.r, itemColor.g, itemColor.b));
+        }
+
+        // Objeyi yok et
+        DespawnItem();
+    }
+
+    /// <summary>
+    /// Objeyi ağdan güvenli şekilde kaldırır.
+    /// </summary>
+    private void DespawnItem()
+    {
+        if (NetworkObject == null)
+        {
+            Debug.Log($"{LOG_PREFIX} NetworkObject null — sadece local Destroy.");
+            Destroy(gameObject);
+            return;
+        }
+
+        if (!NetworkObject.IsSpawned)
+        {
+            Debug.Log($"{LOG_PREFIX} NetworkObject spawn edilmemiş — sadece local Destroy.");
+            Destroy(gameObject);
+            return;
+        }
+
+        try
+        {
+            NetworkObject.Despawn(true);
+            Debug.Log($"{LOG_PREFIX} Ürün başarıyla Despawn edildi.");
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"{LOG_PREFIX} Despawn hatası: {ex.Message}");
+            Destroy(gameObject);
+        }
+    }
+
+    /// <summary>
+    /// Tüm client'larda parçalanma efektini tetikler.
+    /// Renk Vector3 olarak gönderilir (RPC Color desteklemez).
+    /// </summary>
+    [ClientRpc]
+    private void PlayItemDestructionEffectClientRpc(Vector3 position, Vector3 colorRGB)
+    {
+        var effectManager = BoxDestructionEffectManager.Instance;
+        if (effectManager == null)
+        {
+            Debug.LogWarning($"{LOG_PREFIX} BoxDestructionEffectManager bulunamadı!");
+            return;
+        }
+
+        Color color = new Color(colorRGB.x, colorRGB.y, colorRGB.z, 1f);
+        effectManager.PlayEffect(position, color);
+    }
+
+    /// <summary>
+    /// Ürünün rengini otomatik algılar.
+    /// Renderer materyalinden _BaseColor veya _Color çeker.
+    /// </summary>
+    private Color GetItemColor()
+    {
+        // BoxInfo varsa kutu rengini kullan
+        var boxInfo = GetComponent<BoxInfo>();
+        if (boxInfo != null)
+        {
+            return boxInfo.boxType switch
+            {
+                BoxInfo.BoxType.Red => new Color(0.8f, 0.2f, 0.2f),
+                BoxInfo.BoxType.Blue => new Color(0.2f, 0.4f, 0.8f),
+                BoxInfo.BoxType.Yellow => new Color(0.9f, 0.8f, 0.2f),
+                _ => new Color(0.8f, 0.7f, 0.5f)
+            };
+        }
+
+        // Renderer'dan renk çek
+        var meshRenderer = GetComponentInChildren<MeshRenderer>();
+        if (meshRenderer != null && meshRenderer.sharedMaterial != null)
+        {
+            var mat = meshRenderer.sharedMaterial;
+            int baseColorID = Shader.PropertyToID("_BaseColor");
+
+            if (mat.HasProperty(baseColorID))
+            {
+                Color c = mat.GetColor(baseColorID);
+                c.a = 1f;
+                return c;
+            }
+
+            if (mat.HasProperty("_Color"))
+            {
+                Color c = mat.color;
+                c.a = 1f;
+                return c;
+            }
+        }
+
+        // Fallback: karton rengi
+        return new Color(0.8f, 0.7f, 0.5f);
     }
 
     #endregion

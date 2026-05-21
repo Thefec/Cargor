@@ -10,6 +10,13 @@ public class WaitBar : NetworkBehaviour
     public Image waitBarImage; // UI Image component for the wait bar
     public float maxWaitTime = 15.0f; // Maximum wait time
 
+    [Header("Color Settings")]
+    [SerializeField] private Color healthyColor = Color.green;
+    [SerializeField] private Color warningColor = Color.yellow;
+    [SerializeField] private Color criticalColor = Color.red;
+    [SerializeField, Range(0f, 1f)] private float warningThreshold = 0.5f;
+    [SerializeField, Range(0f, 1f)] private float criticalThreshold = 0.2f;
+
     private float currentWaitTime;
     private bool isActive = false;
     private bool isDecreasing = false;
@@ -19,6 +26,20 @@ public class WaitBar : NetworkBehaviour
     private NetworkVariable<float> networkMaxWaitTime = new NetworkVariable<float>(15f);
     private NetworkVariable<bool> networkIsActive = new NetworkVariable<bool>(false);
     private NetworkVariable<bool> networkIsDecreasing = new NetworkVariable<bool>(false);
+
+    /// <summary>
+    /// Mevcut prefab'larda SerializeField default değerleri uygulanmaz.
+    /// Siyah (0,0,0) kalan renkleri runtime'da düzelt.
+    /// </summary>
+    private void Awake()
+    {
+        if (healthyColor == Color.black || healthyColor.a == 0f)
+            healthyColor = Color.green;
+        if (warningColor == Color.black || warningColor.a == 0f)
+            warningColor = Color.yellow;
+        if (criticalColor == Color.black || criticalColor.a == 0f)
+            criticalColor = Color.red;
+    }
 
     public override void OnNetworkSpawn()
     {
@@ -41,6 +62,7 @@ public class WaitBar : NetworkBehaviour
         if (waitBarImage != null)
         {
             waitBarImage.fillAmount = 1f;
+            waitBarImage.color = healthyColor;
             waitBarImage.gameObject.SetActive(false); // Start hidden
         }
     }
@@ -77,6 +99,25 @@ public class WaitBar : NetworkBehaviour
         {
             float fillAmount = Mathf.Max(0f, networkCurrentWaitTime.Value / networkMaxWaitTime.Value);
             waitBarImage.fillAmount = fillAmount;
+
+            // Renk geçişi: Yeşil → Sarı → Kırmızı
+            if (fillAmount > warningThreshold)
+            {
+                // Healthy → Warning arası
+                float t = (fillAmount - warningThreshold) / (1f - warningThreshold);
+                waitBarImage.color = Color.Lerp(warningColor, healthyColor, t);
+            }
+            else if (fillAmount > criticalThreshold)
+            {
+                // Warning → Critical arası
+                float t = (fillAmount - criticalThreshold) / (warningThreshold - criticalThreshold);
+                waitBarImage.color = Color.Lerp(criticalColor, warningColor, t);
+            }
+            else
+            {
+                // Critical bölge
+                waitBarImage.color = criticalColor;
+            }
         }
     }
 

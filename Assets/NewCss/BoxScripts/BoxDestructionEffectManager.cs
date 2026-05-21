@@ -192,6 +192,81 @@ namespace NewCss
             StartCoroutine(SpawnFragmentsCoroutine(position, color));
         }
 
+        /// <summary>
+        /// Herhangi bir objenin parçalanma efektini oynatır.
+        /// Objenin rengini otomatik algılar:
+        /// 1. BoxInfo varsa kutu rengini kullanır
+        /// 2. Yoksa Renderer materyalinden renk çeker
+        /// 3. Hiçbiri yoksa varsayılan karton rengi kullanır
+        /// </summary>
+        /// <param name="position">Dünya pozisyonu</param>
+        /// <param name="sourceObject">Rengi algılanacak kaynak obje</param>
+        public void PlayEffect(Vector3 position, GameObject sourceObject)
+        {
+            if (this == null || !gameObject.activeInHierarchy) return;
+
+            Color fragmentColor = GetColorFromObject(sourceObject);
+            StartCoroutine(SpawnFragmentsCoroutine(position, fragmentColor));
+        }
+
+        /// <summary>
+        /// Objenin rengini otomatik algılar.
+        /// BoxInfo → Renderer → Fallback karton rengi sırasıyla kontrol eder.
+        /// </summary>
+        private Color GetColorFromObject(GameObject obj)
+        {
+            if (obj == null) return cardboardTint;
+
+            // 1. BoxInfo varsa kutu rengini kullan
+            var boxInfo = obj.GetComponent<BoxInfo>();
+            if (boxInfo != null)
+            {
+                return GetColorForBoxType(boxInfo.boxType);
+            }
+
+            // 2. Renderer'dan materyalin _BaseColor veya color değerini al
+            var renderer = obj.GetComponentInChildren<MeshRenderer>();
+            if (renderer == null) renderer = obj.GetComponentInChildren<MeshRenderer>();
+            
+            if (renderer != null && renderer.sharedMaterial != null)
+            {
+                var mat = renderer.sharedMaterial;
+
+                // URP Lit shader: _BaseColor
+                if (mat.HasProperty(ShaderBaseColor))
+                {
+                    Color matColor = mat.GetColor(ShaderBaseColor);
+                    matColor.a = 1f; // Alpha'yı 1'e sabitle
+                    return matColor;
+                }
+
+                // Standard shader: _Color
+                if (mat.HasProperty("_Color"))
+                {
+                    Color matColor = mat.color;
+                    matColor.a = 1f;
+                    return matColor;
+                }
+            }
+
+            // 3. SkinnedMeshRenderer kontrolü
+            var skinnedRenderer = obj.GetComponentInChildren<SkinnedMeshRenderer>();
+            if (skinnedRenderer != null && skinnedRenderer.sharedMaterial != null)
+            {
+                var mat = skinnedRenderer.sharedMaterial;
+
+                if (mat.HasProperty(ShaderBaseColor))
+                {
+                    Color matColor = mat.GetColor(ShaderBaseColor);
+                    matColor.a = 1f;
+                    return matColor;
+                }
+            }
+
+            // 4. Fallback: karton rengi
+            return cardboardTint;
+        }
+
         #endregion
 
         #region Fragment Spawning

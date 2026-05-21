@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -544,9 +544,6 @@ namespace NewCss
 
             int totalReward = CalculateRewardWithPrestige();
             MoneySystem.Instance?.AddMoney(totalReward);
-
-            // Kota sistemine bildir
-            QuotaManager.Instance?.RegisterShippedBox();
 
             // Check if truck is complete
             if (_deliveredCount.Value >= _networkRequiredCargo.Value && !_isComplete.Value)

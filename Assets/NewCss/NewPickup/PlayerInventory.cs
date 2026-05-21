@@ -2328,6 +2328,18 @@ public class PlayerInventory : NetworkBehaviour
             if (force != Vector3.zero)
             {
                 worldItem.SetThrowForce(force);
+
+                // ─── FIRLATMA İŞARETLEME ─────────────────────────────
+                // Fırlatılan eşyalar çarpışma sonrası parçalanır.
+                // Bırakılan eşyalar güvenle yere konulur.
+                worldItem.MarkAsThrown();
+
+                // Kutu ise BoxDestroyOnCollisionNetcode'u da işaretle
+                var boxDestroy = spawnedItem.GetComponent<BoxDestroyOnCollisionNetcode>();
+                if (boxDestroy != null)
+                {
+                    boxDestroy.MarkAsThrown();
+                }
             }
         }
     }

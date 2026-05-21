@@ -15,7 +15,7 @@ namespace NewCss
         #region Constants
 
         private const string LOG_PREFIX = "[CharacterMeshSwapper]";
-        private const string SAVE_KEY_PREFIX_FORMAT = "CharCustom_Client_{0}_";
+        private const string SAVE_KEY_PREFIX = "CharCustom_LocalPlayer_";
         private const int DEFAULT_INDEX = 0;
 
         // PlayerPrefs Keys
@@ -297,7 +297,7 @@ namespace NewCss
 
         private void InitializeSaveKey()
         {
-            _saveKeyPrefix = string.Format(SAVE_KEY_PREFIX_FORMAT, OwnerClientId);
+            _saveKeyPrefix = SAVE_KEY_PREFIX;
         }
 
         #endregion

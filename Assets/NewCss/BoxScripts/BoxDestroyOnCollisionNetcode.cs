@@ -32,7 +32,7 @@ namespace NewCss
         private float impactSpeedThreshold = 3f;
 
         [SerializeField, Tooltip("Sadece boş kutular kırılabilir mi?")]
-        private bool onlyIfEmpty = true;
+        private bool onlyIfEmpty = false;
 
         [Header("=== DEBUG ===")]
         [SerializeField, Tooltip("Debug loglarını göster")]
@@ -47,6 +47,12 @@ namespace NewCss
         /// Kutu bir kez kırıldığında tekrar tetiklenmez.
         /// </summary>
         private bool _isDestroyed = false;
+
+        /// <summary>
+        /// Fırlatılma bayrağı. Sadece fırlatılan kutular kırılır.
+        /// Bırakılan kutular yere güvenle konulur.
+        /// </summary>
+        private bool _wasThrown = false;
 
         private BoxInfo _boxInfo;
         private Rigidbody _rigidbody;
@@ -80,7 +86,10 @@ namespace NewCss
             // 2. Sadece server çarpışma kararı verir (authoritative)
             if (!IsServer) return;
 
-            // 3. Dolu kutu kırılmaz
+            // 3. Sadece fırlatılan kutular kırılır (bırakılan kutular güvenle yere konulur)
+            if (!_wasThrown) return;
+
+            // 4. Dolu kutu kontrolü (opsiyonel — varsayılan: her kutu kırılabilir)
             if (onlyIfEmpty && _boxInfo != null && _boxInfo.isFull) return;
 
             // ─── HIZ KONTROLÜ ─────────────────────────────────────
@@ -98,6 +107,17 @@ namespace NewCss
                      $"Çarpılan: {collision.gameObject.name}");
 
             HandleDestruction();
+        }
+
+        /// <summary>
+        /// Kutuyu fırlatılmış olarak işaretler.
+        /// Sadece fırlatılan kutular çarpışma sonrası kırılır.
+        /// PlayerInventory tarafından fırlatma sırasında çağrılır.
+        /// </summary>
+        public void MarkAsThrown()
+        {
+            _wasThrown = true;
+            LogDebug("Kutu fırlatılmış olarak işaretlendi — çarpışma sonrası kırılacak.");
         }
 
         #endregion

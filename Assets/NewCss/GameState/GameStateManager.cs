@@ -305,7 +305,8 @@ namespace NewCss
         }
 
         /// <summary>
-        /// Called when a customer is lost (wait bar expired and customer exits)
+        /// Called when a customer is lost (wait bar expired and customer exits).
+        /// Applies prestige penalty instead of instant game over.
         /// </summary>
         public void OnCustomerLost()
         {
@@ -315,12 +316,27 @@ namespace NewCss
                 return;
             }
 
-            Debug.Log("=== CUSTOMER LOST - GAME OVER ===");
-            TriggerLose();
+            Debug.Log("=== CUSTOMER LOST - Prestige penalty: -15 ===");
+            
+            if (PrestigeManager.Instance != null)
+            {
+                PrestigeManager.Instance.ModifyPrestige(-15f);
+                
+                // Prestige sıfırın altına düştüyse oyun biter
+                if (PrestigeManager.Instance.GetPrestige() <= 0)
+                {
+                    Debug.Log("=== PRESTIGE ZERO - GAME OVER ===");
+                    TriggerLose();
+                }
+            }
+            else
+            {
+                Debug.LogWarning("PrestigeManager not found! Cannot apply penalty.");
+            }
         }
 
         /// <summary>
-        /// Checks if the player has won after completing day 16 without losing any customers
+        /// Checks if the player has won after completing day 16 with prestige > 0 and rent paid
         /// </summary>
         public void CheckWinCondition()
         {
@@ -332,10 +348,10 @@ namespace NewCss
 
             int currentDay = DayCycleManager.Instance?.currentDay ?? 1;
             
-            // Win condition: Reach day 16 without losing any customers
+            // Win condition: Reach day 16 with prestige > 0
             if (currentDay >= DayCycleManager.MAX_DAYS)
             {
-                Debug.Log($"=== Day {currentDay} completed without losing customers - VICTORY! ===");
+                Debug.Log($"=== Day {currentDay} completed - VICTORY! ===");
                 TriggerWin();
             }
         }
@@ -369,7 +385,7 @@ namespace NewCss
             ShowWinScreen();
         }
 
-        private void TriggerLose()
+        public void TriggerLose()
         {
             Debug.Log("=== GAME LOST ===");
             gameEnded = true;

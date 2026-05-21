@@ -2302,8 +2302,8 @@ MonoBehaviour:
   waitBar: {fileID: 3231516756921554553}
   waitCanvas: {fileID: 6339901739819928916}
   hideCanvasUntilTimer: 1
-  minWaitTime: 8
-  maxWaitTime: 16
+  minWaitTime: 15
+  maxWaitTime: 20
   interactionTime: 2
   interactionRange: 2
   interactionSounds:
@@ -2354,6 +2354,14 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   waitBarImage: {fileID: 1737163219943819090}
   maxWaitTime: 15
+  healthyColor: {r: 0, g: 1, b: 0, a: 1}
+  warningColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  criticalColor: {r: 1, g: 0, b: 0, a: 1}
+  warningThreshold: 0.5
+  criticalThreshold: 0.2
+  enablePulse: 1
+  pulseSpeed: 3
+  pulseIntensity: 0.1
 --- !u!114 &2803772726292495299
 MonoBehaviour:
   m_ObjectHideFlags: 0

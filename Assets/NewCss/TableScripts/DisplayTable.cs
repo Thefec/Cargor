@@ -53,7 +53,14 @@ namespace NewCss
         /// <summary>
         /// Masadaki mevcut item sayısı
         /// </summary>
-        public int ItemCount => _placedItems.Count;
+        public int ItemCount 
+        {
+            get
+            {
+                CleanUpDestroyedItems();
+                return _placedItems.Count;
+            }
+        }
 
         /// <summary>
         /// Toplam slot sayısı
@@ -68,12 +75,26 @@ namespace NewCss
         /// <summary>
         /// Masa dolu mu?
         /// </summary>
-        public bool IsFull => slotPoints != null && _placedItems.Count >= slotPoints.Length;
+        public bool IsFull 
+        {
+            get
+            {
+                CleanUpDestroyedItems();
+                return slotPoints != null && _placedItems.Count >= slotPoints.Length;
+            }
+        }
 
         /// <summary>
         /// Masada item var mı?
         /// </summary>
-        public bool HasItems => _placedItems.Count > 0;
+        public bool HasItems 
+        {
+            get
+            {
+                CleanUpDestroyedItems();
+                return _placedItems.Count > 0;
+            }
+        }
 
         /// <summary>
         /// Item prefab'larına erişim (backward compatibility)
@@ -401,6 +422,7 @@ namespace NewCss
         /// </summary>
         public List<GameObject> GetAllItems()
         {
+            CleanUpDestroyedItems();
             return new List<GameObject>(_placedItems);
         }
 
@@ -446,6 +468,33 @@ namespace NewCss
             _placedItems.Clear();
 
             LogDebug($"Removed {count} items from table (not destroyed)");
+        }
+
+        #endregion
+
+        #region Private Methods - Cleanup
+
+        /// <summary>
+        /// Yok edilmiş veya alınmış item referanslarını listeden temizler
+        /// </summary>
+        private void CleanUpDestroyedItems()
+        {
+            if (_placedItems == null || _placedItems.Count == 0) return;
+
+            bool removed = false;
+            for (int i = _placedItems.Count - 1; i >= 0; i--)
+            {
+                if (_placedItems[i] == null)
+                {
+                    _placedItems.RemoveAt(i);
+                    removed = true;
+                }
+            }
+
+            if (removed)
+            {
+                RepositionItems();
+            }
         }
 
         #endregion
