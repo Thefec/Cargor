@@ -398,6 +398,7 @@ namespace NewCss
             _accessoriesIndex = WrapIndex(_accessoriesIndex, direction, accessoriesMeshes.Length);
             SwapMesh(accessoriesRenderer, accessoriesMeshes, _accessoriesIndex);
             OnCustomizationChanged?.Invoke(CustomizationPart.Accessories, _accessoriesIndex);
+            SaveCustomizationData();
         }
 
         public void ChangeFaces(int direction)
@@ -406,6 +407,7 @@ namespace NewCss
             _facesIndex = WrapIndex(_facesIndex, direction, facesMeshes.Length);
             SwapMesh(facesRenderer, facesMeshes, _facesIndex);
             OnCustomizationChanged?.Invoke(CustomizationPart.Faces, _facesIndex);
+            SaveCustomizationData();
         }
 
         public void ChangeGlasses(int direction)
@@ -414,6 +416,7 @@ namespace NewCss
             _glassesIndex = WrapIndex(_glassesIndex, direction, glassesMeshes.Length);
             SwapMesh(glassesRenderer, glassesMeshes, _glassesIndex);
             OnCustomizationChanged?.Invoke(CustomizationPart.Glasses, _glassesIndex);
+            SaveCustomizationData();
         }
 
         public void ChangeGloves(int direction)
@@ -422,6 +425,7 @@ namespace NewCss
             _glovesIndex = WrapIndex(_glovesIndex, direction, glovesMeshes.Length);
             SwapMesh(glovesRenderer, glovesMeshes, _glovesIndex);
             OnCustomizationChanged?.Invoke(CustomizationPart.Gloves, _glovesIndex);
+            SaveCustomizationData();
         }
 
         public void ChangeHairstyle(int direction)
@@ -430,6 +434,7 @@ namespace NewCss
             _hairstyleIndex = WrapIndex(_hairstyleIndex, direction, hairstyleMeshes.Length);
             SwapMesh(hairstyleRenderer, hairstyleMeshes, _hairstyleIndex);
             OnCustomizationChanged?.Invoke(CustomizationPart.Hairstyle, _hairstyleIndex);
+            SaveCustomizationData();
         }
 
         public void ChangeHat(int direction)
@@ -438,6 +443,7 @@ namespace NewCss
             _hatIndex = WrapIndex(_hatIndex, direction, hatMeshes.Length);
             SwapMesh(hatRenderer, hatMeshes, _hatIndex);
             OnCustomizationChanged?.Invoke(CustomizationPart.Hat, _hatIndex);
+            SaveCustomizationData();
         }
 
         public void ChangeOuterwear(int direction)
@@ -446,6 +452,7 @@ namespace NewCss
             _outerwearIndex = WrapIndex(_outerwearIndex, direction, outerwearMeshes.Length);
             SwapMesh(outerwearRenderer, outerwearMeshes, _outerwearIndex);
             OnCustomizationChanged?.Invoke(CustomizationPart.Outerwear, _outerwearIndex);
+            SaveCustomizationData();
         }
 
         public void ChangePants(int direction)
@@ -454,6 +461,7 @@ namespace NewCss
             _pantsIndex = WrapIndex(_pantsIndex, direction, pantsMeshes.Length);
             SwapMesh(pantsRenderer, pantsMeshes, _pantsIndex);
             OnCustomizationChanged?.Invoke(CustomizationPart.Pants, _pantsIndex);
+            SaveCustomizationData();
         }
 
         public void ChangeShoes(int direction)
@@ -462,6 +470,7 @@ namespace NewCss
             _shoesIndex = WrapIndex(_shoesIndex, direction, shoesMeshes.Length);
             SwapMesh(shoesRenderer, shoesMeshes, _shoesIndex);
             OnCustomizationChanged?.Invoke(CustomizationPart.Shoes, _shoesIndex);
+            SaveCustomizationData();
         }
 
         public void ChangeSkinColor(int direction)
@@ -470,6 +479,7 @@ namespace NewCss
             _skinColorIndex = WrapIndex(_skinColorIndex, direction, skinColors.Length);
             ApplySkinColor();
             OnCustomizationChanged?.Invoke(CustomizationPart.SkinColor, _skinColorIndex);
+            SaveCustomizationData();
         }
 
         /// <summary>

@@ -270,9 +270,20 @@ namespace NewCss
             InitializeSaveKey();
             FindRenderers();
 
+            Debug.Log($"{LOG_PREFIX} OnNetworkSpawn - IsOwner: {IsOwner}, ClientId: {OwnerClientId}");
+            Debug.Log($"{LOG_PREFIX} SaveKeyPrefix: '{_saveKeyPrefix}'");
+            Debug.Log($"{LOG_PREFIX} Mesh Arrays - Accessories: {accessoriesMeshes?.Length ?? 0}, Faces: {facesMeshes?.Length ?? 0}, Glasses: {glassesMeshes?.Length ?? 0}, Hair: {hairstyleMeshes?.Length ?? 0}, Hat: {hatMeshes?.Length ?? 0}, Outerwear: {outerwearMeshes?.Length ?? 0}, Pants: {pantsMeshes?.Length ?? 0}, Shoes: {shoesMeshes?.Length ?? 0}");
+            Debug.Log($"{LOG_PREFIX} PlayerPrefs - accessories: {PlayerPrefs.GetInt(_saveKeyPrefix + KEY_ACCESSORIES, -999)}, faces: {PlayerPrefs.GetInt(_saveKeyPrefix + KEY_FACES, -999)}, hair: {PlayerPrefs.GetInt(_saveKeyPrefix + KEY_HAIRSTYLE, -999)}, hat: {PlayerPrefs.GetInt(_saveKeyPrefix + KEY_HAT, -999)}, outerwear: {PlayerPrefs.GetInt(_saveKeyPrefix + KEY_OUTERWEAR, -999)}, pants: {PlayerPrefs.GetInt(_saveKeyPrefix + KEY_PANTS, -999)}, shoes: {PlayerPrefs.GetInt(_saveKeyPrefix + KEY_SHOES, -999)}");
+            Debug.Log($"{LOG_PREFIX} Renderers - Accessories: {(accessoriesRenderer != null ? "OK" : "NULL")}, Faces: {(facesRenderer != null ? "OK" : "NULL")}, Hair: {(hairstyleRenderer != null ? "OK" : "NULL")}, Skin: {(skinRenderer != null ? "OK" : "NULL")}");
+
             if (IsOwner)
             {
                 LoadCustomizationData();
+                Debug.Log($"{LOG_PREFIX} After Load - Accessories: {_accessoriesIndex.Value}, Faces: {_facesIndex.Value}, Hair: {_hairstyleIndex.Value}, Hat: {_hatIndex.Value}, Outerwear: {_outerwearIndex.Value}, Pants: {_pantsIndex.Value}, Shoes: {_shoesIndex.Value}, SkinColor: {_skinColorIndex.Value}");
+            }
+            else
+            {
+                Debug.LogWarning($"{LOG_PREFIX} NOT OWNER - Cannot load customization data! Waiting for network sync...");
             }
 
             SubscribeToNetworkEvents();

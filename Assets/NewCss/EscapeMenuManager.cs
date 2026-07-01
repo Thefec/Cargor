@@ -78,6 +78,9 @@ public class EscapeMenuManager : NetworkBehaviour
     [SerializeField, Tooltip("Next Day UI Manager referansı")]
     public NewCss.NextDayUIManager nextDayUIManager;
 
+    [SerializeField, Tooltip("Unified Settings Manager referansı (Opsiyonel)")]
+    public UnifiedSettingsManager unifiedSettingsManager;
+
     #endregion
 
     #region Private Fields
@@ -205,6 +208,12 @@ public class EscapeMenuManager : NetworkBehaviour
         // Back buttons
         AddButtonListener(optionsBackButton, CloseOptionsPanel);
         AddButtonListener(creditsBackButton, CloseCreditsPanel);
+
+        // UnifiedSettingsManager ile entegrasyon (Geri butonuna basıldığında menüyü kapat)
+        if (unifiedSettingsManager != null && unifiedSettingsManager.backButton != null)
+        {
+            unifiedSettingsManager.backButton.onClick.AddListener(CloseOptionsPanel);
+        }
     }
 
     private void AddButtonListener(Button button, UnityEngine.Events.UnityAction action)
@@ -224,6 +233,11 @@ public class EscapeMenuManager : NetworkBehaviour
         RemoveButtonListener(exitGameButton);
         RemoveButtonListener(optionsBackButton);
         RemoveButtonListener(creditsBackButton);
+        
+        if (unifiedSettingsManager != null && unifiedSettingsManager.backButton != null)
+        {
+            unifiedSettingsManager.backButton.onClick.RemoveListener(CloseOptionsPanel);
+        }
     }
 
     private void RemoveButtonListener(Button button)

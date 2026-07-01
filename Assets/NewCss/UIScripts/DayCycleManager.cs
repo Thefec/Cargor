@@ -744,16 +744,8 @@ namespace NewCss
 
         private string FormatTimeDisplay((int hour, int minute) timeInfo)
         {
-            string template = LocalizationHelper.GetLocalizedString(LOC_KEY_DAY_FORMAT);
-            try
-            {
-                return string.Format(template, _networkCurrentDay.Value, timeInfo.hour.ToString("D2"), timeInfo.minute.ToString("D2"), CurrentDayDuration);
-            }
-            catch
-            {
-                // Fallback if format string is invalid
-                return $"Day {_networkCurrentDay.Value}  {timeInfo.hour:D2}:{timeInfo.minute:D2} ({CurrentDayDuration}s)";
-            }
+            // Only display the day number as "Day N"
+            return $"Day {_networkCurrentDay.Value}";
         }
 
         private void SetDayEndScreenActive(bool active)

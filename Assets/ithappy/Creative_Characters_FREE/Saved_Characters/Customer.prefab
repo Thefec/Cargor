@@ -2359,9 +2359,6 @@ MonoBehaviour:
   criticalColor: {r: 1, g: 0, b: 0, a: 1}
   warningThreshold: 0.5
   criticalThreshold: 0.2
-  enablePulse: 1
-  pulseSpeed: 3
-  pulseIntensity: 0.1
 --- !u!114 &2803772726292495299
 MonoBehaviour:
   m_ObjectHideFlags: 0
