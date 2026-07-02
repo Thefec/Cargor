@@ -83,29 +83,26 @@ namespace NewCss
         #region Serialized Fields - Timer
 
         [Header("=== HANGAR TIMER SETTINGS ===")]
-        [SerializeField, Tooltip("Truck hangar stay duration (seconds)")]
-        public float hangarStayDuration = 120f;
-
         [SerializeField, Tooltip("Timer UI text")]
         public TextMeshProUGUI timerText;
+
+        // hangarStayDuration: Awake'de SO'dan okunur; sonradan dışarıdan override edilebilir.
+        [HideInInspector] public float hangarStayDuration = 120f;
 
         #endregion
 
         #region Serialized Fields - Rewards
 
-        [Header("=== MONEY REWARDS/PENALTIES ===")]
-        [SerializeField, Tooltip("Kutu başına ödül")]
-        public int rewardPerBox = 50;
+        [Header("=== ECONOMY SETTINGS ===")]
+        [SerializeField, Tooltip("Tüm ekonomi sabitlerini içeren ScriptableObject")]
+        private GameEconomySettings economySettings;
 
-        [SerializeField, Tooltip("Kutu başına ceza")]
-        public int penaltyPerBox = 60;
-
-        [Header("=== PRESTIGE BONUS SETTINGS ===")]
-        [SerializeField, Tooltip("Her bonus tier için gereken prestige")]
-        public float prestigePerBonus = 10f;
-
-        [SerializeField, Tooltip("Her tier için kutu başına bonus")]
-        public int bonusPerTier = 5;
+        // Bunlar public field olarak kalmalı; EventEffectManager ve UpgradePanel runtime'da yazıyor.
+        // Awake() içinde SO'dan başlangıç değerleri atanacak.
+        [HideInInspector] public int   rewardPerBox     = 50;
+        [HideInInspector] public int   penaltyPerBox    = 60;
+        [HideInInspector] public float prestigePerBonus = 10f;
+        [HideInInspector] public int   bonusPerTier     = 5;
 
         #endregion
 
@@ -203,6 +200,16 @@ namespace NewCss
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
+
+            // SO varsa başlangıç ekonomi değerlerini yükle
+            if (economySettings != null)
+            {
+                rewardPerBox      = economySettings.rewardPerBox;
+                penaltyPerBox     = economySettings.penaltyPerBox;
+                hangarStayDuration= economySettings.hangarStayDuration;
+                prestigePerBonus  = economySettings.prestigePerBonus;
+                bonusPerTier      = economySettings.bonusPerTier;
+            }
 
             SubscribeToNetworkEvents();
             SetupTriggerCollider();

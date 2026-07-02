@@ -71,8 +71,9 @@ namespace NewCss.Quest
             InitializeNetworkList();
         }
 
-        private void OnDestroy()
+        public override void OnDestroy()
         {
+            base.OnDestroy();
             CleanupSingleton();
             UnsubscribeFromDayCycleEvents();
         }

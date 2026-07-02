@@ -69,21 +69,13 @@ namespace NewCss
 
         #region Serialized Fields - Rent System
 
-        [Header("=== RENT SETTINGS ===")]
-        [SerializeField, Tooltip("Oyuncu sayısına göre temel kira miktarları (1P, 2P, 3P, 4P)")]
-        private int[] baseRentByPlayerCount = { 500, 900, 1200, 1500 };
+        [Header("=== ECONOMY SETTINGS ===")]
+        [SerializeField, Tooltip("Tüm ekonomi sabitlerini içeren ScriptableObject")]
+        private GameEconomySettings economySettings;
 
-        [SerializeField, Tooltip("Her kira döneminde artış çarpanı")]
-        private float rentGrowthMultiplier = 1.3f;
-
-        [SerializeField, Tooltip("Sahip olunan upgrade'lerin toplam değerinin yüzdesi olarak ek vergi")]
-        private float wealthTaxRate = 0.1f;
-
-        [SerializeField, Tooltip("Kaç günde bir kira ödenir")]
-        private int rentIntervalDays = 4;
-
-        [SerializeField, Tooltip("Grace period'da alınacak para yüzdesi (0-1)")]
-        private float gracePaymentPercent = 0.8f;
+        // ── Backward-compat kısayollar (SO'dan okunur) ──────────────────
+        private int   rentIntervalDays    => economySettings != null ? economySettings.rentIntervalDays    : 4;
+        private float gracePaymentPercent => economySettings != null ? economySettings.gracePaymentPercent : 0.8f;
 
         #endregion
 
@@ -530,7 +522,8 @@ namespace NewCss
             else if (!_graceUsed)
             {
                 // İlk kira affı — eldeki paranın %80'i alınır, ödenmiş sayılır
-                int graceAmount = Mathf.RoundToInt(currentMoney * gracePaymentPercent);
+                float gracePct   = economySettings != null ? economySettings.gracePaymentPercent : 0.8f;
+                int graceAmount = Mathf.RoundToInt(currentMoney * gracePct);
                 MoneySystem.Instance.SpendMoney(graceAmount);
                 _graceUsed = true;
                 _rentPaymentCount++;
@@ -554,21 +547,25 @@ namespace NewCss
         private int CalculateRent()
         {
             int playerCount = GetPlayerCount();
-            int playerIndex = Mathf.Clamp(playerCount - 1, 0, baseRentByPlayerCount.Length - 1);
-            int baseRent = baseRentByPlayerCount[playerIndex];
-
-            // Dönem çarpanı: 1.3^n
-            float growthMultiplier = Mathf.Pow(rentGrowthMultiplier, _rentPaymentCount);
-            int scaledRent = Mathf.RoundToInt(baseRent * growthMultiplier);
-
-            // Wealth Tax: Sahip olunan upgrade'lerin toplam değeri × 0.1
             int totalUpgradeValue = GetTotalUpgradeValue();
-            int wealthTax = Mathf.RoundToInt(totalUpgradeValue * wealthTaxRate);
 
-            int finalRent = scaledRent + wealthTax;
-            Debug.Log($"{LOG_PREFIX} Rent calc: Base={baseRent} × {growthMultiplier:F2} = {scaledRent} + WealthTax={wealthTax} = {finalRent} (Players: {playerCount})");
+            float finalRent;
+            if (economySettings != null)
+            {
+                finalRent = economySettings.CalculateRent(playerCount, _rentPaymentCount, totalUpgradeValue);
+            }
+            else
+            {
+                // Fallback: economySettings atanmamışsa eski sabit değerler
+                Debug.LogWarning($"{LOG_PREFIX} economySettings atanmamış! Fallback değerler kullanılıyor.");
+                int baseRent    = playerCount == 1 ? 500 : playerCount == 2 ? 900 : playerCount == 3 ? 1200 : 1500;
+                float scaled    = baseRent * Mathf.Pow(1.3f, _rentPaymentCount);
+                finalRent       = scaled + totalUpgradeValue * 0.1f;
+            }
 
-            return finalRent;
+            int result = Mathf.RoundToInt(finalRent);
+            Debug.Log($"{LOG_PREFIX} Rent calc result: {result} (Players: {playerCount}, Cycle: {_rentPaymentCount})");
+            return result;
         }
 
         /// <summary>

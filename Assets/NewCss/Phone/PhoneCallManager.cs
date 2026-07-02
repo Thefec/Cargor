@@ -25,9 +25,6 @@ namespace NewCss
         #region Serialized Fields
 
         [Header("=== PHONE CALL SETTINGS ===")]
-        [SerializeField, Tooltip("Telefon cagrisi ile atlanacak zaman miktari (dakika)")]
-        private float timeSkipAmount = 20f;
-
         [SerializeField, Tooltip("Telefonu kullanmak icin basili tutulmasi gereken sure (saniye)")]
         private float holdDuration = 2f;
 
@@ -38,16 +35,15 @@ namespace NewCss
         [SerializeField, Tooltip("Telefon kullanilabilir bitis saati")]
         private int phoneEndHour = 18;
 
-        [Header("=== ANTI-SPAM ===")]
-        [SerializeField, Tooltip("Basarili aramadan sonra bekleme suresi (saniye)")]
-        private float postCallCooldown = 30f;
+        [Header("=== ECONOMY SETTINGS ===")]
+        [SerializeField, Tooltip("Tüm ekonomi sabitlerini içeren ScriptableObject")]
+        private GameEconomySettings economySettings;
 
-        [SerializeField, Tooltip("Saatlik maksimum arama sayisi")]
-        private int maxCallsPerHour = 2;
-
-        [Header("=== REWARD ===")]
-        [SerializeField, Tooltip("Basarili arama odulu (para)")]
-        private int callReward = 10;
+        // Backward-compat properties — SO yoksa hard-coded fallback
+        private float timeSkipAmount  => economySettings != null ? economySettings.timeSkipAmount  : 20f;
+        private float postCallCooldown=> economySettings != null ? economySettings.postCallCooldown : 30f;
+        private int   maxCallsPerHour => economySettings != null ? economySettings.maxCallsPerHour  : 2;
+        private int   callReward      => economySettings != null ? economySettings.callReward       : 10;
 
         [Header("=== AUDIO ===")]
         [SerializeField, Tooltip("Basarili cagri sesi")]
@@ -55,6 +51,7 @@ namespace NewCss
 
         [SerializeField, Tooltip("Basarisiz cagri sesi (mesai disi, kota doldu vs)")]
         private AudioSource failCallSound;
+
 
         [Header("=== WAIT BAR SYSTEM ===")]
         [SerializeField, Tooltip("Telefon bekleme cubugu")]

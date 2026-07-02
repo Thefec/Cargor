@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -232,8 +232,9 @@ public class TutorialManager : NetworkBehaviour
         CheckLocaleChange();
     }
 
-    private void OnDestroy()
+    public override void OnDestroy()
     {
+        base.OnDestroy();
         RemoveHighlight();
     }
 

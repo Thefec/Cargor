@@ -115,6 +115,10 @@ namespace NewCss
         [SerializeField, Tooltip("Ürün bırakma masası")]
         public DisplayTable dropOffTable;
 
+        [Header("=== ECONOMY SETTINGS ===")]
+        [SerializeField, Tooltip("Tüm ekonomi sabitlerini içeren ScriptableObject")]
+        private GameEconomySettings economySettings;
+
         #endregion
 
         #region Network Variables
@@ -845,7 +849,8 @@ namespace NewCss
             // Prestige ödülü
             if (PrestigeManager.Instance != null)
             {
-                PrestigeManager.Instance.ModifyPrestige(0.05f);
+                float bonus = economySettings != null ? economySettings.customerServedPrestigeBonus : 0.5f;
+                PrestigeManager.Instance.ModifyPrestige(bonus);
             }
 
             // KALDIRILDI: Customer served quest tracking artık yok
@@ -856,7 +861,8 @@ namespace NewCss
         {
             if (PrestigeManager.Instance != null)
             {
-                PrestigeManager.Instance.ModifyPrestige(-0.03f);
+                float penalty = economySettings != null ? economySettings.wrongProductPrestigePenalty : -0.1f;
+                PrestigeManager.Instance.ModifyPrestige(penalty);
             }
         }
 

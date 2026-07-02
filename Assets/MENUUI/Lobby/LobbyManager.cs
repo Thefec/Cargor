@@ -265,8 +265,9 @@ public class LobbyManager : NetworkBehaviour
         NetworkManager.Singleton.SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
     }
     
-    private void OnDestroy()
+    public override void OnDestroy()
     {
+        base.OnDestroy();
         if (NetworkManager.Singleton != null)
         {
             NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;

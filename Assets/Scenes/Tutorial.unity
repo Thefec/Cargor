@@ -6880,8 +6880,6 @@ GameObject:
   - component: {fileID: 404143636}
   - component: {fileID: 404143635}
   - component: {fileID: 404143634}
-  - component: {fileID: 404143633}
-  - component: {fileID: 404143632}
   - component: {fileID: 404143631}
   m_Layer: 8
   m_Name: Cube.012 (3)
@@ -6911,62 +6909,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.023200842, y: 0.008455901, z: 0.019132495}
   m_Center: {x: -2.611555e-16, y: 0.000000030201, z: 0.027337432}
---- !u!114 &404143632
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 404143630}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b200a53776d85d141a7bdd84f5d96a7a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NewCss.BoxingMinigameManager
-  ShowTopMostFoldoutHeaderGroup: 1
-  sequenceLength: 3
-  keyFadeInDuration: 0.15
-  keyFadeOutDuration: 0.15
-  nextKeyDelay: 0.3
-  correctSound: {fileID: 0}
-  wrongSound: {fileID: 0}
-  successSound: {fileID: 0}
-  failSound: {fileID: 0}
-  uiController: {fileID: 404143633}
-  parentTable: {fileID: 404143634}
-  showDebugLogs: 1
---- !u!114 &404143633
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 404143630}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d56c9ad797878c14b81ed4b39dd7b9cd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NewCss.BoxingUIController
-  uiPanel: {fileID: 1386401594}
-  promptText: {fileID: 0}
-  feedbackText: {fileID: 0}
-  progressIndicators: []
-  redUpImage: {fileID: 1296435915}
-  redDownImage: {fileID: 712212781}
-  redLeftImage: {fileID: 837780277}
-  redRightImage: {fileID: 964397377}
-  yellowUpImage: {fileID: 1764871267}
-  yellowDownImage: {fileID: 1157299266}
-  yellowLeftImage: {fileID: 934903194}
-  yellowRightImage: {fileID: 1404813027}
-  blueUpImage: {fileID: 1660186407}
-  blueDownImage: {fileID: 1421397579}
-  blueLeftImage: {fileID: 521746939}
-  blueRightImage: {fileID: 1665638956}
-  fadeInDuration: 0.05
-  fadeOutDuration: 0.05
-  feedbackHideDelay: 0.15
-  showDebugLogs: 0
 --- !u!114 &404143634
 MonoBehaviour:
   m_ObjectHideFlags: 0

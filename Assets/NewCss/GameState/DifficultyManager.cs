@@ -40,10 +40,10 @@ namespace NewCss
         private float basePhoneCallChance = 0.3f;
 
         [SerializeField, Tooltip("Customer minimum patience time for single player (seconds)")]
-        private float baseMinPatience = 10f;
-
+        private float baseMinPatience = 35f;
+ 
         [SerializeField, Tooltip("Customer maximum patience time for single player (seconds)")]
-        private float baseMaxPatience = 20f;
+        private float baseMaxPatience = 55f;
 
         [SerializeField, Tooltip("Stamina regeneration rate for single player")]
         private float baseStaminaRegenRate = 1f;
@@ -65,7 +65,7 @@ namespace NewCss
         private float phoneChancePerPlayer = 0.1f;
 
         [SerializeField, Tooltip("Patience reduction per player (seconds)")]
-        private float patienceReductionPerPlayer = 2f;
+        private float patienceReductionPerPlayer = 5f;
 
         [SerializeField, Tooltip("Stamina drain multiplier per player")]
         [Range(1f, 2f)]
@@ -163,8 +163,9 @@ namespace NewCss
             InitializeSingleton();
         }
 
-        private void OnDestroy()
+        public override void OnDestroy()
         {
+            base.OnDestroy();
             CleanupSingleton();
         }
 

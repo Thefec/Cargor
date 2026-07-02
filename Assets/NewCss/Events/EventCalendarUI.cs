@@ -241,8 +241,9 @@ namespace NewCss
             SubscribeToLocaleEvents();
         }
 
-        private void OnDestroy()
+        public override void OnDestroy()
         {
+            base.OnDestroy();
             UnsubscribeFromDayCycleEvents();
             UnsubscribeFromLocaleEvents();
             CleanupExitButton();

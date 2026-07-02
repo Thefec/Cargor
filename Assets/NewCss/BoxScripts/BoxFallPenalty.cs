@@ -9,8 +9,12 @@ namespace NewCss
         [Tooltip("Money deducted when the box hits the ground")]
         public int dropMoneyPenalty = 10;
 
-        [Tooltip("Prestige deducted when the box hits the ground")]
-        public float dropPrestigePenalty = 0.01f;
+        [Header("Economy Settings")]
+        [Tooltip("TÃ¼m ekonomi sabitlerini iÃ§eren ScriptableObject")]
+        public GameEconomySettings economySettings;
+
+        // Backward-compat: SO atanmamÄ±ÅŸsa eski hard-coded deÄŸer
+        private float dropPrestigePenalty => economySettings != null ? -economySettings.boxDropPrestigePenalty : 0.05f;
 
         [Header("Sound Settings")]
         [Tooltip("Sound to play when box hits the ground")]
@@ -40,7 +44,7 @@ namespace NewCss
             rb = GetComponent<Rigidbody>();
             audioSource = GetComponent<AudioSource>();
 
-            // AudioSource ayarlarýný yap
+            // AudioSource ayarlarï¿½nï¿½ yap
             if (audioSource != null)
             {
                 audioSource.playOnAwake = false;
@@ -48,12 +52,12 @@ namespace NewCss
 
                 if (use2DSound)
                 {
-                    // 2D ses - her yerden ayný þekilde duyulur
+                    // 2D ses - her yerden aynï¿½ ï¿½ekilde duyulur
                     audioSource.spatialBlend = 0f;
                 }
                 else
                 {
-                    // 3D ses - uzaklýða göre azalýr
+                    // 3D ses - uzaklï¿½ï¿½a gï¿½re azalï¿½r
                     audioSource.spatialBlend = 1f;
                     audioSource.maxDistance = maxSoundDistance;
                     audioSource.rolloffMode = AudioRolloffMode.Linear;
@@ -102,13 +106,13 @@ namespace NewCss
 
             if (IsGroundCollision(collision))
             {
-                // Çarpma hýzýný al
+                // ï¿½arpma hï¿½zï¿½nï¿½ al
                 float impactVelocity = collision.relativeVelocity.magnitude;
 
-                // Sesi çal
+                // Sesi ï¿½al
                 PlayDropSound(impactVelocity);
 
-                // Penaltý uygula
+                // Penaltï¿½ uygula
                 ApplyPenalty();
             }
         }
@@ -126,24 +130,24 @@ namespace NewCss
 
         private void PlayDropSound(float impactVelocity)
         {
-            // Eðer ses dosyasý atanmýþsa ve minimum hýz aþýlmýþsa
+            // Eï¿½er ses dosyasï¿½ atanmï¿½ï¿½sa ve minimum hï¿½z aï¿½ï¿½lmï¿½ï¿½sa
             if (boxDropSound != null && audioSource != null && impactVelocity >= minVelocityForSound)
             {
-                // Ses ayarlarýný güncelle
+                // Ses ayarlarï¿½nï¿½ gï¿½ncelle
                 if (use2DSound)
                 {
-                    // 2D ses için sabit volume
+                    // 2D ses iï¿½in sabit volume
                     audioSource.volume = soundVolume;
                 }
                 else
                 {
-                    // 3D ses için çarpma hýzýna göre volume (opsiyonel)
+                    // 3D ses iï¿½in ï¿½arpma hï¿½zï¿½na gï¿½re volume (opsiyonel)
                     float velocityFactor = Mathf.Clamp01(impactVelocity / 10f);
                     // Minimum 0.5 volume garantisi
                     audioSource.volume = Mathf.Max(soundVolume * velocityFactor, soundVolume * 0.5f);
                 }
 
-                // Sesi çal
+                // Sesi ï¿½al
                 audioSource.PlayOneShot(boxDropSound, soundVolume);
 
                 Debug.Log($"Playing drop sound with velocity: {impactVelocity}, volume: {audioSource.volume}");
@@ -170,7 +174,7 @@ namespace NewCss
             {
                 try
                 {
-                    PrestigeManager.Instance.ModifyPrestige(-dropPrestigePenalty);
+                    PrestigeManager.Instance.ModifyPrestige(dropPrestigePenalty);
                 }
                 catch (System.Exception e)
                 {

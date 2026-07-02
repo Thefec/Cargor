@@ -12,7 +12,7 @@ public class PrestigeManager : NetworkBehaviour
 
     [Header("Prestige Settings")]
     [Tooltip("Initial prestige value")]
-    public float startingPrestige = 0f;
+    public float startingPrestige = 5f;
 
     [Tooltip("UI Text displaying the prestige value")]
     public TMP_Text prestigeText;

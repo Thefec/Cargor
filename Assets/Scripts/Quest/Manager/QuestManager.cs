@@ -92,8 +92,9 @@ namespace NewCss.Quest
             BuildQuestDatabase();
         }
 
-        private void OnDestroy()
+        public override void OnDestroy()
         {
+            base.OnDestroy();
             CleanupSingleton();
             UnsubscribeFromDayCycleEvents();
         }

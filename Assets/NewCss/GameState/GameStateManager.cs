@@ -21,6 +21,10 @@ namespace NewCss
         public Button winExitButton;
         public Button loseExitButton;
         
+        [Header("Economy Settings")]
+        [SerializeField, Tooltip("Tüm ekonomi sabitlerini içeren ScriptableObject")]
+        private GameEconomySettings economySettings;
+
         private bool gameEnded = false;
         private bool playerWon = false;
         private bool hasGameEverStarted = false; 
@@ -316,11 +320,15 @@ namespace NewCss
                 return;
             }
 
-            Debug.Log("=== CUSTOMER LOST - Prestige penalty: -15 ===");
+            Debug.Log("=== CUSTOMER LOST - Prestige penalty ===");
             
             if (PrestigeManager.Instance != null)
             {
-                PrestigeManager.Instance.ModifyPrestige(-15f);
+                float penalty = economySettings != null
+                    ? economySettings.customerLostPrestigePenalty
+                    : -2f;
+                PrestigeManager.Instance.ModifyPrestige(penalty);
+                Debug.Log($"Prestige penalty applied: {penalty}");
                 
                 // Prestige sıfırın altına düştüyse oyun biter
                 if (PrestigeManager.Instance.GetPrestige() <= 0)

@@ -5,8 +5,8 @@ using UnityEngine;
 namespace NewCss
 {
     /// <summary>
-    /// Tutorial için truck spawn sistemi. 
-    /// Garaj kapýsý açýldýðýnda truck'ý spawn eder.
+    /// Tutorial iï¿½in truck spawn sistemi. 
+    /// Garaj kapï¿½sï¿½ aï¿½ï¿½ldï¿½ï¿½ï¿½nda truck'ï¿½ spawn eder.
     /// </summary>
     public class TutorialTruckSpawner : NetworkBehaviour
     {
@@ -19,7 +19,7 @@ namespace NewCss
         #region Serialized Fields - Prefab
 
         [Header("=== TRUCK PREFAB ===")]
-        [SerializeField, Tooltip("Tutorial truck prefab'ý")]
+        [SerializeField, Tooltip("Tutorial truck prefab'ï¿½")]
         private GameObject tutorialTruckPrefab;
 
         #endregion
@@ -45,10 +45,10 @@ namespace NewCss
         #region Serialized Fields - Truck Settings
 
         [Header("=== TRUCK CONFIGURATION ===")]
-        [SerializeField, Tooltip("Ýstenen kutu türü")]
+        [SerializeField, Tooltip("ï¿½stenen kutu tï¿½rï¿½")]
         private BoxInfo.BoxType requestedBoxType = BoxInfo.BoxType.Red;
 
-        [SerializeField, Tooltip("Gerekli kargo sayýsý")]
+        [SerializeField, Tooltip("Gerekli kargo sayï¿½sï¿½")]
         private int requiredCargo = 1;
 
         #endregion
@@ -56,7 +56,7 @@ namespace NewCss
         #region Serialized Fields - References
 
         [Header("=== REFERENCES ===")]
-        [SerializeField, Tooltip("Garaj kapýsý referansý")]
+        [SerializeField, Tooltip("Garaj kapï¿½sï¿½ referansï¿½")]
         private TutorialGarageDoorController garageDoor;
 
         #endregion
@@ -64,7 +64,7 @@ namespace NewCss
         #region Serialized Fields - Debug
 
         [Header("=== DEBUG ===")]
-        [SerializeField, Tooltip("Debug loglarýný göster")]
+        [SerializeField, Tooltip("Debug loglarï¿½nï¿½ gï¿½ster")]
         private bool showDebugLogs = true;
 
         #endregion
@@ -122,7 +122,7 @@ namespace NewCss
         #region Spawn Methods
 
         /// <summary>
-        /// Tutorial truck'ýný spawn eder
+        /// Tutorial truck'ï¿½nï¿½ spawn eder
         /// </summary>
         public void SpawnTutorialTruck()
         {
@@ -164,12 +164,12 @@ namespace NewCss
             // Spawn pozisyonu
             Vector3 spawnPosition = spawnPoint != null ? spawnPoint.position : transform.position;
 
-            // Spawn rotasyonu - DÜZELTME BURADA
+            // Spawn rotasyonu - Dï¿½ZELTME BURADA
             Quaternion spawnRotation = CalculateSpawnRotation();
 
             LogDebug($"Spawning tutorial truck at {spawnPosition} with rotation {spawnRotation.eulerAngles}");
 
-            // Truck'ý instantiate et
+            // Truck'ï¿½ instantiate et
             GameObject truckObj = Instantiate(tutorialTruckPrefab, spawnPosition, spawnRotation);
 
             // NetworkObject'i spawn et
@@ -183,7 +183,7 @@ namespace NewCss
 
             networkObject.Spawn();
 
-            // TutorialTruck component'ini al ve yapýlandýr
+            // TutorialTruck component'ini al ve yapï¿½landï¿½r
             _spawnedTruck = truckObj.GetComponent<TutorialTruck>();
             if (_spawnedTruck != null)
             {
@@ -238,7 +238,7 @@ namespace NewCss
         {
             LogDebug($"Truck spawned notification received - NetworkObjectId: {networkObjectId}");
 
-            // Client'ta truck referansýný bul
+            // Client'ta truck referansï¿½nï¿½ bul
             if (_spawnedTruck == null && NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(networkObjectId, out NetworkObject netObj))
             {
                 _spawnedTruck = netObj.GetComponent<TutorialTruck>();
@@ -279,7 +279,7 @@ namespace NewCss
             _hasSpawnedTruck = false;
             _spawnedTruck = null;
 
-            // Garaj kapýsýný kapat
+            // Garaj kapï¿½sï¿½nï¿½ kapat
             if (garageDoor != null)
             {
                 garageDoor.OnTruckExited();
@@ -293,7 +293,7 @@ namespace NewCss
         #region Public API
 
         /// <summary>
-        /// Spawner'ý sýfýrlar (yeni tutorial için)
+        /// Spawner'ï¿½ sï¿½fï¿½rlar (yeni tutorial iï¿½in)
         /// </summary>
         public void ResetSpawner()
         {
@@ -376,30 +376,30 @@ namespace NewCss
 
             Vector3 spawnPos = spawnPoint.position;
 
-            // Spawn pozisyonunu göster
+            // Spawn pozisyonunu gï¿½ster
             Gizmos.color = Color.green;
             Gizmos.DrawWireSphere(spawnPos, 0.5f);
 
-            // Hesaplanan rotasyonu göster
+            // Hesaplanan rotasyonu gï¿½ster
             Quaternion finalRotation = CalculateSpawnRotation();
 
-            // Forward yönü (truck'ýn gideceði yön)
+            // Forward yï¿½nï¿½ (truck'ï¿½n gideceï¿½i yï¿½n)
             Gizmos.color = Color.blue;
             Gizmos.DrawRay(spawnPos, finalRotation * Vector3.forward * 3f);
 
-            // Up yönü
+            // Up yï¿½nï¿½
             Gizmos.color = Color.green;
             Gizmos.DrawRay(spawnPos, finalRotation * Vector3.up * 2f);
 
-            // Right yönü
+            // Right yï¿½nï¿½
             Gizmos.color = Color.red;
             Gizmos.DrawRay(spawnPos, finalRotation * Vector3.right * 2f);
 
-            // Truck'ýn yaklaþýk boyutunu göster
+            // Truck'ï¿½n yaklaï¿½ï¿½k boyutunu gï¿½ster
             Gizmos.color = new Color(1f, 1f, 0f, 0.3f);
             Matrix4x4 rotationMatrix = Matrix4x4.TRS(spawnPos, finalRotation, Vector3.one);
             Gizmos.matrix = rotationMatrix;
-            Gizmos.DrawWireCube(Vector3.zero, new Vector3(2f, 2f, 5f)); // Yaklaþýk truck boyutu
+            Gizmos.DrawWireCube(Vector3.zero, new Vector3(2f, 2f, 5f)); // Yaklaï¿½ï¿½k truck boyutu
             Gizmos.matrix = Matrix4x4.identity;
         }
 #endif

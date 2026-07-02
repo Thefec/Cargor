@@ -265,8 +265,9 @@ namespace NewCss
             }
         }
 
-        private void OnDestroy()
+        public override void OnDestroy()
         {
+            base.OnDestroy();
             LocalizationHelper.OnLocaleChanged -= OnLocaleChanged;
             
             if (IsServer)

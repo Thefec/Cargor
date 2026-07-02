@@ -141,8 +141,9 @@ public class EscapeMenuManager : NetworkBehaviour
         }
     }
 
-    private void OnDestroy()
+    public override void OnDestroy()
     {
+        base.OnDestroy();
         CleanupButtonListeners();
         RestoreTimeScale();
     }
