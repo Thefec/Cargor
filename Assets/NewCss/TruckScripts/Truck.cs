@@ -201,6 +201,11 @@ namespace NewCss
         {
             base.OnNetworkSpawn();
 
+            if (economySettings == null)
+            {
+                economySettings = Resources.Load<GameEconomySettings>("EkonomiAyarlari");
+            }
+
             // SO varsa başlangıç ekonomi değerlerini yükle
             if (economySettings != null)
             {

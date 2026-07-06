@@ -6275,7 +6275,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: New Text
+  m_text: Pant
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 82beb6e942032c640924c782182d6d33, type: 2}
   m_sharedMaterial: {fileID: -5935444615087095145, guid: 82beb6e942032c640924c782182d6d33, type: 2}
@@ -6532,7 +6532,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: New Text
+  m_text: 'Gloves
+
+'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 82beb6e942032c640924c782182d6d33, type: 2}
   m_sharedMaterial: {fileID: -5935444615087095145, guid: 82beb6e942032c640924c782182d6d33, type: 2}
@@ -9287,7 +9289,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: New Text
+  m_text: Accessories
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 82beb6e942032c640924c782182d6d33, type: 2}
   m_sharedMaterial: {fileID: -5935444615087095145, guid: 82beb6e942032c640924c782182d6d33, type: 2}
@@ -9324,7 +9326,7 @@ MonoBehaviour:
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535
-  m_characterSpacing: 0
+  m_characterSpacing: -4
   m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
@@ -9353,7 +9355,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 25.774506, y: 7.72838, z: 16.483177, w: -13.583809}
+  m_margin: {x: 12.223068, y: 7.72838, z: 4.570877, w: -13.583809}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -11970,6 +11972,7 @@ GameObject:
   - component: {fileID: 659390897}
   - component: {fileID: 659390899}
   - component: {fileID: 659390898}
+  - component: {fileID: 659390900}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -12016,7 +12019,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: New Text
+  m_text: 'Skin
+
+'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 82beb6e942032c640924c782182d6d33, type: 2}
   m_sharedMaterial: {fileID: -5935444615087095145, guid: 82beb6e942032c640924c782182d6d33, type: 2}
@@ -12096,6 +12101,34 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 659390896}
   m_CullTransparentMesh: 1
+--- !u!114 &659390900
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 659390896}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Components.LocalizeStringEvent
+  m_StringReference:
+    m_TableReference:
+      m_TableCollectionName: 
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  m_FormatArguments: []
+  m_UpdateString:
+    m_PersistentCalls:
+      m_Calls: []
+  references:
+    version: 2
+    RefIds: []
 --- !u!1 &666334054
 GameObject:
   m_ObjectHideFlags: 0
@@ -18697,7 +18730,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: New Text
+  m_text: 'Face
+
+'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 82beb6e942032c640924c782182d6d33, type: 2}
   m_sharedMaterial: {fileID: -5935444615087095145, guid: 82beb6e942032c640924c782182d6d33, type: 2}
@@ -18734,7 +18769,7 @@ MonoBehaviour:
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535
-  m_characterSpacing: 0
+  m_characterSpacing: -4
   m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
@@ -19200,7 +19235,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: New Text
+  m_text: shoes
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 82beb6e942032c640924c782182d6d33, type: 2}
   m_sharedMaterial: {fileID: -5935444615087095145, guid: 82beb6e942032c640924c782182d6d33, type: 2}
@@ -19854,7 +19889,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: New Text
+  m_text: 'Hair
+
+'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 82beb6e942032c640924c782182d6d33, type: 2}
   m_sharedMaterial: {fileID: -5935444615087095145, guid: 82beb6e942032c640924c782182d6d33, type: 2}
@@ -22224,7 +22261,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: New Text
+  m_text: Outerwear
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 82beb6e942032c640924c782182d6d33, type: 2}
   m_sharedMaterial: {fileID: -5935444615087095145, guid: 82beb6e942032c640924c782182d6d33, type: 2}
@@ -31284,7 +31321,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: New Text
+  m_text: Hat
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 82beb6e942032c640924c782182d6d33, type: 2}
   m_sharedMaterial: {fileID: -5935444615087095145, guid: 82beb6e942032c640924c782182d6d33, type: 2}
@@ -36913,7 +36950,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: New Text
+  m_text: Glasses
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 82beb6e942032c640924c782182d6d33, type: 2}
   m_sharedMaterial: {fileID: -5935444615087095145, guid: 82beb6e942032c640924c782182d6d33, type: 2}
@@ -36950,7 +36987,7 @@ MonoBehaviour:
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535
-  m_characterSpacing: 0
+  m_characterSpacing: -4
   m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0

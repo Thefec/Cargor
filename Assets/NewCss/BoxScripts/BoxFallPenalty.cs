@@ -41,6 +41,11 @@ namespace NewCss
 
         private void Awake()
         {
+            if (economySettings == null)
+            {
+                economySettings = Resources.Load<GameEconomySettings>("EkonomiAyarlari");
+            }
+
             rb = GetComponent<Rigidbody>();
             audioSource = GetComponent<AudioSource>();
 

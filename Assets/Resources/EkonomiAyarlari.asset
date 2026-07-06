@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c69a8b39d5f4e74468d2206ca814fbc4, type: 3}
+  m_Name: EkonomiAyarlari
+  m_EditorClassIdentifier: Assembly-CSharp::NewCss.GameEconomySettings
+  baseRentByPlayerCount: f401000084030000b0040000dc050000
+  rentGrowthMultiplier: 1.3
+  wealthTaxRate: 0.1
+  rentIntervalDays: 4
+  gracePaymentPercent: 0.8
+  rewardPerBox: 50
+  penaltyPerBox: 60
+  hangarStayDuration: 120
+  prestigePerBonus: 10
+  bonusPerTier: 5
+  callReward: 10
+  timeSkipAmount: 20
+  postCallCooldown: 30
+  maxCallsPerHour: 2
+  customerLostPrestigePenalty: -2
+  customerServedPrestigeBonus: 0.5
+  wrongProductPrestigePenalty: -0.1
+  boxDropPrestigePenalty: -0.05

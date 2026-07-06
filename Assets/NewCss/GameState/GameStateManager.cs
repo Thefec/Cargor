@@ -41,6 +41,11 @@ namespace NewCss
         void Awake()
         {
             Debug.Log("GameStateManager Awake called");
+
+            if (economySettings == null)
+            {
+                economySettings = Resources.Load<GameEconomySettings>("EkonomiAyarlari");
+            }
             
             if (Instance != null && Instance != this)
             {

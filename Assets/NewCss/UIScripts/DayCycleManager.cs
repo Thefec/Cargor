@@ -214,6 +214,10 @@ namespace NewCss
         private void Awake()
         {
             InitializeSingleton();
+            if (economySettings == null)
+            {
+                economySettings = Resources.Load<GameEconomySettings>("EkonomiAyarlari");
+            }
         }
 
         private void OnDestroy()

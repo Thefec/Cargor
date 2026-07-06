@@ -85,7 +85,10 @@ namespace NewCss
 
         private void Awake()
         {
-            // Initialization in OnNetworkSpawn
+            if (economySettings == null)
+            {
+                economySettings = Resources.Load<GameEconomySettings>("EkonomiAyarlari");
+            }
         }
 
         private void Update()

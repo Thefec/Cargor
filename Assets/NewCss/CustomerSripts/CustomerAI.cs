@@ -219,6 +219,14 @@ namespace NewCss
 
         #region Unity Lifecycle
 
+        private void Awake()
+        {
+            if (economySettings == null)
+            {
+                economySettings = Resources.Load<GameEconomySettings>("EkonomiAyarlari");
+            }
+        }
+
         private void Start()
         {
             if (!IsSpawned) return;
