@@ -292,20 +292,35 @@ public class UnifiedSettingsManager : MonoBehaviour
 
     #region Unity Lifecycle
 
-    private IEnumerator Start()
+    private bool _isSetupDone;
+
+    // NOT: Ayar yüklemesi eskiden Start coroutine'inde bir `yield` sonrasındaydı.
+    // Ayar paneli açılışta kısa süre SetActive(false) ediliyor → coroutine `yield`'de
+    // ölüyor → LoadAllSettings hiç çalışmıyor → ayarlar hiç yüklenmiyordu. Artık
+    // kurulum (bir kez) Start'ta senkron; yükleme her panel açılışında OnEnable'da.
+    private void Start()
     {
         InputBindingManager.Initialize();
         InitializeSettingsData();
         SetupAllUI();
+        _isSetupDone = true;
 
-        yield return WaitForLocalizationInitialization();
-
+        // Oyun açılışında ayarları uygula (panel hiç açılmasa bile ses/ekran vb. uygulansın).
         LoadAllSettings();
     }
 
     private void Update()
     {
         HandleKeyRebinding();
+    }
+
+    private void OnEnable()
+    {
+        // Panel her aktive olduğunda UI'yı güncel (kaydedilmiş) değerlere tazele — slider'lar dahil.
+        // Sistem ayarları (ses/ekran) Start'ta bir kez uygulanır; burada yeniden uygulamayız (flicker yok).
+        // İlk aktivasyonda OnEnable, Start'tan ÖNCE gelir; kurulum bitmeden dokunma.
+        if (_isSetupDone)
+            UpdateAllUI();
     }
 
     private void OnDisable()
@@ -341,11 +356,16 @@ public class UnifiedSettingsManager : MonoBehaviour
         SetupButtons();
     }
 
+    /// <summary>
+    /// Localization init'ini bekler. Zaten tamamlanmış/serbest bırakılmışsa takılmadan devam eder.
+    /// (Eski `WaitUntil(IsValid() && IsDone)`, init zaten bittiyse IsValid() kalıcı false döndüğü
+    /// için sonsuza kadar bekliyordu.) Dil önizleme akışında (ApplyLocalePreviewCoroutine) kullanılır.
+    /// </summary>
     private IEnumerator WaitForLocalizationInitialization()
     {
-        yield return new WaitUntil(() =>
-            LocalizationSettings.InitializationOperation.IsValid() &&
-            LocalizationSettings.InitializationOperation.IsDone);
+        var initOp = LocalizationSettings.InitializationOperation;
+        if (initOp.IsValid() && !initOp.IsDone)
+            yield return initOp;
     }
 
     #endregion
