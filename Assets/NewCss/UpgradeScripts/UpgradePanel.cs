@@ -741,6 +741,12 @@ namespace NewCss
             _dailyOffer.Clear();
             foreach (var idx in offer) _dailyOffer.Add(idx);
             _rerollCountToday.Value = 0;
+
+            // TODO(Task 5): geçici doğrulama log'u — 3-kart UI gelince kaldırılacak.
+            var names = new List<string>(offer.Count);
+            foreach (var idx in offer) names.Add(upgrades[idx].displayName);
+            LogDebug($"Draft teklifi üretildi (gün {currentDay}, tier<= {maxUnlocked}): " +
+                     $"[{string.Join(", ", offer)}] = {string.Join(", ", names)}");
         }
 
         /// <summary>
