@@ -102,7 +102,7 @@ namespace NewCss
         [HideInInspector] public int   rewardPerBox     = 50;
         [HideInInspector] public int   penaltyPerBox    = 60;
         [HideInInspector] public float prestigePerBonus = 10f;
-        [HideInInspector] public int   bonusPerTier     = 5;
+        [HideInInspector] public float bonusPerTier     = 5f;
 
         #endregion
 
@@ -593,7 +593,7 @@ namespace NewCss
 
             float currentPrestige = PrestigeManager.Instance.GetPrestige();
             int prestigeTiers = Mathf.FloorToInt(currentPrestige / prestigePerBonus);
-            return prestigeTiers * bonusPerTier;
+            return Mathf.RoundToInt(prestigeTiers * bonusPerTier);
         }
 
         /// <summary>

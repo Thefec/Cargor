@@ -51,7 +51,7 @@ namespace NewCss
         public float prestigePerBonus = 10f;
 
         [Tooltip("Her prestige katmanında kutu başına eklenen bonus (TL)")]
-        public int bonusPerTier = 5;
+        public float bonusPerTier = 5f;
 
         // ─────────────────────────────────────────────────────────────
         //  TELEFON  (PhoneCallManager)
@@ -184,7 +184,7 @@ namespace NewCss
 
                 // Prestij tier hesabı (Truck.cs mantığı)
                 int prestigeTiers = Mathf.FloorToInt(prestige / prestigePerBonus);
-                int rewardPerBoxActual = rewardPerBox + (prestigeTiers * bonusPerTier);
+                int rewardPerBoxActual = Mathf.RoundToInt(rewardPerBox + (prestigeTiers * bonusPerTier));
 
                 // Günlük gelir / ceza
                 float revenue = correctDeliveries * rewardPerBoxActual;
