@@ -266,7 +266,7 @@ namespace NewCss
 
             SubscribeToNetworkEvents();
             InitializePanel();
-            BuildEntries();
+            RebuildDraftEntries();
             InitializeLevelObjects();
             InitializeBaseValues();
             SubscribeToDayCycleEvents();
@@ -504,7 +504,7 @@ namespace NewCss
 
             if (newValue)
             {
-                RefreshAllUpgradeUI();
+                RebuildDraftEntries();
             }
         }
 
@@ -750,11 +750,20 @@ namespace NewCss
         }
 
         /// <summary>
-        /// Draft teklifi değişince panel içeriğini yeniden kurar.
-        /// Task 5'te 3-kart draft görünümüyle dolacak; şimdilik mevcut UI'yı tazeler.
+        /// Draft teklifi değişince panel içeriğini yeniden kurar: tüm liste yerine
+        /// sadece <see cref="_dailyOffer"/>'daki (≤3) upgrade için kart kurar.
+        /// `EntryUI.UpgradeIndex` gerçek `upgrades` index'i olduğundan satın alma/pending/
+        /// effect zinciri değişmeden çalışır.
         /// </summary>
         private void RebuildDraftEntries()
         {
+            ClearEntries();
+            for (int k = 0; k < _dailyOffer.Count; k++)
+            {
+                int upgradeIndex = _dailyOffer[k];
+                if (upgradeIndex < 0 || upgradeIndex >= upgrades.Count) continue;
+                BuildSingleEntry(upgradeIndex);
+            }
             RefreshAllUpgradeUI();
         }
 
