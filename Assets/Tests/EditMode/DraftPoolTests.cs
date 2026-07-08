@@ -43,4 +43,16 @@ public class DraftPoolTests
         var offer = DraftPool.SelectOffer(eligible, 3, new Random(1));
         Assert.AreEqual(2, offer.Count);
     }
+
+    [Test]
+    public void RerollCurve_MatchesApprovedTable()
+    {
+        Assert.AreEqual(50,  RerollCurve.CostForReroll(0));
+        Assert.AreEqual(90,  RerollCurve.CostForReroll(1));
+        Assert.AreEqual(160, RerollCurve.CostForReroll(2));
+        Assert.AreEqual(290, RerollCurve.CostForReroll(3));
+        Assert.AreEqual(525, RerollCurve.CostForReroll(4));
+        Assert.AreEqual(525, RerollCurve.CostForReroll(7)); // 5+ tavan
+        Assert.AreEqual(50,  RerollCurve.CostForReroll(-1)); // negatif guard
+    }
 }
