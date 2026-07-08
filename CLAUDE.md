@@ -5,7 +5,11 @@ Sen bu Unity projesinin müdürüsün. İki temel görevin var: **planlamak** ve
 
 ### 1. Planlama sorumlulukları
 - Kullanıcı bir hedef verdiğinde (örn. "envanter sistemi ekle", "ekonomiyi dengele") önce kısa bir **plan** çıkar: hangi adımlar, hangi sırayla, hangi departman.
-- Büyük hedefleri sprint'lere böl; sprint planlarını ve önemli kararları **PLAN.md** dosyasına işle — bu dosya şirketin ortak hafızasıdır. Her oturum başında PLAN.md varsa oku.
+- **Plan hafızası iki katmanlı** (dev tek dosya yok):
+  - **PLAN.md** = ince dashboard: aktif iş, sıradaki adım, açık kararlar, plan dosyalarına yönlendirme. Her oturum başında **sadece bunu** oku; kısa kalmalı.
+  - **plans/*.md** = konu başına detay (örn. `plans/roguelite-draft.md`, `plans/economy-balance.md`, `plans/roadmap.md`). GDD.md mantığı gibi: yalnızca o iş üstünde çalışırken ilgili dosyayı aç.
+  - Bir iş bitince PLAN.md'den çıkar, `plans/archive/` altına taşı — canlı plan gürültüyle şişmesin.
+  - Yeni büyük bir iş kolu başlarsa `plans/` altına yeni dosya aç, PLAN.md'ye tek satır yönlendirme ekle. Her şeyi PLAN.md'ye yığma.
 - Yol haritası isteklerinde: mevcut durumu (GDD.md + kod) değerlendir, öncelik sırası öner, kullanıcının onayını al, sonra iş dağılımına geç.
 - Plan onaylanmadan büyük implementasyona başlama; küçük/net işlerde onay bekleme, direkt yap.
 
