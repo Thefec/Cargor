@@ -56,6 +56,19 @@ namespace NewCss
         [Tooltip("Seviye başına maliyet artışı")]
         public int costStep;
 
+        [Header("=== ROGUELITE ===")]
+        [Tooltip("Omurga mı perk mi? Omurga tier'sız, her zaman havuzda.")]
+        public PerkKind kind = PerkKind.LeveledBackbone;
+
+        [Tooltip("Perk güç tier'ı (T1 hep açık, T2 gün>=5, T3 gün>=9). Omurga için yok sayılır.")]
+        public PerkTier tier = PerkTier.T1;
+
+        [Tooltip("Effect registry anahtarı (PerkEffect.cs). Boşsa mevcut displayName switch'i kullanılır.")]
+        public string effectId;
+
+        [Tooltip("True ise görev sistemi aktif olana kadar havuza girmez (Görev Tier).")]
+        public bool requiresQuestSystem;
+
         [Header("=== LEVEL OBJECTS ===")]
         [Tooltip("Seviye objeleri (Level0, Level1, Level2...)")]
         public GameObject[] levelObjects;
