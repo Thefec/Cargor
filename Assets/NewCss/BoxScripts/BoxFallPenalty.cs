@@ -14,7 +14,7 @@ namespace NewCss
         public GameEconomySettings economySettings;
 
         // Backward-compat: SO atanmamışsa eski hard-coded değer
-        private float dropPrestigePenalty => economySettings != null ? -economySettings.boxDropPrestigePenalty : 0.05f;
+        private float dropPrestigePenalty => economySettings != null ? economySettings.boxDropPrestigePenalty : -0.05f;
 
         [Header("Sound Settings")]
         [Tooltip("Sound to play when box hits the ground")]

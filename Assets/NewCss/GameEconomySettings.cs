@@ -21,7 +21,7 @@ namespace NewCss
         public int[] baseRentByPlayerCount = { 500, 900, 1200, 1500 };
 
         [Tooltip("Her kira döneminde kira artış çarpanı (örn: 1.3 = %30 artış)")]
-        public float rentGrowthMultiplier = 1.3f;
+        public float rentGrowthMultiplier = 1.15f;
 
         [Tooltip("Satın alınan upgrade değerinin yüzde kaçı kira vergisi olarak eklenir (0-1)")]
         public float wealthTaxRate = 0.1f;
@@ -42,7 +42,7 @@ namespace NewCss
         public int rewardPerBox = 50;
 
         [Tooltip("Yanlış renk kutu tesliminde kutu başına ceza (TL)")]
-        public int penaltyPerBox = 60;
+        public int penaltyPerBox = 40;
 
         [Tooltip("Tırın hangarda bekleme süresi (saniye). Süre dolunca boş da olsa kalkar.")]
         public float hangarStayDuration = 120f;
@@ -78,7 +78,7 @@ namespace NewCss
         [Header("=== PRESTİJ AYARLARI ===")]
 
         [Tooltip("Müşteri kaçtığında (bekleme süresi dolunca) uygulanan prestige cezası (negatif olmalı)")]
-        public float customerLostPrestigePenalty = -2f;
+        public float customerLostPrestigePenalty = -1.5f;
 
         [Tooltip("Müşteriye başarılı servis yapıldığında kazanılan prestige bonusu")]
         public float customerServedPrestigeBonus = 0.5f;

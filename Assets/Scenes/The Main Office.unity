@@ -5208,7 +5208,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  startingMoney: 50
+  startingMoney: 500
 --- !u!114 &146927893
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -26205,7 +26205,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  startingPrestige: 1
+  startingPrestige: 15
   prestigeText: {fileID: 731110736}
   prestigePerCustomer: 10
   baseCustomerCapacity: 1

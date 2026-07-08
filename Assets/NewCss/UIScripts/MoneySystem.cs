@@ -9,11 +9,11 @@ namespace NewCss
         public static MoneySystem Instance { get; private set; }
 
         [Header("Starting Amount")] 
-        public int startingMoney = 100000; // Test için 100000
+        public int startingMoney = 500;
 
         // NetworkVariable'ı başlangıç değeri ile initialize et
         private NetworkVariable<int> _currentMoney = new NetworkVariable<int>(
-            100000, // Default value
+            500, // Default value
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server
         );
