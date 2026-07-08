@@ -7,9 +7,9 @@
 
 ---
 
-## 🔴 ŞİMDİ — Task 4: Draft teklifi Play doğrulaması
+## ✅ BİTTİ — Task 4: Draft teklifi Play doğrulaması
 
-**Durum:** Beklemede. Task 5'e geçmeden bunu doğrulamak istedin.
+**Durum:** ✅ **DOĞRULANDI (2026-07-08).** Play'de log çıktı: `Draft teklifi üretildi ... [2, 5, 7]` → tam 3 index, teklif üretimi + SelectOffer çalışıyor. Task 5'e geçilebilir.
 **Neden sen:** server-authoritative NetworkList davranışı batchmode'da görünmez.
 
 ### Adımlar

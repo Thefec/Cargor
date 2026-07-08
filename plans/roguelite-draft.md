@@ -47,7 +47,8 @@ Kullanıcı isteği: mağazayı "tüm upgrade'leri listele" düzeninden **gün s
 | 1 | `847908e` | `PerkTier`/`PerkKind` enum'ları + `UpgradeDefinition`'a kind/tier/effectId/requiresQuestSystem |
 | 2 | `60db470` | `DraftPool.cs` (tier+max filtresi, 3-kart seçim) + izole `NewCss.Roguelite.asmdef` + EditMode testleri; PerkTier.cs asmdef'e taşındı |
 | 3 | `5cc6675` | `RerollCurve.cs` (50/90/160/290/525, 5+ tavan) → `NewCss.Roguelite` asmdef + EditMode testi. Meta'yı Unity üretti. **Plan sapması:** dosya `UpgradeScripts/` yerine `Roguelite/`'a kondu (test asmdef `overrideReferences` yüzünden aksi halde göremezdi). |
-| 4 | `b59ccde` | `_dailyOffer` NetworkList + `_rerollCountToday`/`_questSystemActive` NetworkVariable + `GenerateDailyOfferServer` (server-only, gün-seed'li RNG, tier+max+quest eligibility) + `HandleDailyOfferChanged`→`RebuildDraftEntries` stub (Task 5 dolduracak). OnNetworkSpawn(server)+HandleNewDay entegre. Batchmode derleme temiz, 6/6. **⚠️ Server-auth senkron davranışı PlayMode/gerçek oturum teyidi bekliyor.** |
+| 4 | `b59ccde` | `_dailyOffer` NetworkList + `_rerollCountToday`/`_questSystemActive` NetworkVariable + `GenerateDailyOfferServer` (server-only, gün-seed'li RNG, tier+max+quest eligibility) + `HandleDailyOfferChanged`→`RebuildDraftEntries` stub. OnNetworkSpawn(server)+HandleNewDay entegre. Batchmode derleme temiz, 6/6. **✅ Play doğrulandı: teklif `[2,5,7]` 3 index üretti.** Debug log commit `9b2b8c7` (Task 6/7'de kaldırılacak). |
+| 5 | `d8b33ff` | `RebuildDraftEntries` artık sadece `_dailyOffer`'daki (≤3) kartı kurar (mevcut `BuildSingleEntry`; `EntryUI.UpgradeIndex` = gerçek index → satın alma zinciri korunur). OnNetworkSpawn + panel-open `BuildEntries` yerine bunu çağırır. **✅ Local Play doğrulandı: panel 3 kart gösteriyor, error yok.** |
 
 ### Mimari karar (yeni oturum bilmeli)
 Saf-mantık dosyaları (`PerkTier`, `DraftPool`, + Task 3'te `RerollCurve`) `Assets/NewCss/Roguelite/` altında **izole `NewCss.Roguelite` asmdef**'inde (autoReferenced=true → Assembly-CSharp/UpgradePanel otomatik görür). Test asmdef'i (`Assets/Tests/EditMode/Cargor.Tests.EditMode.asmdef`) bunu referanslar. `PerkEffect.cs` (Task 7) Assembly-CSharp'ta kalır (Truck/CustomerManager'a bağımlı).
@@ -67,8 +68,9 @@ Unity 6000.4.3f1 batchmode (`-runTests -testPlatform EditMode`) ile doğrulandı
 ## ⏭️ Sıradaki (buradan devam)
 1. ✅ **Unity teyidi geçti** — Task 0-2 derlendi ve testler geçti (batchmode EditMode 4/4).
 2. ✅ **Task 3 bitti** (`5cc6675`) — RerollCurve + testi, batchmode 6/6.
-3. ✅ **Task 4 bitti** (`b59ccde`) — server-auth `_dailyOffer` üretimi, batchmode derleme temiz. Senkron davranışı Play teyidi bekliyor.
-4. **Task 5 (aktif):** panel 3-kart draft (`RebuildDraftEntries` stub'ını gerçek görünümle doldur). **Task 6:** reroll butonu. **Task 7:** 16-perk effect registry (`PerkEffect.cs`, Assembly-CSharp). **Task 8:** Inspector/sahne veri girişi (fiyatlar v3.2'den). **Task 9:** qa + ölü kod + prefab override.
+3. ✅ **Task 4 bitti** (`b59ccde`) — server-auth `_dailyOffer` üretimi, Play-doğrulandı (`[2,5,7]`). Geçici debug log `9b2b8c7` (Task 6/7'de kaldır).
+4. ✅ **Task 5 bitti** (`d8b33ff`) — panel 3-kart draft (`RebuildDraftEntries` gerçek görünüm), local Play-doğrulandı (3 kart geldi).
+5. **Task 6 (aktif):** reroll butonu (`RerollCurve` 50/90/160/290/525, günlük sıfırla). **Task 7:** 16-perk effect registry (`PerkEffect.cs`, Assembly-CSharp). **Task 8:** Inspector/sahne veri girişi (fiyatlar v3.2'den). **Task 9:** qa + ölü kod + prefab override.
 5. **Son:** kontrol whole-branch ONAY → Unity 1/2/4 kişi test.
 
 > **Not (Task 4+):** Bu task'lar NetworkList/NetworkBehaviour + sahne/prefab içeriyor — saf EditMode ile tam doğrulanamaz; PlayMode veya gerçek Unity oturumu gerekir. Batchmode EditMode sadece derleme + saf-mantık testlerini kapsar.

@@ -8,15 +8,17 @@
 
 ## 🎯 Şu an aktif iş
 
-**Roguelite Upgrade Draft Sistemi** — uygulama devam ediyor.
-Branch: `feature/roguelite-upgrade-draft`. Task 0-4 commit'li, ekonomi kilitli (v3.2, 9945 TL).
+**Roguelite Upgrade Draft Sistemi** — uygulama devam ediyor. **(2026-07-09 mola verildi)**
+Branch: `feature/roguelite-upgrade-draft`. **Task 0-5 commit'li**, ekonomi kilitli (v3.2, 9945 TL).
 → Tam detay & task listesi: **[plans/roguelite-draft.md](plans/roguelite-draft.md)**
 
-### ⏭️ Sıradaki adım
-1. ✅ **Unity teyidi + Task 3 + Task 4 bitti** (batchmode EditMode 6/6, 0 derleme hatası).
-2. **Task 5 (aktif)** panel 3-kart draft görünümü (`RebuildDraftEntries` stub'ını doldur) → 6 → 7 → 8 → 9 → kontrol whole-branch ONAY → Unity 1/2/4 kişi test.
+### ⏭️ Sıradaki adım (moladan dönünce buradan devam)
+1. ✅ **Task 0-5 bitti** (Unity teyidi + RerollCurve + server-auth teklif + 3-kart panel). Task 4 & 5 Play-doğrulandı (local).
+2. **Task 6 (aktif):** panelde reroll butonu (`RerollCurve` 50/90/160/290/525, günlük sıfırla) → 7 (16-perk effect registry) → 8 (Inspector veri) → 9 (qa+ölü kod) → kontrol whole-branch ONAY → Unity 1/2/4 kişi test.
+3. 🧹 **Temizlik borcu:** Task 4'ün geçici `Draft teklifi üretildi` debug log'u (`UpgradePanel.cs`, commit `9b2b8c7`) hâlâ duruyor — Task 6/7'de kaldır.
 
-> ⚠️ Task 4+ NetworkList/sahne/prefab içerir → batchmode EditMode sadece derlemeyi doğrular; server-auth senkron + UI için PlayMode/gerçek Unity oturumu gerekir. Biriken Play-teyidi borcu: Task 4 (teklif senkronu), Task 5+ (UI).
+> ⚠️ Task 6+ NetworkList/sahne/prefab içerir → batchmode EditMode sadece derlemeyi doğrular; senkron/UI için Play/gerçek Unity gerekir.
+> ℹ️ **Yan görev bitti:** ses ayarı slider bug'ı çözüldü (`f7122c9`) — bkz. [plans/archive/2026-07-changelog.md](plans/archive/2026-07-changelog.md).
 
 ---
 
