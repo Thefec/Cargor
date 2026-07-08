@@ -204,7 +204,10 @@ namespace NewCss
         private NetworkList<int> _upgradeLevels;
         private NetworkList<int> _visualUpgradeLevels;
         private NetworkList<NetworkPendingUpgrade> _pendingUpgrades;
+        private NetworkList<int> _dailyOffer;
         private readonly NetworkVariable<bool> _isPanelOpen = new(false);
+        private readonly NetworkVariable<int> _rerollCountToday = new(0);
+        private readonly NetworkVariable<bool> _questSystemActive = new(false); // Görev Tier feature-flag
 
         #endregion
 
@@ -258,6 +261,7 @@ namespace NewCss
             if (IsServer)
             {
                 InitializeUpgradeLevels();
+                GenerateDailyOfferServer();
             }
 
             SubscribeToNetworkEvents();
@@ -287,6 +291,7 @@ namespace NewCss
             _upgradeLevels = new NetworkList<int>();
             _visualUpgradeLevels = new NetworkList<int>();
             _pendingUpgrades = new NetworkList<NetworkPendingUpgrade>();
+            _dailyOffer = new NetworkList<int>();
         }
 
         private void InitializeUpgradeLevels()
@@ -384,6 +389,7 @@ namespace NewCss
             _upgradeLevels.OnListChanged += HandleUpgradeLevelsChanged;
             _visualUpgradeLevels.OnListChanged += HandleVisualUpgradeLevelsChanged;
             _pendingUpgrades.OnListChanged += HandlePendingUpgradesChanged;
+            _dailyOffer.OnListChanged += HandleDailyOfferChanged;
             _isPanelOpen.OnValueChanged += HandlePanelStateChanged;
         }
 
@@ -392,6 +398,7 @@ namespace NewCss
             _upgradeLevels.OnListChanged -= HandleUpgradeLevelsChanged;
             _visualUpgradeLevels.OnListChanged -= HandleVisualUpgradeLevelsChanged;
             _pendingUpgrades.OnListChanged -= HandlePendingUpgradesChanged;
+            _dailyOffer.OnListChanged -= HandleDailyOfferChanged;
             _isPanelOpen.OnValueChanged -= HandlePanelStateChanged;
         }
 
@@ -506,7 +513,13 @@ namespace NewCss
             if (IsServer)
             {
                 ActivatePendingUpgradesServerRpc();
+                GenerateDailyOfferServer();
             }
+        }
+
+        private void HandleDailyOfferChanged(NetworkListEvent<int> _)
+        {
+            RebuildDraftEntries();
         }
 
         #endregion
@@ -694,6 +707,49 @@ namespace NewCss
         private void TogglePanelServerRpc()
         {
             _isPanelOpen.Value = !_isPanelOpen.Value;
+        }
+
+        #endregion
+
+        #region Draft Offer
+
+        /// <summary>
+        /// Server-only: o günkü draft teklifini üretir. Uygun (eligible) upgrade'lerden
+        /// tier-kilidine ve max-seviyeye göre en fazla OFFER_COUNT tanesini seçip
+        /// <see cref="_dailyOffer"/>'a yazar. RNG seed'i güne bağlı → deterministik/senkron.
+        /// </summary>
+        private void GenerateDailyOfferServer()
+        {
+            if (!IsServer) return;
+            int currentDay = DayCycleManager.Instance != null ? DayCycleManager.Instance.currentDay : 1;
+            PerkTier maxUnlocked = DraftPool.MaxUnlockedTier(currentDay);
+            bool questActive = _questSystemActive.Value;
+
+            var eligibility = new List<bool>(upgrades.Count);
+            for (int i = 0; i < upgrades.Count; i++)
+            {
+                var def = upgrades[i];
+                int visLevel = GetVisualLevel(i);
+                eligibility.Add(DraftPool.IsEligible(
+                    i, def.tier, def.kind, def.requiresQuestSystem,
+                    visLevel, def.maxLevel, maxUnlocked, questActive));
+            }
+
+            var rng = new System.Random(unchecked(currentDay * 73856093));
+            var offer = DraftPool.SelectOffer(eligibility, DraftPool.OFFER_COUNT, rng);
+
+            _dailyOffer.Clear();
+            foreach (var idx in offer) _dailyOffer.Add(idx);
+            _rerollCountToday.Value = 0;
+        }
+
+        /// <summary>
+        /// Draft teklifi değişince panel içeriğini yeniden kurar.
+        /// Task 5'te 3-kart draft görünümüyle dolacak; şimdilik mevcut UI'yı tazeler.
+        /// </summary>
+        private void RebuildDraftEntries()
+        {
+            RefreshAllUpgradeUI();
         }
 
         #endregion
