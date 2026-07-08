@@ -197,7 +197,30 @@ Onaylanan tasarım özeti:
 
 **✅ UYGULAMA PLANI HAZIR (2026-07-08):** `docs/superpowers/plans/2026-07-08-roguelite-upgrade-draft.md`. 10 task (Task 0-9): bonusPerTier int→float, perk veri modeli, DraftPool+RerollCurve saf-mantık (EditMode testli), server-authoritative günlük teklif, 3-kart panel, reroll, 16-perk effect registry, veri girişi, qa+ölü kod. Mevcut UpgradePanel mimarisi (NetworkList seviyeler, _pendingUpgrades ertesi-gün-aktif, CalculateFinalCost) korunuyor; üstüne draft+tier+reroll katmanı biniyor.
 
-Sıradaki: gameplay task-task uygular (her task qa + kontrol'den geçer) → Unity 1/2/4 kişi test.
+### 🚧 UYGULAMA DEVAM EDİYOR — subagent-driven (2026-07-08, 2. oturum sonu)
+
+**Branch:** `feature/roguelite-upgrade-draft` (base commit `1f40742` = baseline: ekonomi Faz1 + tüm planlama dokümanları).
+**Yürütme modeli:** subagent-driven. Her task'ı **gameplay** uygular, müdür (controller) diff'i doğrular; **son kontrol whole-branch ONAY kapısı** en sonda (kontrol'ün "final kalite kapısı" rolü). Ledger: `.superpowers/sdd/progress.md`.
+
+**✅ Tamamlanan task'lar (hepsi commit'li, controller diff-doğrulamalı):**
+| Task | Commit | İş |
+|---|---|---|
+| 0 | `d5d010f` | `bonusPerTier` int→float + Mathf.RoundToInt (Truck.cs, GameEconomySettings.cs) |
+| 1 | `847908e` | `PerkTier`/`PerkKind` enum'ları + `UpgradeDefinition`'a kind/tier/effectId/requiresQuestSystem |
+| 2 | `60db470` | `DraftPool.cs` (tier+max filtresi, 3-kart seçim) + izole `NewCss.Roguelite.asmdef` + EditMode testleri; PerkTier.cs asmdef'e taşındı |
+
+**Mimari karar (yeni oturum bilmeli):** Saf-mantık dosyaları (`PerkTier`, `DraftPool`, + Task 3'te `RerollCurve`) `Assets/NewCss/Roguelite/` altında **izole `NewCss.Roguelite` asmdef**'inde (autoReferenced=true → Assembly-CSharp/UpgradePanel otomatik görür). Test asmdef'i (`Assets/Tests/EditMode/Cargor.Tests.EditMode.asmdef`) bunu referanslar. `PerkEffect.cs` (Task 7) Assembly-CSharp'ta kalır (Truck/CustomerManager'a bağımlı).
+
+**🔴 KRİTİK RİSK — Unity teyidi bekliyor:** Bu oturumda Unity hiç açılmadı. Tüm `.meta` dosyaları subagent'lar tarafından ELLE üretildi (PerkTier.cs'in hiç Unity-GUID'i olmamıştı). Ayrıca hiçbir C# CLI'dan derlenmedi, hiçbir EditMode testi koşulmadı. **Yeni oturumda İLK İŞ:** kullanıcı Unity Editor'ı açsın → reimport/meta regen → Console'da derleme hatası + GUID çakışması yok mu → EditMode Test Runner'da DraftPoolTests geçiyor mu. Sorun çıkarsa Task 0-2 düzeltilir.
+
+**⏭️ Sıradaki (yeni oturum buradan devam):**
+1. **Önce Unity teyidi** (yukarıdaki kritik risk) — kullanıcı Unity'de derleme+test doğrulasın.
+2. **Task 3:** `RerollCurve.cs` (50/90/160/290/525) → `NewCss.Roguelite` asmdef'ine ekle + EditMode testleri. Plan Task 3.
+3. **Task 4:** server-authoritative `_dailyOffer` NetworkList + tier-filtreli teklif üretimi (UpgradePanel.cs). Play doğrulaması.
+4. **Task 5:** panel 3-kart draft. **Task 6:** reroll butonu. **Task 7:** 16-perk effect registry (`PerkEffect.cs`, Assembly-CSharp). **Task 8:** Inspector/sahne veri girişi (fiyatlar UPGRADE_PRICING_REPORT.md v3.2'den). **Task 9:** qa + ölü kod + prefab override.
+5. **Son:** kontrol whole-branch ONAY → Unity 1/2/4 kişi test.
+
+**Değer kaynağı:** her fiyat/tier/etki `UPGRADE_PRICING_REPORT.md` v3.2'den (kontrol ONAY'lı, genel toplam 9945 TL). Plan: `docs/superpowers/plans/2026-07-08-roguelite-upgrade-draft.md`. Task brief'leri önceki oturumun scratchpad'indeydi (devretmez) — plandan yeniden üretilir.
 
 ## 6. 📝 Değişiklik Günlüğü
 - **2026-07-06**: İlk yol haritası oluşturuldu (kod taraması + GDD karşılaştırması).
