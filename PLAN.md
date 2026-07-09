@@ -8,14 +8,14 @@
 
 ## 🎯 Şu an aktif iş
 
-**Roguelite Upgrade Draft Sistemi** — uygulama devam ediyor. **(2026-07-09 mola verildi)**
-Branch: `feature/roguelite-upgrade-draft`. **Task 0-5 commit'li**, ekonomi kilitli (v3.2, 9945 TL).
+**Roguelite Upgrade Draft Sistemi** — uygulama devam ediyor.
+Branch: `feature/roguelite-upgrade-draft`. **Task 0-6 commit'li**, ekonomi kilitli (v3.2, 9945 TL).
 → Tam detay & task listesi: **[plans/roguelite-draft.md](plans/roguelite-draft.md)**
 
-### ⏭️ Sıradaki adım (moladan dönünce buradan devam)
-1. ✅ **Task 0-5 bitti** (Unity teyidi + RerollCurve + server-auth teklif + 3-kart panel). Task 4 & 5 Play-doğrulandı (local).
-2. **Task 6 (aktif):** panelde reroll butonu (`RerollCurve` 50/90/160/290/525, günlük sıfırla) → 7 (16-perk effect registry) → 8 (Inspector veri) → 9 (qa+ölü kod) → kontrol whole-branch ONAY → Unity 1/2/4 kişi test.
-3. 🧹 **Temizlik borcu:** Task 4'ün geçici `Draft teklifi üretildi` debug log'u (`UpgradePanel.cs`, commit `9b2b8c7`) hâlâ duruyor — Task 6/7'de kaldır.
+### ⏭️ Sıradaki adım (buradan devam)
+1. ✅ **Task 0-6 bitti.** Task 6 reroll butonu commit `b458a9d` (qa: 1 önemli+2 küçük → listener/panel-guard düzeltildi; kontrol: ONAY). Debug log temizlik borcu kapandı.
+2. **Task 7 (aktif):** 16-perk effect registry (`PerkEffect.cs`, Assembly-CSharp; `ApplyUpgradeEffect` → effectId varsa registry'ye delege). Değerler UPGRADE_PRICING_REPORT.md v3.2 §3-4. Bazı risk perkleri (Volatilite per-delivery RNG, Acil Fren iflas bayrağı) gerçek kod dokunuşu → qa ile netleş. Sonra 8 (Inspector veri) → 9 (qa+ölü kod) → kontrol whole-branch ONAY → Unity 1/2/4 kişi test.
+3. 🙋 **Manuel borç:** Task 4/5/6 Play/multiplayer teyidi (geç-join client'ta reroll fiyatı, host+client aynı 3 kart senkron) — [plans/manuel-gorevler.md](plans/manuel-gorevler.md).
 
 > ⚠️ Task 6+ NetworkList/sahne/prefab içerir → batchmode EditMode sadece derlemeyi doğrular; senkron/UI için Play/gerçek Unity gerekir.
 > ℹ️ **Yan görev bitti:** ses ayarı slider bug'ı çözüldü (`f7122c9`) — bkz. [plans/archive/2026-07-changelog.md](plans/archive/2026-07-changelog.md).
@@ -43,4 +43,4 @@ Branch: `feature/roguelite-upgrade-draft`. **Task 0-5 commit'li**, ekonomi kilit
 ---
 
 ## 🏢 Departman kısa hatırlatma
-Ekonomik değer (fiyat/süre/ödül/çarpan) → **economist** (gameplay uydurmasın). Kod değişikliği sonrası → **qa**. Her departman çıktısı → **kontrol** (Fable 5) ONAY kapısı, en fazla 3 tur. Tam tablo: [plans/roadmap.md §4](plans/roadmap.md).
+Ekonomik değer (fiyat/süre/ödül/çarpan) → **economist** (gameplay uydurmasın). Kod değişikliği sonrası → **qa**. Her departman çıktısı → **kontrol** (Opus 4.8) ONAY kapısı, en fazla 3 tur. Tam tablo: [plans/roadmap.md §4](plans/roadmap.md).

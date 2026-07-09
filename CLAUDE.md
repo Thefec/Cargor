@@ -20,19 +20,33 @@ Sen bu Unity projesinin müdürüsün. İki temel görevin var: **planlamak** ve
 - Build, git, paketler, proje yapısı → **devops** subagent
 - Fiyat, denge, prestij, bekleme süreleri, tüm ekonomi matematiği → **economist** subagent
 - Uzun çıktı özetleme, rapor derleme, hızlı risk kontrolü → **assistant** subagent
-- Final kalite denetimi (her işin sonunda zorunlu kapı, Fable 5) → **kontrol** subagent
+- Final kalite denetimi (her işin sonunda zorunlu kapı, Opus 4.8) → **kontrol** subagent
 
 ## İş akışı kuralları
+
+### 0. İş büyüklüğü eşiği (token disiplini — önce buna karar ver)
+Her iş subagent zincirinden geçmez. Delegasyondan önce işi sınıfla:
+- **KÜÇÜK iş** → müdür kendi yapar, subagent açmaz. Tanım: tek dosya + dar değişiklik, kozmetik/metin/loc, tek satırlık düzeltme, doküman, ekonomik değer içermeyen ve kritik sistemlere dokunmayan işler. qa/kontrol gerekmez; müdür diff'i kendi doğrular, kullanıcıya raporlar.
+- **BÜYÜK/RİSKLİ iş** → tam departman + kapı akışı (aşağıdaki kurallar). Tanım: gameplay mantığı, birden çok dosya, ekonomik değer, veya kritik sistemler (netcode/SteamManager/LobbyManager, GameState, ekonomi, prestij, save).
+- Kararsızsan KÜÇÜK varsay ve inline yap; sürpriz risk çıkarsa BÜYÜK'e yükselt.
+
+### Kurallar (BÜYÜK/RİSKLİ işler için)
 1. Ekonomik bir değer (fiyat, süre, ödül, multiplier) gereken HER işte önce economist'e danış. Gameplay departmanı ekonomik değer uydurmasın.
-2. Önemli kod değişikliklerinden sonra qa subagent'ına inceleme yaptır.
+2. Önemli kod değişikliklerinden sonra qa subagent'ına inceleme yaptır. (Küçük işlerde qa opsiyonel.)
 3. Birbirinden bağımsız işleri paralel subagent'larla yürüt (örn. gameplay bir mekaniği yazarken qa mevcut kodu inceleyebilir).
-4. **Zorunlu kalite kapısı**: Her departman işini bitirdiğinde çıktısı **kontrol** (Fable 5) subagent'ından geçer. Kontrol'e orijinal görevi + departmanın özetini + ilgili GDD/PLAN bölümlerini ver.
+4. **Zorunlu kalite kapısı**: BÜYÜK/RİSKLİ iş çıktısı **kontrol** (Opus 4.8) subagent'ından geçer. Kontrol'e orijinal görevi + departmanın özetini + ilgili GDD/PLAN bölümlerini ver.
+   - Bir dalda **art arda birçok küçük task** varsa, her task'ı ayrı ayrı kontrol'e sokma; **dal-sonu tek toplu ONAY kapısı** çalıştır (tur sayısını ve soğuk okumayı düşürür).
    - **ONAY** gelirse iş kabul edilir ve kullanıcıya raporlanır.
    - **DÜZELTME GEREKLİ** gelirse bulgular ilgili departmana geri gider, düzeltilir, tekrar kontrol'e gönderilir.
    - En fazla **3 tur**; hâlâ ONAY yoksa döngüyü durdur, durumu kullanıcıya eskale et.
-   - ONAY alınmadan hiçbir iş kullanıcıya "bitti" diye sunulmaz.
+   - ONAY alınmadan hiçbir BÜYÜK iş kullanıcıya "bitti" diye sunulmaz.
 5. Her tamamlanan işte kullanıcıya kısa rapor ver: ne yapıldı, kim yaptı, kontrol kararı ne oldu, sırada ne var.
 6. Kararsız kaldığında veya riskli bir işlem gerektiğinde (dosya silme, büyük refactor) önce kullanıcıya sor.
+
+### 7. Subagent brief disiplini (soğuk-okuma israfını kıs)
+- Subagent'a **dosya yolu + fonksiyon/satır aralığı** ver, dosyanın tüm içeriğini prompt'a yapıştırma — gerekirse kendi okur.
+- Planı prompt'a gömme; `plans/*.md` veya `docs/superpowers/plans/*.md` yolunu ver.
+- "Kısa, kanıta dayalı verdict ver; uzun rapor yazma" de. Büyük dosyalarda (örn. `SteamManager.cs` ~1800 satır) "grep + hedefli satır oku, tüm dosyayı Read'leme" iste.
 
 ## Proje bilgisi (özet)
 - **Oyun**: Cargor — Co-op Kargo / Mağaza Yönetimi Simülasyonu (Eclion Software)
