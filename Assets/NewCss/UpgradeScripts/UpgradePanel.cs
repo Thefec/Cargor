@@ -178,6 +178,12 @@ namespace NewCss
         [SerializeField, Tooltip("Entry prefab'ı")]
         private GameObject entryPrefab;
 
+        [SerializeField, Tooltip("Reroll butonu")]
+        private Button rerollButton;
+
+        [SerializeField, Tooltip("Reroll maliyet metni")]
+        private TMP_Text rerollCostText;
+
         #endregion
 
         #region Serialized Fields - Upgrades
@@ -271,6 +277,9 @@ namespace NewCss
             InitializeBaseValues();
             SubscribeToDayCycleEvents();
             SubscribeToMoneySystem();
+
+            if (rerollButton != null) rerollButton.onClick.AddListener(OnReroll);
+            RefreshRerollUI();
         }
 
         public override void OnNetworkDespawn()
@@ -278,6 +287,8 @@ namespace NewCss
             UnsubscribeFromNetworkEvents();
             UnsubscribeFromDayCycleEvents();
             UnsubscribeFromMoneySystem();
+
+            if (rerollButton != null) rerollButton.onClick.RemoveListener(OnReroll);
 
             base.OnNetworkDespawn();
         }
@@ -391,6 +402,7 @@ namespace NewCss
             _pendingUpgrades.OnListChanged += HandlePendingUpgradesChanged;
             _dailyOffer.OnListChanged += HandleDailyOfferChanged;
             _isPanelOpen.OnValueChanged += HandlePanelStateChanged;
+            _rerollCountToday.OnValueChanged += HandleRerollCountChanged;
         }
 
         private void UnsubscribeFromNetworkEvents()
@@ -400,6 +412,7 @@ namespace NewCss
             _pendingUpgrades.OnListChanged -= HandlePendingUpgradesChanged;
             _dailyOffer.OnListChanged -= HandleDailyOfferChanged;
             _isPanelOpen.OnValueChanged -= HandlePanelStateChanged;
+            _rerollCountToday.OnValueChanged -= HandleRerollCountChanged;
         }
 
         private void SubscribeToDayCycleEvents()
@@ -459,6 +472,7 @@ namespace NewCss
         private void HandleMoneyChanged(int newMoney)
         {
             RefreshAllUpgradeUI();
+            RefreshRerollUI();
         }
 
         private void HandleLocaleChanged(Locale newLocale)
@@ -520,6 +534,11 @@ namespace NewCss
         private void HandleDailyOfferChanged(NetworkListEvent<int> _)
         {
             RebuildDraftEntries();
+        }
+
+        private void HandleRerollCountChanged(int previousValue, int newValue)
+        {
+            RefreshRerollUI();
         }
 
         #endregion
@@ -722,7 +741,23 @@ namespace NewCss
         {
             if (!IsServer) return;
             int currentDay = DayCycleManager.Instance != null ? DayCycleManager.Instance.currentDay : 1;
-            PerkTier maxUnlocked = DraftPool.MaxUnlockedTier(currentDay);
+            var eligibility = BuildEligibility(currentDay, out _);
+
+            var rng = new System.Random(unchecked(currentDay * 73856093));
+            var offer = DraftPool.SelectOffer(eligibility, DraftPool.OFFER_COUNT, rng);
+
+            _dailyOffer.Clear();
+            foreach (var idx in offer) _dailyOffer.Add(idx);
+            _rerollCountToday.Value = 0;
+        }
+
+        /// <summary>
+        /// Server-only: verilen elverişlilik listesine göre eligibility hesaplar.
+        /// <see cref="GenerateDailyOfferServer"/> ve reroll akışı arasında paylaşılır.
+        /// </summary>
+        private List<bool> BuildEligibility(int currentDay, out PerkTier maxUnlocked)
+        {
+            maxUnlocked = DraftPool.MaxUnlockedTier(currentDay);
             bool questActive = _questSystemActive.Value;
 
             var eligibility = new List<bool>(upgrades.Count);
@@ -734,19 +769,7 @@ namespace NewCss
                     i, def.tier, def.kind, def.requiresQuestSystem,
                     visLevel, def.maxLevel, maxUnlocked, questActive));
             }
-
-            var rng = new System.Random(unchecked(currentDay * 73856093));
-            var offer = DraftPool.SelectOffer(eligibility, DraftPool.OFFER_COUNT, rng);
-
-            _dailyOffer.Clear();
-            foreach (var idx in offer) _dailyOffer.Add(idx);
-            _rerollCountToday.Value = 0;
-
-            // TODO(Task 5): geçici doğrulama log'u — 3-kart UI gelince kaldırılacak.
-            var names = new List<string>(offer.Count);
-            foreach (var idx in offer) names.Add(upgrades[idx].displayName);
-            LogDebug($"Draft teklifi üretildi (gün {currentDay}, tier<= {maxUnlocked}): " +
-                     $"[{string.Join(", ", offer)}] = {string.Join(", ", names)}");
+            return eligibility;
         }
 
         /// <summary>
@@ -765,6 +788,66 @@ namespace NewCss
                 BuildSingleEntry(upgradeIndex);
             }
             RefreshAllUpgradeUI();
+            RefreshRerollUI();
+        }
+
+        #endregion
+
+        #region Reroll
+
+        /// <summary>
+        /// Client-side giriş noktası: reroll maliyetini kontrol edip sunucuya isteği yollar.
+        /// UI tarafında iyimser doğrulama yapılır; asıl doğrulama sunucuda tekrarlanır.
+        /// </summary>
+        public void OnReroll()
+        {
+            int cost = RerollCurve.CostForReroll(_rerollCountToday.Value);
+            if (MoneySystem.Instance == null || MoneySystem.Instance.CurrentMoney < cost) return;
+            RerollServerRpc();
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        private void RerollServerRpc()
+        {
+            if (!_isPanelOpen.Value) return;
+
+            int cost = RerollCurve.CostForReroll(_rerollCountToday.Value);
+            if (MoneySystem.Instance == null || MoneySystem.Instance.CurrentMoney < cost) return;
+
+            MoneySystem.Instance.SpendMoney(cost);
+
+            int currentDay = DayCycleManager.Instance != null ? DayCycleManager.Instance.currentDay : 1;
+            var eligibility = BuildEligibility(currentDay, out _);
+
+            // reroll sayacını seed'e kat → farklı sonuç
+            var rng = new System.Random(unchecked((currentDay * 73856093) ^ ((_rerollCountToday.Value + 1) * 19349663)));
+            var offer = DraftPool.SelectOffer(eligibility, DraftPool.OFFER_COUNT, rng);
+
+            _dailyOffer.Clear();
+            foreach (var idx in offer) _dailyOffer.Add(idx);
+            _rerollCountToday.Value += 1;
+        }
+
+        /// <summary>
+        /// Reroll butonunun metin/interactable durumunu günceller. Prefab bağlantısı
+        /// Task 8'e kadar eksik olabileceğinden tüm alanlar null-guard'lıdır.
+        /// </summary>
+        private void RefreshRerollUI()
+        {
+            if (rerollButton == null && rerollCostText == null) return;
+
+            int cost = RerollCurve.CostForReroll(_rerollCountToday.Value);
+            bool canAfford = MoneySystem.Instance != null && MoneySystem.Instance.CurrentMoney >= cost;
+
+            if (rerollCostText != null)
+            {
+                rerollCostText.text = cost.ToString();
+            }
+
+            if (rerollButton != null)
+            {
+                rerollButton.interactable = canAfford;
+            }
         }
 
         #endregion
