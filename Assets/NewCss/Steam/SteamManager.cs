@@ -547,6 +547,23 @@ public class SteamManager : MonoBehaviour
         switch (sceneEvent.SceneEventType)
         {
             case SceneEventType.LoadEventCompleted:
+                StartCoroutine(HideLoadingScreenCoroutine());
+
+                // hasGameEverStarted'ı burada (sahne tam yüklendikten SONRA) işaretle.
+                // Daha erken set edilirse DifficultyManager.ApplyMoneySettings bunu
+                // "oyun zaten başladı" sanıp SetMoney'i atlayabilir ve başlangıç
+                // parası hiç uygulanmaz. LoadEventCompleted, TÜM client'lar sahneyi
+                // yükleyip NetworkObject'ler spawn olduktan sonra tetiklenir — bu yüzden
+                // bilerek LoadComplete (server'ın kendi lokal yüklemesi, çok daha erken
+                // ve DifficultyManager'ın ilk para atamasıyla yarışabilir) ile fallthrough
+                // YAPILMIYOR, sadece bu case'te çalışıyor.
+                if (sceneEvent.SceneName == GAME_SCENE_NAME &&
+                    NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
+                {
+                    NewCss.GameStateManager.Instance?.MarkGameStarted();
+                }
+                break;
+
             case SceneEventType.LoadComplete:
                 StartCoroutine(HideLoadingScreenCoroutine());
                 break;
@@ -594,6 +611,24 @@ public class SteamManager : MonoBehaviour
 
             transport.targetSteamId = lobby.Id;
 
+            // Geç-join yasağı: auto-bootstrap ile muhafızı garanti et (manuel sahne kurulumu
+            // gerekmez), her yeni host oturumunda temiz sayfa aç (eski whitelist/GameStarted
+            // bir önceki oturumdan sızmasın), sonra approval'ı kur.
+            var lateJoinGuard = LateJoinGuard.EnsureInstance();
+            lateJoinGuard.ResetGuard();
+
+            // GameStateManager DontDestroyOnLoad olduğundan hasGameEverStarted eski
+            // oturumdan sızabilir (aynı process'te menüye dönüp yeni oyun başlatma) —
+            // run-scoped sıfırla ki ApplyMoneySettings/IsFirstGameLoad yeni oturumu
+            // doğru okusun.
+            NewCss.GameStateManager.Instance?.ResetGameStartedFlag();
+
+            NetworkManager.Singleton.NetworkConfig.ConnectionData =
+                System.BitConverter.GetBytes(SteamClient.SteamId.Value);
+
+            NetworkManager.Singleton.NetworkConfig.ConnectionApproval = true;
+            NetworkManager.Singleton.ConnectionApprovalCallback = lateJoinGuard.ApproveConnection;
+
             if (NetworkManager.Singleton.StartHost())
             {
                 _isLobbyJoinValid = true;
@@ -629,6 +664,15 @@ public class SteamManager : MonoBehaviour
         }
 
         transport.targetSteamId = lobby.Owner.Id;
+
+        // Geç-join yasağı: NGO'da ConnectionApproval config hash'e dahil edilir — client
+        // burada da true set etmezse host'un true değeriyle hash uyuşmaz ve TÜM bağlantılar
+        // (lobi aşaması dahil) reddedilir. Ayrıca ConnectionApproval false iken client
+        // ConnectionData payload'ını (SteamId) hiç göndermez, bu yüzden Start'tan önce ikisi
+        // de burada set edilmeli.
+        NetworkManager.Singleton.NetworkConfig.ConnectionApproval = true;
+        NetworkManager.Singleton.NetworkConfig.ConnectionData =
+            System.BitConverter.GetBytes(SteamClient.SteamId.Value);
 
         if (!NetworkManager.Singleton.StartClient())
         {
@@ -952,6 +996,19 @@ public class SteamManager : MonoBehaviour
         PlayButtonSound();
 
         if (!ValidateGameStart()) return;
+
+        // Geç-join yasağı: sahne yüklenmeden önce orijinal lobi üyelerini whitelist'e al
+        // ve muhafızı aktive et. Yeni bağlantı denemeleri bundan sonra reddedilir; sadece
+        // whitelist'teki SteamId'ler (bağlantı kopması sonrası) reconnect edebilir.
+        if (LateJoinGuard.Instance != null)
+        {
+            var roster = _currentLobby.Members.Select(m => m.Id.Value).ToList();
+            LateJoinGuard.Instance.MarkGameStarted(roster);
+        }
+        else
+        {
+            LogError("LateJoinGuard.Instance bulunamadı! Geç-join yasağı kurulamadı.");
+        }
 
         DisableStartButton();
         ShowLoadingScreen();

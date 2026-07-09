@@ -30,6 +30,30 @@ namespace NewCss
         private bool hasGameEverStarted = false; 
         
         public bool HasGameEverStarted => hasGameEverStarted;
+
+        /// <summary>
+        /// Oyunun (harita/gameplay) gerçekten başladığını server-authoritative olarak işaretler.
+        /// Çağıran taraf (SteamManager), oyun sahnesi tam yüklendikten SONRA çağırmalı —
+        /// erken çağrılırsa DifficultyManager.ApplyMoneySettings başlangıç parasını
+        /// atlayabilir (bkz. DifficultyManager.ApplyMoneySettings). Idempotent.
+        /// </summary>
+        public void MarkGameStarted()
+        {
+            hasGameEverStarted = true;
+        }
+
+        /// <summary>
+        /// Yeni bir host oturumu (StartHost) başlarken hasGameEverStarted'ı run-scoped
+        /// sıfırlar. GameStateManager DontDestroyOnLoad olduğundan bu bayrak normalde
+        /// resetlenmez; aynı process içinde menüye dönüp ikinci bir oyun başlatılırsa
+        /// eski true değeri kalır ve ApplyMoneySettings/IsFirstGameLoad yanlış davranır.
+        /// SteamManager.ExecuteHostStart başında (LateJoinGuard.ResetGuard ile birlikte)
+        /// çağrılmalı.
+        /// </summary>
+        public void ResetGameStartedFlag()
+        {
+            hasGameEverStarted = false;
+        }
         
         // Scene management
         private string currentGameScene = "";
