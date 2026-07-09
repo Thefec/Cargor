@@ -52,6 +52,20 @@ Bu task'lar bittikçe senin gözünle bakman gerekecek (ben yazınca haber verir
 
 ---
 
+## 🔒 Geç-join kilidi — 2+ Steam client Play testi (commit `e469c06`)
+
+**Durum:** kod yazıldı, qa + kontrol (Opus 4.8) ONAY. Kod-seviyesi doğru; gerçek Facepunch/Steam handshake **yalnız 2+ gerçek Steam client ile** teyit edilebilir.
+**Neden sen:** NGO ConnectionApproval + Steam P2P el sıkışması batchmode'da/tek editörde görünmez.
+
+### Doğrula
+- [ ] **1.** Host lobi kurar, 2. oyuncu **oyun başlamadan** lobiye girer → normal girebilmeli (lobi aşaması bozulmadı). ⚠️ Bu en kritik regresyon kontrolü: client hiç bağlanamıyorsa `ConnectionApproval` config-hash sorunu geri gelmiş demektir.
+- [ ] **2.** Host oyunu başlatır (The Main Office yüklenir). Şimdi 3. oyuncu Steam kod/davet ile girmeye çalışır → **reddedilmeli** ("Oyun zaten başladı").
+- [ ] **3.** Oyun içinde 2. oyuncunun bağlantısını kopar (Alt+F4 / ağ kes) → **aynı** oyuncu tekrar girebilmeli (orijinal whitelist reconnect).
+- [ ] **4.** Whitelist-dışı biri (oyun başındaki lobide olmayan) reconnect denesin → **reddedilmeli**.
+- [ ] **5.** Oyun bitince ana menüye dön, **aynı uygulama oturumunda** yeni lobi kur → yeni oyuncular tekrar normal girebilmeli (ResetGuard + ResetGameStartedFlag çalışıyor mu; para/gün doğru resetleniyor mu).
+
+---
+
 ## ⚙️ Açık karar — ProjectSettings tuhaflığı
 
 - [ ] **Karar bekliyor:** Her batchmode Unity çalıştırmasında `ProjectSettings.asset` içindeki `Standalone` scripting define'larından **`SENTIS_ANALYTICS_ENABLED`** siliniyor (Unity/paket kurulumun bunu deterministik kaldırıyor). Ben her seferinde geri alıp commit'e karıştırmadım. **Sen karar ver:** bu define kalmalı mı (Sentis analytics kullanıyorsan) yoksa gitmeli mi? Kullandığın bir şeyse Unity'de neden silindiğine bakmamız lazım.
