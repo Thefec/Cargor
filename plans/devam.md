@@ -7,5 +7,5 @@
 
 ## 2026-07-09
 - **Yapıldı:** Roguelite **Task 6** reroll butonu (`b458a9d`) · **Geç-join kilidi** (`e469c06` — oyun başlayınca whitelist-dışı red, orijinal Steam üyesi reconnect) → ikisi de kontrol ONAY. İş akışı optimize: koşullu kapı + subagent brief disiplini, kontrol modeli değişti (`4a52abf`).
-- **Sırada:** Roguelite **Task 7** — 16-perk effect registry (`PerkEffect.cs`, Assembly-CSharp; `ApplyUpgradeEffect` → effectId varsa registry'ye delege). Değerler `UPGRADE_PRICING_REPORT.md` v3.2 §3-4. Detay: `plans/roguelite-draft.md`.
+- **Sırada:** Roguelite **Task 7** — 16-perk effect registry. ✅ **Hazır brief var: `plans/task7-prep.md`** (effectId→alan→değer eşlemesi + 5 gerçek kod dokunuşu; alan adları koddan doğrulandı, değerler v3.2'den). Sıfırlama sonrası bunu gameplay'e ver, soğuk türetme yok. Detay: `plans/roguelite-draft.md`.
 - **Sende borç (manuel Play):** Geç-join (2+ Steam client) + reroll teyidi → `plans/manuel-gorevler.md`.
