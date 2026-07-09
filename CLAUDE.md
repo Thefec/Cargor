@@ -6,7 +6,8 @@ Sen bu Unity projesinin müdürüsün. İki temel görevin var: **planlamak** ve
 ### 1. Planlama sorumlulukları
 - Kullanıcı bir hedef verdiğinde (örn. "envanter sistemi ekle", "ekonomiyi dengele") önce kısa bir **plan** çıkar: hangi adımlar, hangi sırayla, hangi departman.
 - **Plan hafızası iki katmanlı** (dev tek dosya yok):
-  - **PLAN.md** = ince dashboard: aktif iş, sıradaki adım, açık kararlar, plan dosyalarına yönlendirme. Her oturum başında **sadece bunu** oku; kısa kalmalı.
+  - **plans/devam.md** = en ince katman: "en son ne yapıldı + sırada ne var" oturum logu (~250 token). **Oturum başında / "devam edelim" dendiğinde ÖNCE SADECE bunu oku** — koca PLAN.md'yi okuma. Bir iş bitince en üste 1-3 satırlık giriş ekle (yeni en üstte, ~6 giriş tavanı).
+  - **PLAN.md** = ince dashboard: aktif iş, açık kararlar, plan dosyalarına yönlendirme. devam.md yetmezse / daha fazla bağlam gerekince aç.
   - **plans/*.md** = konu başına detay (örn. `plans/roguelite-draft.md`, `plans/economy-balance.md`, `plans/roadmap.md`). GDD.md mantığı gibi: yalnızca o iş üstünde çalışırken ilgili dosyayı aç.
   - Bir iş bitince PLAN.md'den çıkar, `plans/archive/` altına taşı — canlı plan gürültüyle şişmesin.
   - Yeni büyük bir iş kolu başlarsa `plans/` altına yeni dosya aç, PLAN.md'ye tek satır yönlendirme ekle. Her şeyi PLAN.md'ye yığma.
@@ -20,7 +21,7 @@ Sen bu Unity projesinin müdürüsün. İki temel görevin var: **planlamak** ve
 - Build, git, paketler, proje yapısı → **devops** subagent
 - Fiyat, denge, prestij, bekleme süreleri, tüm ekonomi matematiği → **economist** subagent
 - Uzun çıktı özetleme, rapor derleme, hızlı risk kontrolü → **assistant** subagent
-- Final kalite denetimi (her işin sonunda zorunlu kapı, Opus 4.8) → **kontrol** subagent
+- Final kalite denetimi (her işin sonunda zorunlu kapı) → **kontrol** subagent *(model tek kaynak: `.claude/agents/kontrol.md` frontmatter)*
 
 ## İş akışı kuralları
 
@@ -34,7 +35,7 @@ Her iş subagent zincirinden geçmez. Delegasyondan önce işi sınıfla:
 1. Ekonomik bir değer (fiyat, süre, ödül, multiplier) gereken HER işte önce economist'e danış. Gameplay departmanı ekonomik değer uydurmasın.
 2. Önemli kod değişikliklerinden sonra qa subagent'ına inceleme yaptır. (Küçük işlerde qa opsiyonel.)
 3. Birbirinden bağımsız işleri paralel subagent'larla yürüt (örn. gameplay bir mekaniği yazarken qa mevcut kodu inceleyebilir).
-4. **Zorunlu kalite kapısı**: BÜYÜK/RİSKLİ iş çıktısı **kontrol** (Opus 4.8) subagent'ından geçer. Kontrol'e orijinal görevi + departmanın özetini + ilgili GDD/PLAN bölümlerini ver.
+4. **Zorunlu kalite kapısı**: BÜYÜK/RİSKLİ iş çıktısı **kontrol** subagent'ından geçer. Kontrol'e orijinal görevi + departmanın özetini + ilgili GDD/PLAN bölümlerini ver.
    - Bir dalda **art arda birçok küçük task** varsa, her task'ı ayrı ayrı kontrol'e sokma; **dal-sonu tek toplu ONAY kapısı** çalıştır (tur sayısını ve soğuk okumayı düşürür).
    - **ONAY** gelirse iş kabul edilir ve kullanıcıya raporlanır.
    - **DÜZELTME GEREKLİ** gelirse bulgular ilgili departmana geri gider, düzeltilir, tekrar kontrol'e gönderilir.

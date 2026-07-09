@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 >
-> **Cargor iş akışı notu:** Bu plan **gameplay** departmanı tarafından uygulanır. Her task çıktısı **qa** ve zorunlu **kontrol** (Opus 4.8) kapısından geçer. Ekonomik değer gereken her yerde değerler `UPGRADE_PRICING_REPORT.md` v3.2'den ALINIR — yeni değer uydurulmaz; sapma gerekiyorsa önce economist'e danışılır.
+> **Cargor iş akışı notu:** Bu plan **gameplay** departmanı tarafından uygulanır. Her task çıktısı **qa** ve zorunlu **kontrol** kapısından geçer. Ekonomik değer gereken her yerde değerler `UPGRADE_PRICING_REPORT.md` v3.2'den ALINIR — yeni değer uydurulmaz; sapma gerekiyorsa önce economist'e danışılır.
 
 **Goal:** Mağaza upgrade panelini "tüm listeyi göster" düzeninden, gün sonu havuzdan 3 rastgele kart çeken, tier-kilitli, reroll'lu, server-authoritative bir **roguelite draft**'a çevirmek; sıkıcı stat çarpanlarını kaldırıp veri-güdümlü **16 perk** havuzu eklemek.
 
@@ -789,7 +789,7 @@ Rapor §8.2/§9: (a) Ucuz Kira + Kaldıraçlı Kira aynı draft'ta → kira %32-
 
 - [ ] **Step 4: kontrol kapısı**
 
-Tüm task'ların çıktısı **kontrol** (Opus 4.8) denetiminden ONAY alır. DÜZELTME GEREKLİ → ilgili task'a geri döner.
+Tüm task'ların çıktısı **kontrol** denetiminden ONAY alır. DÜZELTME GEREKLİ → ilgili task'a geri döner.
 
 ---
 
