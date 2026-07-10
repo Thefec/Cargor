@@ -44,6 +44,8 @@ Bu task'lar bittikçe senin gözünle bakman gerekecek (ben yazınca haber verir
 - [ ] **Task 5 — 3-kart UI:** Panel gün sonu masada açılınca "tüm liste" yerine **3 kart** göstermeli. Kartlar doğru upgrade'leri/fiyatları gösteriyor mu?
 - [ ] **Task 6 — Reroll butonu:** Reroll'a basınca yeni 3 kart + fiyat artıyor mu (50→90→160→290→525)? Günlük sıfırlanıyor mu?
 - [ ] **Task 7 — 16 perk etkisi:** Her perk satın alınınca gerçekten iddia ettiği etkiyi yapıyor mu?
+- [ ] **Task 7 — Dışlama (gambler_case ↔ all_in):** Birini satın al → diğeri sonraki tekliflerde VE reroll'da bir daha çıkmamalı. İkisi aynı teklifte çıkmamalı. Biri alındıysa diğerinin satın alınması reddedilmeli.
+- [ ] **Task 7 — Late-join relic re-apply (2+ client, ÖNEMLİ):** Host bir relic perk alsın (özellikle client-lokal etkili: `agile_crew`/`energetic_crew` → hareket hızı/stamina). SONRA 2. oyuncu oyuna katılsın. Yeni katılan client'ta o perk'in etkisi uygulanıyor mu, yoksa sadece host'ta mı görünüyor? Kontrol'ün notu: NetworkList full-state sync `Value` event'i tetiklemeyebilir → late-join client'ta `PerkEffect.Apply` çağrılmayabilir. Server-authoritative ekonomi (Truck/DayCycle) etkilenmez; risk client-lokal alanlarda. **Bozuksa bana söyle** → `OnNetworkSpawn`'da catch-up döngüsü gerekebilir (kümülatif etkilerde çift-uygulama riskine dikkat ederek).
 - [ ] **Task 8 — Veri girişi sonrası:** Tier kilidi artık gerçek — gün<5 sadece T1, gün≥5 T2, gün≥9 T3 çıkıyor mu? Fiyatlar v3.2 raporuyla eşleşiyor mu?
 
 ## 🟢 EN SON — tam multiplayer testi
