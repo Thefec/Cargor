@@ -809,8 +809,12 @@ namespace NewCss
         [ServerRpc(RequireOwnership = false)]
         private void RerollServerRpc()
         {
-            if (!_isPanelOpen.Value) return;
-
+            // NOT: Reroll gate'i bilerek PurchaseUpgradeServerRpc ile simetrik tutuluyor — ikisi de
+            // sadece para/geçerlilik kontrolü yapar, saat gate'i YOK. Panel OfficeTerminal.cs üzerinden
+            // (client-local SetActive) açılıyor; _isPanelOpen NetworkVariable'ı hiç set edilmediği için
+            // ona bağlanmak reroll'u daima öldürüyordu. Saat gate'i de yanlıştı: panel PANEL_OPEN_HOUR'dan
+            // önce (ör. saat 7) açılabiliyor ama satın alma o saatte çalışırken reroll ölüyordu.
+            // Gerçek server-authoritative panel-open state'i ayrı bir iş (OfficeTerminal↔UpgradePanel birleştirme).
             int cost = RerollCurve.CostForReroll(_rerollCountToday.Value);
             if (MoneySystem.Instance == null || MoneySystem.Instance.CurrentMoney < cost) return;
 

@@ -680,8 +680,12 @@ namespace NewCss
 
             if (breakRoomManager != null)
             {
-                breakRoomManager.requiredPlayers = breakRoomManager.GetSteamLobbyPlayerCount();
-                Debug.Log($"{LOG_PREFIX} BreakRoomManager.requiredPlayers updated: {breakRoomManager.requiredPlayers}");
+                // requiredPlayers artık TEK yoldan yazılıyor: BreakRoomManager.UpdateLobbyPlayers
+                // (GameStateManager.OnRosterChanged event'i tarafından tetiklenir). Burada ikinci
+                // bir doğrudan yazma yoluyla sessiz tutarsızlık riski almamak için sadece
+                // roster/lobi senkronizasyonunu tetikliyoruz.
+                breakRoomManager.CheckAndUpdateLobbyPlayers();
+                Debug.Log($"{LOG_PREFIX} BreakRoomManager roster senkronizasyonu tetiklendi, requiredPlayers={breakRoomManager.requiredPlayers}");
             }
         }
 

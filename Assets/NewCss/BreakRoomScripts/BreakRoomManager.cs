@@ -61,6 +61,8 @@ namespace NewCss
         private List<string> _currentLobbyPlayerNames = new();
         private int _lastCheckedPlayerCount;
         private Collider _triggerCollider;
+        private bool _rosterSubscribed;
+        private Coroutine _rosterSubscribeRoutine;
 
         #endregion
 
@@ -134,12 +136,67 @@ namespace NewCss
             FindNextDayUIManager();
             CheckAndUpdateLobbyPlayers();
             LocalizationSettings.SelectedLocaleChanged += HandleLocaleChanged;
+
+            TrySubscribeToRosterChanged();
         }
 
         private void OnDestroy()
         {
             CleanupSingleton();
             LocalizationSettings.SelectedLocaleChanged -= HandleLocaleChanged;
+
+            if (_rosterSubscribeRoutine != null)
+            {
+                StopCoroutine(_rosterSubscribeRoutine);
+                _rosterSubscribeRoutine = null;
+            }
+
+            if (_rosterSubscribed && GameStateManager.Instance != null)
+            {
+                GameStateManager.Instance.OnRosterChanged -= CheckAndUpdateLobbyPlayers;
+            }
+            _rosterSubscribed = false;
+        }
+
+        /// <summary>
+        /// GameStateManager.Instance henüz null olabilir (erken Start sırası); bu durumda
+        /// abonelik kaçırılıp geç-katılan oyuncularda UI hiç güncellenmeyebilirdi. Instance
+        /// hazır olana kadar bir coroutine ile beklenip abone olunuyor.
+        /// </summary>
+        private void TrySubscribeToRosterChanged()
+        {
+            if (_rosterSubscribed)
+            {
+                return;
+            }
+
+            if (GameStateManager.Instance != null)
+            {
+                GameStateManager.Instance.OnRosterChanged += CheckAndUpdateLobbyPlayers;
+                _rosterSubscribed = true;
+                return;
+            }
+
+            if (_rosterSubscribeRoutine == null)
+            {
+                _rosterSubscribeRoutine = StartCoroutine(SubscribeToRosterWhenReady());
+            }
+        }
+
+        private System.Collections.IEnumerator SubscribeToRosterWhenReady()
+        {
+            while (GameStateManager.Instance == null)
+            {
+                yield return null;
+            }
+
+            if (!_rosterSubscribed)
+            {
+                GameStateManager.Instance.OnRosterChanged += CheckAndUpdateLobbyPlayers;
+                _rosterSubscribed = true;
+            }
+
+            _rosterSubscribeRoutine = null;
         }
 
         private void HandleLocaleChanged(Locale newLocale)
@@ -273,15 +330,23 @@ namespace NewCss
         /// </summary>
         private int GetTotalPlayersInGame()
         {
-            // Önce NetworkManager'dan connected client sayısını kontrol et
+            // Roster tek doğruluk kaynağı - server ve client AYNI yolu okur (split-brain
+            // yaratmamak için). ConnectedClientsList.Count client bağlanır bağlanmaz anında
+            // artar ama roster RPC round-trip'i nedeniyle bir-iki frame geride kalabilir;
+            // bu yüzden server'da bile roster'ı önceliklendirip yalnızca roster boşsa
+            // (örn. ilk spawn anı) ConnectedClientsList/Steam lobiye fallback yapıyoruz.
+            int rosterCount = GameStateManager.Instance != null ? GameStateManager.Instance.RosterPlayerCount : 0;
+            if (rosterCount > 0)
+            {
+                return rosterCount;
+            }
+
             if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
             {
                 return NetworkManager.Singleton.ConnectedClientsList.Count;
             }
 
-            // Client tarafında Steam lobby'den al
-            int lobbyCount = GetSteamLobbyPlayerCount();
-            return lobbyCount;
+            return GetSteamLobbyPlayerCount();
         }
 
         private void CheckIfAllPlayersPresent()
@@ -374,8 +439,8 @@ namespace NewCss
         /// </summary>
         public void CheckAndUpdateLobbyPlayers()
         {
-            int currentPlayerCount = GetSteamLobbyPlayerCount();
-            List<string> playerNames = GetSteamLobbyPlayerNames();
+            List<string> playerNames = GetRosterOrSteamPlayerNames();
+            int currentPlayerCount = playerNames.Count;
 
             if (currentPlayerCount != _lastCheckedPlayerCount)
             {
@@ -405,6 +470,22 @@ namespace NewCss
 
             LogDebug($"Updated:  {requiredPlayers} players required");
             UpdateBreakRoomUI();
+        }
+
+        /// <summary>
+        /// TEK doğruluk kaynağı: server-authoritative roster (GameStateManager).
+        /// Roster henüz doluysa boş dönüyorsa (örn. erken çağrı) Steam lobi Members
+        /// okumasına düşer - eski davranışla geriye dönük uyumluluk için.
+        /// </summary>
+        public List<string> GetRosterOrSteamPlayerNames()
+        {
+            var rosterNames = GameStateManager.Instance?.GetRosterPlayerNames();
+            if (rosterNames != null && rosterNames.Count > 0)
+            {
+                return rosterNames;
+            }
+
+            return GetSteamLobbyPlayerNames();
         }
 
         /// <summary>
