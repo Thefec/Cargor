@@ -115,16 +115,53 @@ Bunları tekrar eklemene gerek yok; sadece tier/kind düzenlemek istersen diye m
 
 **Yapılacak:** Unity'de üç objeyi de seç, Inspector'daki `Economy Settings` alanının **aynı** asset'e (`Assets/Resources/EkonomiAyarlari.asset`) işaret ettiğini doğrula. (Ya da üçünü de boş bırak → kod aynı `Resources.Load`'a düşer.)
 
-- [ ] `Truck` (prefab) → `economySettings` = `EkonomiAyarlari`
-- [ ] `UpgradePanel` → `economySettings` = `EkonomiAyarlari`
-- [ ] `DayCycleManager` → `economySettings` = `EkonomiAyarlari`
-- [ ] Üçü de aynı asset (veya üçü de boş)
+- [x] `Truck` (prefab) → `economySettings` = `EkonomiAyarlari`
+- [x] `UpgradePanel` → `economySettings` = `EkonomiAyarlari`
+- [x] `DayCycleManager` → `economySettings` = `EkonomiAyarlari`
+- [x] Üçü de aynı asset (veya üçü de boş)
+
+✅ **DOĞRULANDI (2026-07-11):** Kullanıcı test etti, çalışıyor.
+
+> **Bulgu 2 çözüldü (2026-07-11):** Karar **(a) Dışlama** — kod tarafı yazıldı ve commit'lendi (`7110afc`): gambler_case↔all_in biri satın alınınca diğeri draft'ta bir daha çıkmaz (eligibility) + satın-alma guard (client+server) + aynı-teklif koruması. qa+kontrol ONAY.
+
+---
+
+## 🧪 Perk çalışıyor mu? — Play doğrulama tablosu
+
+En güvenilir yöntem: Play sırasında ilgili nesneyi seç, Inspector'da alanın baz→perk değerine atladığını izle (her Apply* metodu MUTLAK değer yazar, idempotent). Economy alanları = `EkonomiAyarlari.asset` (Project'te seç, Play'de canlı değişir).
+
+| Perk (effectId) | Nesne | Alan | Baz → Perk sonrası |
+|---|---|---|---|
+| cheap_rent | EkonomiAyarlari | `rentGrowthMultiplier` | 1.15 → 1.12 (her lvl −0.03) |
+| prestige_broker | Truck | `bonusPerTier` | 5 → 5.5 (her lvl +0.5) |
+| prestige_master | EkonomiAyarlari | `customerServedPrestigeBonus` | 0.5 → 0.65 (her lvl +0.15) |
+| fast_hangar | Truck | `hangarStayDuration` | 120 → 156 |
+| energetic_crew | PlayerMovement | `staminaRegenRate` | 1 → 2.5 |
+| agile_crew | PlayerMovement | `moveSpeed` | 5 → 5.75 (koşarken de hisset) |
+| patient_customers | CustomerManager | `patienceMultiplier` | 1 → 1.25 (yeni müşteride bekleme +%25) |
+| long_queue | CustomerManager | `maxQueueSize` | 3 → 5 (kuyrukta say) |
+| gambler_case | Truck | `rewardPerBox` / `penaltyPerBox` | ×1.30 / ×1.55 |
+| phone_line | EkonomiAyarlari | `maxCallsPerHour` | 2 → 3 |
+| leveraged_rent | EkonomiAyarlari | `rentScaledMultiplier` / `customerLostPrestigePenalty` | → 0.8 / −1.5 → −3.0 |
+| high_volatility | EkonomiAyarlari | `rewardVolatility` / `rewardVolatilityMean` | → 0.35 / → 1.15 |
+| all_in | Truck / EkonomiAyarlari | `rewardPerBox` ×1.25 / `gracePaymentPercent` → 0 |
+| emergency_brake | DayCycleManager | `insuranceAvailable` | false → true |
+| overtime | DayCycleManager | `realDurationInSeconds` | 160 → 180 |
+| bulk_buy | — | sonraki teklif | 1 kart fiyatı −%50 |
+
+**Davranışsal (alan değil, olayla görünür):**
+- **bulk_buy:** satın al → ertesi gün teklifte 1 kartın fiyatı yarıya inmiş olmalı.
+- **high_volatility:** her teslimatta ödül ±%35 oynar, uzun vadede ort. +%15 (tek teslimatta değil, varyans olarak).
+- **emergency_brake:** iflas anında 1 kez iflası önler, sonra `insuranceAvailable` tüketilir (false olur).
+
+**Genel kontrol:** bir perk alınca Console'da `[PerkEffect] Bilinmeyen effectId` **uyarısı çıkmamalı** (çıkarsa o perk'in `effectId` yazımı sahnede hatalı).
+İstenirse `PerkEffect.Apply`'a tek satırlık teşhis log'u eklenebilir (her satın almada effectId+sonuç değeri) — test bitince kaldırılır.
 
 ---
 
 ## Özet — sende ne var
 1. **Editor authoring:** 16 perk girdisi (Bulgu 1) — asıl iş, bu bitmeden test yok.
-2. **Tek karar:** gambler/all-in davranışı (Bulgu 2) — bana a/b/c söyle.
-3. **Göz teyidi:** 3 economySettings referansı aynı mı (Bulgu 3).
+2. ~~gambler/all-in kararı (Bulgu 2)~~ → ✅ (a) Dışlama, kod bitti (`7110afc`).
+3. ~~3 economySettings referansı (Bulgu 3)~~ → ✅ doğrulandı, çalışıyor.
 
-Bunlar bitince: perk Play-mode teyidi → qa re-run → kontrol kapısı → commit.
+Bunlar bitince: perk Play-mode teyidi (yukarıdaki tablo) → qa re-run → kontrol kapısı → commit. Sonra **Task 8** (Inspector tier verisi: gün≥5 T2, gün≥9 T3).
