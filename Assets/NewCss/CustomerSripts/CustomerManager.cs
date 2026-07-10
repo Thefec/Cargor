@@ -56,6 +56,9 @@ namespace NewCss
         [SerializeField, Tooltip("Maksimum kuyruk boyutu")]
         public int maxQueueSize = DEFAULT_QUEUE_SIZE;
 
+        [Tooltip("Sabirli Musteriler perki: min/maxWaitTime carpani (CustomerAI.InitializeServerState'te okunur). Perk yoksa 1f.")]
+        public float patienceMultiplier = 1f;
+
         #endregion
 
         #region Serialized Fields - Capacity-Based Spawn Settings

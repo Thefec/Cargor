@@ -30,19 +30,49 @@ namespace NewCss
 
         /// <summary>eligibility[i]==true olan index'lerden en fazla count farklı, rastgele seç.</summary>
         public static List<int> SelectOffer(IReadOnlyList<bool> eligibility, int count, Random rng)
+            => SelectOffer(eligibility, count, rng, null);
+
+        /// <summary>
+        /// eligibility[i]==true olan index'lerden en fazla count farklı, rastgele seç.
+        /// exclusionGroups: her biri "aynı grup içinden aynı teklifte en fazla 1 index seçilebilir"
+        /// kuralını taşır (örn. gambler_case/all_in). 2'den az elemanlı gruplar etkisizdir.
+        /// Seçim algoritması, exclusionGroups null/boş olduğunda önceki davranışla bit-bit aynı
+        /// sonucu üretir (partial Fisher-Yates ilk `count` konumu, atlama olmadığı sürece değişmez) →
+        /// determinizm/seed uyumluluğu korunur.
+        /// </summary>
+        public static List<int> SelectOffer(IReadOnlyList<bool> eligibility, int count, Random rng,
+            IReadOnlyList<IReadOnlyList<int>> exclusionGroups)
         {
             var pool = new List<int>();
             for (int i = 0; i < eligibility.Count; i++)
                 if (eligibility[i]) pool.Add(i);
 
-            for (int i = 0; i < pool.Count && i < count; i++)
+            Dictionary<int, int> groupOf = null;
+            if (exclusionGroups != null)
+            {
+                for (int g = 0; g < exclusionGroups.Count; g++)
+                {
+                    var group = exclusionGroups[g];
+                    if (group == null || group.Count < 2) continue;
+                    groupOf ??= new Dictionary<int, int>();
+                    foreach (var idx in group) groupOf[idx] = g;
+                }
+            }
+
+            var usedGroups = groupOf != null ? new HashSet<int>() : null;
+            var result = new List<int>();
+
+            for (int i = 0; i < pool.Count && result.Count < count; i++)
             {
                 int j = i + rng.Next(pool.Count - i);
                 (pool[i], pool[j]) = (pool[j], pool[i]);
-            }
 
-            var result = new List<int>();
-            for (int i = 0; i < pool.Count && i < count; i++) result.Add(pool[i]);
+                int candidate = pool[i];
+                if (groupOf != null && groupOf.TryGetValue(candidate, out int gid) && !usedGroups.Add(gid))
+                    continue; // grubun bir üyesi zaten seçildi, bu adayı atla
+
+                result.Add(candidate);
+            }
             return result;
         }
     }

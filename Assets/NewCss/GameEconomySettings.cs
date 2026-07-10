@@ -32,6 +32,9 @@ namespace NewCss
         [Tooltip("Grace period'da oyuncudan alınan para yüzdesi (0-1). Kalan para oyuncuda kalır.")]
         public float gracePaymentPercent = 0.8f;
 
+        [Tooltip("Kaldıraçlı Kira perki: sadece scaledRent'e uygulanan çarpan (wealthTax etkilenmez). Perk yoksa 1f.")]
+        public float rentScaledMultiplier = 1f;
+
         // ─────────────────────────────────────────────────────────────
         //  TIR / TESLİMAT  (Truck)
         // ─────────────────────────────────────────────────────────────
@@ -52,6 +55,12 @@ namespace NewCss
 
         [Tooltip("Her prestige katmanında kutu başına eklenen bonus (TL)")]
         public float bonusPerTier = 5f;
+
+        [Tooltip("Yüksek Volatilite perki: kutu başına ödül dağılımının +-yüzdesi (0 = kapalı).")]
+        public float rewardVolatility = 0f;
+
+        [Tooltip("Yüksek Volatilite perki: ortalama ödül çarpanı (RNG merkezi, EV her zaman pozitif olacak şekilde).")]
+        public float rewardVolatilityMean = 1f;
 
         // ─────────────────────────────────────────────────────────────
         //  TELEFON  (PhoneCallManager)
@@ -109,7 +118,7 @@ namespace NewCss
         public float CalculateRent(int playerCount, int rentCycle, float totalUpgradeValue)
         {
             float baseRent = GetBaseRent(playerCount);
-            float scaledRent = baseRent * Mathf.Pow(rentGrowthMultiplier, rentCycle);
+            float scaledRent = baseRent * Mathf.Pow(rentGrowthMultiplier, rentCycle) * rentScaledMultiplier;
             float wealthTax  = totalUpgradeValue * wealthTaxRate;
             return scaledRent + wealthTax;
         }

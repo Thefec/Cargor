@@ -149,6 +149,13 @@ namespace NewCss
         private const string LOC_KEY_MAX = "UpgradeMax";
         private const string LOC_KEY_BUY = "UpgradeBuy";
 
+        // Roguelite draft dışlama grupları — aynı gruptan aynı 3-kart teklifte en fazla 1 kart çıkar.
+        // Kullanıcı kararı: gambler_case ve all_in birlikte asla teklif edilmez (günlük teklif + reroll).
+        private static readonly string[][] EXCLUSIVE_EFFECT_GROUPS =
+        {
+            new[] { "gambler_case", "all_in" },
+        };
+
         #endregion
 
         #region Nested Classes
@@ -203,6 +210,9 @@ namespace NewCss
         [SerializeField] private CustomerAI CustomerAI;
         [SerializeField] private EventEffectManager eventEffectManager;
 
+        [Tooltip("Perk registry'sinin (PerkEffect.cs) dokunduğu tekil ekonomi SO'su. Boşsa Resources/EkonomiAyarlari yüklenir (Truck/DayCycleManager ile aynı kaynak).")]
+        [SerializeField] private GameEconomySettings economySettings;
+
         #endregion
 
         #region Network Variables
@@ -214,6 +224,13 @@ namespace NewCss
         private readonly NetworkVariable<bool> _isPanelOpen = new(false);
         private readonly NetworkVariable<int> _rerollCountToday = new(0);
         private readonly NetworkVariable<bool> _questSystemActive = new(false); // Görev Tier feature-flag
+        private readonly NetworkVariable<int> _discountedUpgradeIndex = new(-1); // Toplu Alım (bulk_buy) — sonraki tekliftedki 1 kart -%50
+
+        #endregion
+
+        #region Private Fields - Perk State
+
+        private bool _pendingBulkBuyDiscount; // server-only: bir sonraki GenerateDailyOfferServer'da tüketilir
 
         #endregion
 
@@ -263,6 +280,12 @@ namespace NewCss
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
+
+            if (economySettings == null)
+            {
+                // Truck/DayCycleManager ile aynı tekil kaynak (Resources/EkonomiAyarlari.asset).
+                economySettings = Resources.Load<GameEconomySettings>("EkonomiAyarlari");
+            }
 
             if (IsServer)
             {
@@ -599,6 +622,13 @@ namespace NewCss
 
         private void ApplyUpgradeEffect(EntryUI entry, int level)
         {
+            string effectId = entry.Definition.effectId;
+            if (!string.IsNullOrEmpty(effectId))
+            {
+                PerkEffect.Apply(effectId, level, BuildPerkContext());
+                return;
+            }
+
             string upgradeName = entry.Definition.displayName;
 
             switch (upgradeName)
@@ -652,6 +682,24 @@ namespace NewCss
                 Quest.QuestManager.Instance.SetQuestTier(level);
                 LogDebug($"Quest tier set to {level}");
             }
+        }
+
+        /// <summary>
+        /// PerkEffect.Apply çağrısı için mevcut manager referanslarından bir PerkContext kurar.
+        /// Not: HandleUpgradeLevelsChanged tüm client'larda tetiklenir (mevcut mimari); bu yüzden
+        /// PerkEffect metodları idempotent olmalı (level'dan mutlak değer hesaplar, += yapmaz).
+        /// </summary>
+        private PerkContext BuildPerkContext()
+        {
+            return new PerkContext
+            {
+                Truck = Truck,
+                CustomerManager = CustomerManager,
+                PlayerMovement = PlayerMovement,
+                Economy = economySettings,
+                DayCycle = DayCycleManager.Instance,
+                Panel = this,
+            };
         }
 
         #endregion
@@ -744,11 +792,38 @@ namespace NewCss
             var eligibility = BuildEligibility(currentDay, out _);
 
             var rng = new System.Random(unchecked(currentDay * 73856093));
-            var offer = DraftPool.SelectOffer(eligibility, DraftPool.OFFER_COUNT, rng);
+            var offer = DraftPool.SelectOffer(eligibility, DraftPool.OFFER_COUNT, rng, BuildExclusionGroups());
 
             _dailyOffer.Clear();
             foreach (var idx in offer) _dailyOffer.Add(idx);
             _rerollCountToday.Value = 0;
+
+            ApplyPendingBulkBuyDiscount();
+        }
+
+        /// <summary>
+        /// Toplu Alım (bulk_buy) perki: bir önceki gün işaretlendiyse, o günkü teklifteki
+        /// rastgele 1 karta -%50 indirim uygular (server-only, tek kullanımlık).
+        /// </summary>
+        private void ApplyPendingBulkBuyDiscount()
+        {
+            if (_pendingBulkBuyDiscount && _dailyOffer.Count > 0)
+            {
+                int discountIndex = _dailyOffer[UnityEngine.Random.Range(0, _dailyOffer.Count)];
+                _discountedUpgradeIndex.Value = discountIndex;
+                _pendingBulkBuyDiscount = false;
+            }
+            else
+            {
+                _discountedUpgradeIndex.Value = -1;
+            }
+        }
+
+        /// <summary>Toplu Alım (bulk_buy) etkisi: PerkEffect.cs tarafından çağrılır (server-only).</summary>
+        public void MarkNextDraftDiscount()
+        {
+            if (!IsServer) return;
+            _pendingBulkBuyDiscount = true;
         }
 
         /// <summary>
@@ -759,17 +834,70 @@ namespace NewCss
         {
             maxUnlocked = DraftPool.MaxUnlockedTier(currentDay);
             bool questActive = _questSystemActive.Value;
+            var exclusionGroups = BuildExclusionGroups();
 
             var eligibility = new List<bool>(upgrades.Count);
             for (int i = 0; i < upgrades.Count; i++)
             {
                 var def = upgrades[i];
                 int visLevel = GetVisualLevel(i);
-                eligibility.Add(DraftPool.IsEligible(
+                bool eligible = DraftPool.IsEligible(
                     i, def.tier, def.kind, def.requiresQuestSystem,
-                    visLevel, def.maxLevel, maxUnlocked, questActive));
+                    visLevel, def.maxLevel, maxUnlocked, questActive);
+
+                // Kalıcı dışlama (a): grup arkadaşlarından biri zaten satın alındıysa
+                // (level>0), bu perk bir daha hiçbir teklifte/reroll'da çıkmaz.
+                if (eligible && IsBlockedByOwnedGroupMate(i, exclusionGroups))
+                    eligible = false;
+
+                eligibility.Add(eligible);
             }
             return eligibility;
+        }
+
+        /// <summary>
+        /// index, kendi dışlama grubundaki başka bir perk zaten satın alınmış (level>0) olduğu
+        /// için eleniyor mu? Simetrik: hangi taraf önce alınırsa alınsın diğeri hemen kilitlenir.
+        /// </summary>
+        private bool IsBlockedByOwnedGroupMate(int index, List<IReadOnlyList<int>> exclusionGroups)
+        {
+            foreach (var group in exclusionGroups)
+            {
+                if (!group.Contains(index)) continue;
+                foreach (var other in group)
+                {
+                    if (other != index && GetVisualLevel(other) > 0) return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// EXCLUSIVE_EFFECT_GROUPS'taki effectId'leri <see cref="upgrades"/> listesindeki index'lere
+        /// çevirir (case/whitespace toleranslı eşleşme). DraftPool saf mantığına effectId string'i
+        /// sızmaz — yalnızca index grupları geçilir. Bir grupta 2'den az index bulunursa
+        /// (perk eksik/henüz eklenmemiş) DraftPool tarafında otomatik etkisiz kalır.
+        /// </summary>
+        private List<IReadOnlyList<int>> BuildExclusionGroups()
+        {
+            var groups = new List<IReadOnlyList<int>>();
+            foreach (var effectIds in EXCLUSIVE_EFFECT_GROUPS)
+            {
+                var indices = new List<int>();
+                foreach (var effectId in effectIds)
+                {
+                    for (int i = 0; i < upgrades.Count; i++)
+                    {
+                        if (string.Equals(upgrades[i].effectId?.Trim(), effectId, StringComparison.OrdinalIgnoreCase))
+                        {
+                            indices.Add(i);
+                            break;
+                        }
+                    }
+                }
+                if (indices.Count >= 2) groups.Add(indices);
+            }
+            return groups;
         }
 
         /// <summary>
@@ -825,7 +953,7 @@ namespace NewCss
 
             // reroll sayacını seed'e kat → farklı sonuç
             var rng = new System.Random(unchecked((currentDay * 73856093) ^ ((_rerollCountToday.Value + 1) * 19349663)));
-            var offer = DraftPool.SelectOffer(eligibility, DraftPool.OFFER_COUNT, rng);
+            var offer = DraftPool.SelectOffer(eligibility, DraftPool.OFFER_COUNT, rng, BuildExclusionGroups());
 
             _dailyOffer.Clear();
             foreach (var idx in offer) _dailyOffer.Add(idx);
@@ -875,8 +1003,9 @@ namespace NewCss
             int currentVisualLevel = GetVisualLevel(upgradeIndex);
 
             if (currentVisualLevel >= upgrade.maxLevel) return false;
+            if (IsBlockedByOwnedGroupMate(upgradeIndex, BuildExclusionGroups())) return false;
 
-            finalCost = CalculateFinalCost(upgrade, currentVisualLevel);
+            finalCost = CalculateFinalCost(upgradeIndex, upgrade, currentVisualLevel);
 
             return MoneySystem.Instance != null && MoneySystem.Instance.CurrentMoney >= finalCost;
         }
@@ -890,14 +1019,28 @@ namespace NewCss
             int currentVisualLevel = GetVisualLevel(upgradeIndex);
 
             if (currentVisualLevel >= upgrade.maxLevel) return;
-            if (MoneySystem.Instance == null || MoneySystem.Instance.CurrentMoney < cost) return;
+
+            // Edge-case guard: iki dışlanan perk aynı teklifte (satın alınmadan önce) çıkabilir.
+            // Biri az önce alındıysa, aynı anda ekranda kalan diğerinin satın alınması reddedilir
+            // (server-authoritative) — kararı ("(a) Dışlama") ihlal etmesin.
+            if (IsBlockedByOwnedGroupMate(upgradeIndex, BuildExclusionGroups())) return;
+
+            // Server kendi maliyetini yeniden hesaplar (client'tan gelen cost sadece UI amaçlı geçilir).
+            int serverCost = CalculateFinalCost(upgradeIndex, upgrade, currentVisualLevel);
+            if (MoneySystem.Instance == null || MoneySystem.Instance.CurrentMoney < serverCost) return;
 
             // Process purchase
-            MoneySystem.Instance.SpendMoney(cost);
+            MoneySystem.Instance.SpendMoney(serverCost);
 
             if (upgradeIndex < _visualUpgradeLevels.Count)
             {
                 _visualUpgradeLevels[upgradeIndex] = currentVisualLevel + 1;
+            }
+
+            // Toplu Alım (bulk_buy) indirimi bir kez kullanılır — tüketildi.
+            if (_discountedUpgradeIndex.Value == upgradeIndex)
+            {
+                _discountedUpgradeIndex.Value = -1;
             }
 
             // Add pending upgrade
@@ -911,10 +1054,17 @@ namespace NewCss
 
         #region Cost Calculation
 
-        private int CalculateFinalCost(UpgradeDefinition upgrade, int currentLevel)
+        private int CalculateFinalCost(int upgradeIndex, UpgradeDefinition upgrade, int currentLevel)
         {
             float costMultiplier = GetCostMultiplier();
             int baseCost = upgrade.baseCost + currentLevel * upgrade.costStep;
+
+            // Toplu Alım (bulk_buy) perki: sonraki taslakta işaretlenen 1 kart -%50.
+            if (_discountedUpgradeIndex.Value == upgradeIndex)
+            {
+                baseCost = Mathf.RoundToInt(baseCost * 0.5f);
+            }
+
             return Mathf.RoundToInt(baseCost * costMultiplier);
         }
 
@@ -1157,9 +1307,9 @@ namespace NewCss
 
         private void UpdateEntryUIForPurchasable(EntryUI entry, int currentVisualLevel)
         {
-            float costMultiplier = GetCostMultiplier();
             int baseCost = entry.Definition.baseCost + currentVisualLevel * entry.Definition.costStep;
-            int finalCost = Mathf.RoundToInt(baseCost * costMultiplier);
+            int finalCost = CalculateFinalCost(entry.UpgradeIndex, entry.Definition, currentVisualLevel);
+            bool hasDiscount = finalCost < baseCost;
 
             string costTemplate = LocalizationHelper.GetLocalizedString(LOC_KEY_COST);
             string costText;
@@ -1173,7 +1323,7 @@ namespace NewCss
             }
 
             // Show cost with discount if applicable
-            if (costMultiplier < 1f)
+            if (hasDiscount)
             {
                 entry.CostText.text = $"<color=green>{costText}</color> <color=red><s>{baseCost}</s></color>";
             }

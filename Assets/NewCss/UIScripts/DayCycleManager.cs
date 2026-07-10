@@ -77,6 +77,12 @@ namespace NewCss
         private int   rentIntervalDays    => economySettings != null ? economySettings.rentIntervalDays    : 4;
         private float gracePaymentPercent => economySettings != null ? economySettings.gracePaymentPercent : 0.8f;
 
+        // ── Acil Fren perki (emergency_brake) — server-authoritative, tek kullanımlık ──
+        private const float EMERGENCY_BRAKE_PRESTIGE_PENALTY = -5f;
+
+        /// <summary>Acil Fren perki satın alındığında true olur; bir kez tetiklenip tükenir.</summary>
+        public bool insuranceAvailable = false;
+
         #endregion
 
         #region Network Variables
@@ -532,6 +538,18 @@ namespace NewCss
                 _graceUsed = true;
                 _rentPaymentCount++;
                 Debug.Log($"{LOG_PREFIX} Grace period used. Took {graceAmount} ({gracePaymentPercent * 100}% of {currentMoney}). Needed: {rentAmount}");
+            }
+            else if (insuranceAvailable)
+            {
+                // Acil Fren perki: iflası bir kez önler, tükenir. O günün geliri sıfırlanmış sayılır
+                // (para zaten yetersizdi) ve prestij cezası uygulanır — bedelsiz değil.
+                insuranceAvailable = false;
+                if (PrestigeManager.Instance != null)
+                {
+                    PrestigeManager.Instance.ModifyPrestige(EMERGENCY_BRAKE_PRESTIGE_PENALTY);
+                }
+                _rentPaymentCount++;
+                Debug.Log($"{LOG_PREFIX} Emergency Brake perk consumed. Rent {rentAmount} waived, prestige penalty {EMERGENCY_BRAKE_PRESTIGE_PENALTY} applied.");
             }
             else
             {

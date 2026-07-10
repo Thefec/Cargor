@@ -581,10 +581,28 @@ namespace NewCss
             int baseReward = rewardPerBox;
             int prestigeBonus = CalculatePrestigeBonus();
             int totalReward = baseReward + prestigeBonus;
+            totalReward = ApplyRewardVolatility(totalReward);
 
             LogDebug($"Base: {baseReward}, Prestige Bonus: {prestigeBonus}, Total: {totalReward}");
 
             return totalReward;
+        }
+
+        /// <summary>
+        /// Yuksek Volatilite perki (high_volatility): server-only per-delivery RNG.
+        /// economySettings.rewardVolatility=0 ise etkisiz (varsayilan). Ortalama her zaman
+        /// rewardVolatilityMean etrafinda pozitif kalir (rapor SS4.2 - EV her zaman pozitif).
+        /// </summary>
+        private int ApplyRewardVolatility(int reward)
+        {
+            if (!IsServer || economySettings == null) return reward;
+
+            float volatility = economySettings.rewardVolatility;
+            if (volatility <= 0f) return reward;
+
+            float mean = economySettings.rewardVolatilityMean;
+            float randomFactor = mean + UnityEngine.Random.Range(-volatility, volatility);
+            return Mathf.Max(0, Mathf.RoundToInt(reward * randomFactor));
         }
 
         private int CalculatePrestigeBonus()

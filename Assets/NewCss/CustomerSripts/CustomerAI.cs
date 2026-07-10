@@ -394,7 +394,9 @@ namespace NewCss
 
         private void InitializeServerState()
         {
-            _actualWaitTime = Random.Range(minWaitTime, maxWaitTime);
+            // Sabirli Musteriler perki (patient_customers): CustomerManager.patienceMultiplier ile olceklenir (default 1f).
+            float patienceMultiplier = manager != null ? manager.patienceMultiplier : 1f;
+            _actualWaitTime = Random.Range(minWaitTime, maxWaitTime) * patienceMultiplier;
 
             if (manager != null && HasValidProductPrefabs())
             {
