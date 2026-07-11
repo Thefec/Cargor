@@ -273,6 +273,50 @@ namespace NewCss
             RefreshAllUpgradeUI();
         }
 
+        /// <summary>
+        /// Reconnect/geç-join fix: NGO'nun NetworkList.OnListChanged'i geç-join eden client'a
+        /// mevcut elemanları replay ETMEZ (yalnızca yeni değişiklikleri bildirir). Bu yüzden
+        /// spawn anında zaten level>0 olan her perk'in efektini burada elle uyguluyoruz.
+        /// InitializeBaseValues'tan SONRA çağrılmalı — aksi halde base init, burada uygulanan
+        /// mutlak değerleri ezer. Tüm Apply yolları (PerkEffect.Apply + ApplyXUpgrade) level'dan
+        /// mutlak değer hesaplar (+= yok), bu yüzden fresh spawn'da (tüm level=0) no-op ve
+        /// tekrar tekrar çağrılsa da güvenlidir (idempotent).
+        /// </summary>
+        private void ReplayPurchasedUpgradeLevels()
+        {
+            for (int i = 0; i < _upgradeLevels.Count; i++)
+            {
+                int level = _upgradeLevels[i];
+                if (level <= 0) continue;
+                ReplayUpgradeLevel(i, level);
+            }
+        }
+
+        /// <summary>
+        /// Bir upgrade index'i için efekt+görsel+özel-durum uygulamasını yapan ortak adım.
+        /// Hem canlı <see cref="HandleUpgradeLevelsChanged"/> event'i hem de geç-join replay'i
+        /// (<see cref="ReplayPurchasedUpgradeLevels"/>) bunu çağırır — davranış tek yerde.
+        ///
+        /// NOT (kapsam-içi düzeltme): eski kod burada <c>_entries[upgradeIndex]</c> pozisyonel
+        /// erişimi kullanıyordu, ama <see cref="_entries"/> yalnızca O ANKİ ≤3 kartlık draft
+        /// teklifini tutar (bkz. RebuildDraftEntries) ve sırası gerçek `upgrades` index'iyle
+        /// EŞLEŞMEZ (DraftPool.SelectOffer rastgele karıştırır) — bu da hem canlı satın almada
+        /// hem de yeni replay'de yanlış/eksik efekt uygulanmasına yol açardı. ApplyUpgradeEffect/
+        /// UpdateLevelObjects/HandleSpecialUpgrades yalnızca EntryUI.Definition'a (sahne/veri
+        /// referansı, UI widget'larından bağımsız) ihtiyaç duyduğundan, burada doğrudan
+        /// upgrades[upgradeIndex]'ten kurulan hafif bir EntryUI kullanılıyor — _entries'in o an
+        /// neyi teklif ettiğinden tamamen bağımsız, dolayısıyla her zaman doğru.
+        /// </summary>
+        private void ReplayUpgradeLevel(int upgradeIndex, int newLevel)
+        {
+            if (upgradeIndex < 0 || upgradeIndex >= upgrades.Count) return;
+
+            var entry = new EntryUI { Definition = upgrades[upgradeIndex], UpgradeIndex = upgradeIndex };
+            ApplyUpgradeEffect(entry, newLevel);
+            UpdateLevelObjects(entry, newLevel);
+            HandleSpecialUpgrades(entry, newLevel);
+        }
+
         #endregion
 
         #region Network Lifecycle
@@ -298,6 +342,7 @@ namespace NewCss
             RebuildDraftEntries();
             InitializeLevelObjects();
             InitializeBaseValues();
+            ReplayPurchasedUpgradeLevels();
             SubscribeToDayCycleEvents();
             SubscribeToMoneySystem();
 
@@ -515,12 +560,7 @@ namespace NewCss
             int upgradeIndex = changeEvent.Index;
             int newLevel = changeEvent.Value;
 
-            if (upgradeIndex >= _entries.Count) return;
-
-            var entry = _entries[upgradeIndex];
-            ApplyUpgradeEffect(entry, newLevel);
-            UpdateLevelObjects(entry, newLevel);
-            HandleSpecialUpgrades(entry, newLevel);
+            ReplayUpgradeLevel(upgradeIndex, newLevel);
 
             RefreshAllUpgradeUI();
         }
@@ -958,6 +998,10 @@ namespace NewCss
             _dailyOffer.Clear();
             foreach (var idx in offer) _dailyOffer.Add(idx);
             _rerollCountToday.Value += 1;
+
+            // bulk_buy indirimi rerolled tekliflere taşınmaz — günlük tek kullanımlıktır ve
+            // yeni teklif eski indeksle tesadüfen çakışırsa indirim "sızmasın" diye burada iptal edilir.
+            _discountedUpgradeIndex.Value = -1;
         }
 
         /// <summary>
@@ -1090,27 +1134,6 @@ namespace NewCss
         #endregion
 
         #region UI Building
-
-        private void BuildEntries()
-        {
-            ClearEntries();
-
-            LogDebug($"Building {upgrades.Count} upgrade entries");
-
-            for (int i = 0; i < upgrades.Count; i++)
-            {
-                try
-                {
-                    BuildSingleEntry(i);
-                }
-                catch (Exception ex)
-                {
-                    LogError($"Error building entry for {upgrades[i].displayName}: {ex.Message}");
-                }
-            }
-
-            LogDebug($"Successfully built {_entries.Count} entries");
-        }
 
         private void ClearEntries()
         {

@@ -125,8 +125,7 @@ namespace NewCss
         private static void ApplyLongQueue(int level, PerkContext ctx)
         {
             if (ctx.CustomerManager == null || level <= 0) return;
-            const int baseQueueSize = 3; // CustomerManager.DEFAULT_QUEUE_SIZE (private const, aynı değer)
-            ctx.CustomerManager.maxQueueSize = baseQueueSize + 2;
+            ctx.CustomerManager.maxQueueSize = CustomerManager.DEFAULT_QUEUE_SIZE + 2;
         }
 
         // Kumarbaz Kasası (relic): ödül +%30, ceza +%55. Truck.rewardPerBox/penaltyPerBox gerçek

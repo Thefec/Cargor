@@ -45,6 +45,32 @@ public class DraftPoolTests
     }
 
     [Test]
+    public void SelectOffer_ExclusionGroup_NeverPicksTwoFromSameGroup()
+    {
+        // indices 1 ve 3 aynı dışlama grubunda (gambler_case/all_in gibi) — hiçbir teklifte birlikte olmamalı
+        var eligible = new List<bool> { true, true, true, true, true };
+        var groups = new List<IReadOnlyList<int>> { new List<int> { 1, 3 } };
+        for (int seed = 0; seed < 200; seed++)
+        {
+            var offer = DraftPool.SelectOffer(eligible, 3, new Random(seed), groups);
+            Assert.IsFalse(offer.Contains(1) && offer.Contains(3),
+                $"seed {seed}: dışlama grubu ihlal edildi (1 ve 3 birlikte seçildi)");
+            CollectionAssert.AllItemsAreUnique(offer);
+            foreach (var i in offer) Assert.IsTrue(eligible[i]);
+        }
+    }
+
+    [Test]
+    public void SelectOffer_NullExclusionGroups_MatchesLegacyOverload()
+    {
+        // 4-parametreli overload, gruplar null iken 3-parametreliyle bit-bit aynı sonucu vermeli (determinizm)
+        var eligible = new List<bool> { true, false, true, true, true };
+        var a = DraftPool.SelectOffer(eligible, 3, new Random(777));
+        var b = DraftPool.SelectOffer(eligible, 3, new Random(777), null);
+        CollectionAssert.AreEqual(a, b);
+    }
+
+    [Test]
     public void RerollCurve_MatchesApprovedTable()
     {
         Assert.AreEqual(50,  RerollCurve.CostForReroll(0));
