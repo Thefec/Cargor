@@ -333,6 +333,17 @@ namespace NewCss
             return 1f;
         }
 
+        private PlayerMovement GetOwnedPlayer()
+        {
+            PlayerMovement[] players = FindObjectsOfType<PlayerMovement>();
+            foreach (var player in players)
+            {
+                if (player != null && player.IsOwner)
+                    return player;
+            }
+            return null;
+        }
+
         private void ApplyEventEffectLocally(string eventName)
         {
             if (!eventMultipliers.ContainsKey(eventName))
@@ -359,8 +370,8 @@ namespace NewCss
                 Debug.Log($"Event '{eventName}': Customer multiplier set to {multipliers.dailyCustomerMultiplier}");
             }
 
-            // Apply player movement changes
-            PlayerMovement playerController = FindObjectOfType<PlayerMovement>();
+            // Apply player movement changes (only to THIS peer's owned player)
+            PlayerMovement playerController = GetOwnedPlayer();
             if (playerController != null)
             {
                 eventStartPlayerMoveSpeed = playerController.moveSpeed;
@@ -416,8 +427,8 @@ namespace NewCss
                 customerManager.eventCustomerMultiplier = eventStartEventCustomerMultiplier;
             }
 
-            // Restore player movement
-            PlayerMovement playerController = FindObjectOfType<PlayerMovement>();
+            // Restore player movement (same owned-player selection as apply, avoids drift)
+            PlayerMovement playerController = GetOwnedPlayer();
             if (playerController != null && eventStartPlayerMoveSpeed > 0)
             {
                 playerController.moveSpeed = eventStartPlayerMoveSpeed;
