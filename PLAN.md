@@ -33,6 +33,7 @@ Branch: `feature/roguelite-upgrade-draft`. **Task 0-6 commit'li**, ekonomi kilit
 | Dosya | İçerik | Durum |
 |---|---|---|
 | **[plans/manuel-gorevler.md](plans/manuel-gorevler.md)** | 🙋 **Senin yapacakların** — Unity Play/UI/multiplayer teyitleri | 🔴 Task 4 testi bekliyor |
+| **[plans/release-push.md](plans/release-push.md)** | RELEASE PUSH fazları (FAZ 0 test → FAZ 1 bug envanteri → ekonomi → Steam) | 🚧 FAZ 1 aktif |
 | **[plans/roguelite-draft.md](plans/roguelite-draft.md)** | Aktif: draft sistemi tasarım + uygulama + task listesi | 🚧 canlı |
 | [plans/economy-balance.md](plans/economy-balance.md) | Ekonomi denge (Faz 1, Faz 2, bug'lar) | ✅ çoğu bitti (Unity teyidi) |
 | [plans/roadmap.md](plans/roadmap.md) | Orijinal yol haritası + Sprint 0-3 + departman tablosu | 📖 referans |

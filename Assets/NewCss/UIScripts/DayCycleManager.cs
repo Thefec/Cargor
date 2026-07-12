@@ -642,6 +642,17 @@ namespace NewCss
         [ServerRpc(RequireOwnership = false)]
         public void NextDayServerRpc()
         {
+            // Exploit guard: gun gercekten server tarafinda bitmis olmali
+            // (kira/para kontrolu + break room hazir -> _networkIsDayOver true)
+            // yoksa herhangi bir client bu RPC'yi cagirip elapsedTime'i sifirlayarak
+            // o gunun kira kontrolunu hic calistirmadan gunu atlayabilir.
+            if (!_networkIsDayOver.Value || !_networkIsBreakRoomReady.Value)
+            {
+                Debug.LogWarning($"{LOG_PREFIX} NextDayServerRpc reddedildi: gun henuz bitmedi " +
+                                  $"(IsDayOver={_networkIsDayOver.Value}, IsBreakRoomReady={_networkIsBreakRoomReady.Value})");
+                return;
+            }
+
             NextDay();
         }
 
