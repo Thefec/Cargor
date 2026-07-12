@@ -23,7 +23,7 @@ namespace NewCss
         // List of active events
         private List<string> eventNames = new List<string>
         {
-            "INTENSIVE DAY",
+            "BUSY DAY",
             "DELIVERY BONUS",
             "ANGRY CUSTOMERS",
             "RELAXED DAY",
@@ -33,7 +33,9 @@ namespace NewCss
             "GOLDEN BOX DAY",
             "OPPORTUNITY DAY",
             "FATIGUE PROBLEM",
-            "VIP SERVICE"
+            "VIP SERVICE",
+            "RAINY DAY",
+            "MARKETING DAY"
         };
 
         // Store original values
@@ -101,7 +103,7 @@ namespace NewCss
 
         private void InitializeEventMultipliers()
         {
-            eventMultipliers["INTENSIVE DAY"] = new EventMultipliers
+            eventMultipliers["BUSY DAY"] = new EventMultipliers
             {
                 rewardPerBoxMultiplier = 1f,
                 exitDelayMultiplier = 1f,
@@ -109,7 +111,7 @@ namespace NewCss
                 playerMoveSpeedMultiplier = 1f,
                 playerSprintSpeedMultiplier = 1f,
                 staminaRegenRateMultiplier = 1f,
-                dailyCustomerMultiplier = 1.5f, // 50% more customers per day
+                dailyCustomerMultiplier = 1.3f, // 30% more customers per day
                 isGoldenBoxDay = false,
                 isVIPServiceDay = false,
                 upgradeCostMultiplier = 1f
@@ -252,6 +254,34 @@ namespace NewCss
                 dailyCustomerMultiplier = 1f,
                 isGoldenBoxDay = false,
                 isVIPServiceDay = true,
+                upgradeCostMultiplier = 1f
+            };
+
+            eventMultipliers["RAINY DAY"] = new EventMultipliers
+            {
+                rewardPerBoxMultiplier = 1f,
+                exitDelayMultiplier = 1f,
+                customerWaitTimeMultiplier = 1f,
+                playerMoveSpeedMultiplier = 1f,
+                playerSprintSpeedMultiplier = 1f,
+                staminaRegenRateMultiplier = 1f,
+                dailyCustomerMultiplier = 0.8f, // 20% fewer customers
+                isGoldenBoxDay = false,
+                isVIPServiceDay = false,
+                upgradeCostMultiplier = 1f
+            };
+
+            eventMultipliers["MARKETING DAY"] = new EventMultipliers
+            {
+                rewardPerBoxMultiplier = 0.7f, // 30% less earnings per box
+                exitDelayMultiplier = 1f,
+                customerWaitTimeMultiplier = 1f,
+                playerMoveSpeedMultiplier = 1f,
+                playerSprintSpeedMultiplier = 1f,
+                staminaRegenRateMultiplier = 1f,
+                dailyCustomerMultiplier = 1.2f, // 20% more customers
+                isGoldenBoxDay = false,
+                isVIPServiceDay = false,
                 upgradeCostMultiplier = 1f
             };
         }
