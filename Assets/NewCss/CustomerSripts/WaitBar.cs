@@ -44,7 +44,7 @@ public class WaitBar : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-        
+
         // Subscribe to network variable changes on clients
         if (!IsServer)
         {
@@ -53,6 +53,20 @@ public class WaitBar : NetworkBehaviour
             networkIsActive.OnValueChanged += OnIsActiveChanged;
             networkIsDecreasing.OnValueChanged += OnIsDecreasingChanged;
         }
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        // Unsubscribe from network variable changes on clients
+        if (!IsServer)
+        {
+            networkCurrentWaitTime.OnValueChanged -= OnCurrentWaitTimeChanged;
+            networkMaxWaitTime.OnValueChanged -= OnMaxWaitTimeChanged;
+            networkIsActive.OnValueChanged -= OnIsActiveChanged;
+            networkIsDecreasing.OnValueChanged -= OnIsDecreasingChanged;
+        }
+
+        base.OnNetworkDespawn();
     }
 
     void Start()

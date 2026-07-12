@@ -18,11 +18,11 @@ namespace NewCss
         public PlayerMovement playerMovement;
         
         // Network variables for stamina synchronization
-        private NetworkVariable<float> networkCurrentStamina = new NetworkVariable<float>();
-        private NetworkVariable<float> networkMaxStamina = new NetworkVariable<float>();
-        private NetworkVariable<float> networkCooldownTime = new NetworkVariable<float>();
-        private NetworkVariable<float> networkMaxCooldown = new NetworkVariable<float>();
-        private NetworkVariable<bool> networkIsInCooldown = new NetworkVariable<bool>();
+        private NetworkVariable<float> networkCurrentStamina = new NetworkVariable<float>(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+        private NetworkVariable<float> networkMaxStamina = new NetworkVariable<float>(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+        private NetworkVariable<float> networkCooldownTime = new NetworkVariable<float>(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+        private NetworkVariable<float> networkMaxCooldown = new NetworkVariable<float>(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+        private NetworkVariable<bool> networkIsInCooldown = new NetworkVariable<bool>(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
         
         // Local UI values for smooth animation
         private float displayStamina;
