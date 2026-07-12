@@ -52,14 +52,58 @@ Bulgular (müdür 3'ünü kodda doğruladı):
 
 Temiz: MoneySystem clamp'li (negatif/overflow yok), UpgradePanel satın-alma server-auth (client exploit kapalı), NextDay guard doğru.
 
+### Dilim: Geniş tüm-oyun (Assets/NewCss geneli)  ✅ tarama bitti (2026-07-12, 4 paralel qa)
+Kapsam: truck/box/shelf akışı · müşteri/kuyruk/prestij · envanter/karakter · para-UI/event/sistemler. Netcode & çekirdek-döngü dilimleri ayrı (yukarıda). **Kod DEĞİŞTİRİLMEDİ — salt bulgu; hiçbiri onaylı/uygulanmadı.**
+
+> **🔴 BASKIN TEMA — sistemik:** Kod tabanı boyunca `[ServerRpc(RequireOwnership=false)]` + **server-side yetki/kaynak doğrulaması YOK** deseni yaygın. Client'tan gelen ham değere güvenilerek para/prestij/state mutasyonu yapılıyor. Özel Steam co-op'ta (arkadaşlar arası) exploit riski görecelidir, ama tek noktadan (G1) çok sayıda türev besleniyor. **Merge/çıkış öncesi karar gerektiren #1 tema.** Ayrıca **G8 bir exploit DEĞİL, gerçek korrektlik hatası** — satın alınan bir perki + GDD ekonomisini sessizce kırıyor; en yüksek öncelikli non-exploit bulgu.
+
+**P0 — CRITICAL:**
+- [~] **G1** KISMİ — `MoneySystem.cs`. **G1-a ✅ (`9bc4141`, kontrol ONAY):** `SetMoneyServerRpc`+`ResetMoneyServerRpc` silindi, `SetMoney`/`ResetMoney` server-only → en tehlikeli exploit (`SetMoney(999999999)`) kapandı; çağıran-analizi (DifficultyManager server-only, ResetMoney 0 çağıran) doğrulandı. **G1-b ⬜ (Play-test'e bağlı):** `ModifyMoneyServerRpc(delta)` ham-delta hâlâ açık; tek meşru client-çağıranı **BoxFallPenalty (G16)** — kaldırmak için BoxFallPenalty server-auth yapılmalı, **kutu-ownership fizik modeli Play-test'te doğrulanmalı** (server mi client mi collision simüle ediyor?). G16 ile birlikte ele alınacak. Kod: MoneySystem'e açıklayıcı yorum kondu.
+- [ ] **G2** `Truck.cs:481-497` `HandleDeliveryServerRpc(boxType,isFull)` — fiziksel teslim kanıtı yok → modifiye client RPC'yi `requiredCargo` kez çağırıp kutu taşımadan tam ödül+prestij toplar. Fix: trigger'ın server-only iç metodu + NetworkObjectId consume doğrulaması.
+- [x] **G3** ✅ (`f9a3f1b`, kontrol ONAY) `PhoneCallManager.cs:342-394` `RequestCallServerRpc` — `maxCallsPerHour`/`postCallCooldown` sadece client-side → RPC spam'i = bedava `callReward` para + `timeSkipAmount` zaman atlama. Fix: server-side clientId→son-çağrı takibi.
+- [x] **G4** ✅ (`1374a62`) `EventEffectManager.cs:495-506` `TestEventServerRpc(eventIndex)` — herhangi client istediği ekonomik event'i (deliver bonus / ucuz upgrade) aktive eder, takvimi bypass. **Ucuz fix:** dev-build guard veya RPC'yi tamamen sil.
+- [x] **G8** ✅ (`8a74238`, kontrol ONAY) `CustomerManager.cs:656-679` (SpawnCustomer) — `networkObject.Spawn()` `CustomerAI.InitializeServerState`'i SENKRON tetikliyor ama `ai.manager` ataması Spawn'DAN SONRA (`SetupCustomerAI`, 676) → init sırasında `manager==null`. Sonuç: **Sabırlı Müşteriler perki hiç uygulanmıyor** (`patienceMultiplier` hep 1) + ürün-tekrar engeli & "tır rengine uygun deterministic loot" (GDD ekonomisi) **tamamen devre dışı**, düz Random fallback'e düşüyor. **Ucuz fix:** `ai.manager=this` atamasını `Spawn()`'dan önce al. **exploit değil — gerçek regresyon.**
+- [x] **G14** ✅ (`60e767b`) `NetworkStaminaBarUI.cs:110-114` — non-host owner client her frame Server-write `NetworkVariable`'lara yazıyor (writePerm belirtilmemiş=Server) → her frame write-permission ihlali/exception spam + stamina hiç senkron olmayabilir. **Ucuz fix:** NetworkVariable'ları `WritePermission.Owner` yap veya ServerRpc-relay.
+
+**P1 — ÖNEMLİ:**
+- [x] **G5** ✅ (`8a74238`) `CustomerManager.cs:1009-1019` `RequestCustomerSpawnServerRpc` — ŞU AN çağıran yok (ölü kod) ama açık RPC → sınırsız müşteri/prestij farm + `_customersRemainingToday` negatife düşer. **Ucuz fix:** kullanılmayan RPC'yi sil.
+- [ ] **G6** `ShelfState.cs:494-525` `PlaceItemOnShelfServerRpc` — itemRef'in çağıranın envanterinde olduğu doğrulanmıyor (normal akış kullanmıyor ama public) → başka kutunun ref'iyle teleport/dupe. Fix: envanter-sahiplik kontrolü veya public RPC'yi kaldır.
+- [ ] **G7** `PlayerInventory.Interaction.cs:650-690` `ClearCurrentItemServerRpc`/`SetInventoryStateServerRpc`/`GiveItemDirectlyServerRpc` — hepsi `RequireOwnership=false`, `Sender==Owner` kontrolü yok → client başka oyuncunun envanterini zorla temizler (dupe/kayıp race). Fix: `rpcParams.Receive.SenderClientId==OwnerClientId`.
+- [ ] **G9** `EventCalendarUI.cs:162-178` vs `EventEffectManager.cs:24-37` — takvimde 17 event, effect-manager 11 tanıyor → 7 event (%41) HİÇBİR mekanik etki üretmiyor (örn "RAINY DAY %20 az müşteri" uygulanmıyor), oyuncuya yanlış vaat. Fix: iki listeyi birleştir / eksik multiplier'ları tanımla.
+- [ ] **G10** `EventEffectManager.cs:428-467` `ApplyEventEffectToNewObject` — hiçbir yerden çağrılmıyor → event başladıktan SONRA spawn olan truck/customer multiplier almıyor, etki gün içinde sönüyor. Fix: TruckSpawner/CustomerManager spawn noktasına çağrı ekle.
+- [ ] **G11** `EventCalendarUI.cs:607-635` `GenerateInitialEvents` — takvim her client'ta bağımsız `Random` ile üretiliyor (senkron yok) → host/client'lar aynı güne FARKLI event görür (gerçek etki server-auth ama gösterilen takvim yanıltıcı). Fix: server üret + `NetworkList`/seed senkronu.
+- [ ] **G12** `EventEffectManager.cs:333,390` — event oyuncu-efektleri `FindObjectOfType<PlayerMovement>()` → co-op'ta tek (deterministik olmayan) oyuncuya uygulanıyor; HEAVY BOXES/FATIGUE vb. diğerlerine hiç. Fix: `FindObjectsOfType` döngüsü veya her client kendi `IsOwner` local'ini hedefler.
+- [ ] **G16** `BoxFallPenalty.cs:93-194` — düz MonoBehaviour, `IsServer` guard'ı YOK, doğrudan `MoneySystem.SpendMoney`/`ModifyPrestige` çağırıyor → fizik her peer'de simüle ediliyorsa ceza N kez (client sayısı kadar) uygulanır. `penaltyApplied` sadece instance-içi. Fix: `NetworkBehaviour`+`if(!IsServer)return`. (prefab Rigidbody/NetworkTransform ownership'i doğrulanmalı → latent/P1.)
+- [x] **G17** ✅ (`1374a62`) `TruckTrigger.cs:50` — kutuyu `Destroy(other.gameObject)` ile yok ediyor, NetworkObject `Despawn()` etmiyor → client'larda hayalet kutu / stale ref NRE. Fix: `NetworkObject.Despawn(true)`, yoksa Destroy fallback (BoxDestroyOnCollisionNetcode paterni hazır).
+- [x] **G18** ✅ (`8a74238`) `CustomerManager.cs:33-43,260-269` — singleton guard `Destroy(gameObject)` çağırıyor ama `Start()` `if(Instance!=this)return` içermiyor → yok edilecek 2. instance'ın `Start()`'ı static `OnNewDay` event'ine abone olup destroyed-MonoBehaviour leak yaratır. **Ucuz fix.**
+
+**P2 — KÜÇÜK / latent:**
+- [ ] **G13** `EventEffectManager.cs:359-362,449-452` — VIP %10 bonus RNG her peer'de bağımsız → UI'da gösterilen ödül ile ödenen tutmayabilir. Fix: server RNG + senkron.
+- [ ] **G15** `PlayerMovement.cs:194-207` + stamina — hareket/stamina TAMAMEN client-authoritative, server doğrulaması yok (hız/stamina hack). Muhtemelen bilinçli co-op kararı → **kullanıcı teyidi:** kabul mü, yoksa iş kolu mu? Fix maliyeti yüksek (server-auth movement refactor).
+- [ ] **G19** `PlayerInventory.cs:369-376` — static `s_cleanupStarted`/`s_itemPickupLocks` host restart/sahne geçişinde resetlenmiyor → yeni session'da lock-cleanup başlamayabilir / stale lock.
+- [x] **G20** ✅ (`60e767b`) `WaitBar.cs:44-56` — `OnNetworkDespawn` yok, `OnValueChanged` unsubscribe eksik (PrestigeManager/CustomerAI'da doğru). Pooling'e geçilirse leak. Ucuz.
+- [x] **G21** ✅ (`60e767b`) `MoneyUI.cs:10-27` — `Initialize()`+`Start()` ikisi de `OnMoneyChanged`'e abone → çift subscribe, `UpdateText` 2× çalışır, `OnDestroy` 1× `-=` → askıda abonelik. Ucuz.
+- [x] **G22** ✅ (`1374a62`) `Truck.cs:596-606` `ApplyRewardVolatility` — `rewardVolatility<=0` (varsayılan) yolunda reward clamp'siz dönüyor; negatif-reward koruması sadece volatility açıkken. Savunma amaçlı her koşulda `Mathf.Max(0,reward)`. Ucuz.
+- [ ] **G23** `CustomerAI.cs:870-877` — `wrongProductPrestigePenalty` "yanlış ürün" adında ama tetiği `PlaceProductOnDropOffTable()==null` (masa dolu) → oyuncu masa dolu diye haksız prestij cezası yiyebilir. İsimlendirme/tasarım gözden geçir.
+- [ ] **G24** `EscapeMenuManager.cs:471-475,526-530` — bir oyuncunun ESC'si `MenuActionClientRpc` ile TÜM client'larda menü açıp `Time.timeScale=0` (global pause). Co-op "birlikte durak" kastı mı? **Teyit et**, değilse local yap.
+- [ ] **G25** `StaminaBarUI.cs:25` — legacy `FindObjectOfType<PlayerMovement>()` yanlış oyuncuyu gösterebilir; kod tabanında referans bulunamadı → muhtemelen ölü (NetworkStaminaBarUI ile değişmiş). **Kullanımda mı, silinsin mi?**
+- [ ] **G26** `PlayerInventory.Visual.cs:335-348`+`NetworkWorldItem.cs:117-125` — her pickup/drop/sync'te `Resources.LoadAll<ItemData>("Items")` + lineer arama; item sayısı büyürse perf. Fix: static `Dictionary<int,ItemData>` cache.
+- [ ] **G27** `TimeBasedLightController.cs` — dosya adı ≠ sınıf adı (`AutoLightController`). Kozmetik, gelecekte yanlış dosya riski.
+- [ ] **G28** `PlayerInventory.Visual.cs:312-325`+`Interaction.cs:527-528` — normal drop, salt-görsel `_heldItemVisual`'dan `isFull`/`boxType` kopyalıyor; saf dedicated-server'da (host-client değil) drop edilen kutu prefab-default state'le spawn olur, gerçek dolu/boş kaybolur. Host-client (Steam P2P) sürdükçe etki düşük; dedicated'a geçilirse state kaybı.
+
+**İncelenip TEMİZ bulunanlar:** shelf/table lock sistemi (despawn/null/try-catch savunmacı) · `PrestigeManager.ModifyPrestigeServerRpc` server-only guard doğru · `CustomerAI.RequestInteractionServerRpc` sender-sahtecilik + mesafe + çift-tetik kontrolü tam · `CompleteInteraction` timeout race'i doğru · kuyruk yönetimi maxQueueSize aşımına izin vermiyor · `NotifyCustomerDone` idempotent · `PhoneCallManager` mesai-saati/unspawned kontrolü server-side.
+
 ### Sonraki dilimler (sırasız)
 - Roguelite upgrade (merge öncesi son regresyon taraması).
-- Geniş tüm-oyun (Assets/NewCss geneli).
 
 ---
 
 ## FAZ 2 — Ekonomi + GDD sistem-boşluğu  ⬜ (bekliyor)
 Ekonomi dengesi + GDD'de tanımlı ama kodda eksik/yarım sistemler.
+
+### KARAR bekleyen (economist memo, 2026-07-12) — kullanıcı seçsin:
+- **C1 (E3) kota-ölümü ölü kod** → **economist ÖNERİSİ:** aktive et AMA kira gibi **iki kademeli tampon** (1. kaçırma=uyarı+küçük prestij cezası, 2. üst üste=game over). Alt: (A2) ilk kaçırmada hard game-over (GDD harfiyen, riskli, 16-gün sim şart), (A3) hiç açma sadece soft-uyarı. Dokunulan: `DayCycleManager.ProcessDayEnd()` (~475-503) + `QuotaManager.OnQuotaFailed` sayaç.
+- **C5 (E5) wealthTax hep 0** → **economist ÖNERİSİ:** ölü terimi **kaldır** (sıfır regresyon; zaten hiç çalışmıyor). `Buy()`'ı canlıya bağlamak 1P kirasını ~%131 artırır = `rent_death_spiral` riski. Alt: (A2) bağla ama oran 0.1→0.02-0.03 + 16-gün sim. Dokunulan: `GameEconomySettings.cs:118-124`, `DayCycleManager.cs:582-599`. Not: kaldırılırsa `UpgradeManager.cs`/`ItemType.cs`/`UpgradeAssets.cs` ölü mü ayrıca bakılmalı.
 
 ## FAZ 3 — Steam çıkışı  ⬜ (bekliyor)
 Build paritesi, depot/setlive ([[cargor-steam-deploy]]), store hazırlığı.
