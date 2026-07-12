@@ -90,6 +90,11 @@ namespace NewCss
             }
         }
 
+        // G1-b (Play-test'e bagli, ACIK): Bu RPC hala client'tan gelen ham
+        // delta'ya guveniyor. Tek mesru client-cagirani BoxFallPenalty (G16,
+        // MonoBehaviour, her fizik-peer'inde calisiyor). Kaldirmak icin once
+        // BoxFallPenalty server-authoritative yapilmali (kutu-ownership fizik
+        // modeli Play-test'te dogrulanmali). O yapilana kadar delta acik kaliyor.
         [ServerRpc(RequireOwnership = false)]
         private void ModifyMoneyServerRpc(int delta)
         {
@@ -110,41 +115,34 @@ namespace NewCss
             return _currentMoney.Value >= amount;
         }
 
-        /// <summary>Reset money to starting amount (Server only)</summary>
+        /// <summary>
+        /// Reset money to starting amount. SERVER-ONLY: para NetworkVariable'i
+        /// server-authoritative; client'tan cagrilirsa no-op (deger zaten
+        /// server'dan replike olur). Tum cagiranlar server-context dogrulandi.
+        /// </summary>
         public void ResetMoney()
         {
-            if (IsServer)
+            if (!IsServer)
             {
-                _currentMoney.Value = startingMoney;
+                Debug.LogWarning("MoneySystem.ResetMoney client'tan cagrildi — yok sayildi (server-only).");
+                return;
             }
-            else
-            {
-                ResetMoneyServerRpc();
-            }
-        }
-
-        [ServerRpc(RequireOwnership = false)]
-        private void ResetMoneyServerRpc()
-        {
             _currentMoney.Value = startingMoney;
         }
 
-        /// <summary>Set money to specific amount (Server only)</summary>
+        /// <summary>
+        /// Set money to specific amount. SERVER-ONLY (bkz. ResetMoney). Onceki
+        /// SetMoneyServerRpc (RequireOwnership=false) herhangi client'in parayi
+        /// istedigi degere set etmesine izin veriyordu (G1 exploit) — kaldirildi.
+        /// Tek mesru cagiran DifficultyManager.ApplyMoneySettings zaten server-only.
+        /// </summary>
         public void SetMoney(int amount)
         {
-            if (IsServer)
+            if (!IsServer)
             {
-                _currentMoney.Value = Mathf.Max(0, amount);
+                Debug.LogWarning("MoneySystem.SetMoney client'tan cagrildi — yok sayildi (server-only).");
+                return;
             }
-            else
-            {
-                SetMoneyServerRpc(amount);
-            }
-        }
-
-        [ServerRpc(RequireOwnership = false)]
-        private void SetMoneyServerRpc(int amount)
-        {
             _currentMoney.Value = Mathf.Max(0, amount);
         }
     }
