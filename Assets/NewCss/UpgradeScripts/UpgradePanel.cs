@@ -1088,7 +1088,7 @@ namespace NewCss
             }
 
             // Add pending upgrade
-            int currentDay = DayCycleManager.Instance.currentDay;
+            int currentDay = DayCycleManager.Instance != null ? DayCycleManager.Instance.currentDay : 1;
             _pendingUpgrades.Add(new NetworkPendingUpgrade(upgrade.displayName, currentVisualLevel + 1, currentDay));
 
             RefreshUpgradePricesClientRpc();
