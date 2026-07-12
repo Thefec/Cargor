@@ -591,10 +591,20 @@ namespace NewCss
         }
 
         /// <summary>
-        /// Bağlı oyuncu sayısını döndürür
+        /// Kira hesabı için oyuncu sayısını döndürür.
+        /// Tek doğruluk kaynağı server-authoritative roster'dır (GameStateManager._playerRoster,
+        /// Break Room / Win-Lose ekranlarının da okuduğu kaynak). ConnectedClientsList anlık
+        /// bağlantı listesidir ve kira tick'inden hemen önce disconnect olan bir oyuncu yüzünden
+        /// roster ile tutarsız düşebilir (bkz. N7); bu yüzden yalnızca roster erişilemezse/boşsa
+        /// fallback olarak kullanılır.
         /// </summary>
         private int GetPlayerCount()
         {
+            if (GameStateManager.Instance != null && GameStateManager.Instance.RosterPlayerCount > 0)
+            {
+                return GameStateManager.Instance.RosterPlayerCount;
+            }
+
             if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
             {
                 return NetworkManager.Singleton.ConnectedClientsList.Count;

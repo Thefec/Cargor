@@ -36,7 +36,7 @@ Salt-okunur qa taramaları → önceliklendirilmiş bulgu listesi → onaylı d�
 **P1 — ÖNEMLİ, tutarlılık:**
 - [ ] **N5** `SteamManager.cs:714-753` hook'ları (`HookNetworkDiagnostics`/`HookLateJoinRejectionHandler`) `NetworkManager.Singleton` callback'lerine abone; SteamManager DontDestroyOnLoad DEĞİL (grep: 0 çağrı) → `OnDisable`'da unsubscribe yok → sahne geçişinde dangling delegate, `MissingReferenceException`, tekrarlı host/join'de katlanan abonelik. → **late-join finalizasyonuna dahil et.**
 - [ ] **N6** `SteamManager.cs:1849-1866` (`NotifyBreakRoomManager`, çağrı 500/516/1362/1718) — ham Steam lobi Members → `requiredPlayers` ikinci yazma yolu; roster tek-kaynak yorumunu (`DayCycleManager.cs:701-704`) çiğniyor.
-- [ ] **N7** `DayCycleManager.cs:596-603` (`GetPlayerCount`→`CalculateRent`) — kira `ConnectedClientsList.Count` kullanıyor, roster değil → rent tick öncesi disconnect kirayı düşürür (exploit/tutarsızlık). *(ekonomi değeri değil, doğruluk; yine de otorite kaynağı kararı not.)*
+- [x] **N7** `DayCycleManager.cs:601-613` `GetPlayerCount` → roster otorite (`GameStateManager.RosterPlayerCount`, BreakRoomManager ile aynı desen), fallback ConnectedClients→1. Kira formülü değişmedi. **kontrol ONAY, commit'li.** ✅
 **P2 — KÜÇÜK / latent:**
 - [ ] **N8** `LateJoinGuard.cs:139` kapasite TOCTOU (teorik, düşük).
 - [ ] **N9** `GameStateManager.cs:102-119` `ApplyGameEndState` switch'te `None` case yok (latent).
