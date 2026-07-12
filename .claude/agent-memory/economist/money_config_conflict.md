@@ -1,9 +1,11 @@
 ---
 name: money-config-conflict
-description: Cargor'da baslangic parasi icin uc farkli, birbiriyle celisen kaynak var
+description: (COZULDU 2026-07-12) Cargor'da baslangic parasi icin uc farkli kaynak celisiyordu, artik senkron
 metadata:
   type: project
 ---
+
+**GÜNCELLEME 2026-07-12:** Doğrulandı, çözülmüş — `MoneySystem.cs:12 startingMoney=500`, `DifficultyManager.cs:36 baseStartingMoney=500` + `moneyMultiplierPerPlayer=1.0f` (satır 61), `GameEconomySettings.cs` da 500 ile tutarlı. Aşağıdaki orijinal tespit artık geçmiş durum, referans için tutuluyor.
 
 2026-07-07'de tespit edildi (kod değişmiş olabilir, önce güncel dosyaları oku ve doğrula):
 
