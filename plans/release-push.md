@@ -98,8 +98,8 @@ Kapsam: truck/box/shelf akışı · müşteri/kuyruk/prestij · envanter/karakte
 
 **İncelenip TEMİZ bulunanlar:** shelf/table lock sistemi (despawn/null/try-catch savunmacı) · `PrestigeManager.ModifyPrestigeServerRpc` server-only guard doğru · `CustomerAI.RequestInteractionServerRpc` sender-sahtecilik + mesafe + çift-tetik kontrolü tam · `CompleteInteraction` timeout race'i doğru · kuyruk yönetimi maxQueueSize aşımına izin vermiyor · `NotifyCustomerDone` idempotent · `PhoneCallManager` mesai-saati/unspawned kontrolü server-side.
 
-### Sonraki dilimler (sırasız)
-- Roguelite upgrade (merge öncesi son regresyon taraması).
+### Dilim: Roguelite upgrade (merge öncesi son regresyon taraması)  ✅ (2026-07-12, qa)
+**MERGE-BLOCKER YOK.** DraftPool/PerkEffect/UpgradePanel/UpgradeManager/RerollCurve tarandı. 6 bilinen risk regresyonsuz doğrulandı: (1) pozisyonel-index bug düzeltilmiş kalıyor (`HandleUpgradeLevelsChanged` artık `changeEvent.Index`→`ReplayUpgradeLevel`, `_entries` efekt zincirinden ayrık), (2) reconnect replay idempotent (`ReplayPurchasedUpgradeLevels` sadece level>0, tüm Apply* mutlak-değer/`+=` yok), (3) gambler_case↔all_in dışlama iki katmanda simetrik (draft `BuildEligibility` + satın-alma client+server guard), (4) satın-alma server-auth (`serverCost=CalculateFinalCost` yeniden hesap; paylaşımlı ekonomi → sender-doğrulama gereksiz), (5) bulk_buy×reroll indirim sızmıyor (`_discountedUpgradeIndex=-1` temizliği), (6) tier kilidi doğru (T2 gün≥5, T3 gün≥9). Event abonelikleri temiz. **Tek P2 → ✅ FIX'Lİ (`UpgradePanel.cs:1091` null-guard, merge-hardening).** Ek not (blocker değil): `_questSystemActive` hiç true set edilmiyor → `requiresQuestSystem=true` perkler bu dalda draft'a girmiyor (Quest entegre değil, muhtemelen bilinçli).
 
 ---
 
