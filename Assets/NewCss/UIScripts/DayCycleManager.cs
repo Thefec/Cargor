@@ -101,6 +101,7 @@ namespace NewCss
         private bool _moneyCheckCompleted;
         private int _rentPaymentCount;   // Kaçıncı kira ödemesi
         private bool _graceUsed;         // İlk kira affı kullanıldı mı
+        private bool _gameOverStopProcessing; // Game-over sonrası Update() işleme döngüsünü durdurur (server-only)
 
         // Periyodik kontrol flag'leri
         private PeriodicCheckState _periodicChecks;
@@ -266,7 +267,7 @@ namespace NewCss
                 _lastUIUpdateTime = Time.time;
             }
 
-            if (!IsSpawned || !IsServer || _networkIsDayOver.Value)
+            if (!IsSpawned || !IsServer || _networkIsDayOver.Value || _gameOverStopProcessing)
             {
                 return;
             }
@@ -386,6 +387,12 @@ namespace NewCss
             _lunchNotified = false;
             _moneyCheckCompleted = false;
             _periodicChecks.Reset();
+
+            // Kira/sigorta state'i önceki oturumdan sızmasın (yeni oyun / menüye dönüş / replay).
+            _rentPaymentCount = 0;
+            _graceUsed = false;
+            insuranceAvailable = false;
+            _gameOverStopProcessing = false;
         }
 
         private void AdvanceTime()
@@ -555,6 +562,12 @@ namespace NewCss
             {
                 // 2. kez ödeyememe → Game Over
                 Debug.Log($"{LOG_PREFIX} Cannot pay rent: {rentAmount}. Available: {currentMoney}. GAME OVER!");
+                // Game-over döngüsünü durdur: Update() sadece _gameOverStopProcessing==true iken
+                // ProcessDayEnd çağrısını keser. Bu set edilmezse her server frame'de buraya
+                // tekrar girilip TriggerLose() + log spam olur. _networkIsDayOver BİLEREK
+                // set edilmiyor: onu true yapmak HandleDayOverChanged'i tetikleyip yanlış
+                // "gün bitti" ekranını açar ve NextDayServerRpc guard'ını bozar.
+                _gameOverStopProcessing = true;
                 GameStateManager.Instance?.TriggerLose();
                 return false;
             }

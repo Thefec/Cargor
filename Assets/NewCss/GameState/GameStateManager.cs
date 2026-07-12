@@ -604,13 +604,6 @@ namespace NewCss
                     : -2f;
                 PrestigeManager.Instance.ModifyPrestige(penalty);
                 Debug.Log($"Prestige penalty applied: {penalty}");
-                
-                // Prestige sıfırın altına düştüyse oyun biter
-                if (PrestigeManager.Instance.GetPrestige() <= 0)
-                {
-                    Debug.Log("=== PRESTIGE ZERO - GAME OVER ===");
-                    TriggerLose();
-                }
             }
             else
             {

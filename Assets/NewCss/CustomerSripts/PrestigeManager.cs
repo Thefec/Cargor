@@ -2,6 +2,7 @@ using UnityEngine;
 using TMPro;
 using System;
 using Unity.Netcode;
+using NewCss;
 
 public class PrestigeManager : NetworkBehaviour
 {
@@ -152,6 +153,11 @@ public class PrestigeManager : NetworkBehaviour
 
         float oldPrestige = currentPrestige.Value;
         currentPrestige.Value += amount;
+
+        if (currentPrestige.Value <= 0f && GameStateManager.Instance != null)
+        {
+            GameStateManager.Instance.TriggerLose();
+        }
     }
 
     public void AddPrestige(float amount)

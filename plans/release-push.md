@@ -42,8 +42,17 @@ Salt-okunur qa taramaları → önceliklendirilmiş bulgu listesi → onaylı d�
 - [ ] **N9** `GameStateManager.cs:102-119` `ApplyGameEndState` switch'te `None` case yok (latent).
 - [ ] **N10** `DayCycleManager.cs:842-845` `HandleBreakRoomReadyChanged` boş gövde; server-auth state ↔ yerel UI tetikleyici ikiye ayrık (N3 ile ilişkili).
 
+### Dilim: Çekirdek döngü + ekonomi  🚧 (2026-07-12, qa korrektlik taraması)
+Bulgular (müdür 3'ünü kodda doğruladı):
+- [x] **E1/C2** (CRITICAL) iflas dalı game-over döngüsünü durdurmuyordu → `TriggerLose()` spam. **Fix:** ayrı server-only `_gameOverStopProcessing` flag'i (Update guard'ında); `_networkIsDayOver` BİLEREK set edilmiyor (dayEndScreen açılmasın + NextDay ilerlemesin — kontrol tur-1 bunu yakaladı). ResetLocalState'te sıfırlanıyor. **kontrol ONAY (tur-2), commit'li.** ✅
+- [x] **E2/C3** (ÖNEMLİ) `ResetLocalState` `_rentPaymentCount`/`_graceUsed`/`insuranceAvailable`'ı sıfırlamıyordu → replay'de kirli state. **Fix + kontrol ONAY, commit'li.** ✅
+- [ ] **E3/C1** (CRITICAL, KARAR) `QuotaManager.CheckEndOfDayQuota`/`OnQuotaFailed` hiçbir yerden çağrılmıyor/dinlenmiyor → GDD'de tanımlı kota-ölümü ölü kod. ✅ doğrulandı. **Karar+economist:** kota-ölümünü aç (zorluk↑) mı, GDD davranışı ne (hard game-over? grace?).
+- [x] **E4/C4** (ÖNEMLİ) prestij≤0 game-over sadece tek yolda. **Fix:** merkezi ≤0 kontrolü `PrestigeManager.ModifyPrestigeServerRpc`'de (tüm ceza yollarını kapsar), OnCustomerLost'taki redundant blok kaldırıldı, `using NewCss;` eklendi. **kontrol ONAY, commit'li.** ✅
+- [ ] **E5/C5** (ÖNEMLİ, KARAR+economist) `UpgradeManager.Buy()` hiç çağrılmıyor → `IsPurchased` hep boş → rent `wealthTax = upgradeValue×%10` hep 0 (kira tasarımdan sistematik düşük). ✅ doğrulandı. **Karar:** Buy()'ı satın-alma akışına bağla (kira↑, roguelite sistemine dokunur) vs ölü terimi kaldır.
+
+Temiz: MoneySystem clamp'li (negatif/overflow yok), UpgradePanel satın-alma server-auth (client exploit kapalı), NextDay guard doğru.
+
 ### Sonraki dilimler (sırasız)
-- Çekirdek döngü + ekonomi (gün döngüsü, kira, kota, para, prestij, iflas; GDD sistem-boşlukları).
 - Roguelite upgrade (merge öncesi son regresyon taraması).
 - Geniş tüm-oyun (Assets/NewCss geneli).
 
