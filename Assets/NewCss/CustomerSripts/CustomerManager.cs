@@ -259,6 +259,8 @@ namespace NewCss
 
         private void Start()
         {
+            if (Instance != this) return;
+
             LocalizationHelper.OnLocaleChanged += OnLocaleChanged;
             
             if (IsServer)
@@ -663,17 +665,17 @@ namespace NewCss
                 return;
             }
 
-            networkObject.Spawn();
-
             var customerAI = customerObject.GetComponent<CustomerAI>();
             if (customerAI == null)
             {
                 LogError("Customer prefab has no CustomerAI component!");
-                networkObject.Despawn();
+                Destroy(customerObject);
                 return;
             }
 
             SetupCustomerAI(customerAI, queueIndex);
+
+            networkObject.Spawn();
             SetupCustomerClientRpc(networkObject.NetworkObjectId, queueIndex);
 
             _customerQueue.Add(customerAI);
@@ -1002,21 +1004,6 @@ namespace NewCss
         #endregion
 
         #region Public API
-
-        /// <summary>
-        /// M��teri spawn iste�i (ServerRpc)
-        /// </summary>
-        [ServerRpc(RequireOwnership = false)]
-        public void RequestCustomerSpawnServerRpc()
-        {
-            if (!IsWithinSpawningHours()) return;
-
-            int availableIndex = GetNextAvailableQueueIndex();
-            if (availableIndex != -1)
-            {
-                SpawnCustomer(availableIndex);
-            }
-        }
 
         /// <summary>
         /// Kalan mteri saysn dndrr
