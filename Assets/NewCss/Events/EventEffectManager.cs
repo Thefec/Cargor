@@ -386,7 +386,7 @@ namespace NewCss
                 truck.rewardPerBox = (int)(currentValues.rewardPerBox * multipliers.rewardPerBoxMultiplier);
                 truck.exitDelay = currentValues.exitDelay * multipliers.exitDelayMultiplier;
 
-                if (multipliers.isVIPServiceDay && Random.Range(0f, 1f) < 0.1f)
+                if (IsServer && multipliers.isVIPServiceDay && Random.Range(0f, 1f) < 0.1f)
                 {
                     truck.rewardPerBox = (int)(truck.rewardPerBox * 1.1f);
                 }
@@ -476,7 +476,7 @@ namespace NewCss
                 truck.rewardPerBox = (int)(currentValues.rewardPerBox * multipliers.rewardPerBoxMultiplier);
                 truck.exitDelay = currentValues.exitDelay * multipliers.exitDelayMultiplier;
 
-                if (multipliers.isVIPServiceDay && Random.Range(0f, 1f) < 0.1f)
+                if (IsServer && multipliers.isVIPServiceDay && Random.Range(0f, 1f) < 0.1f)
                 {
                     truck.rewardPerBox = (int)(truck.rewardPerBox * 1.1f);
                 }

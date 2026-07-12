@@ -112,10 +112,16 @@ public class NetworkWorldItem : NetworkBehaviour
 
     #region ItemData Management
 
+    private static ItemData[] s_cachedItems;
+
     private void UpdateItemDataFromID(int itemID)
     {
-        ItemData[] allItems = Resources.LoadAll<ItemData>("Items");
-        foreach (ItemData item in allItems)
+        if (s_cachedItems == null)
+        {
+            s_cachedItems = Resources.LoadAll<ItemData>("Items");
+        }
+
+        foreach (ItemData item in s_cachedItems)
         {
             if (item.itemID == itemID)
             {

@@ -332,11 +332,16 @@ public partial class PlayerInventory : NetworkBehaviour
     #endregion
     #region Item Data Management
 
+    private static ItemData[] s_cachedItems;
+
     private static ItemData GetItemDataFromID(int itemID)
     {
-        var allItems = Resources.LoadAll<ItemData>("Items");
+        if (s_cachedItems == null)
+        {
+            s_cachedItems = Resources.LoadAll<ItemData>("Items");
+        }
 
-        foreach (var item in allItems)
+        foreach (var item in s_cachedItems)
         {
             if (item.itemID == itemID)
             {

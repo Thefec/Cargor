@@ -898,11 +898,16 @@ namespace NewCss
             return Resources.Load<ItemData>($"Items/{itemName}");
         }
 
+        private static ItemData[] s_cachedItems;
+
         private ItemData GetItemDataFromID(int itemID)
         {
-            ItemData[] allItems = Resources.LoadAll<ItemData>("Items");
+            if (s_cachedItems == null)
+            {
+                s_cachedItems = Resources.LoadAll<ItemData>("Items");
+            }
 
-            foreach (ItemData item in allItems)
+            foreach (ItemData item in s_cachedItems)
             {
                 if (item.itemID == itemID)
                 {
