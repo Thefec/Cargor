@@ -220,6 +220,10 @@ namespace NewCss
             SetupTriggerCollider();
             AutoFindAudioSources();
 
+            // G10 fix: event başladıktan sonra spawn olan truck da aktif event çarpanlarını alsın.
+            // OnActiveEventChanged her peer'de yerel çalıştığından bu da her peer'de çağrılmalı.
+            EventEffectManager.Instance?.ApplyEventEffectToNewObject(gameObject);
+
             if (_hasPreInitialized)
             {
                 UpdateUIText();

@@ -199,6 +199,10 @@ namespace NewCss
 
             InitializeComponents();
 
+            // G10 fix: event başladıktan sonra spawn olan customer da aktif event çarpanlarını alsın.
+            // OnActiveEventChanged her peer'de yerel çalıştığından bu da her peer'de çağrılmalı.
+            EventEffectManager.Instance?.ApplyEventEffectToNewObject(gameObject);
+
             if (IsServer)
             {
                 InitializeServerState();

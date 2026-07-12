@@ -7,6 +7,10 @@ namespace NewCss
 {
     public class EventEffectManager : NetworkBehaviour
     {
+        // Her peer'de yerel olarak set edilir (server-only DEĞİL); geç-spawn Truck/CustomerAI
+        // OnNetworkSpawn'undan erişmek için. Sahnede tek instance olduğu varsayılır.
+        public static EventEffectManager Instance { get; private set; }
+
         [Header("Manager References")]
         public CustomerManager customerManager;
         public UpgradePanel upgradePanel;
@@ -84,6 +88,8 @@ namespace NewCss
         {
             base.OnNetworkSpawn();
 
+            Instance = this;
+
             InitializeEventMultipliers();
             DayCycleManager.OnNewDay += OnNewDayHandler;
             currentActiveEvent.OnValueChanged += OnActiveEventChanged;
@@ -99,6 +105,11 @@ namespace NewCss
             base.OnNetworkDespawn();
             DayCycleManager.OnNewDay -= OnNewDayHandler;
             currentActiveEvent.OnValueChanged -= OnActiveEventChanged;
+
+            if (Instance == this)
+            {
+                Instance = null;
+            }
         }
 
         private void InitializeEventMultipliers()
