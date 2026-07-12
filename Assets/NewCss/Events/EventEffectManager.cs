@@ -492,29 +492,5 @@ namespace NewCss
             return eventNames[currentActiveEvent.Value];
         }
 
-        [ServerRpc(RequireOwnership = false)]
-        public void TestEventServerRpc(int eventIndex)
-        {
-            if (eventIndex >= 0 && eventIndex < eventNames.Count)
-            {
-                currentActiveEvent.Value = eventIndex;
-            }
-            else
-            {
-                currentActiveEvent.Value = -1;
-            }
-        }
-
-        [System.Obsolete("Used for debugging only")]
-        public void TestEvent(string eventName)
-        {
-            if (!IsServer) return;
-
-            int eventIndex = eventNames.IndexOf(eventName);
-            if (eventIndex != -1)
-            {
-                TestEventServerRpc(eventIndex);
-            }
-        }
     }
 }

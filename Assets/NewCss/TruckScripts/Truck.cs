@@ -595,10 +595,10 @@ namespace NewCss
         /// </summary>
         private int ApplyRewardVolatility(int reward)
         {
-            if (!IsServer || economySettings == null) return reward;
+            if (!IsServer || economySettings == null) return Mathf.Max(0, reward);
 
             float volatility = economySettings.rewardVolatility;
-            if (volatility <= 0f) return reward;
+            if (volatility <= 0f) return Mathf.Max(0, reward);
 
             float mean = economySettings.rewardVolatilityMean;
             float randomFactor = mean + UnityEngine.Random.Range(-volatility, volatility);
