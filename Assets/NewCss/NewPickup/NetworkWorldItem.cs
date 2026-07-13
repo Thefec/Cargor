@@ -365,6 +365,13 @@ public class NetworkWorldItem : NetworkBehaviour
         // Sadece server karar verir
         if (!IsServer) return;
 
+        // DOLU kutular ASLA kırılmaz — tıra teslim edilmeli, yolda parçalanmamalı.
+        // Boş kutular BoxDestroyOnCollisionNetcode taşır (yukarıda atlanır); ancak DOLU kutu
+        // dünya prefab'ları (RedNGOFull vb.) o script'i taşımadığından bu yola düşerler.
+        // Doluluk kontrolü olmadan fırlatılan dolu kutu ürün gibi kırılır → burada engellenir.
+        var boxInfo = GetComponent<BoxInfo>();
+        if (boxInfo != null && boxInfo.isFull) return;
+
         // Sadece fırlatılan eşyalar kırılır
         if (!_wasThrown) return;
 
