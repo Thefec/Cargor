@@ -149,8 +149,8 @@ namespace NewCss
         //  Gerçek kod dokunuşu gerektirenler — task7-prep.md tablo 2
         // ─────────────────────────────────────────────────────────────
 
-        // DOKUNUŞ-1: Kaldıraçlı Kira (relic). rentScaledMultiplier sadece scaledRent'e uygulanır
-        // (GameEconomySettings.CalculateRent, wealthTax etkilenmez — rapor §4.3). Bedel: prestij
+        // DOKUNUŞ-1: Kaldıraçlı Kira (relic). rentScaledMultiplier scaledRent'e uygulanır
+        // (GameEconomySettings.CalculateRent). Bedel: prestij
         // cezası ×2 (-1.5 → -3.0, mutlak değer — idempotent).
         private static void ApplyLeveragedRent(int level, PerkContext ctx)
         {

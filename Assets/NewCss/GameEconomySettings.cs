@@ -23,16 +23,13 @@ namespace NewCss
         [Tooltip("Her kira döneminde kira artış çarpanı (örn: 1.3 = %30 artış)")]
         public float rentGrowthMultiplier = 1.15f;
 
-        [Tooltip("Satın alınan upgrade değerinin yüzde kaçı kira vergisi olarak eklenir (0-1)")]
-        public float wealthTaxRate = 0.1f;
-
         [Tooltip("Kaç günde bir kira alınır")]
         public int rentIntervalDays = 4;
 
         [Tooltip("Grace period'da oyuncudan alınan para yüzdesi (0-1). Kalan para oyuncuda kalır.")]
         public float gracePaymentPercent = 0.8f;
 
-        [Tooltip("Kaldıraçlı Kira perki: sadece scaledRent'e uygulanan çarpan (wealthTax etkilenmez). Perk yoksa 1f.")]
+        [Tooltip("Kaldıraçlı Kira perki: scaledRent'e uygulanan çarpan. Perk yoksa 1f.")]
         public float rentScaledMultiplier = 1f;
 
         // ─────────────────────────────────────────────────────────────
@@ -113,14 +110,13 @@ namespace NewCss
         }
 
         /// <summary>
-        /// Kira dönemine ve toplam upgrade değerine göre hesaplanmış kira miktarını döndürür.
+        /// Kira dönemine göre hesaplanmış kira miktarını döndürür.
         /// </summary>
-        public float CalculateRent(int playerCount, int rentCycle, float totalUpgradeValue)
+        public float CalculateRent(int playerCount, int rentCycle)
         {
             float baseRent = GetBaseRent(playerCount);
             float scaledRent = baseRent * Mathf.Pow(rentGrowthMultiplier, rentCycle) * rentScaledMultiplier;
-            float wealthTax  = totalUpgradeValue * wealthTaxRate;
-            return scaledRent + wealthTax;
+            return scaledRent;
         }
 
         // ─────────────────────────────────────────────────────────────
@@ -214,7 +210,7 @@ namespace NewCss
 
                 if (isRentDay)
                 {
-                    rentAmount = CalculateRent(playerCount, rentCycle, totalUpgradeValue);
+                    rentAmount = CalculateRent(playerCount, rentCycle);
 
                     if (cashBeforeRent >= rentAmount)
                     {

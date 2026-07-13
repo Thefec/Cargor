@@ -577,17 +577,16 @@ namespace NewCss
         }
 
         /// <summary>
-        /// Kira hesaplama: (TemelKira × 1.3^dönem) + (UpgradeDeğeri × %10)
+        /// Kira hesaplama: TemelKira × rentGrowthMultiplier^dönem × rentScaledMultiplier
         /// </summary>
         private int CalculateRent()
         {
             int playerCount = GetPlayerCount();
-            int totalUpgradeValue = GetTotalUpgradeValue();
 
             float finalRent;
             if (economySettings != null)
             {
-                finalRent = economySettings.CalculateRent(playerCount, _rentPaymentCount, totalUpgradeValue);
+                finalRent = economySettings.CalculateRent(playerCount, _rentPaymentCount);
             }
             else
             {
@@ -595,7 +594,7 @@ namespace NewCss
                 Debug.LogWarning($"{LOG_PREFIX} economySettings atanmamış! Fallback değerler kullanılıyor.");
                 int baseRent    = playerCount == 1 ? 500 : playerCount == 2 ? 900 : playerCount == 3 ? 1200 : 1500;
                 float scaled    = baseRent * Mathf.Pow(1.3f, _rentPaymentCount);
-                finalRent       = scaled + totalUpgradeValue * 0.1f;
+                finalRent       = scaled;
             }
 
             int result = Mathf.RoundToInt(finalRent);
@@ -623,24 +622,6 @@ namespace NewCss
                 return NetworkManager.Singleton.ConnectedClientsList.Count;
             }
             return 1;
-        }
-
-        /// <summary>
-        /// Satın alınan tüm upgrade'lerin toplam maliyetini döndürür
-        /// </summary>
-        private int GetTotalUpgradeValue()
-        {
-            if (UpgradeManager.Instance == null) return 0;
-
-            int total = 0;
-            foreach (ItemType t in Enum.GetValues(typeof(ItemType)))
-            {
-                if (UpgradeManager.Instance.IsPurchased(t))
-                {
-                    total += UpgradeAssets.GetCost(t);
-                }
-            }
-            return total;
         }
 
         #endregion
