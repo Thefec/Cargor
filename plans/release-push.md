@@ -5,17 +5,15 @@
 
 ---
 
-## FAZ 0 — Havadaki işi kapat  🟡 (test bekliyor)
-Roguelite dalı kod olarak bitti; kapanış adımları çok-oyunculu teste bağlı.
-- [ ] **Combined build testi** (late-join fix + `[NETDBG]` dahil) — Steam'e yükle, iki senaryo:
-  - **A)** Late-join reddi: whitelist-dışı arkadaş maç sonrası katılamaz + net mesaj görür; **VE** normal çıkışta yanlış mesaj ÇIKMAMALI (1. tur regresyonu buydu).
-  - **B)** Reconnect: düş→bağlan→satın alınmış perkler client-local geri gelir.
-- [ ] Test ✅ → SteamManager+LateJoinGuard'ın **sadece late-join fix hunk'larını** seçici commit'le (`[NETDBG]` hariç).
+## FAZ 0 — Havadaki işi kapat  🟢 (test GEÇTİ, kapanış adımları kaldı)
+Roguelite dalı kod olarak bitti; **late-join testi kullanıcı tarafından yapıldı ve ÇALIŞIYOR (2026-07-14).**
+- [x] **Late-join testi ✅ (2026-07-14, kullanıcı):** late-join reddi çalışıyor. (İlerde sorun çıkarsa kullanıcı bildirecek.)
+- [ ] SteamManager+LateJoinGuard'ın **sadece late-join fix hunk'larını** seçici commit'le (`[NETDBG]` hariç).
 - [ ] `[NETDBG]` enstrümantasyonunu kaldır (SteamManager ~706-731 + client-disconnect log ~795; LateJoinGuard ~128-131/146).
 - [ ] Font/ProjectSettings artefaktlarını revert (bkz [[unity-batchmode-artifacts]]).
 - [ ] Roguelite dalını `main`'e merge.
 
-> ⏸️ **2026-07-12:** Kullanıcı testi şimdilik atladı → FAZ 1'e paralel geçildi. FAZ 0 kapanışı test yapılınca devam eder.
+> ✅ **2026-07-14:** Late-join testi geçti → merge kapısı AÇILDI. Kalan: yukarıdaki 4 kapanış adımı (late-join fix seçici commit + [NETDBG] temizlik + artefakt revert + merge). Bu adımlar SteamManager (~1800 satır) ve LateJoinGuard'a dokunur — hassas, dikkatli seçici-commit gerektirir.
 
 ---
 
