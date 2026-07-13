@@ -74,33 +74,23 @@ namespace NewCss
             Debug.Log($"Money changed from {previousValue} to {newValue}");
         }
 
-        /// <summary>Adds (positive) or subtracts (negative) money.</summary>
+        /// <summary>
+        /// Adds (positive) or subtracts (negative) money. SERVER-ONLY (bkz.
+        /// ResetMoney/SetMoney). Onceki client-branch ham delta'yi
+        /// ModifyMoneyServerRpc (RequireOwnership=false) uzerinden server'a
+        /// yolluyordu (G1-b exploit) — kaldirildi. Yedi mesru cagiranin
+        /// hepsi zaten server-context'te calisiyor (qa dogruladi).
+        /// </summary>
         public void ModifyMoney(int delta)
         {
-            if (IsServer)
+            if (!IsServer)
             {
-                int newValue = Mathf.Max(0, _currentMoney.Value + delta);
-                _currentMoney.Value = newValue;
-                Debug.Log($"Server: Money modified by {delta}, new value: {newValue}");
+                Debug.LogWarning("MoneySystem.ModifyMoney client'tan cagrildi — yok sayildi (server-only).");
+                return;
             }
-            else
-            {
-                Debug.Log($"Client: Requesting money modification by {delta}");
-                ModifyMoneyServerRpc(delta);
-            }
-        }
-
-        // G1-b (Play-test'e bagli, ACIK): Bu RPC hala client'tan gelen ham
-        // delta'ya guveniyor. Tek mesru client-cagirani BoxFallPenalty (G16,
-        // MonoBehaviour, her fizik-peer'inde calisiyor). Kaldirmak icin once
-        // BoxFallPenalty server-authoritative yapilmali (kutu-ownership fizik
-        // modeli Play-test'te dogrulanmali). O yapilana kadar delta acik kaliyor.
-        [ServerRpc(RequireOwnership = false)]
-        private void ModifyMoneyServerRpc(int delta)
-        {
             int newValue = Mathf.Max(0, _currentMoney.Value + delta);
             _currentMoney.Value = newValue;
-            Debug.Log($"ServerRpc: Money modified by {delta}, new value: {newValue}");
+            Debug.Log($"Server: Money modified by {delta}, new value: {newValue}");
         }
 
         /// <summary>Readable method to add rewards.</summary>
