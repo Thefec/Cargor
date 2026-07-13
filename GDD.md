@@ -207,7 +207,7 @@ Yeni gün başladığında tetiklenen merkezi event. Aşağıdaki sistemler bu e
 
 | Parametre | Değer |
 |-----------|-------|
-| Başlangıç parası | **100.000 TL** (test değeri) |
+| Başlangıç parası | **500 TL** (tüm oyuncu sayıları; kaynak: `DifficultyManager.baseStartingMoney`, `moneyMultiplierPerPlayer=1.0`) |
 | Minimum para | **0 TL** (negatife düşmez) |
 | Senkronizasyon | `NetworkVariable` (server-write, everyone-read) |
 
@@ -222,7 +222,7 @@ Yeni gün başladığında tetiklenen merkezi event. Aşağıdaki sistemler bu e
 **Gider Kaynakları**:
 | Kaynak | Miktar | Koşul |
 |--------|--------|-------|
-| Yanlış kutu teslimi | -60 TL/kutu | Tıra yanlış renk kutu |
+| Yanlış kutu teslimi | -40 TL/kutu | Tıra yanlış renk kutu |
 | Kutu düşürme | -10 TL/düşürme | Kutu yere çarparsa |
 | Kira ödemesi | Değişken | Her 4 günde bir |
 | Upgrade satın alma | Değişken | Oyuncu tercihiyle |
@@ -236,14 +236,14 @@ Tüm ekonomik değerler tek bir `GameEconomySettings` ScriptableObject'ten yöne
 │
 ├── 💸 KİRA AYARLARI
 │   ├── baseRentByPlayerCount: [500, 900, 1200, 1500]
-│   ├── rentGrowthMultiplier: 1.3 (%30 artış/dönem)
-│   ├── wealthTaxRate: 0.1 (%10 upgrade vergisi)
+│   ├── rentGrowthMultiplier: 1.15 (%15 artış/dönem)
+│   ├── wealthTaxRate: 0.1 (%10 upgrade vergisi — NOT: şu an etkisiz, GetTotalUpgradeValue orphan sistemi okuyor; bkz FAZ 2 C5 kararı)
 │   ├── rentIntervalDays: 4 (her 4 günde bir kira)
 │   └── gracePaymentPercent: 0.8 (%80 affedilme bedeli)
 │
 ├── 🚚 TIR / TESLİMAT AYARLARI
 │   ├── rewardPerBox: 50 TL (doğru teslimat)
-│   ├── penaltyPerBox: 60 TL (yanlış teslimat)
+│   ├── penaltyPerBox: 40 TL (yanlış teslimat)
 │   ├── hangarStayDuration: 120s (tır bekleme)
 │   ├── prestigePerBonus: 10 (bonus tier başına prestij)
 │   └── bonusPerTier: 5 TL (tier başına ek ödül)
@@ -255,7 +255,7 @@ Tüm ekonomik değerler tek bir `GameEconomySettings` ScriptableObject'ten yöne
 │   └── maxCallsPerHour: 2
 │
 └── ⭐ PRESTİJ AYARLARI
-    ├── customerLostPrestigePenalty: -2.0
+    ├── customerLostPrestigePenalty: -1.5
     ├── customerServedPrestigeBonus: +0.5
     ├── wrongProductPrestigePenalty: -0.1
     └── boxDropPrestigePenalty: -0.05
@@ -280,12 +280,13 @@ $$\text{KutuBaşıGelir} = \text{rewardPerBox} + \left\lfloor \frac{\text{presti
 
 ### 5.1 Kira Formülü
 
-$$\text{Kira} = \left(\text{BaseRent}[P] \times 1.3^{\text{cycle}}\right) + \left(\text{TotalUpgradeValue} \times 0.10\right)$$
+$$\text{Kira} = \left(\text{BaseRent}[P] \times 1.15^{\text{cycle}}\right) + \left(\text{TotalUpgradeValue} \times 0.10\right)$$
 
 Burada:
 - \(P\) = Oyuncu sayısı (1-4)
 - \(\text{cycle}\) = Kaçıncı kira dönemi (0'dan başlar)
 - \(\text{TotalUpgradeValue}\) = Bugüne kadar yapılan toplam upgrade harcaması
+- **NOT (2026-07-13):** İkinci terim (`wealthTax`) şu an **etkisiz** — `GetTotalUpgradeValue()` orphan sistemi okuyor, gerçek harcamayı görmüyor → pratikte hep 0. Bkz FAZ 2 C5 kararı.
 
 ### 5.2 Oyuncu Sayısına Göre Baz Kira
 
@@ -301,9 +302,9 @@ Burada:
 | Gün | Dönem | Kira Miktarı |
 |-----|-------|-------------|
 | 4 | Dönem 0 | 500 TL |
-| 8 | Dönem 1 | 650 TL |
-| 12 | Dönem 2 | 845 TL |
-| 16 | Dönem 3 | 1.099 TL |
+| 8 | Dönem 1 | 575 TL |
+| 12 | Dönem 2 | 661 TL |
+| 16 | Dönem 3 | 760 TL |
 
 ### 5.4 Grace Period (Affedilme Mekanizması)
 
@@ -319,7 +320,7 @@ Burada:
 
 **Örnek**:
 - 1 oyuncu, dönem 2, toplam 2000 TL upgrade yapmış:
-  - Kira = (500 × 1.3²) + (2000 × 0.10) = 845 + 200 = **1.045 TL**
+  - Kira = (500 × 1.15²) + (2000 × 0.10) = 661 + 200 = **861 TL** *(ikinci terim şu an etkisiz — bkz 5.1 notu / C5)*
 
 ---
 
@@ -331,7 +332,7 @@ Burada:
 
 | Parametre | Değer |
 |-----------|-------|
-| Başlangıç prestiji | **5.0** |
+| Başlangıç prestiji | **15.0** |
 | Minimum prestij | **0** (altına düşerse GAME OVER) |
 | Maksimum prestij | **100** |
 | Müşteri kapasitesi formülü | `1 + floor(prestige / 10)` |
@@ -342,7 +343,7 @@ Burada:
 | Eylem | Prestij Değişimi | Sıklık |
 |-------|-----------------|--------|
 | Müşteriye başarılı servis | **+0.5** | Her başarılı servis |
-| Müşteri kaçtı (sabır bitti) | **-2.0** | Her kaçan müşteri |
+| Müşteri kaçtı (sabır bitti) | **-1.5** | Her kaçan müşteri |
 | Yanlış ürün gösterildi | **-0.1** | Her yanlış ürün |
 | Kutu yere düştü | **-0.05** | Her düşürme |
 
@@ -358,10 +359,10 @@ flowchart LR
 ### 6.4 Prestij Dengesi Analizi
 
 > [!CAUTION]
-> **Prestij çok kırılgan!** Başlangıç prestiji 5.0, ama 3 müşteri kaçırma (3 × -2.0 = -6.0) oyunu bitirir. İlk günlerde prestij yönetimi kritiktir.
+> **Prestij yönetimi önemli.** Başlangıç prestiji 15.0 (Faz-1 dengesi); 10 müşteri kaçırma (10 × -1.5 = -15.0) oyunu bitirir. İlk günlerde prestij yönetimi yine de kritiktir.
 
 Bir oyuncunun prestij dengesini sağlayabilmesi için:
-- Her 1 kaçırılan müşteriye karşı **4 başarılı servis** yapılmalıdır (-2.0 / +0.5 = 4:1 oran)
+- Her 1 kaçırılan müşteriye karşı **3 başarılı servis** yapılmalıdır (-1.5 / +0.5 = 3:1 oran)
 - Her 1 yanlış ürüne karşı **1 başarılı servis** yeterlidir (-0.1 / +0.5)
 
 ---
@@ -430,7 +431,7 @@ sequenceDiagram
         T->>M: +50 TL + prestij bonusu
         T->>T: QuotaManager.RegisterShippedBox()
     else Yanlış Renk
-        T->>M: -60 TL
+        T->>M: -40 TL
     end
     
     alt Tır doldu VEYA Timer bitti
@@ -446,10 +447,10 @@ sequenceDiagram
 **Doğru teslimat geliri** (prestij = 25 varsayımıyla):
 $$\text{Gelir} = 50 + \left\lfloor \frac{25}{10} \right\rfloor \times 5 = 50 + 10 = 60\ \text{TL/kutu}$$
 
-**Yanlış teslimat cezası**: -60 TL/kutu (sabit)
+**Yanlış teslimat cezası**: -40 TL/kutu (sabit)
 
 > [!IMPORTANT]
-> Yanlış teslimat cezası (60 TL), doğru teslimat ödülünden (50 TL baz) daha yüksektir. Bu, oyuncuyu dikkatli olmaya zorlar. Her yanlış teslimat 1.2 doğru teslimatı siler.
+> Yanlış teslimat cezası (40 TL), doğru teslimat baz ödülüne (50 TL) yakındır ama altındadır. Yine de her yanlış teslimat ~0.8 doğru teslimatı siler; oyuncuyu dikkatli olmaya teşvik eder.
 
 ### 8.4 Tır Renk ve Görsel Sistemi
 
@@ -497,7 +498,7 @@ stateDiagram-v2
     Waiting --> Served: Oyuncu doğru ürünü verir
     Waiting --> Left: Sabır süresi dolar
     Served --> [*]: +Para, +0.5 Prestij
-    Left --> [*]: -Para, -2.0 Prestij
+    Left --> [*]: -Para, -1.5 Prestij
     
     note right of Waiting: Sabır barı görünür\n(WaitBar UI)
     note right of Left: Müşteri öfkeyle ayrılır
