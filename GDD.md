@@ -237,7 +237,8 @@ Tüm ekonomik değerler tek bir `GameEconomySettings` ScriptableObject'ten yöne
 ├── 💸 KİRA AYARLARI
 │   ├── baseRentByPlayerCount: [500, 900, 1200, 1500]
 │   ├── rentGrowthMultiplier: 1.15 (%15 artış/dönem)
-│   ├── wealthTaxRate: 0.1 (%10 upgrade vergisi — NOT: şu an etkisiz, GetTotalUpgradeValue orphan sistemi okuyor; bkz FAZ 2 C5 kararı)
+│   ├── rentScaledMultiplier: 1.0 (varsayılan; leveraged_rent perki 0.8 yapar)
+│   ├── (wealthTaxRate KALDIRILDI — 9d2c3b0, FAZ 2 C5 Seçenek A; kira formülünde artık upgrade-vergisi yok)
 │   ├── rentIntervalDays: 4 (her 4 günde bir kira)
 │   └── gracePaymentPercent: 0.8 (%80 affedilme bedeli)
 │
@@ -280,13 +281,13 @@ $$\text{KutuBaşıGelir} = \text{rewardPerBox} + \left\lfloor \frac{\text{presti
 
 ### 5.1 Kira Formülü
 
-$$\text{Kira} = \left(\text{BaseRent}[P] \times 1.15^{\text{cycle}}\right) + \left(\text{TotalUpgradeValue} \times 0.10\right)$$
+$$\text{Kira} = \text{BaseRent}[P] \times 1.15^{\text{cycle}} \times \text{rentScaledMultiplier}$$
 
 Burada:
 - \(P\) = Oyuncu sayısı (1-4)
 - \(\text{cycle}\) = Kaçıncı kira dönemi (0'dan başlar)
-- \(\text{TotalUpgradeValue}\) = Bugüne kadar yapılan toplam upgrade harcaması
-- **NOT (2026-07-13):** İkinci terim (`wealthTax`) şu an **etkisiz** — `GetTotalUpgradeValue()` orphan sistemi okuyor, gerçek harcamayı görmüyor → pratikte hep 0. Bkz FAZ 2 C5 kararı.
+- \(\text{rentScaledMultiplier}\) = Varsayılan 1.0; yalnız "Kaldıraçlı Kira" (`leveraged_rent`) perki 0.8 yapar (−%20)
+- **NOT (2026-07-13):** Eski formüldeki `wealthTax` terimi (`+ TotalUpgradeValue × 0.10`) **tamamen kaldırıldı** (commit `9d2c3b0`, FAZ 2 C5 → Seçenek A). Kırık kablolamayla zaten hep 0'dı; kod'dan tümüyle çıkarıldı, artık kira formülünde upgrade-vergisi yok.
 
 ### 5.2 Oyuncu Sayısına Göre Baz Kira
 
@@ -313,14 +314,14 @@ Burada:
 - **Maliyet**: Mevcut paranın %80'i alınır
 - **İkinci kez ödeyemezse**: **GAME OVER — İFLAS**
 
-### 5.5 Kira + Upgrade Vergisi Etkileşimi
+### 5.5 Kira + Upgrade Vergisi Etkileşimi ~~(KALDIRILDI)~~
 
-> [!WARNING]
-> **Upgrade Vergisi Tuzağı**: Her upgrade satın alımı, sonraki kira dönemlerinde kira miktarını artırır. 1000 TL'lik upgrade = her kira döneminde +100 TL ek kira. Oyuncu, upgrade'leri stratejik zamanlarda almalıdır.
+> [!NOTE]
+> **Upgrade Vergisi (wealthTax) mekaniği KALDIRILDI** (2026-07-13, commit `9d2c3b0`). Eskiden "her upgrade sonraki kiraları artırır" olarak tasarlanmıştı ama kablolaması kırıktı (hep 0 katkı) → tamamen çıkarıldı. Upgrade satın almak artık kirayı ETKİLEMEZ. Bu bölüm tarihsel kayıt olarak tutuluyor.
 
-**Örnek**:
-- 1 oyuncu, dönem 2, toplam 2000 TL upgrade yapmış:
-  - Kira = (500 × 1.15²) + (2000 × 0.10) = 661 + 200 = **861 TL** *(ikinci terim şu an etkisiz — bkz 5.1 notu / C5)*
+**Örnek (güncel formülle)**:
+- 1 oyuncu, dönem 2 (upgrade sayısından bağımsız):
+  - Kira = 500 × 1.15² × 1.0 = **661 TL**
 
 ---
 

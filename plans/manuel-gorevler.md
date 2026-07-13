@@ -8,7 +8,35 @@
 
 ---
 
-## 🔴 A. BU OTURUMUN GÜVENLİK FIX'LERİ — regresyon teyidi
+## 🧩 KURULUM — Tek cihazda host+client (LocalCoopTestBootstrap)
+> Steam gerekmez. `Tools ▸ Cargor ▸ Local Coop Test (127.0.0.1)` toggle'ını AÇ → **The Main Office** sahnesini Play → MPPM sanal oyuncu penceresini aç. Play'de OnGUI **HOST/CLIENT** butonları çıkar: ana pencere=**HOST**, sanal oyuncu penceresi=**CLIENT**. UnityTransport 127.0.0.1'e geçer, Steam whitelist/geç-join baypas edilir.
+> **Her iki pencerede de Console'u açık tut** — bazı hatalar (NaN spam) sadece CLIENT'ta görünür.
+
+---
+
+## 🔴 A0. BU OTURUMUN 2 FIX'İ (2026-07-13) — kutu kırılma + NaN spam
+> Kaynak: dolu kutu fırlatınca parçalanıyordu + client'ta durmadan `-nan(ind)` frustum spam'i. İkisi de bu oturumda düzeltildi, **runtime doğrulaması sende**.
+
+### A0.1 Client NaN frustum spam (Bug 1) — EN ÖNCE, EN KOLAY
+> Fix: `WorldSpaceCanvasCameraBinder` client'ta `Camera.main` hazır olunca world-space canvas'lara event camera bağlar.
+- [ ] CLIENT penceresi bağlanıp oyuncu spawn olunca **CLIENT Console**'unu izle.
+- [ ] ❗ Beklenen: **`Screen position out of view frustum (screen pos -nan(ind), -nan(ind))` spam'i KESİLMELİ.** (İlk ~0.5 sn'de birkaç satır çıkabilir, sonra tamamen durmalı — kamera bağlanana kadar.)
+- [ ] Hâlâ durmadan akıyorsa → fix tutmadı, bana CLIENT Console'un ilk 20 satırını yapıştır.
+- [ ] Regresyon: client'ta dünya UI'ları (poster/duvar canvas'ları, müşteri istek balonu) normal görünüyor mu (kaybolma/bozulma yok).
+
+### A0.2 Dolu kutu fırlatınca parçalanmıyor (Bug 2)
+> Fix: dünya kutusunun `isFull`'ü artık server-otoriter worldPrefab'dan okunuyor + `RedFull.prefab isFull→1` veri düzeltmesi. **Kutu-ürün eşleşmesi:** Kırmızı=Oyuncak, Sarı=Kıyafet, Mavi=Cam.
+- [ ] **KIRMIZI dolu kutu hazırla** (veri hatası buradaydı): kırmızı boş kutu al → masaya oyuncak koy → kutula → çıkan dolu kutuyu al.
+- [ ] Dolu kutuyu duvara/yere **sertçe fırlat** → ❗ **parçalanMAMALI**, sağlam düşmeli, tekrar alınabilmeli.
+- [ ] Aynısını **Mavi (cam)** ve **Sarı (kıyafet)** dolu kutuyla tekrarla → hiçbiri fırlatınca kırılmamalı.
+- [ ] **CLIENT tarafından fırlat** (asıl şikayet client'taydı): client oyuncu dolu kutuyu fırlatsın → kırılmamalı.
+- [ ] Regresyon — **BOŞ kutu** sertçe fırlat/bırak → ❗ **hâlâ parçalanMALI** (kırılma efekti + despawn).
+- [ ] Regresyon — dolu kutuyu (doğru renk) **tıra teslim** et → sayılıyor + ödül/prestij geliyor mu (kutu tıra girmeden yolda kırılmıyor).
+- [ ] 2 oyuncu: hem host hem client dolu kutu fırlatsın → ikisinde de kırılmamalı.
+
+---
+
+## 🔴 A. ÖNCEKİ OTURUMUN GÜVENLİK FIX'LERİ — regresyon teyidi (hâlâ açık borç)
 > 3 exploit kapatıldı (G2, G1-b, G6/G7). Hepsi **canlı gameplay akışına** dokundu. Amaç: **meşru akış hâlâ çalışıyor mu** (fix bir şeyi kırmadı mı). Tek editör host çoğu için yeter; kimlik-testleri 2 client ister.
 
 ### A1. Masa & Raf etkileşimi — G6/G7 kimlik-doğrulama (EN KRİTİK)

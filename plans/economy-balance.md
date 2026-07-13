@@ -53,8 +53,8 @@ Kullanıcı onayı: "önce bug'ları düzelt".
 - ✅ `DifficultyManager.ApplyMoneySettings()` para-sıfırlama guard'ı eklendi (`GameStateManager.HasGameEverStarted`).
 - ⚠️ Unity kapalıyken yapıldı; sonraki açılışta Console derleme kontrolü yapılmalı.
 
-**Ertelenen (şimdilik dokunulmuyor):**
-- ⏸️ Çift-kuyruk: `UpgradePanel` "Kuyruk" = canonical; `ItemType.QueueCapacity_1..3` = orphan ölü kod (hiç `.Buy()` yok). Riskli, sonra temizlenecek.
-- ⏸️ `PrestigeManager.GetCustomerCapacity()` dead-code — sonra karar.
+**Ertelenen / sonradan çözülen:**
+- ✅ Çift-kuyruk & Yol B ölü kod: `ItemType.QueueCapacity`/`UpgradeAssets`/`UpgradeManager` (Yol B) **tamamen silindi** (`479dbf0`, 2026-07-13). Artık tek upgrade sistemi UpgradePanel (Yol A).
+- ⏸️ `PrestigeManager.GetCustomerCapacity()` dead-code — hâlâ açık, sonra karar.
 
-**Mimari not (hâlâ geçerli):** Gerçek upgrade'ler **Yol A (UpgradePanel, Inspector-driven)**. `UpgradeAssets.GetCost()` (Yol B) ölü kod. Fiyatlar Inspector/sahne YAML'ına uygulanır, koda değil.
+**Mimari not:** Gerçek upgrade'ler **Yol A (UpgradePanel, Inspector-driven)** — artık tek yol (Yol B silindi). Fiyatlar Inspector/sahne YAML'ına uygulanır, koda değil.

@@ -8,17 +8,19 @@
 
 ## 🎯 Şu an aktif iş
 
-**Roguelite Upgrade Draft Sistemi** — uygulama devam ediyor.
-Branch: `feature/roguelite-upgrade-draft`. **Task 0-6 commit'li**, ekonomi kilitli (v3.2, 9945 TL).
-→ Tam detay & task listesi: **[plans/roguelite-draft.md](plans/roguelite-draft.md)**
+**RELEASE PUSH** — buglar → denge → Steam çıkışı. Branch: `feature/roguelite-upgrade-draft`.
+→ Faz kapsamı & bug envanteri: **[plans/release-push.md](plans/release-push.md)** · oturum logu: **[plans/devam.md](plans/devam.md)**
+
+- ✅ **Roguelite Upgrade Draft BİTTİ** (Task 0-9 commit'li, 16 perk sahnede authored, ekonomi v3.2/9945 TL, qa merge-öncesi tarama: **blocker yok**). Kod olarak `main`'e merge'e hazır — tek kalan: FAZ 0 late-join çok-oyunculu Play testi (kullanıcıda). Detay: [plans/roguelite-draft.md](plans/roguelite-draft.md).
+- ✅ **FAZ 1 bug-avı** büyük ölçüde bitti: 21+ bulgu kapandı (G1-G28 exploit/korrektlik + N7/E1/E2/E4 netcode/çekirdek). Kalan açıklar release-push.md'de (N1-N6/N8-N10, G9-artış2, G15/G23/G24/G25/G28, C1).
 
 ### ⏭️ Sıradaki adım (buradan devam)
-1. ✅ **Task 0-6 bitti.** Task 6 reroll butonu commit `b458a9d` (qa: 1 önemli+2 küçük → listener/panel-guard düzeltildi; kontrol: ONAY). Debug log temizlik borcu kapandı.
-2. **Task 7 (aktif):** 16-perk effect registry (`PerkEffect.cs`, Assembly-CSharp; `ApplyUpgradeEffect` → effectId varsa registry'ye delege). Değerler UPGRADE_PRICING_REPORT.md v3.2 §3-4. Bazı risk perkleri (Volatilite per-delivery RNG, Acil Fren iflas bayrağı) gerçek kod dokunuşu → qa ile netleş. Sonra 8 (Inspector veri) → 9 (qa+ölü kod) → kontrol whole-branch ONAY → Unity 1/2/4 kişi test.
-3. 🙋 **Manuel borç:** Task 4/5/6 Play/multiplayer teyidi (geç-join client'ta reroll fiyatı, host+client aynı 3 kart senkron) — [plans/manuel-gorevler.md](plans/manuel-gorevler.md).
+1. 🔧 **Commit'siz bug fix'leri kapat (bu oturum):** dolu-kutu-fırlatınca-parçalanma (`NetworkWorldItem` doluluk kontrolü + `RedFull.prefab` veri) + client NaN-frustum spam'i (`WorldSpaceCanvasCameraBinder`). Kullanıcı play-test'i ✅. Kalan: kontrol kapısı + seçici commit (hassas font/SteamManager/ProjectSettings dosyalarına dokunmadan).
+2. 🙋 **Manuel test borcu:** [plans/manuel-gorevler.md](plans/manuel-gorevler.md) — A0 (bu oturum fix'leri) + A/B/C/D (güvenlik regresyonu, FAZ 0 merge blocker, roguelite draft senkron, ekonomi ölçümü).
+3. 📊 **FAZ 2 açık kararlar:** C1 kota-ölümü (playtest-blocked, [plans/economy-audit-2026-07-13.md](plans/economy-audit-2026-07-13.md)); C5 wealthTax ✅ çözüldü (`9d2c3b0`).
 
-> ⚠️ Task 6+ NetworkList/sahne/prefab içerir → batchmode EditMode sadece derlemeyi doğrular; senkron/UI için Play/gerçek Unity gerekir.
-> ℹ️ **Yan görev bitti:** ses ayarı slider bug'ı çözüldü (`f7122c9`) — bkz. [plans/archive/2026-07-changelog.md](plans/archive/2026-07-changelog.md).
+> ⚠️ Netcode/sahne/prefab işleri → batchmode EditMode sadece derlemeyi doğrular; senkron/UI için Play/gerçek Unity gerekir.
+> ℹ️ Çalışma ağacındaki hassas dosyalar (late-join fix, SteamManager, fontlar, ProjectSettings) Steam testine bağlı — commit'siz bırakıldı.
 
 ---
 
@@ -32,14 +34,16 @@ Branch: `feature/roguelite-upgrade-draft`. **Task 0-6 commit'li**, ekonomi kilit
 ## 🗂️ Plan dosyaları
 | Dosya | İçerik | Durum |
 |---|---|---|
-| **[plans/manuel-gorevler.md](plans/manuel-gorevler.md)** | 🙋 **Senin yapacakların** — Unity Play/UI/multiplayer teyitleri | 🔴 Task 4 testi bekliyor |
-| **[plans/release-push.md](plans/release-push.md)** | RELEASE PUSH fazları (FAZ 0 test → FAZ 1 bug envanteri → ekonomi → Steam) | 🚧 FAZ 1 aktif |
-| **[plans/roguelite-draft.md](plans/roguelite-draft.md)** | Aktif: draft sistemi tasarım + uygulama + task listesi | 🚧 canlı |
-| [plans/economy-balance.md](plans/economy-balance.md) | Ekonomi denge (Faz 1, Faz 2, bug'lar) | ✅ çoğu bitti (Unity teyidi) |
+| **[plans/release-push.md](plans/release-push.md)** | RELEASE PUSH fazları (FAZ 0 test → FAZ 1 bug envanteri → ekonomi → Steam) + gerçek bug envanteri (G/N/E) | 🚧 **aktif — gerçek kaynak** |
+| **[plans/devam.md](plans/devam.md)** | Oturum logu (en son ne yapıldı + sırada ne) — oturum başında ÖNCE bunu oku | 🚧 canlı |
+| **[plans/manuel-gorevler.md](plans/manuel-gorevler.md)** | 🙋 **Senin yapacakların** — Unity Play/UI/multiplayer teyitleri | 🔴 A0+A/B/C/D testi bekliyor |
+| [plans/roguelite-draft.md](plans/roguelite-draft.md) | Draft sistemi tasarım + uygulama (Task 0-9) | ✅ bitti (merge-pending) |
+| [plans/economy-audit-2026-07-13.md](plans/economy-audit-2026-07-13.md) | FAZ 2 ekonomi denetimi (16-gün sim, C1/C5 kararları) | 📖 karar-referans |
+| [plans/economy-balance.md](plans/economy-balance.md) | Ekonomi denge (Faz 1 değerleri) | ✅ bitti (playtest teyidi borcu) |
 | [plans/roadmap.md](plans/roadmap.md) | Orijinal yol haritası + Sprint 0-3 + departman tablosu | 📖 referans |
 | [plans/archive/2026-07-changelog.md](plans/archive/2026-07-changelog.md) | Değişiklik günlüğü, bitmiş kararlar | 🗄️ arşiv |
 
-**Referans raporlar (kök):** `GDD.md` (tasarım), `UPGRADE_PRICING_REPORT.md` v3.2 (fiyat kaynağı), `ECONOMY_BALANCE_REPORT.md`.
+**Referans raporlar (kök):** `GDD.md` (tasarım), `UPGRADE_PRICING_REPORT.md` v3.2 (fiyat kaynağı), `ECONOMY_BALANCE_REPORT.md` (Faz-1 ekonomi analizi, tarihli).
 
 ---
 

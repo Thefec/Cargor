@@ -1,9 +1,11 @@
 ---
 name: rent-death-spiral
-description: Cargor'da 1P/2P bankruptcy'nin gerçek kök nedeni rentGrowthMultiplier + wealthTaxRate bileşimi, startingMoney değil
+description: 1P/2P bankruptcy kök nedeni rentGrowthMultiplier (startingMoney değil); ÇÖZÜLDÜ 1.3→1.15 uygulandı. NOT: wealthTax aslında inert'ti (kırık kablolama), asıl kaldıraç yalnız rentGrowth.
 metadata:
   type: project
 ---
+
+> ⚠️ **Düzeltme (2026-07-13 denetimi):** Bu kayıt ölüm-sarmalını "rentGrowth + wealthTax bileşimi" diye anlatıyor, ama sonraki analiz wealthTax'in **fiilen hep 0 / etkisiz** olduğunu (kırık kablolama, [[wealthtax_broken_wiring]]) buldu — yani asıl (ve tek) kaldıraç `rentGrowthMultiplier`'dı. ✅ **ÇÖZÜLDÜ:** `rentGrowthMultiplier` 1.3→1.15 uygulandı (Faz-1), 16-gün sim 1P/2P/4P sağlıklı ([[money_config_conflict]], plans/economy-audit-2026-07-13.md). wealthTax terimi de sonradan tamamen kaldırıldı.
 
 2026-07-07 tarihli tam analiz (bkz. proje kökünde `ECONOMY_BALANCE_REPORT.md`, artık silinmiş/güncellenmiş olabilir — güncel değerler için `Assets/Resources/EkonomiAyarlari.asset` ve `Assets/NewCss/GameEconomySettings.cs`'i kontrol et):
 

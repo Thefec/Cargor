@@ -1,5 +1,7 @@
 # 🎮 Senaryo Simülasyonu: Eski vs Yeni Müşteri Sistemi
 
+> 🗄️ **ARŞİV / OBSOLETE (2026-02-14).** [2026-02-capacity-spawn-implementation-plan.md](2026-02-capacity-spawn-implementation-plan.md)'nin eşlik eden simülasyonu. Yeni ("kapasite-bazlı") sistem canlıya alındı; bu karşılaştırma yalnızca tarihsel. Güncel ekonomi/müşteri sim'i için [economy-audit-2026-07-13.md](../economy-audit-2026-07-13.md).
+
 ## Varsayılan Katsayılar
 
 | Parametre | Değer |

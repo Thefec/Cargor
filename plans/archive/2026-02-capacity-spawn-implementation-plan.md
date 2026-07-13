@@ -1,5 +1,7 @@
 # Kapasite & İtibar Bazlı Müşteri Spawn Sistemi
 
+> 🗄️ **ARŞİV / OBSOLETE (2026-02-14 tasarım dokümanı).** Bu sistem SONRADAN uygulanıp canlıya alındı — `CustomerManager` bugün `CountActiveInteractables`/`storeLevel`/`playerCountMultiplier` (1P=1.0/2P=1.3/3P=1.6/4P=1.9) ile çalışıyor; "Opsiyon B" seçildi. Belgedeki "kararını bekliyorum" soruları ÇÖZÜLDÜ, `file:///d:/UnityFolders/...` yolları ÖLÜ (proje artık `C:/Users/cicek/Documents/GitHub/Cargor`). Yalnızca tarihsel referans.
+
 Mevcut lineer formül (`baseCustomersPerDay + (day-1) * increase`) oyuncunun gerçek durumunu yansıtmıyor. Yeni sistem, sahnedeki etkileşime açık yüzeyleri (raf/masa) ve mağaza seviyesini baz alarak dinamik müşteri sayısı hesaplayacak.
 
 ## Mevcut Durum Analizi

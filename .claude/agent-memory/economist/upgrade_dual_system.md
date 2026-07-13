@@ -1,11 +1,13 @@
 ---
 name: upgrade-dual-system
-description: Cargor'da iki paralel/çakışan upgrade sistemi var (UpgradePanel Inspector-driven vs ItemType/UpgradeAssets statik-cost); MoreCapacity_4+ şu an bedava
+description: ÇÖZÜLDÜ (479dbf0) — Yol B (ItemType/UpgradeAssets/UpgradeManager) silindi; artık tek upgrade sistemi UpgradePanel (Yol A). Tarihsel kayıt.
 metadata:
   type: project
 ---
 
-Cargor'da iki ayrı upgrade satın alma yolu tespit edildi (2026-07-07 itibarıyla):
+> ✅ **ÇÖZÜLDÜ (2026-07-13, commit `479dbf0`):** Yol B tamamen orphan/ölü olduğu doğrulandı (`UpgradeManager.Instance` hiçbir sahne/prefab'da yok) → `UpgradeManager.cs` + `UpgradeAssets.cs` + `ItemType.cs` `git rm` ile silindi. `ShelfController`/`TableController` (sahnede canlı) ItemType-bağlı ölü hunk'ları temizlendi, canlı görsel-seviye kodu korundu. Artık **tek upgrade sistemi = UpgradePanel (Yol A)**. "MoreCapacity_4+ bedava" bug'ı da silinmeyle konu-dışı kaldı. Aşağısı tarihsel kayıt.
+
+Cargor'da iki ayrı upgrade satın alma yolu tespit edildi (2026-07-07 itibarıyla; Yol B 2026-07-13'te silindi):
 
 1. **`UpgradePanel.cs`** — `UpgradeDefinition` listesi, Inspector'da veri girilir (baseCost/costStep/maxLevel kodda görünmez). Kapsadığı upgrade'ler: Kuyruk (`maxQueueSize`), Stamina (`staminaRegenRate`), Para (`rewardPerBox` +10/seviye), Tır/Hangar (`GarageDoorController[]`), Görev Tier.
 2. **`ItemType.cs` + `UpgradeAssets.cs` + `UpgradeManager.cs`** — statik `switch` ile sabit fiyat. Kapsadığı upgrade'ler: `MoreCapacity_1..15` (raf sayısı, `ShelfController.cs` üzerinden), `TableSlotsIncrease_1..2` (kutulama masası, `TableController.cs`), `QueueCapacity_1..3` (kuyruk — sistem 1'deki "Kuyruk" ile **çakışıyor olabilir**).

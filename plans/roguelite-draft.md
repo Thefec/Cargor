@@ -1,8 +1,8 @@
 # 🎲 Roguelite Upgrade Draft Sistemi
 
-> **Durum**: 🚧 UYGULAMA DEVAM EDİYOR (subagent-driven) — 2026-07-08, 2. oturum sonu
+> **Durum**: ✅ **BİTTİ — Task 0-9 tamamlandı, merge-pending** (kod merge'e hazır; kalan: FAZ 0 late-join çok-oyunculu Play testi → main'e merge). qa merge-öncesi tarama: **blocker yok**. 16 perk sahnede authored (2026-07-13 doğrulandı).
 > **Branch**: `feature/roguelite-upgrade-draft` (base `1f40742`)
-> **İlgili**: [../PLAN.md](../PLAN.md) · [economy-balance.md](economy-balance.md)
+> **İlgili**: [../PLAN.md](../PLAN.md) · [release-push.md](release-push.md) FAZ 0 · [economy-balance.md](economy-balance.md)
 
 Kullanıcı isteği: mağazayı "tüm upgrade'leri listele" düzeninden **gün sonu 3 rastgele kart** draft'ına çevir + yeni perk'ler ekleyerek çeşitlilik/kaos kat.
 
@@ -50,6 +50,9 @@ Kullanıcı isteği: mağazayı "tüm upgrade'leri listele" düzeninden **gün s
 | 4 | `b59ccde` | `_dailyOffer` NetworkList + `_rerollCountToday`/`_questSystemActive` NetworkVariable + `GenerateDailyOfferServer` (server-only, gün-seed'li RNG, tier+max+quest eligibility) + `HandleDailyOfferChanged`→`RebuildDraftEntries` stub. OnNetworkSpawn(server)+HandleNewDay entegre. Batchmode derleme temiz, 6/6. **✅ Play doğrulandı: teklif `[2,5,7]` 3 index üretti.** Debug log commit `9b2b8c7` (Task 6/7'de kaldırılacak). |
 | 5 | `d8b33ff` | `RebuildDraftEntries` artık sadece `_dailyOffer`'daki (≤3) kartı kurar (mevcut `BuildSingleEntry`; `EntryUI.UpgradeIndex` = gerçek index → satın alma zinciri korunur). OnNetworkSpawn + panel-open `BuildEntries` yerine bunu çağırır. **✅ Local Play doğrulandı: panel 3 kart gösteriyor, error yok.** |
 | 6 | `b458a9d` | Reroll butonu: `OnReroll`+`RerollServerRpc` (server-auth, `RerollCurve` 50/90/160/290/525, seed'e reroll-count XOR'lu, `_rerollCountToday` günlük 0'lanır), `rerollButton`/`rerollCostText` SerializeField, `RefreshRerollUI` (sayaç+para+draft tetikli, null-guard). `BuildEligibility(int,out PerkTier)` ortak helper'a çıkarıldı. Task 4 debug log borcu silindi. **qa:** 1 önemli (listener birikmesi→`OnNetworkDespawn` RemoveListener) + panel-açık server guard düzeltildi. **kontrol: ONAY.** Play/multiplayer teyidi manuel. |
+| 7 | `7110afc` (+PerkEffect) | 16-perk effect registry (`PerkEffect.cs`, Assembly-CSharp; `ApplyUpgradeEffect`→effectId varsa registry'ye delege). gambler_case↔all_in dışlama (eligibility + satın-alma guard + aynı-teklif koruması). qa 3 bulgu → kod sağlam; Bulgu 2 (a-dışlama) kod, Bulgu 3 (economySettings ref) doğrulandı. **kontrol: ONAY.** |
+| 8 | (sahne) | 16 perk `The Main Office.unity` sahnesinde `UpgradePanel.upgrades` listesine authored (kind=Perk + effectId + tier/fiyat, task7-manuel.md tablosu). **Doğrulandı 2026-07-13: sahnede 25 effectId girdisi (16 perk + 9 omurga).** |
+| 9 | (tarama) | qa merge-öncesi regresyon taraması: DraftPool/PerkEffect/UpgradePanel/RerollCurve, 6 bilinen risk regresyonsuz. **MERGE-BLOCKER YOK.** |
 
 ### Mimari karar (yeni oturum bilmeli)
 Saf-mantık dosyaları (`PerkTier`, `DraftPool`, + Task 3'te `RerollCurve`) `Assets/NewCss/Roguelite/` altında **izole `NewCss.Roguelite` asmdef**'inde (autoReferenced=true → Assembly-CSharp/UpgradePanel otomatik görür). Test asmdef'i (`Assets/Tests/EditMode/Cargor.Tests.EditMode.asmdef`) bunu referanslar. `PerkEffect.cs` (Task 7) Assembly-CSharp'ta kalır (Truck/CustomerManager'a bağımlı).
@@ -67,13 +70,11 @@ Unity 6000.4.3f1 batchmode (`-runTests -testPlatform EditMode`) ile doğrulandı
 ---
 
 ## ⏭️ Sıradaki (buradan devam)
-1. ✅ **Unity teyidi geçti** — Task 0-2 derlendi ve testler geçti (batchmode EditMode 4/4).
-2. ✅ **Task 3 bitti** (`5cc6675`) — RerollCurve + testi, batchmode 6/6.
-3. ✅ **Task 4 bitti** (`b59ccde`) — server-auth `_dailyOffer` üretimi, Play-doğrulandı (`[2,5,7]`). Geçici debug log `9b2b8c7` (Task 6/7'de kaldır).
-4. ✅ **Task 5 bitti** (`d8b33ff`) — panel 3-kart draft (`RebuildDraftEntries` gerçek görünüm), local Play-doğrulandı (3 kart geldi).
-5. ✅ **Task 6 bitti** (`b458a9d`) — reroll butonu, kontrol ONAY. **Task 7 (aktif):** 16-perk effect registry (`PerkEffect.cs`, Assembly-CSharp). **Task 8:** Inspector/sahne veri girişi (fiyatlar v3.2'den). **Task 9:** qa + ölü kod + prefab override.
-5. **Son:** kontrol whole-branch ONAY → Unity 1/2/4 kişi test.
+✅ **TASK 0-9 TAMAMLANDI.** Draft + tier + reroll + 16-perk effect registry + sahne authoring + merge-öncesi qa taraması hepsi bitti. Detaylar yukarıdaki task tablosunda.
 
-> **Not (Task 4+):** Bu task'lar NetworkList/NetworkBehaviour + sahne/prefab içeriyor — saf EditMode ile tam doğrulanamaz; PlayMode veya gerçek Unity oturumu gerekir. Batchmode EditMode sadece derleme + saf-mantık testlerini kapsar.
+**Kalan tek adım — merge (kod hazır, teste bağlı):**
+1. 🙋 **FAZ 0 çok-oyunculu Play testi** (kullanıcıda) — late-join reddi + reconnect perk-replay. Bkz [manuel-gorevler.md](manuel-gorevler.md) B + [release-push.md](release-push.md) FAZ 0.
+2. Test ✅ → late-join fix seçici commit + `[NETDBG]` kaldır + font/ProjectSettings revert → **roguelite dalını `main`'e merge**.
+3. 🙋 **Draft senkron Play teyidi** (manuel-gorevler.md C): host+client aynı 3 kart, reroll fiyatı geç-join'de senkron, perk etkileri gerçekten uygulanıyor mu.
 
-> Task brief'leri önceki oturumun scratchpad'indeydi (devretmez) — plandan yeniden üretilir.
+> **Not:** Bu sistem NetworkList/NetworkBehaviour + sahne/prefab içeriyor — saf EditMode ile tam doğrulanamaz; kalan doğrulama PlayMode/gerçek Unity + çok-oyunculu oturum gerektirir.
