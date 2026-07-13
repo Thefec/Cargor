@@ -672,21 +672,10 @@ public partial class PlayerInventory : NetworkBehaviour
         onPickedUp?.Invoke();
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    public void ClearCurrentItemServerRpc()
+    public void SetInventoryStateServer(bool hasItemValue, int itemID)
     {
-        if (!_hasItem.Value) return;
+        if (!IsServer) return;
 
-        _hasItem.Value = false;
-        _currentItemID.Value = -1;
-
-        _playerMovement?.SetCarrying(false);
-        ClearHeldItemVisualClientRpc();
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    public void SetInventoryStateServerRpc(bool hasItemValue, int itemID)
-    {
         _hasItem.Value = hasItemValue;
         _currentItemID.Value = itemID;
 
@@ -711,9 +700,9 @@ public partial class PlayerInventory : NetworkBehaviour
         StartDropAnimationClientRpc();
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    public void GiveItemDirectlyServerRpc(int itemID)
+    public void GiveItemDirectlyServer(int itemID)
     {
+        if (!IsServer) return;
         if (_hasItem.Value) return;
 
         var itemData = GetItemDataFromID(itemID);
