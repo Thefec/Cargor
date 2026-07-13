@@ -1,12 +1,10 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace NewCss.UIScripts
 {
     /// <summary>
-    /// Raf kapasite seviye kontrolcüsü - upgrade sistemine göre raf kapasitesini yönetir.   
-    /// UpgradeManager event'lerini dinleyerek görsel güncellemeleri yapar.
+    /// Raf kapasite seviye kontrolcï¿½sï¿½.
     /// </summary>
     public class ShelfController : MonoBehaviour
     {
@@ -24,7 +22,7 @@ namespace NewCss.UIScripts
         public GameObject[] levels;
 
         [Header("=== DEBUG ===")]
-        [SerializeField, Tooltip("Debug loglarýný göster")]
+        [SerializeField, Tooltip("Debug loglarï¿½nï¿½ gï¿½ster")]
         private bool showDebugLogs;
 
         #endregion
@@ -33,37 +31,17 @@ namespace NewCss.UIScripts
 
         private int _currentLevel;
 
-        // Capacity upgrade mapping cache
-        private static readonly Dictionary<ItemType, int> CapacityUpgradeMapping = new()
-        {
-            { ItemType.MoreCapacity_1, 1 },
-            { ItemType.MoreCapacity_2, 2 },
-            { ItemType.MoreCapacity_3, 3 },
-            { ItemType.MoreCapacity_4, 4 },
-            { ItemType. MoreCapacity_5, 5 },
-            { ItemType. MoreCapacity_6, 6 },
-            { ItemType.MoreCapacity_7, 7 },
-            { ItemType.MoreCapacity_8, 8 },
-            { ItemType.MoreCapacity_9, 9 },
-            { ItemType.MoreCapacity_10, 10 },
-            { ItemType.MoreCapacity_11, 11 },
-            { ItemType.MoreCapacity_12, 12 },
-            { ItemType. MoreCapacity_13, 13 },
-            { ItemType. MoreCapacity_14, 14 },
-            { ItemType.MoreCapacity_15, 15 }
-        };
-
         #endregion
 
         #region Events
 
         /// <summary>
-        /// Seviye deðiþtiðinde tetiklenir (previousLevel, newLevel)
+        /// Seviye deï¿½iï¿½tiï¿½inde tetiklenir (previousLevel, newLevel)
         /// </summary>
         public event Action<int, int> OnLevelChanged;
 
         /// <summary>
-        /// Maksimum seviyeye ulaþýldýðýnda tetiklenir
+        /// Maksimum seviyeye ulaï¿½ï¿½ldï¿½ï¿½ï¿½nda tetiklenir
         /// </summary>
         public event Action OnMaxLevelReached;
 
@@ -87,12 +65,12 @@ namespace NewCss.UIScripts
         public bool IsMaxLevel => _currentLevel >= MaxLevel;
 
         /// <summary>
-        /// Yükseltme yapýlabilir mi?
+        /// Yï¿½kseltme yapï¿½labilir mi?
         /// </summary>
         public bool CanUpgrade => !IsMaxLevel;
 
         /// <summary>
-        /// Toplam seviye sayýsý
+        /// Toplam seviye sayï¿½sï¿½
         /// </summary>
         public int TotalLevels => levels?.Length ?? 0;
 
@@ -105,11 +83,6 @@ namespace NewCss.UIScripts
             Initialize();
         }
 
-        private void OnDestroy()
-        {
-            UnsubscribeFromUpgradeManager();
-        }
-
         #endregion
 
         #region Initialization
@@ -118,7 +91,6 @@ namespace NewCss.UIScripts
         {
             ValidateLevels();
             UpdateVisual();
-            SubscribeToUpgradeManager();
         }
 
         private void ValidateLevels()
@@ -147,61 +119,10 @@ namespace NewCss.UIScripts
 
         #endregion
 
-        #region Event Subscriptions
-
-        private void SubscribeToUpgradeManager()
-        {
-            if (UpgradeManager.Instance == null)
-            {
-                LogWarning("UpgradeManager instance not found!");
-                return;
-            }
-
-            UpgradeManager.Instance.OnUpgradePurchased += HandleUpgradePurchased;
-            LogDebug("Subscribed to UpgradeManager events");
-        }
-
-        private void UnsubscribeFromUpgradeManager()
-        {
-            if (UpgradeManager.Instance != null)
-            {
-                UpgradeManager.Instance.OnUpgradePurchased -= HandleUpgradePurchased;
-            }
-        }
-
-        #endregion
-
-        #region Upgrade Event Handler
-
-        /// <summary>
-        /// Upgrade satýn alýndýðýnda çaðrýlýr
-        /// </summary>
-        public void HandleUpgradePurchased(ItemType itemType)
-        {
-            if (TryGetTargetLevel(itemType, out int targetLevel))
-            {
-                SetLevel(targetLevel);
-                LogDebug($"Capacity upgrade {itemType} applied - Level set to {targetLevel}");
-            }
-        }
-
-        private bool TryGetTargetLevel(ItemType itemType, out int targetLevel)
-        {
-            return CapacityUpgradeMapping.TryGetValue(itemType, out targetLevel);
-        }
-
-        // Backward compatibility - keeping the original method name
-        public void OnUpgradePurchased(ItemType itemType)
-        {
-            HandleUpgradePurchased(itemType);
-        }
-
-        #endregion
-
         #region Level Management
 
         /// <summary>
-        /// Rafý bir seviye yükseltir
+        /// Rafï¿½ bir seviye yï¿½kseltir
         /// </summary>
         public void UpgradeShelf()
         {
@@ -215,7 +136,7 @@ namespace NewCss.UIScripts
         }
 
         /// <summary>
-        /// Seviyeyi ayarlar ve görseli günceller
+        /// Seviyeyi ayarlar ve gï¿½rseli gï¿½nceller
         /// </summary>
         public void SetLevel(int level)
         {
@@ -231,7 +152,7 @@ namespace NewCss.UIScripts
         }
 
         /// <summary>
-        /// Seviyeyi zorla ayarlar (clamp olmadan, geçersiz deðerler için uyarý verir)
+        /// Seviyeyi zorla ayarlar (clamp olmadan, geï¿½ersiz deï¿½erler iï¿½in uyarï¿½ verir)
         /// </summary>
         public void ForceSetLevel(int level)
         {
@@ -245,7 +166,7 @@ namespace NewCss.UIScripts
         }
 
         /// <summary>
-        /// Seviyeyi bir azaltýr
+        /// Seviyeyi bir azaltï¿½r
         /// </summary>
         public void DecreaseLevel()
         {
@@ -256,7 +177,7 @@ namespace NewCss.UIScripts
         }
 
         /// <summary>
-        /// Seviyeyi sýfýrlar
+        /// Seviyeyi sï¿½fï¿½rlar
         /// </summary>
         public void ResetLevel()
         {
@@ -296,7 +217,7 @@ namespace NewCss.UIScripts
         #region Visual Update
 
         /// <summary>
-        /// Görsel durumu günceller - mevcut seviye ve altýndaki tüm objeleri aktif eder
+        /// Gï¿½rsel durumu gï¿½nceller - mevcut seviye ve altï¿½ndaki tï¿½m objeleri aktif eder
         /// </summary>
         private void UpdateVisual()
         {
@@ -320,7 +241,7 @@ namespace NewCss.UIScripts
         }
 
         /// <summary>
-        /// Görseli zorla günceller
+        /// Gï¿½rseli zorla gï¿½nceller
         /// </summary>
         public void ForceRefreshVisual()
         {
@@ -332,7 +253,7 @@ namespace NewCss.UIScripts
         #region Query Methods
 
         /// <summary>
-        /// Belirli bir seviyenin aktif olup olmadýðýný kontrol eder
+        /// Belirli bir seviyenin aktif olup olmadï¿½ï¿½ï¿½nï¿½ kontrol eder
         /// </summary>
         public bool IsLevelActive(int level)
         {
@@ -345,7 +266,7 @@ namespace NewCss.UIScripts
         }
 
         /// <summary>
-        /// Belirli bir seviye objesini döndürür
+        /// Belirli bir seviye objesini dï¿½ndï¿½rï¿½r
         /// </summary>
         public GameObject GetLevelObject(int level)
         {
@@ -355,29 +276,6 @@ namespace NewCss.UIScripts
             }
 
             return levels[level];
-        }
-
-        /// <summary>
-        /// Sonraki seviyeye geçmek için gereken upgrade item type'ýný döndürür
-        /// </summary>
-        public ItemType? GetNextUpgradeItemType()
-        {
-            if (IsMaxLevel)
-            {
-                return null;
-            }
-
-            int nextLevel = _currentLevel + 1;
-
-            foreach (var kvp in CapacityUpgradeMapping)
-            {
-                if (kvp.Value == nextLevel)
-                {
-                    return kvp.Key;
-                }
-            }
-
-            return null;
         }
 
         #endregion
@@ -453,7 +351,6 @@ namespace NewCss.UIScripts
             Debug.Log($"Is Max Level: {IsMaxLevel}");
             Debug.Log($"Can Upgrade: {CanUpgrade}");
             Debug.Log($"Total Levels: {TotalLevels}");
-            Debug.Log($"Next Upgrade: {GetNextUpgradeItemType()?.ToString() ?? "None"}");
 
             if (levels != null)
             {
@@ -464,16 +361,6 @@ namespace NewCss.UIScripts
                     string status = i <= _currentLevel ? "ACTIVE" : "INACTIVE";
                     Debug.Log($"  [{i}] {(levels[i] != null ? levels[i].name : "NULL")} - {status}");
                 }
-            }
-        }
-
-        [ContextMenu("Debug: Print Upgrade Mapping")]
-        private void DebugPrintUpgradeMapping()
-        {
-            Debug.Log($"{LOG_PREFIX} === CAPACITY UPGRADE MAPPING ===");
-            foreach (var kvp in CapacityUpgradeMapping)
-            {
-                Debug.Log($"  {kvp.Key} -> Level {kvp.Value}");
             }
         }
 

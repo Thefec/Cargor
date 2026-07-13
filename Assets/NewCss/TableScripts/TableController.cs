@@ -4,8 +4,7 @@ using UnityEngine;
 namespace NewCss
 {
     /// <summary>
-    /// Masa slot seviye kontrolcüsü - upgrade sistemine göre masa seviyelerini yönetir.  
-    /// UpgradeManager event'lerini dinleyerek görsel güncellemeleri yapar.
+    /// Masa slot seviye kontrolcï¿½sï¿½.
     /// </summary>
     public class TableController : MonoBehaviour
     {
@@ -22,7 +21,7 @@ namespace NewCss
         public GameObject[] levels;
 
         [Header("=== DEBUG ===")]
-        [SerializeField, Tooltip("Debug loglarýný göster")]
+        [SerializeField, Tooltip("Debug loglarï¿½nï¿½ gï¿½ster")]
         private bool showDebugLogs;
 
         #endregion
@@ -36,7 +35,7 @@ namespace NewCss
         #region Events
 
         /// <summary>
-        /// Seviye deðiþtiðinde tetiklenir
+        /// Seviye deï¿½iï¿½tiï¿½inde tetiklenir
         /// </summary>
         public event Action<int> OnLevelChanged;
 
@@ -68,11 +67,6 @@ namespace NewCss
             Initialize();
         }
 
-        private void OnDestroy()
-        {
-            UnsubscribeFromUpgradeManager();
-        }
-
         #endregion
 
         #region Initialization
@@ -81,7 +75,6 @@ namespace NewCss
         {
             ValidateLevels();
             UpdateVisual();
-            SubscribeToUpgradeManager();
         }
 
         private void ValidateLevels()
@@ -104,61 +97,10 @@ namespace NewCss
 
         #endregion
 
-        #region Event Subscriptions
-
-        private void SubscribeToUpgradeManager()
-        {
-            if (UpgradeManager.Instance == null)
-            {
-                LogWarning("UpgradeManager instance not found!");
-                return;
-            }
-
-            UpgradeManager.Instance.OnUpgradePurchased += HandleUpgradePurchased;
-            LogDebug("Subscribed to UpgradeManager events");
-        }
-
-        private void UnsubscribeFromUpgradeManager()
-        {
-            if (UpgradeManager.Instance != null)
-            {
-                UpgradeManager.Instance.OnUpgradePurchased -= HandleUpgradePurchased;
-            }
-        }
-
-        #endregion
-
-        #region Upgrade Event Handler
-
-        private void HandleUpgradePurchased(ItemType itemType)
-        {
-            int? targetLevel = GetTargetLevelForUpgrade(itemType);
-
-            if (targetLevel.HasValue)
-            {
-                SetLevel(targetLevel.Value);
-                LogDebug($"Upgrade {itemType} applied - Level set to {targetLevel.Value}");
-            }
-        }
-
-        private int? GetTargetLevelForUpgrade(ItemType itemType)
-        {
-            return itemType switch
-            {
-                ItemType.TableSlotsIncrease_1 => 1,
-                ItemType.TableSlotsIncrease_2 => 2,
-                // Yeni upgrade'ler buraya eklenebilir
-                // ItemType.TableSlotsIncrease_3 => 3,
-                _ => null
-            };
-        }
-
-        #endregion
-
         #region Level Management
 
         /// <summary>
-        /// Seviyeyi ayarlar ve görseli günceller
+        /// Seviyeyi ayarlar ve gï¿½rseli gï¿½nceller
         /// </summary>
         public void SetLevel(int level)
         {
@@ -174,7 +116,7 @@ namespace NewCss
         }
 
         /// <summary>
-        /// Seviyeyi bir artýrýr
+        /// Seviyeyi bir artï¿½rï¿½r
         /// </summary>
         public void IncreaseLevel()
         {
@@ -185,7 +127,7 @@ namespace NewCss
         }
 
         /// <summary>
-        /// Seviyeyi bir azaltýr
+        /// Seviyeyi bir azaltï¿½r
         /// </summary>
         public void DecreaseLevel()
         {
@@ -196,7 +138,7 @@ namespace NewCss
         }
 
         /// <summary>
-        /// Seviyeyi sýfýrlar
+        /// Seviyeyi sï¿½fï¿½rlar
         /// </summary>
         public void ResetLevel()
         {
@@ -213,7 +155,7 @@ namespace NewCss
         #region Visual Update
 
         /// <summary>
-        /// Görsel durumu günceller - mevcut seviye ve altýndaki tüm objeleri aktif eder
+        /// Gï¿½rsel durumu gï¿½nceller - mevcut seviye ve altï¿½ndaki tï¿½m objeleri aktif eder
         /// </summary>
         private void UpdateVisual()
         {
