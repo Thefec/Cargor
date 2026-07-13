@@ -482,9 +482,13 @@ namespace NewCss
             UpdateVisualsClientRpc(reqType, reqAmount);
         }
 
-        [ServerRpc(RequireOwnership = false)]
-        public void HandleDeliveryServerRpc(BoxInfo.BoxType boxType, bool isFull)
+        public void ProcessDelivery(BoxInfo.BoxType boxType, bool isFull)
         {
+            if (!IsServer)
+            {
+                return;
+            }
+
             if (_isComplete.Value || _isEntering.Value)
             {
                 return;

@@ -47,7 +47,7 @@ namespace NewCss
                 return;
             }
 
-            mainTruck.HandleDeliveryServerRpc(box.boxType, box.isFull);
+            mainTruck.ProcessDelivery(box.boxType, box.isFull);
 
             NetworkObject boxNetworkObject = other.GetComponent<NetworkObject>();
             if (boxNetworkObject != null && boxNetworkObject.IsSpawned)
