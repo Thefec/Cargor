@@ -8,3 +8,5 @@
 - [Upgrade çift sistem çakışması](upgrade_dual_system.md) — UpgradePanel vs ItemType/UpgradeAssets paralel çalışıyor; MoreCapacity_4+ şu an bedava (bug)
 - [Upgrade fiyatlandırma çerçevesi](upgrade_pricing_framework.md) — 7 upgrade karakterine göre farklı payback hedefi (1.4-3.2 gün); v2'de gerçek maxLevel'e göre revize, bkz. UPGRADE_PRICING_REPORT.md v2
 - [Roguelite perk fiyatlandırma v3.2 ONAY](roguelite_perk_pricing.md) — T3 gate gün≥9, Ucuz Kira tablo, Raf doğrusal, Prestij Simsarı fiyat+etki düzeltildi (18x→2.5x), toplam 9945 TL
+- [FAZ2 kota-verim kalibrasyonu](quota_throughput_calibration.md) — C1 aktivasyonu playtest verisi olmadan ÖNERİLMEZ; ~4-6 kutu/dk eşiği, detay plans/economy-audit-2026-07-13.md
+- [FAZ2 wealthTax kırık kablolama](wealthtax_broken_wiring.md) — rate sorunu değil, GetTotalUpgradeValue() ölü Yol B'yi okuyor; Yol A (UpgradePanel) hiç sayılmıyor
