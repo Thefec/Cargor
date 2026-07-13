@@ -5,15 +5,15 @@
 
 ---
 
-## FAZ 0 — Havadaki işi kapat  🟢 (test GEÇTİ, kapanış adımları kaldı)
+## FAZ 0 — Havadaki işi kapat  🟢 (adım 1-2 bitti; 3-4 kullanıcı onayına takılı)
 Roguelite dalı kod olarak bitti; **late-join testi kullanıcı tarafından yapıldı ve ÇALIŞIYOR (2026-07-14).**
 - [x] **Late-join testi ✅ (2026-07-14, kullanıcı):** late-join reddi çalışıyor. (İlerde sorun çıkarsa kullanıcı bildirecek.)
-- [ ] SteamManager+LateJoinGuard'ın **sadece late-join fix hunk'larını** seçici commit'le (`[NETDBG]` hariç).
-- [ ] `[NETDBG]` enstrümantasyonunu kaldır (SteamManager ~706-731 + client-disconnect log ~795; LateJoinGuard ~128-131/146).
-- [ ] Font/ProjectSettings artefaktlarını revert (bkz [[unity-batchmode-artifacts]]).
-- [ ] Roguelite dalını `main`'e merge.
+- [x] **Late-join fix seçici commit ✅ (`54c5ed2`, 2026-07-14):** SteamManager'daki UX fix'i (`_clientConnectedThisSession` sinyaliyle red↔normal-çıkış ayrımı, re-entrancy guard, next-frame temizlik) commit'lendi.
+- [x] **`[NETDBG]` temizlendi ✅:** SteamManager'dan HookNetworkDiagnostics method+alan + 2 çağrı + 1 log çıkarıldı (35 satır); LateJoinGuard tamamen HEAD'e revert (hepsi [NETDBG]'ydi). 0 dangling ref.
+- [ ] **Font/ProjectSettings artefaktlarını revert** (8 font+LiberationSans+ProjectSettings LF/CRLF churn; SENTIS define görünmüyor). Güvenli `git checkout` (bkz [[unity-batchmode-artifacts]]).
+- [ ] **Roguelite dalını `main`'e merge** (+push?). **roguelite main'den 68 commit önde; main→origin bağlı → dışa dönük.** ⛔ **KULLANICI "burada dur" dedi (2026-07-14) — merge onayı bekliyor.**
 
-> ✅ **2026-07-14:** Late-join testi geçti → merge kapısı AÇILDI. Kalan: yukarıdaki 4 kapanış adımı (late-join fix seçici commit + [NETDBG] temizlik + artefakt revert + merge). Bu adımlar SteamManager (~1800 satır) ve LateJoinGuard'a dokunur — hassas, dikkatli seçici-commit gerektirir.
+> ⏸️ **2026-07-14 STOP:** Adım 1-2 (seçici commit + [NETDBG] temizlik) bitti. Adım 3-4 (artefakt revert + merge) kullanıcı kararına takılı. **Merge öncesi açık karar:** gameplay-fix iş kolu (BoxDestroy+CustomerAI+DisplayTable ONAYLI, Truck/tır-rengi teyitsiz) commit'lensin mi + LocalCoopTestBootstrap dahil mi + push'lu mu. Detay: [devam.md](devam.md).
 
 ---
 
