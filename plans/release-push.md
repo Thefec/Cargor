@@ -108,7 +108,7 @@ Ekonomi dengesi + GDD'de tanımlı ama kodda eksik/yarım sistemler.
 
 ### KARAR bekleyen (economist memo, 2026-07-12) — kullanıcı seçsin:
 - **C1 (E3) kota-ölümü ölü kod** → **economist ÖNERİSİ:** aktive et AMA kira gibi **iki kademeli tampon** (1. kaçırma=uyarı+küçük prestij cezası, 2. üst üste=game over). Alt: (A2) ilk kaçırmada hard game-over (GDD harfiyen, riskli, 16-gün sim şart), (A3) hiç açma sadece soft-uyarı. Dokunulan: `DayCycleManager.ProcessDayEnd()` (~475-503) + `QuotaManager.OnQuotaFailed` sayaç.
-- **C5 (E5) wealthTax hep 0** → **economist ÖNERİSİ:** ölü terimi **kaldır** (sıfır regresyon; zaten hiç çalışmıyor). `Buy()`'ı canlıya bağlamak 1P kirasını ~%131 artırır = `rent_death_spiral` riski. Alt: (A2) bağla ama oran 0.1→0.02-0.03 + 16-gün sim. Dokunulan: `GameEconomySettings.cs:118-124`, `DayCycleManager.cs:582-599`. Not: kaldırılırsa `UpgradeManager.cs`/`ItemType.cs`/`UpgradeAssets.cs` ölü mü ayrıca bakılmalı.
+- **C5 (E5) wealthTax hep 0** → ✅ **ÇÖZÜLDÜ (`9d2c3b0`, kontrol ONAY 1 tur).** Kullanıcı **Seçenek A (kaldır)** seçti. Yeni kök neden (2026-07-13 denetimi): `GetTotalUpgradeValue()` orphan (Yol B) sistemi okuyor → rate ne olursa 0, yani sadece rate düşürmek işe yaramazdı. Terim tamamen kaldırıldı (zero-regression). Kira artık `BaseRent[P]×rentGrowth^cycle×rentScaledMultiplier`. **Follow-up (açık):** `UpgradeManager.cs`/`ItemType.cs`/`UpgradeAssets.cs` artık ölü-kod mu ayrıca incelenmeli.
 
 ## FAZ 3 — Steam çıkışı  ⬜ (bekliyor)
 Build paritesi, depot/setlive ([[cargor-steam-deploy]]), store hazırlığı.
