@@ -410,18 +410,18 @@ public partial class PlayerInventory : NetworkBehaviour
             return;
         }
 
-        Debug.Log("[PlayerInventory] Calling ShelfState.TakeItemFromShelfServerRpc");
+        Debug.Log("[PlayerInventory] Calling ShelfState.TakeItemFromShelfServer");
 
         try
         {
-            nearbyShelf.TakeItemFromShelfServerRpc(requesterClientId, itemNetworkId, rpcParams);
+            nearbyShelf.TakeItemFromShelfServer(requesterClientId, itemNetworkId);
 
             // Client'a shelf item targeting'i temizlemesini söyle
             ClearShelfTargetingClientRpc(requesterClientId);
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"[PlayerInventory] Error in TakeItemFromShelfServerRpc: {e.Message}\n{e.StackTrace}");
+            Debug.LogError($"[PlayerInventory] Error in TakeItemFromShelfServer: {e.Message}\n{e.StackTrace}");
         }
         finally
         {

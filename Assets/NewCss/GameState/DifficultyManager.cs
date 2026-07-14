@@ -33,7 +33,7 @@ namespace NewCss
         private int baseCustomerCount = 10;
 
         [SerializeField, Tooltip("Starting money for single player")]
-        private int baseStartingMoney = 100;
+        private int baseStartingMoney = 500;
 
         [SerializeField, Tooltip("Phone call chance for single player")]
         [Range(0f, 1f)]
@@ -58,7 +58,7 @@ namespace NewCss
 
         [SerializeField, Tooltip("Money multiplier per player (1 = no change)")]
         [Range(0.5f, 1.5f)]
-        private float moneyMultiplierPerPlayer = 0.85f;
+        private float moneyMultiplierPerPlayer = 1.0f;
 
         [SerializeField, Tooltip("Additional phone chance per player")]
         [Range(0f, 0.3f)]
@@ -451,12 +451,23 @@ namespace NewCss
             if (moneySystem != null)
             {
                 moneySystem.startingMoney = ScaledStartingMoney;
-                // SetMoney is called here because this method is only invoked:
-                // 1. During initial game setup (OnNetworkSpawn)
-                // 2. When player count changes (before gameplay starts)
-                // It will NOT overwrite player earnings during active gameplay
-                moneySystem.SetMoney(ScaledStartingMoney);
-                LogDebug($"Starting money set to: {ScaledStartingMoney}");
+
+                // Guard: only force-set the player's current money when the game
+                // hasn't actually started yet (lobby / initial setup / player-count
+                // changes before gameplay begins). Once GameStateManager reports the
+                // game has started, calling SetMoney() here would wipe out the
+                // player's earned money mid-run, so we only update the
+                // startingMoney field above and leave current money untouched.
+                bool gameAlreadyStarted = GameStateManager.Instance != null && GameStateManager.Instance.HasGameEverStarted;
+                if (!gameAlreadyStarted)
+                {
+                    moneySystem.SetMoney(ScaledStartingMoney);
+                    LogDebug($"Starting money set to: {ScaledStartingMoney}");
+                }
+                else
+                {
+                    LogDebug($"Game already started - skipped SetMoney, updated startingMoney field to: {ScaledStartingMoney}");
+                }
             }
         }
 

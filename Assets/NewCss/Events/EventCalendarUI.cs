@@ -190,6 +190,12 @@ namespace NewCss
         private bool _isAnimating;
         private PlayerMovement _currentPlayer;
 
+        private readonly NetworkVariable<int> _calendarSeed = new NetworkVariable<int>(0,
+            NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+        private readonly NetworkVariable<int> _calendarBaseDay = new NetworkVariable<int>(0,
+            NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+        private bool _calendarGenerated;
+
         #endregion
 
         #region Private Fields - Cached Animation Durations
@@ -235,7 +241,6 @@ namespace NewCss
         private void Start()
         {
             InitializeCalendarPanel();
-            GenerateInitialEvents();
             UpdateCalendarUI();
             SubscribeToDayCycleEvents();
             SubscribeToLocaleEvents();
@@ -257,6 +262,53 @@ namespace NewCss
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
+
+            if (IsServer)
+            {
+                // Seed ve base-day AYNI frame'de set edilir ki client'a tutarlı bir snapshot gitsin
+                // (üretim artık mutable startDay'e değil, üretim anındaki bu sabit base-day'e bağlı).
+                _calendarBaseDay.Value = startDay;
+                _calendarSeed.Value = UnityEngine.Random.Range(1, int.MaxValue);
+                EnsureCalendarGenerated();
+            }
+            else
+            {
+                if (_calendarSeed.Value > 0)
+                {
+                    EnsureCalendarGenerated();
+                }
+                else
+                {
+                    _calendarSeed.OnValueChanged += HandleCalendarSeedChanged;
+                }
+            }
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            _calendarSeed.OnValueChanged -= HandleCalendarSeedChanged;
+            base.OnNetworkDespawn();
+        }
+
+        private void HandleCalendarSeedChanged(int previousValue, int newValue)
+        {
+            if (newValue <= 0) return;
+
+            EnsureCalendarGenerated();
+            _calendarSeed.OnValueChanged -= HandleCalendarSeedChanged;
+        }
+
+        /// <summary>
+        /// Takvimi (seed hazırsa) tek seferlik üretir ve UI'ı günceller. Çift-üretimi guard'lar.
+        /// </summary>
+        private void EnsureCalendarGenerated()
+        {
+            if (_calendarGenerated) return;
+            if (_calendarSeed.Value <= 0) return;
+
+            GenerateInitialEvents(_calendarSeed.Value, _calendarBaseDay.Value);
+            _calendarGenerated = true;
+            UpdateCalendarUI();
         }
 
         #endregion
@@ -604,10 +656,23 @@ namespace NewCss
 
         #region Event Generation
 
-        private void GenerateInitialEvents()
+        /// <summary>
+        /// Takvimi verilen seed'den deterministik olarak üretir. Server ile TÜM client'larda
+        /// aynı seed verildiğinde aynı sonucu üretmesi için System.Random kullanılır
+        /// (UnityEngine.Random global/instance state taşır, peer'ler arası senkron garanti edilemez).
+        /// baseDay, üretim anında server'ın senkronladığı SABİT gündür — mutable `startDay` alanı
+        /// KULLANILMAZ, çünkü late-join client'larda `startDay` katılım anının günü olabilir ve
+        /// server'ın üretimde kullandığı base'den sapar (takvim divergence'ı).
+        /// </summary>
+        private void GenerateInitialEvents(int seed, int baseDay)
         {
-            int maxDay = startDay + MAX_PREGENERATED_DAYS;
-            int currentDay = startDay + INITIAL_EVENT_FREE_DAYS; // Start from day 4 (first 3 days have no events)
+            _randomEventDays.Clear();
+            _eventsByDay.Clear();
+
+            System.Random rng = new System.Random(seed);
+
+            int maxDay = baseDay + MAX_PREGENERATED_DAYS;
+            int currentDay = baseDay + INITIAL_EVENT_FREE_DAYS; // Start from day 4 (first 3 days have no events)
             int eventCount = 0;
 
             var positiveEvents = _allEvents.FindAll(e => e.type == EventType.Positive);
@@ -616,7 +681,7 @@ namespace NewCss
             while (currentDay < maxDay)
             {
                 // Random.Range with integers is exclusive of max, so +1 makes it inclusive
-                currentDay += Random.Range(EVENT_INTERVAL_MIN, EVENT_INTERVAL_MAX + 1);
+                currentDay += rng.Next(EVENT_INTERVAL_MIN, EVENT_INTERVAL_MAX + 1);
 
                 if (_randomEventDays.Contains(currentDay)) continue;
 
@@ -625,7 +690,7 @@ namespace NewCss
 
                 _randomEventDays.Add(currentDay);
 
-                GameEvent selectedEvent = SelectEventByCount(eventCount, positiveEvents, negativeEvents);
+                GameEvent selectedEvent = SelectEventByCount(rng, eventCount, positiveEvents, negativeEvents);
                 _eventsByDay[currentDay] = selectedEvent;
 
                 eventCount++;
@@ -634,19 +699,19 @@ namespace NewCss
             _randomEventDays.Sort();
         }
 
-        private GameEvent SelectEventByCount(int eventCount, List<GameEvent> positiveEvents, List<GameEvent> negativeEvents)
+        private GameEvent SelectEventByCount(System.Random rng, int eventCount, List<GameEvent> positiveEvents, List<GameEvent> negativeEvents)
         {
             if (eventCount < INITIAL_POSITIVE_EVENT_COUNT)
             {
-                return positiveEvents[Random.Range(0, positiveEvents.Count)];
+                return positiveEvents[rng.Next(0, positiveEvents.Count)];
             }
 
             if (eventCount == GUARANTEED_NEGATIVE_EVENT_INDEX)
             {
-                return negativeEvents[Random.Range(0, negativeEvents.Count)];
+                return negativeEvents[rng.Next(0, negativeEvents.Count)];
             }
 
-            return _allEvents[Random.Range(0, _allEvents.Count)];
+            return _allEvents[rng.Next(0, _allEvents.Count)];
         }
 
         #endregion
@@ -840,9 +905,9 @@ namespace NewCss
         [ContextMenu("Regenerate Events")]
         private void DebugRegenerateEvents()
         {
-            _randomEventDays.Clear();
-            _eventsByDay.Clear();
-            GenerateInitialEvents();
+            // Editor-only debug tool, not part of runtime network flow.
+            int debugSeed = _calendarSeed.Value > 0 ? _calendarSeed.Value : UnityEngine.Random.Range(1, int.MaxValue);
+            GenerateInitialEvents(debugSeed, startDay);
             UpdateCalendarUI();
         }
 

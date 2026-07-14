@@ -1,0 +1,112 @@
+# 🚀 RELEASE PUSH — Çıkışa Doğru
+
+> Kullanıcı hedefi: **buglar → denge/sistemler → Steam çıkışı.** Bu dosya fazların canlı kaydı.
+> Oturum logu için `plans/devam.md`. Bu dosya = faz kapsamı + durum.
+
+---
+
+## FAZ 0 — Havadaki işi kapat  🟢 (adım 1-2 bitti; 3-4 kullanıcı onayına takılı)
+Roguelite dalı kod olarak bitti; **late-join testi kullanıcı tarafından yapıldı ve ÇALIŞIYOR (2026-07-14).**
+- [x] **Late-join testi ✅ (2026-07-14, kullanıcı):** late-join reddi çalışıyor. (İlerde sorun çıkarsa kullanıcı bildirecek.)
+- [x] **Late-join fix seçici commit ✅ (`54c5ed2`, 2026-07-14):** SteamManager'daki UX fix'i (`_clientConnectedThisSession` sinyaliyle red↔normal-çıkış ayrımı, re-entrancy guard, next-frame temizlik) commit'lendi.
+- [x] **`[NETDBG]` temizlendi ✅:** SteamManager'dan HookNetworkDiagnostics method+alan + 2 çağrı + 1 log çıkarıldı (35 satır); LateJoinGuard tamamen HEAD'e revert (hepsi [NETDBG]'ydi). 0 dangling ref.
+- [ ] **Font/ProjectSettings artefaktlarını revert** (8 font+LiberationSans+ProjectSettings LF/CRLF churn; SENTIS define görünmüyor). Güvenli `git checkout` (bkz [[unity-batchmode-artifacts]]).
+- [ ] **Roguelite dalını `main`'e merge** (+push?). **roguelite main'den 68 commit önde; main→origin bağlı → dışa dönük.** ⛔ **KULLANICI "burada dur" dedi (2026-07-14) — merge onayı bekliyor.**
+
+> ⏸️ **2026-07-14 STOP:** Adım 1-2 (seçici commit + [NETDBG] temizlik) bitti. Adım 3-4 (artefakt revert + merge) kullanıcı kararına takılı. **Merge öncesi açık karar:** gameplay-fix iş kolu (BoxDestroy+CustomerAI+DisplayTable ONAYLI, Truck/tır-rengi teyitsiz) commit'lensin mi + LocalCoopTestBootstrap dahil mi + push'lu mu. Detay: [devam.md](devam.md).
+
+---
+
+## FAZ 1 — Tüm-oyun bug envanteri  🚧 (aktif)
+Salt-okunur qa taramaları → önceliklendirilmiş bulgu listesi → onaylı düzeltmeler.
+
+### Dilim: Netcode / multiplayer  🚧 (2026-07-12 başladı)
+İki paralel qa: **A** bağlantı/lobi/yaşam döngüsü (SteamManager, LateJoinGuard, LobbySaver, PlayerSpawner, NetworkCleanupHelper, NetworkObjectPool) · **B** state senkron/yetki (PlayerRosterEntry, GameStateManager, DayCycleManager roster, BreakRoomManager, NextDayUIManager, ClientNetworkTransform).
+- ⚠️ In-flight istisna: SteamManager+LateJoinGuard'daki commit'siz late-join fix + `[NETDBG]` bulgu SAYILMAZ.
+
+#### Bulgu envanteri (2026-07-12 qa A+B, müdür doğruladı)
+**P0 — CRITICAL, gerçek olasılık yüksek, ucuz fix:**
+- [ ] **N1** `PlayerSpawner.cs:304` — `spawnIndex = clientId % spawnPoints.Length` null/boş kontrolünden (305) ÖNCE → NRE/DivByZero + orphan playerInstance (soft-lock). ✅ doğrulandı. Fix: kontrolü öne al + fail'de Destroy.
+- [ ] **N2** `LobbySaver.cs:82-96,196-212` — `OnApplicationFocus(false)`→`ClearLobby()`→Steam `Lobby.Leave()`. Standalone'da alt-tab / overlay / Discord'a geçiş bile lobiyi terk ettiriyor (DontDestroyOnLoad → oyun sahnesinde de). ✅ handler mevcut. Fix: focus-loss'ta leave etme (sadece Quit/mobil-pause).
+**P0 — CRITICAL, saldırı yüzeyi / robustluk:**
+- [ ] **N3** `DayCycleManager.cs:786-790`+`BreakRoomManager.cs:352-379` — "herkes break room'da" kararı client-authoritative pozisyona dayanıyor, `SetBreakRoomReadyServerRpc`'de server doğrulaması yok → lag desync + hileli client bypass. (Fix daha büyük: server-side presence doğrulama.)
+- [ ] **N4** `DayCycleManager.cs:642-646` — `NextDayServerRpc(RequireOwnership=false)` sadece `IsServer` guard'lı; gün-bitti/kira kontrolü yok → herhangi client kirayı atlayıp gün 16'ya zıplayabilir. ✅ doğrulandı. Şu an canlı UI caller yok (editor ContextMenu). Fix: `_networkIsDayOver`/breakRoomReady guard.
+**P1 — ÖNEMLİ, tutarlılık:**
+- [ ] **N5** `SteamManager.cs:714-753` hook'ları (`HookNetworkDiagnostics`/`HookLateJoinRejectionHandler`) `NetworkManager.Singleton` callback'lerine abone; SteamManager DontDestroyOnLoad DEĞİL (grep: 0 çağrı) → `OnDisable`'da unsubscribe yok → sahne geçişinde dangling delegate, `MissingReferenceException`, tekrarlı host/join'de katlanan abonelik. → **late-join finalizasyonuna dahil et.**
+- [ ] **N6** `SteamManager.cs:1849-1866` (`NotifyBreakRoomManager`, çağrı 500/516/1362/1718) — ham Steam lobi Members → `requiredPlayers` ikinci yazma yolu; roster tek-kaynak yorumunu (`DayCycleManager.cs:701-704`) çiğniyor.
+- [x] **N7** `DayCycleManager.cs:601-613` `GetPlayerCount` → roster otorite (`GameStateManager.RosterPlayerCount`, BreakRoomManager ile aynı desen), fallback ConnectedClients→1. Kira formülü değişmedi. **kontrol ONAY, commit'li.** ✅
+**P2 — KÜÇÜK / latent:**
+- [ ] **N8** `LateJoinGuard.cs:139` kapasite TOCTOU (teorik, düşük).
+- [ ] **N9** `GameStateManager.cs:102-119` `ApplyGameEndState` switch'te `None` case yok (latent).
+- [ ] **N10** `DayCycleManager.cs:842-845` `HandleBreakRoomReadyChanged` boş gövde; server-auth state ↔ yerel UI tetikleyici ikiye ayrık (N3 ile ilişkili).
+
+### Dilim: Çekirdek döngü + ekonomi  🚧 (2026-07-12, qa korrektlik taraması)
+Bulgular (müdür 3'ünü kodda doğruladı):
+- [x] **E1/C2** (CRITICAL) iflas dalı game-over döngüsünü durdurmuyordu → `TriggerLose()` spam. **Fix:** ayrı server-only `_gameOverStopProcessing` flag'i (Update guard'ında); `_networkIsDayOver` BİLEREK set edilmiyor (dayEndScreen açılmasın + NextDay ilerlemesin — kontrol tur-1 bunu yakaladı). ResetLocalState'te sıfırlanıyor. **kontrol ONAY (tur-2), commit'li.** ✅
+- [x] **E2/C3** (ÖNEMLİ) `ResetLocalState` `_rentPaymentCount`/`_graceUsed`/`insuranceAvailable`'ı sıfırlamıyordu → replay'de kirli state. **Fix + kontrol ONAY, commit'li.** ✅
+- [ ] **E3/C1** (CRITICAL, KARAR) `QuotaManager.CheckEndOfDayQuota`/`OnQuotaFailed` hiçbir yerden çağrılmıyor/dinlenmiyor → GDD'de tanımlı kota-ölümü ölü kod. ✅ doğrulandı. **Karar+economist:** kota-ölümünü aç (zorluk↑) mı, GDD davranışı ne (hard game-over? grace?).
+- [x] **E4/C4** (ÖNEMLİ) prestij≤0 game-over sadece tek yolda. **Fix:** merkezi ≤0 kontrolü `PrestigeManager.ModifyPrestigeServerRpc`'de (tüm ceza yollarını kapsar), OnCustomerLost'taki redundant blok kaldırıldı, `using NewCss;` eklendi. **kontrol ONAY, commit'li.** ✅
+- [ ] **E5/C5** (ÖNEMLİ, KARAR+economist) `UpgradeManager.Buy()` hiç çağrılmıyor → `IsPurchased` hep boş → rent `wealthTax = upgradeValue×%10` hep 0 (kira tasarımdan sistematik düşük). ✅ doğrulandı. **Karar:** Buy()'ı satın-alma akışına bağla (kira↑, roguelite sistemine dokunur) vs ölü terimi kaldır.
+
+Temiz: MoneySystem clamp'li (negatif/overflow yok), UpgradePanel satın-alma server-auth (client exploit kapalı), NextDay guard doğru.
+
+### Dilim: Geniş tüm-oyun (Assets/NewCss geneli)  ✅ tarama bitti (2026-07-12, 4 paralel qa)
+Kapsam: truck/box/shelf akışı · müşteri/kuyruk/prestij · envanter/karakter · para-UI/event/sistemler. Netcode & çekirdek-döngü dilimleri ayrı (yukarıda). **Kod DEĞİŞTİRİLMEDİ — salt bulgu; hiçbiri onaylı/uygulanmadı.**
+
+> **🔴 BASKIN TEMA — sistemik:** Kod tabanı boyunca `[ServerRpc(RequireOwnership=false)]` + **server-side yetki/kaynak doğrulaması YOK** deseni yaygın. Client'tan gelen ham değere güvenilerek para/prestij/state mutasyonu yapılıyor. Özel Steam co-op'ta (arkadaşlar arası) exploit riski görecelidir, ama tek noktadan (G1) çok sayıda türev besleniyor. **Merge/çıkış öncesi karar gerektiren #1 tema.** Ayrıca **G8 bir exploit DEĞİL, gerçek korrektlik hatası** — satın alınan bir perki + GDD ekonomisini sessizce kırıyor; en yüksek öncelikli non-exploit bulgu.
+
+**P0 — CRITICAL:**
+- [x] **G1** ✅ TAM — `MoneySystem.cs`. **G1-a ✅ (`9bc4141`, kontrol ONAY):** `SetMoneyServerRpc`+`ResetMoneyServerRpc` silindi, `SetMoney`/`ResetMoney` server-only → en tehlikeli exploit (`SetMoney(999999999)`) kapandı. **G1-b ✅ (`db133e7`, qa 7-çağıran denetim + kontrol ONAY 1 tur):** `ModifyMoneyServerRpc(delta)` ham-delta relay'i kapandı. G16 (BoxFallPenalty server-auth) sonrası son meşru client-çağıran da kalmadı → qa denetimi 7 meşru çağıranın HEPSİ server-context olduğunu doğruladı (relay ölü kod). `ModifyMoney` server-only yapıldı (G1-a deseniyle simetrik), `ModifyMoneyServerRpc` silindi, clamp+değerler değişmedi, `AddMoney`/`SpendMoney` otomatik server-only. **G1 teması tamamen kapandı.**
+- [x] **G2** ✅ (`86b355a`, qa+kontrol ONAY 1 tur) `Truck.cs` `HandleDeliveryServerRpc(boxType,isFull)` `[ServerRpc(RequireOwnership=false)]`+public → client kutu taşımadan RPC'yi `requiredCargo` kez çağırıp bedava ödül+prestij topluyordu. **Fix:** tek meşru çağıran `TruckTrigger` zaten server-only (`CanProcessDelivery`→`mainTruck.IsServer`), yani ServerRpc redundant+tek exploit yüzeyi → RPC server-only düz metoda çevrildi (`ProcessDelivery` + `if(!IsServer) return` savunma guard'ı), TruckTrigger düz çağırıyor, despawn/consume aynen. Ödül/prestij mantığı değişmedi. TutorialTruck (ayrı sınıf) dokunulmadı. Headless 0 CS. Kozmetik not (blocker değil): `ProcessDelivery` hâlâ `#region Server RPCs` içinde.
+- [x] **G3** ✅ (`f9a3f1b`, kontrol ONAY) `PhoneCallManager.cs:342-394` `RequestCallServerRpc` — `maxCallsPerHour`/`postCallCooldown` sadece client-side → RPC spam'i = bedava `callReward` para + `timeSkipAmount` zaman atlama. Fix: server-side clientId→son-çağrı takibi.
+- [x] **G4** ✅ (`1374a62`) `EventEffectManager.cs:495-506` `TestEventServerRpc(eventIndex)` — herhangi client istediği ekonomik event'i (deliver bonus / ucuz upgrade) aktive eder, takvimi bypass. **Ucuz fix:** dev-build guard veya RPC'yi tamamen sil.
+- [x] **G8** ✅ (`8a74238`, kontrol ONAY) `CustomerManager.cs:656-679` (SpawnCustomer) — `networkObject.Spawn()` `CustomerAI.InitializeServerState`'i SENKRON tetikliyor ama `ai.manager` ataması Spawn'DAN SONRA (`SetupCustomerAI`, 676) → init sırasında `manager==null`. Sonuç: **Sabırlı Müşteriler perki hiç uygulanmıyor** (`patienceMultiplier` hep 1) + ürün-tekrar engeli & "tır rengine uygun deterministic loot" (GDD ekonomisi) **tamamen devre dışı**, düz Random fallback'e düşüyor. **Ucuz fix:** `ai.manager=this` atamasını `Spawn()`'dan önce al. **exploit değil — gerçek regresyon.**
+- [x] **G14** ✅ (`60e767b`) `NetworkStaminaBarUI.cs:110-114` — non-host owner client her frame Server-write `NetworkVariable`'lara yazıyor (writePerm belirtilmemiş=Server) → her frame write-permission ihlali/exception spam + stamina hiç senkron olmayabilir. **Ucuz fix:** NetworkVariable'ları `WritePermission.Owner` yap veya ServerRpc-relay.
+
+**P1 — ÖNEMLİ:**
+- [x] **G5** ✅ (`8a74238`) `CustomerManager.cs:1009-1019` `RequestCustomerSpawnServerRpc` — ŞU AN çağıran yok (ölü kod) ama açık RPC → sınırsız müşteri/prestij farm + `_customersRemainingToday` negatife düşer. **Ucuz fix:** kullanılmayan RPC'yi sil.
+- [x] **G6** ✅ (`0254202`, qa denetim + kontrol ONAY 1 tur) `ShelfState.PlaceItemOnShelfServerRpc` — qa: 0 çağıran (canlı akış `PlaceItemOnShelfFromServer` non-RPC kullanıyor) → **ölü RPC silindi** (saldırı yüzeyi kalktı).
+- [x] **G7** ✅ (`0254202`, qa denetim + kontrol ONAY 1 tur) — üç RPC ayrı ele alındı: **`ClearCurrentItemServerRpc`** 0 çağıran → silindi. **`SetInventoryStateServerRpc`/`GiveItemDirectlyServerRpc`/`ShelfState.TakeItemFromShelfServerRpc`** public+ownerless ama yalnız server-side giriş-RPC'lerinden çağrılıyordu → modifiye client doğrudan ağdan çağırıp item fabrikasyonu yapabiliyordu → **G2 deseniyle server-only düz metoda çevrildi** (`if(!IsServer) return`, çağıranlar güncellendi). **AYRICA kök-neden (kullanıcı "tam fix" onayı):** `Table.RequestInteractionServerRpc` client'ın `playerNetworkId`'sini owner ile doğrulamıyordu → başka-oyuncu-envanteri boşaltma → `ValidateInteractionRequest`'e `sender==hedef-owner` çapraz-kontrolü eklendi. Ekonomik değer değişmedi, headless 0 CS. **Play-test borcu (kullanıcıda): masa/raf al-koy-kutula akışı co-op'ta hâlâ çalışıyor mu.** **Yeni backlog (kontrol notu): `TutorialShelfState.TakeItemFromShelfServerRpc` aynı açığın tutorial eşleniği (düşük risk, tek-oyunculu) — ayrı G-item.**
+- [~] **G9** KISMİ — takvim 17 event vs effect-manager 11 → 7 etkisiz. **Artış-1 ✅ (`f4f07b6`, kontrol ONAY):** 3 çarpan-event bağlandı (BUSY DAY 1.3 / RAINY DAY 0.8 / MARKETING DAY 1.2+reward0.7); INTENSIVE DAY→BUSY DAY birleşme. Kapsam **11→14/17**. **Artış-2 ⬜ (economist değerleri HAZIR, yeni mekanik gerektirir):**
+  - **QUOTA DAY** (Neutral, çarpan yok) — YENİ mekanik: `TruckSpawner` tüm tırları tek renk kutu isteyecek. QA teslim süresini normal günle kıyaslamalı (gizli-buff riski).
+  - **SURPRISE AUDIT** — YENİ alan `penaltyPerBoxMultiplier=1.5f` (metindeki "2×" skalanın çok üstü; 1.5 reward/penalty oranını 0.83'te tutar). Plumbing: penalty uygulanan yerler (`Truck.ProcessWrongDelivery`, `BoxFallPenalty`, `CustomerAI` ceza yolları) bu çarpanı okumalı.
+  - **CUSTOMER SUPPORT** — YENİ alan `phoneCooldownMultiplier=0.7f` (30s→21s, %30 sık). `PhoneCallManager.SetCallChance`/`SetCustomerSupportActive` **boş stub (543-544)** — gameplay bunları DOLDURACAK (cooldown'a çarpanı uygula), EventEffectManager event günü çağıracak. `maxCallsPerHour` sabit (enflasyon yok).
+  - **FESTIVAL DAY** — YENİ mekanik: `OnNewDay`'de tek-seferlik `MoneySystem.AddMoney`, değer = kira döngüsünün %10-20'si (sabit TL değil): 1P 50-152 / 2P 90-274 / 4P 150-456 (gün bandına göre). Enflasyona otomatik ayak uydurur.
+  - NOT: Artış-2 ekonomik-penalty plumbing içerir (regresyon yüzeyi) → Play-test'te doğrulanmalı. Kozmetik: localization StringTable + CustomerManager.cs:96 yorumunda ölü "INTENSIVE DAY" (zararsız).
+- [x] **G10** ✅ (`40d1f78`, kontrol ONAY 1 tur) `ApplyEventEffectToNewObject` çağrısız → geç-spawn nesne multiplier almıyordu. Fix: EventEffectManager static `Instance` + Truck/CustomerAI `OnNetworkSpawn`'dan çağrı (her-peer modeli; "server spawner'a ekle" önerisi yanlıştı — sadece server kopyasını düzeltirdi). Restore dict-kapsamlı, çift-uygulama yok.
+- [x] **G11** ✅ (`110a1d7`, kontrol ONAY tur-2) takvim server-seeded deterministik: `_calendarSeed`+`_calendarBaseDay` NetworkVariable, `GenerateInitialEvents(seed,baseDay)` `System.Random` ile, üretim OnNetworkSpawn'da seed-driven (Start'tan çıkarıldı). Late-join base-day sapması tur-2'de düzeltildi.
+- [x] **G12** ✅ (`110a1d7`, kontrol ONAY) `GetOwnedPlayer()` (`FindObjectsOfType`+`IsOwner`) ile her peer kendi owned oyuncusuna uygular → tüm oyuncular etkilenir; apply/restore aynı seçim.
+- [x] **G16** ✅ (`43bbcda`, kontrol ONAY 1 tur) `ApplyPenalty` başına `NetworkManager.Singleton.IsServer` guard'ı → ceza yalnız server'da bir kez. `NetworkBehaviour`'a ÇEVRİLMEDİ (BoxFallPenalty prefabları — ithappy prop'ları — NetworkObject içermiyor, dönüşüm kırardı). Ses (`PlayDropSound`) guard dışında, her peer'de kalır. Fırlatma zaten server-auth (`SetThrowForce`) → server collision'ı görür, ceza kaybolmaz.
+- [x] **G17** ✅ (`1374a62`) `TruckTrigger.cs:50` — kutuyu `Destroy(other.gameObject)` ile yok ediyor, NetworkObject `Despawn()` etmiyor → client'larda hayalet kutu / stale ref NRE. Fix: `NetworkObject.Despawn(true)`, yoksa Destroy fallback (BoxDestroyOnCollisionNetcode paterni hazır).
+- [x] **G18** ✅ (`8a74238`) `CustomerManager.cs:33-43,260-269` — singleton guard `Destroy(gameObject)` çağırıyor ama `Start()` `if(Instance!=this)return` içermiyor → yok edilecek 2. instance'ın `Start()`'ı static `OnNewDay` event'ine abone olup destroyed-MonoBehaviour leak yaratır. **Ucuz fix.**
+
+**P2 — KÜÇÜK / latent:**
+- [x] **G13** ✅ (`1ea6f32`) VIP %10 bonus RNG her peer'de bağımsızdı → `IsServer &&` guard (tek roller, ödeme zaten server-side). `EventEffectManager.cs:389,479`.
+- [ ] **G15** `PlayerMovement.cs:194-207` + stamina — hareket/stamina TAMAMEN client-authoritative, server doğrulaması yok (hız/stamina hack). Muhtemelen bilinçli co-op kararı → **kullanıcı teyidi:** kabul mü, yoksa iş kolu mu? Fix maliyeti yüksek (server-auth movement refactor).
+- [x] **G19** ✅ (`1ea6f32`) static `s_cleanupStarted` host-restart'ta resetlenmiyordu → `NetworkManager.OnServerStopped` aboneliğiyle reset (`s_serverStoppedSubscribed` guard, self-unsubscribe); OnDestroy'a dokunulmadı (tek-oyuncu-düşme tuzağı atlandı).
+- [x] **G20** ✅ (`60e767b`) `WaitBar.cs:44-56` — `OnNetworkDespawn` yok, `OnValueChanged` unsubscribe eksik (PrestigeManager/CustomerAI'da doğru). Pooling'e geçilirse leak. Ucuz.
+- [x] **G21** ✅ (`60e767b`) `MoneyUI.cs:10-27` — `Initialize()`+`Start()` ikisi de `OnMoneyChanged`'e abone → çift subscribe, `UpdateText` 2× çalışır, `OnDestroy` 1× `-=` → askıda abonelik. Ucuz.
+- [x] **G22** ✅ (`1374a62`) `Truck.cs:596-606` `ApplyRewardVolatility` — `rewardVolatility<=0` (varsayılan) yolunda reward clamp'siz dönüyor; negatif-reward koruması sadece volatility açıkken. Savunma amaçlı her koşulda `Mathf.Max(0,reward)`. Ucuz.
+- [ ] **G23** `CustomerAI.cs:870-877` — `wrongProductPrestigePenalty` "yanlış ürün" adında ama tetiği `PlaceProductOnDropOffTable()==null` (masa dolu) → oyuncu masa dolu diye haksız prestij cezası yiyebilir. İsimlendirme/tasarım gözden geçir.
+- [ ] **G24** `EscapeMenuManager.cs:471-475,526-530` — bir oyuncunun ESC'si `MenuActionClientRpc` ile TÜM client'larda menü açıp `Time.timeScale=0` (global pause). Co-op "birlikte durak" kastı mı? **Teyit et**, değilse local yap.
+- [ ] **G25** `StaminaBarUI.cs:25` — legacy `FindObjectOfType<PlayerMovement>()` yanlış oyuncuyu gösterebilir; kod tabanında referans bulunamadı → muhtemelen ölü (NetworkStaminaBarUI ile değişmiş). **Kullanımda mı, silinsin mi?**
+- [x] **G26** ✅ (`1ea6f32`) her pickup/drop/sync'te `Resources.LoadAll<ItemData>("Items")` → build-once static `ItemData[]` cache (3 site: NetworkWorldItem/PlayerInventory.Visual/Table; DisplayTable deseni). DRY notu: 3 ayrı cache, ileride shared ItemDatabase'e taşınabilir.
+- [x] **G27** ✅ (`1ea6f32`) `TimeBasedLightController.cs` dosya adı ≠ sınıf `AutoLightController` → dosya+meta `AutoLightController.cs` olarak rename (git mv, GUID `1e869f7d...` korundu → sahne referansları bozulmadı).
+- [ ] **G28** `PlayerInventory.Visual.cs:312-325`+`Interaction.cs:527-528` — normal drop, salt-görsel `_heldItemVisual`'dan `isFull`/`boxType` kopyalıyor; saf dedicated-server'da (host-client değil) drop edilen kutu prefab-default state'le spawn olur, gerçek dolu/boş kaybolur. Host-client (Steam P2P) sürdükçe etki düşük; dedicated'a geçilirse state kaybı.
+
+**İncelenip TEMİZ bulunanlar:** shelf/table lock sistemi (despawn/null/try-catch savunmacı) · `PrestigeManager.ModifyPrestigeServerRpc` server-only guard doğru · `CustomerAI.RequestInteractionServerRpc` sender-sahtecilik + mesafe + çift-tetik kontrolü tam · `CompleteInteraction` timeout race'i doğru · kuyruk yönetimi maxQueueSize aşımına izin vermiyor · `NotifyCustomerDone` idempotent · `PhoneCallManager` mesai-saati/unspawned kontrolü server-side.
+
+### Dilim: Roguelite upgrade (merge öncesi son regresyon taraması)  ✅ (2026-07-12, qa)
+**MERGE-BLOCKER YOK.** DraftPool/PerkEffect/UpgradePanel/UpgradeManager/RerollCurve tarandı. 6 bilinen risk regresyonsuz doğrulandı: (1) pozisyonel-index bug düzeltilmiş kalıyor (`HandleUpgradeLevelsChanged` artık `changeEvent.Index`→`ReplayUpgradeLevel`, `_entries` efekt zincirinden ayrık), (2) reconnect replay idempotent (`ReplayPurchasedUpgradeLevels` sadece level>0, tüm Apply* mutlak-değer/`+=` yok), (3) gambler_case↔all_in dışlama iki katmanda simetrik (draft `BuildEligibility` + satın-alma client+server guard), (4) satın-alma server-auth (`serverCost=CalculateFinalCost` yeniden hesap; paylaşımlı ekonomi → sender-doğrulama gereksiz), (5) bulk_buy×reroll indirim sızmıyor (`_discountedUpgradeIndex=-1` temizliği), (6) tier kilidi doğru (T2 gün≥5, T3 gün≥9). Event abonelikleri temiz. **Tek P2 → ✅ FIX'Lİ (`UpgradePanel.cs:1091` null-guard, merge-hardening).** Ek not (blocker değil): `_questSystemActive` hiç true set edilmiyor → `requiresQuestSystem=true` perkler bu dalda draft'a girmiyor (Quest entegre değil, muhtemelen bilinçli).
+
+---
+
+## FAZ 2 — Ekonomi + GDD sistem-boşluğu  ⬜ (bekliyor)
+Ekonomi dengesi + GDD'de tanımlı ama kodda eksik/yarım sistemler.
+
+### KARAR bekleyen (economist memo, 2026-07-12) — kullanıcı seçsin:
+- **C1 (E3) kota-ölümü ölü kod** → **economist ÖNERİSİ:** aktive et AMA kira gibi **iki kademeli tampon** (1. kaçırma=uyarı+küçük prestij cezası, 2. üst üste=game over). Alt: (A2) ilk kaçırmada hard game-over (GDD harfiyen, riskli, 16-gün sim şart), (A3) hiç açma sadece soft-uyarı. Dokunulan: `DayCycleManager.ProcessDayEnd()` (~475-503) + `QuotaManager.OnQuotaFailed` sayaç.
+- **C5 (E5) wealthTax hep 0** → ✅ **ÇÖZÜLDÜ (`9d2c3b0`, kontrol ONAY 1 tur).** Kullanıcı **Seçenek A (kaldır)** seçti. Yeni kök neden (2026-07-13 denetimi): `GetTotalUpgradeValue()` orphan (Yol B) sistemi okuyor → rate ne olursa 0, yani sadece rate düşürmek işe yaramazdı. Terim tamamen kaldırıldı (zero-regression). Kira artık `BaseRent[P]×rentGrowth^cycle×rentScaledMultiplier`. **Follow-up ✅ ÇÖZÜLDÜ (`479dbf0`):** qa trace → Yol B tümüyle ölü (UpgradeManager.Instance hiçbir sahne/prefab'da yok). UpgradeManager/UpgradeAssets/ItemType silindi; ShelfController/TableController (sahnede CANLI) ItemType-hunk'ları temizlendi, canlı görsel-seviye kodu korundu. qa+kontrol ONAY. **Follow-up (kablolama-boşluğu) → İNCELENDİ + PARK (kullanıcı kararı 2026-07-13).** qa salt-okunur trace doğruladı: `ShelfController`/`TableController` (`Assets/NewCss/TableScripts/`) `SetLevel`/`levels[]` (10 GameObject 3D-model swap) API'sinin **hiçbir üretim çağıranı yok** (yalnız dosya-içi + `#if UNITY_EDITOR` ContextMenu). Component'ler `The Main Office.unity`'de gerçekten attach (GUID `80b5504f...`/`014f9890...`) → çalışma-zamanı hep level-0'da donuk. `UpgradePanel._visualUpgradeLevels` **ayrı** canlı roguelite perk-UI sistemi (bağlanacak eksik uç değil); gerçek kapasite `ShelfState.cs` (NetworkBehaviour, çapraz-ref yok). **Sonuç: (b) kısmen kopuk — çökme yok, sadece yükseltme 3D-model görsel geri bildirimi tetiklenmiyor. Zararsız ama ölü.** Kullanıcı PARK dedi. İleride görsel-yükseltme geri istenirse iki yol: **(A)** 2 dosya `git rm` + sahneden component kaldır (manuel Unity); **(B)** perk visual-level → `ShelfController.SetLevel` yeniden-kabla (tasarım kararı + gameplay+kontrol zinciri).
+
+## FAZ 3 — Steam çıkışı  ⬜ (bekliyor)
+Build paritesi, depot/setlive ([[cargor-steam-deploy]]), store hazırlığı.

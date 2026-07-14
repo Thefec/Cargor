@@ -56,6 +56,19 @@ namespace NewCss
         [Tooltip("Seviye başına maliyet artışı")]
         public int costStep;
 
+        [Header("=== ROGUELITE ===")]
+        [Tooltip("Omurga mı perk mi? Omurga tier'sız, her zaman havuzda.")]
+        public PerkKind kind = PerkKind.LeveledBackbone;
+
+        [Tooltip("Perk güç tier'ı (T1 hep açık, T2 gün>=5, T3 gün>=9). Omurga için yok sayılır.")]
+        public PerkTier tier = PerkTier.T1;
+
+        [Tooltip("Effect registry anahtarı (PerkEffect.cs). Boşsa mevcut displayName switch'i kullanılır.")]
+        public string effectId;
+
+        [Tooltip("True ise görev sistemi aktif olana kadar havuza girmez (Görev Tier).")]
+        public bool requiresQuestSystem;
+
         [Header("=== LEVEL OBJECTS ===")]
         [Tooltip("Seviye objeleri (Level0, Level1, Level2...)")]
         public GameObject[] levelObjects;
@@ -136,6 +149,13 @@ namespace NewCss
         private const string LOC_KEY_MAX = "UpgradeMax";
         private const string LOC_KEY_BUY = "UpgradeBuy";
 
+        // Roguelite draft dışlama grupları — aynı gruptan aynı 3-kart teklifte en fazla 1 kart çıkar.
+        // Kullanıcı kararı: gambler_case ve all_in birlikte asla teklif edilmez (günlük teklif + reroll).
+        private static readonly string[][] EXCLUSIVE_EFFECT_GROUPS =
+        {
+            new[] { "gambler_case", "all_in" },
+        };
+
         #endregion
 
         #region Nested Classes
@@ -165,6 +185,12 @@ namespace NewCss
         [SerializeField, Tooltip("Entry prefab'ı")]
         private GameObject entryPrefab;
 
+        [SerializeField, Tooltip("Reroll butonu")]
+        private Button rerollButton;
+
+        [SerializeField, Tooltip("Reroll maliyet metni")]
+        private TMP_Text rerollCostText;
+
         #endregion
 
         #region Serialized Fields - Upgrades
@@ -184,6 +210,9 @@ namespace NewCss
         [SerializeField] private CustomerAI CustomerAI;
         [SerializeField] private EventEffectManager eventEffectManager;
 
+        [Tooltip("Perk registry'sinin (PerkEffect.cs) dokunduğu tekil ekonomi SO'su. Boşsa Resources/EkonomiAyarlari yüklenir (Truck/DayCycleManager ile aynı kaynak).")]
+        [SerializeField] private GameEconomySettings economySettings;
+
         #endregion
 
         #region Network Variables
@@ -191,7 +220,17 @@ namespace NewCss
         private NetworkList<int> _upgradeLevels;
         private NetworkList<int> _visualUpgradeLevels;
         private NetworkList<NetworkPendingUpgrade> _pendingUpgrades;
+        private NetworkList<int> _dailyOffer;
         private readonly NetworkVariable<bool> _isPanelOpen = new(false);
+        private readonly NetworkVariable<int> _rerollCountToday = new(0);
+        private readonly NetworkVariable<bool> _questSystemActive = new(false); // Görev Tier feature-flag
+        private readonly NetworkVariable<int> _discountedUpgradeIndex = new(-1); // Toplu Alım (bulk_buy) — sonraki tekliftedki 1 kart -%50
+
+        #endregion
+
+        #region Private Fields - Perk State
+
+        private bool _pendingBulkBuyDiscount; // server-only: bir sonraki GenerateDailyOfferServer'da tüketilir
 
         #endregion
 
@@ -234,6 +273,50 @@ namespace NewCss
             RefreshAllUpgradeUI();
         }
 
+        /// <summary>
+        /// Reconnect/geç-join fix: NGO'nun NetworkList.OnListChanged'i geç-join eden client'a
+        /// mevcut elemanları replay ETMEZ (yalnızca yeni değişiklikleri bildirir). Bu yüzden
+        /// spawn anında zaten level>0 olan her perk'in efektini burada elle uyguluyoruz.
+        /// InitializeBaseValues'tan SONRA çağrılmalı — aksi halde base init, burada uygulanan
+        /// mutlak değerleri ezer. Tüm Apply yolları (PerkEffect.Apply + ApplyXUpgrade) level'dan
+        /// mutlak değer hesaplar (+= yok), bu yüzden fresh spawn'da (tüm level=0) no-op ve
+        /// tekrar tekrar çağrılsa da güvenlidir (idempotent).
+        /// </summary>
+        private void ReplayPurchasedUpgradeLevels()
+        {
+            for (int i = 0; i < _upgradeLevels.Count; i++)
+            {
+                int level = _upgradeLevels[i];
+                if (level <= 0) continue;
+                ReplayUpgradeLevel(i, level);
+            }
+        }
+
+        /// <summary>
+        /// Bir upgrade index'i için efekt+görsel+özel-durum uygulamasını yapan ortak adım.
+        /// Hem canlı <see cref="HandleUpgradeLevelsChanged"/> event'i hem de geç-join replay'i
+        /// (<see cref="ReplayPurchasedUpgradeLevels"/>) bunu çağırır — davranış tek yerde.
+        ///
+        /// NOT (kapsam-içi düzeltme): eski kod burada <c>_entries[upgradeIndex]</c> pozisyonel
+        /// erişimi kullanıyordu, ama <see cref="_entries"/> yalnızca O ANKİ ≤3 kartlık draft
+        /// teklifini tutar (bkz. RebuildDraftEntries) ve sırası gerçek `upgrades` index'iyle
+        /// EŞLEŞMEZ (DraftPool.SelectOffer rastgele karıştırır) — bu da hem canlı satın almada
+        /// hem de yeni replay'de yanlış/eksik efekt uygulanmasına yol açardı. ApplyUpgradeEffect/
+        /// UpdateLevelObjects/HandleSpecialUpgrades yalnızca EntryUI.Definition'a (sahne/veri
+        /// referansı, UI widget'larından bağımsız) ihtiyaç duyduğundan, burada doğrudan
+        /// upgrades[upgradeIndex]'ten kurulan hafif bir EntryUI kullanılıyor — _entries'in o an
+        /// neyi teklif ettiğinden tamamen bağımsız, dolayısıyla her zaman doğru.
+        /// </summary>
+        private void ReplayUpgradeLevel(int upgradeIndex, int newLevel)
+        {
+            if (upgradeIndex < 0 || upgradeIndex >= upgrades.Count) return;
+
+            var entry = new EntryUI { Definition = upgrades[upgradeIndex], UpgradeIndex = upgradeIndex };
+            ApplyUpgradeEffect(entry, newLevel);
+            UpdateLevelObjects(entry, newLevel);
+            HandleSpecialUpgrades(entry, newLevel);
+        }
+
         #endregion
 
         #region Network Lifecycle
@@ -242,18 +325,29 @@ namespace NewCss
         {
             base.OnNetworkSpawn();
 
+            if (economySettings == null)
+            {
+                // Truck/DayCycleManager ile aynı tekil kaynak (Resources/EkonomiAyarlari.asset).
+                economySettings = Resources.Load<GameEconomySettings>("EkonomiAyarlari");
+            }
+
             if (IsServer)
             {
                 InitializeUpgradeLevels();
+                GenerateDailyOfferServer();
             }
 
             SubscribeToNetworkEvents();
             InitializePanel();
-            BuildEntries();
+            RebuildDraftEntries();
             InitializeLevelObjects();
             InitializeBaseValues();
+            ReplayPurchasedUpgradeLevels();
             SubscribeToDayCycleEvents();
             SubscribeToMoneySystem();
+
+            if (rerollButton != null) rerollButton.onClick.AddListener(OnReroll);
+            RefreshRerollUI();
         }
 
         public override void OnNetworkDespawn()
@@ -261,6 +355,8 @@ namespace NewCss
             UnsubscribeFromNetworkEvents();
             UnsubscribeFromDayCycleEvents();
             UnsubscribeFromMoneySystem();
+
+            if (rerollButton != null) rerollButton.onClick.RemoveListener(OnReroll);
 
             base.OnNetworkDespawn();
         }
@@ -274,6 +370,7 @@ namespace NewCss
             _upgradeLevels = new NetworkList<int>();
             _visualUpgradeLevels = new NetworkList<int>();
             _pendingUpgrades = new NetworkList<NetworkPendingUpgrade>();
+            _dailyOffer = new NetworkList<int>();
         }
 
         private void InitializeUpgradeLevels()
@@ -371,7 +468,9 @@ namespace NewCss
             _upgradeLevels.OnListChanged += HandleUpgradeLevelsChanged;
             _visualUpgradeLevels.OnListChanged += HandleVisualUpgradeLevelsChanged;
             _pendingUpgrades.OnListChanged += HandlePendingUpgradesChanged;
+            _dailyOffer.OnListChanged += HandleDailyOfferChanged;
             _isPanelOpen.OnValueChanged += HandlePanelStateChanged;
+            _rerollCountToday.OnValueChanged += HandleRerollCountChanged;
         }
 
         private void UnsubscribeFromNetworkEvents()
@@ -379,7 +478,9 @@ namespace NewCss
             _upgradeLevels.OnListChanged -= HandleUpgradeLevelsChanged;
             _visualUpgradeLevels.OnListChanged -= HandleVisualUpgradeLevelsChanged;
             _pendingUpgrades.OnListChanged -= HandlePendingUpgradesChanged;
+            _dailyOffer.OnListChanged -= HandleDailyOfferChanged;
             _isPanelOpen.OnValueChanged -= HandlePanelStateChanged;
+            _rerollCountToday.OnValueChanged -= HandleRerollCountChanged;
         }
 
         private void SubscribeToDayCycleEvents()
@@ -439,6 +540,7 @@ namespace NewCss
         private void HandleMoneyChanged(int newMoney)
         {
             RefreshAllUpgradeUI();
+            RefreshRerollUI();
         }
 
         private void HandleLocaleChanged(Locale newLocale)
@@ -458,12 +560,7 @@ namespace NewCss
             int upgradeIndex = changeEvent.Index;
             int newLevel = changeEvent.Value;
 
-            if (upgradeIndex >= _entries.Count) return;
-
-            var entry = _entries[upgradeIndex];
-            ApplyUpgradeEffect(entry, newLevel);
-            UpdateLevelObjects(entry, newLevel);
-            HandleSpecialUpgrades(entry, newLevel);
+            ReplayUpgradeLevel(upgradeIndex, newLevel);
 
             RefreshAllUpgradeUI();
         }
@@ -484,7 +581,7 @@ namespace NewCss
 
             if (newValue)
             {
-                RefreshAllUpgradeUI();
+                RebuildDraftEntries();
             }
         }
 
@@ -493,7 +590,18 @@ namespace NewCss
             if (IsServer)
             {
                 ActivatePendingUpgradesServerRpc();
+                GenerateDailyOfferServer();
             }
+        }
+
+        private void HandleDailyOfferChanged(NetworkListEvent<int> _)
+        {
+            RebuildDraftEntries();
+        }
+
+        private void HandleRerollCountChanged(int previousValue, int newValue)
+        {
+            RefreshRerollUI();
         }
 
         #endregion
@@ -554,6 +662,13 @@ namespace NewCss
 
         private void ApplyUpgradeEffect(EntryUI entry, int level)
         {
+            string effectId = entry.Definition.effectId;
+            if (!string.IsNullOrEmpty(effectId))
+            {
+                PerkEffect.Apply(effectId, level, BuildPerkContext());
+                return;
+            }
+
             string upgradeName = entry.Definition.displayName;
 
             switch (upgradeName)
@@ -607,6 +722,24 @@ namespace NewCss
                 Quest.QuestManager.Instance.SetQuestTier(level);
                 LogDebug($"Quest tier set to {level}");
             }
+        }
+
+        /// <summary>
+        /// PerkEffect.Apply çağrısı için mevcut manager referanslarından bir PerkContext kurar.
+        /// Not: HandleUpgradeLevelsChanged tüm client'larda tetiklenir (mevcut mimari); bu yüzden
+        /// PerkEffect metodları idempotent olmalı (level'dan mutlak değer hesaplar, += yapmaz).
+        /// </summary>
+        private PerkContext BuildPerkContext()
+        {
+            return new PerkContext
+            {
+                Truck = Truck,
+                CustomerManager = CustomerManager,
+                PlayerMovement = PlayerMovement,
+                Economy = economySettings,
+                DayCycle = DayCycleManager.Instance,
+                Panel = this,
+            };
         }
 
         #endregion
@@ -685,6 +818,216 @@ namespace NewCss
 
         #endregion
 
+        #region Draft Offer
+
+        /// <summary>
+        /// Server-only: o günkü draft teklifini üretir. Uygun (eligible) upgrade'lerden
+        /// tier-kilidine ve max-seviyeye göre en fazla OFFER_COUNT tanesini seçip
+        /// <see cref="_dailyOffer"/>'a yazar. RNG seed'i güne bağlı → deterministik/senkron.
+        /// </summary>
+        private void GenerateDailyOfferServer()
+        {
+            if (!IsServer) return;
+            int currentDay = DayCycleManager.Instance != null ? DayCycleManager.Instance.currentDay : 1;
+            var eligibility = BuildEligibility(currentDay, out _);
+
+            var rng = new System.Random(unchecked(currentDay * 73856093));
+            var offer = DraftPool.SelectOffer(eligibility, DraftPool.OFFER_COUNT, rng, BuildExclusionGroups());
+
+            _dailyOffer.Clear();
+            foreach (var idx in offer) _dailyOffer.Add(idx);
+            _rerollCountToday.Value = 0;
+
+            ApplyPendingBulkBuyDiscount();
+        }
+
+        /// <summary>
+        /// Toplu Alım (bulk_buy) perki: bir önceki gün işaretlendiyse, o günkü teklifteki
+        /// rastgele 1 karta -%50 indirim uygular (server-only, tek kullanımlık).
+        /// </summary>
+        private void ApplyPendingBulkBuyDiscount()
+        {
+            if (_pendingBulkBuyDiscount && _dailyOffer.Count > 0)
+            {
+                int discountIndex = _dailyOffer[UnityEngine.Random.Range(0, _dailyOffer.Count)];
+                _discountedUpgradeIndex.Value = discountIndex;
+                _pendingBulkBuyDiscount = false;
+            }
+            else
+            {
+                _discountedUpgradeIndex.Value = -1;
+            }
+        }
+
+        /// <summary>Toplu Alım (bulk_buy) etkisi: PerkEffect.cs tarafından çağrılır (server-only).</summary>
+        public void MarkNextDraftDiscount()
+        {
+            if (!IsServer) return;
+            _pendingBulkBuyDiscount = true;
+        }
+
+        /// <summary>
+        /// Server-only: verilen elverişlilik listesine göre eligibility hesaplar.
+        /// <see cref="GenerateDailyOfferServer"/> ve reroll akışı arasında paylaşılır.
+        /// </summary>
+        private List<bool> BuildEligibility(int currentDay, out PerkTier maxUnlocked)
+        {
+            maxUnlocked = DraftPool.MaxUnlockedTier(currentDay);
+            bool questActive = _questSystemActive.Value;
+            var exclusionGroups = BuildExclusionGroups();
+
+            var eligibility = new List<bool>(upgrades.Count);
+            for (int i = 0; i < upgrades.Count; i++)
+            {
+                var def = upgrades[i];
+                int visLevel = GetVisualLevel(i);
+                bool eligible = DraftPool.IsEligible(
+                    i, def.tier, def.kind, def.requiresQuestSystem,
+                    visLevel, def.maxLevel, maxUnlocked, questActive);
+
+                // Kalıcı dışlama (a): grup arkadaşlarından biri zaten satın alındıysa
+                // (level>0), bu perk bir daha hiçbir teklifte/reroll'da çıkmaz.
+                if (eligible && IsBlockedByOwnedGroupMate(i, exclusionGroups))
+                    eligible = false;
+
+                eligibility.Add(eligible);
+            }
+            return eligibility;
+        }
+
+        /// <summary>
+        /// index, kendi dışlama grubundaki başka bir perk zaten satın alınmış (level>0) olduğu
+        /// için eleniyor mu? Simetrik: hangi taraf önce alınırsa alınsın diğeri hemen kilitlenir.
+        /// </summary>
+        private bool IsBlockedByOwnedGroupMate(int index, List<IReadOnlyList<int>> exclusionGroups)
+        {
+            foreach (var group in exclusionGroups)
+            {
+                if (!group.Contains(index)) continue;
+                foreach (var other in group)
+                {
+                    if (other != index && GetVisualLevel(other) > 0) return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// EXCLUSIVE_EFFECT_GROUPS'taki effectId'leri <see cref="upgrades"/> listesindeki index'lere
+        /// çevirir (case/whitespace toleranslı eşleşme). DraftPool saf mantığına effectId string'i
+        /// sızmaz — yalnızca index grupları geçilir. Bir grupta 2'den az index bulunursa
+        /// (perk eksik/henüz eklenmemiş) DraftPool tarafında otomatik etkisiz kalır.
+        /// </summary>
+        private List<IReadOnlyList<int>> BuildExclusionGroups()
+        {
+            var groups = new List<IReadOnlyList<int>>();
+            foreach (var effectIds in EXCLUSIVE_EFFECT_GROUPS)
+            {
+                var indices = new List<int>();
+                foreach (var effectId in effectIds)
+                {
+                    for (int i = 0; i < upgrades.Count; i++)
+                    {
+                        if (string.Equals(upgrades[i].effectId?.Trim(), effectId, StringComparison.OrdinalIgnoreCase))
+                        {
+                            indices.Add(i);
+                            break;
+                        }
+                    }
+                }
+                if (indices.Count >= 2) groups.Add(indices);
+            }
+            return groups;
+        }
+
+        /// <summary>
+        /// Draft teklifi değişince panel içeriğini yeniden kurar: tüm liste yerine
+        /// sadece <see cref="_dailyOffer"/>'daki (≤3) upgrade için kart kurar.
+        /// `EntryUI.UpgradeIndex` gerçek `upgrades` index'i olduğundan satın alma/pending/
+        /// effect zinciri değişmeden çalışır.
+        /// </summary>
+        private void RebuildDraftEntries()
+        {
+            ClearEntries();
+            for (int k = 0; k < _dailyOffer.Count; k++)
+            {
+                int upgradeIndex = _dailyOffer[k];
+                if (upgradeIndex < 0 || upgradeIndex >= upgrades.Count) continue;
+                BuildSingleEntry(upgradeIndex);
+            }
+            RefreshAllUpgradeUI();
+            RefreshRerollUI();
+        }
+
+        #endregion
+
+        #region Reroll
+
+        /// <summary>
+        /// Client-side giriş noktası: reroll maliyetini kontrol edip sunucuya isteği yollar.
+        /// UI tarafında iyimser doğrulama yapılır; asıl doğrulama sunucuda tekrarlanır.
+        /// </summary>
+        public void OnReroll()
+        {
+            int cost = RerollCurve.CostForReroll(_rerollCountToday.Value);
+            if (MoneySystem.Instance == null || MoneySystem.Instance.CurrentMoney < cost) return;
+            RerollServerRpc();
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        private void RerollServerRpc()
+        {
+            // NOT: Reroll gate'i bilerek PurchaseUpgradeServerRpc ile simetrik tutuluyor — ikisi de
+            // sadece para/geçerlilik kontrolü yapar, saat gate'i YOK. Panel OfficeTerminal.cs üzerinden
+            // (client-local SetActive) açılıyor; _isPanelOpen NetworkVariable'ı hiç set edilmediği için
+            // ona bağlanmak reroll'u daima öldürüyordu. Saat gate'i de yanlıştı: panel PANEL_OPEN_HOUR'dan
+            // önce (ör. saat 7) açılabiliyor ama satın alma o saatte çalışırken reroll ölüyordu.
+            // Gerçek server-authoritative panel-open state'i ayrı bir iş (OfficeTerminal↔UpgradePanel birleştirme).
+            int cost = RerollCurve.CostForReroll(_rerollCountToday.Value);
+            if (MoneySystem.Instance == null || MoneySystem.Instance.CurrentMoney < cost) return;
+
+            MoneySystem.Instance.SpendMoney(cost);
+
+            int currentDay = DayCycleManager.Instance != null ? DayCycleManager.Instance.currentDay : 1;
+            var eligibility = BuildEligibility(currentDay, out _);
+
+            // reroll sayacını seed'e kat → farklı sonuç
+            var rng = new System.Random(unchecked((currentDay * 73856093) ^ ((_rerollCountToday.Value + 1) * 19349663)));
+            var offer = DraftPool.SelectOffer(eligibility, DraftPool.OFFER_COUNT, rng, BuildExclusionGroups());
+
+            _dailyOffer.Clear();
+            foreach (var idx in offer) _dailyOffer.Add(idx);
+            _rerollCountToday.Value += 1;
+
+            // bulk_buy indirimi rerolled tekliflere taşınmaz — günlük tek kullanımlıktır ve
+            // yeni teklif eski indeksle tesadüfen çakışırsa indirim "sızmasın" diye burada iptal edilir.
+            _discountedUpgradeIndex.Value = -1;
+        }
+
+        /// <summary>
+        /// Reroll butonunun metin/interactable durumunu günceller. Prefab bağlantısı
+        /// Task 8'e kadar eksik olabileceğinden tüm alanlar null-guard'lıdır.
+        /// </summary>
+        private void RefreshRerollUI()
+        {
+            if (rerollButton == null && rerollCostText == null) return;
+
+            int cost = RerollCurve.CostForReroll(_rerollCountToday.Value);
+            bool canAfford = MoneySystem.Instance != null && MoneySystem.Instance.CurrentMoney >= cost;
+
+            if (rerollCostText != null)
+            {
+                rerollCostText.text = cost.ToString();
+            }
+
+            if (rerollButton != null)
+            {
+                rerollButton.interactable = canAfford;
+            }
+        }
+
+        #endregion
+
         #region Purchase System
 
         private void OnBuy(int upgradeIndex)
@@ -704,8 +1047,9 @@ namespace NewCss
             int currentVisualLevel = GetVisualLevel(upgradeIndex);
 
             if (currentVisualLevel >= upgrade.maxLevel) return false;
+            if (IsBlockedByOwnedGroupMate(upgradeIndex, BuildExclusionGroups())) return false;
 
-            finalCost = CalculateFinalCost(upgrade, currentVisualLevel);
+            finalCost = CalculateFinalCost(upgradeIndex, upgrade, currentVisualLevel);
 
             return MoneySystem.Instance != null && MoneySystem.Instance.CurrentMoney >= finalCost;
         }
@@ -719,18 +1063,32 @@ namespace NewCss
             int currentVisualLevel = GetVisualLevel(upgradeIndex);
 
             if (currentVisualLevel >= upgrade.maxLevel) return;
-            if (MoneySystem.Instance == null || MoneySystem.Instance.CurrentMoney < cost) return;
+
+            // Edge-case guard: iki dışlanan perk aynı teklifte (satın alınmadan önce) çıkabilir.
+            // Biri az önce alındıysa, aynı anda ekranda kalan diğerinin satın alınması reddedilir
+            // (server-authoritative) — kararı ("(a) Dışlama") ihlal etmesin.
+            if (IsBlockedByOwnedGroupMate(upgradeIndex, BuildExclusionGroups())) return;
+
+            // Server kendi maliyetini yeniden hesaplar (client'tan gelen cost sadece UI amaçlı geçilir).
+            int serverCost = CalculateFinalCost(upgradeIndex, upgrade, currentVisualLevel);
+            if (MoneySystem.Instance == null || MoneySystem.Instance.CurrentMoney < serverCost) return;
 
             // Process purchase
-            MoneySystem.Instance.SpendMoney(cost);
+            MoneySystem.Instance.SpendMoney(serverCost);
 
             if (upgradeIndex < _visualUpgradeLevels.Count)
             {
                 _visualUpgradeLevels[upgradeIndex] = currentVisualLevel + 1;
             }
 
+            // Toplu Alım (bulk_buy) indirimi bir kez kullanılır — tüketildi.
+            if (_discountedUpgradeIndex.Value == upgradeIndex)
+            {
+                _discountedUpgradeIndex.Value = -1;
+            }
+
             // Add pending upgrade
-            int currentDay = DayCycleManager.Instance.currentDay;
+            int currentDay = DayCycleManager.Instance != null ? DayCycleManager.Instance.currentDay : 1;
             _pendingUpgrades.Add(new NetworkPendingUpgrade(upgrade.displayName, currentVisualLevel + 1, currentDay));
 
             RefreshUpgradePricesClientRpc();
@@ -740,10 +1098,17 @@ namespace NewCss
 
         #region Cost Calculation
 
-        private int CalculateFinalCost(UpgradeDefinition upgrade, int currentLevel)
+        private int CalculateFinalCost(int upgradeIndex, UpgradeDefinition upgrade, int currentLevel)
         {
             float costMultiplier = GetCostMultiplier();
             int baseCost = upgrade.baseCost + currentLevel * upgrade.costStep;
+
+            // Toplu Alım (bulk_buy) perki: sonraki taslakta işaretlenen 1 kart -%50.
+            if (_discountedUpgradeIndex.Value == upgradeIndex)
+            {
+                baseCost = Mathf.RoundToInt(baseCost * 0.5f);
+            }
+
             return Mathf.RoundToInt(baseCost * costMultiplier);
         }
 
@@ -769,27 +1134,6 @@ namespace NewCss
         #endregion
 
         #region UI Building
-
-        private void BuildEntries()
-        {
-            ClearEntries();
-
-            LogDebug($"Building {upgrades.Count} upgrade entries");
-
-            for (int i = 0; i < upgrades.Count; i++)
-            {
-                try
-                {
-                    BuildSingleEntry(i);
-                }
-                catch (Exception ex)
-                {
-                    LogError($"Error building entry for {upgrades[i].displayName}: {ex.Message}");
-                }
-            }
-
-            LogDebug($"Successfully built {_entries.Count} entries");
-        }
 
         private void ClearEntries()
         {
@@ -986,9 +1330,9 @@ namespace NewCss
 
         private void UpdateEntryUIForPurchasable(EntryUI entry, int currentVisualLevel)
         {
-            float costMultiplier = GetCostMultiplier();
             int baseCost = entry.Definition.baseCost + currentVisualLevel * entry.Definition.costStep;
-            int finalCost = Mathf.RoundToInt(baseCost * costMultiplier);
+            int finalCost = CalculateFinalCost(entry.UpgradeIndex, entry.Definition, currentVisualLevel);
+            bool hasDiscount = finalCost < baseCost;
 
             string costTemplate = LocalizationHelper.GetLocalizedString(LOC_KEY_COST);
             string costText;
@@ -1002,7 +1346,7 @@ namespace NewCss
             }
 
             // Show cost with discount if applicable
-            if (costMultiplier < 1f)
+            if (hasDiscount)
             {
                 entry.CostText.text = $"<color=green>{costText}</color> <color=red><s>{baseCost}</s></color>";
             }

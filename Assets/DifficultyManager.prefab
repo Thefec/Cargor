@@ -72,13 +72,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NewCss.DifficultyManager
   ShowTopMostFoldoutHeaderGroup: 1
   baseCustomerCount: 10
-  baseStartingMoney: 100
+  baseStartingMoney: 500
   basePhoneCallChance: 0.2
   baseMinPatience: 8
   baseMaxPatience: 14
   baseStaminaRegenRate: 1
   customerCountPerPlayer: 2
-  moneyMultiplierPerPlayer: 0.85
+  moneyMultiplierPerPlayer: 1
   phoneChancePerPlayer: 0.1
   patienceReductionPerPlayer: 2
   staminaDrainMultiplierPerPlayer: 1.1

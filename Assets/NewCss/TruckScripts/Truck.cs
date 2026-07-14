@@ -102,7 +102,7 @@ namespace NewCss
         [HideInInspector] public int   rewardPerBox     = 50;
         [HideInInspector] public int   penaltyPerBox    = 60;
         [HideInInspector] public float prestigePerBonus = 10f;
-        [HideInInspector] public int   bonusPerTier     = 5;
+        [HideInInspector] public float bonusPerTier     = 5f;
 
         #endregion
 
@@ -219,6 +219,10 @@ namespace NewCss
             SubscribeToNetworkEvents();
             SetupTriggerCollider();
             AutoFindAudioSources();
+
+            // G10 fix: event başladıktan sonra spawn olan truck da aktif event çarpanlarını alsın.
+            // OnActiveEventChanged her peer'de yerel çalıştığından bu da her peer'de çağrılmalı.
+            EventEffectManager.Instance?.ApplyEventEffectToNewObject(gameObject);
 
             if (_hasPreInitialized)
             {
@@ -478,9 +482,13 @@ namespace NewCss
             UpdateVisualsClientRpc(reqType, reqAmount);
         }
 
-        [ServerRpc(RequireOwnership = false)]
-        public void HandleDeliveryServerRpc(BoxInfo.BoxType boxType, bool isFull)
+        public void ProcessDelivery(BoxInfo.BoxType boxType, bool isFull)
         {
+            if (!IsServer)
+            {
+                return;
+            }
+
             if (_isComplete.Value || _isEntering.Value)
             {
                 return;
@@ -581,10 +589,28 @@ namespace NewCss
             int baseReward = rewardPerBox;
             int prestigeBonus = CalculatePrestigeBonus();
             int totalReward = baseReward + prestigeBonus;
+            totalReward = ApplyRewardVolatility(totalReward);
 
             LogDebug($"Base: {baseReward}, Prestige Bonus: {prestigeBonus}, Total: {totalReward}");
 
             return totalReward;
+        }
+
+        /// <summary>
+        /// Yuksek Volatilite perki (high_volatility): server-only per-delivery RNG.
+        /// economySettings.rewardVolatility=0 ise etkisiz (varsayilan). Ortalama her zaman
+        /// rewardVolatilityMean etrafinda pozitif kalir (rapor SS4.2 - EV her zaman pozitif).
+        /// </summary>
+        private int ApplyRewardVolatility(int reward)
+        {
+            if (!IsServer || economySettings == null) return Mathf.Max(0, reward);
+
+            float volatility = economySettings.rewardVolatility;
+            if (volatility <= 0f) return Mathf.Max(0, reward);
+
+            float mean = economySettings.rewardVolatilityMean;
+            float randomFactor = mean + UnityEngine.Random.Range(-volatility, volatility);
+            return Mathf.Max(0, Mathf.RoundToInt(reward * randomFactor));
         }
 
         private int CalculatePrestigeBonus()
@@ -593,7 +619,7 @@ namespace NewCss
 
             float currentPrestige = PrestigeManager.Instance.GetPrestige();
             int prestigeTiers = Mathf.FloorToInt(currentPrestige / prestigePerBonus);
-            return prestigeTiers * bonusPerTier;
+            return Mathf.RoundToInt(prestigeTiers * bonusPerTier);
         }
 
         /// <summary>
@@ -779,16 +805,29 @@ namespace NewCss
             };
         }
 
+        private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+        private static readonly int ColorId = Shader.PropertyToID("_Color");
+
         private static void SetObjectColor(GameObject obj, Color color)
         {
             if (obj == null) return;
 
+            // Renderer doğrudan obje üstünde değilse (parent+child mesh) çocuklara da bak.
             var renderer = obj.GetComponent<Renderer>();
-            if (renderer != null)
+            if (renderer == null)
             {
-                renderer.material = new Material(renderer.material);
-                renderer.material.color = color;
+                renderer = obj.GetComponentInChildren<Renderer>();
             }
+            if (renderer == null) return;
+
+            var mat = new Material(renderer.material);
+            renderer.material = mat;
+
+            // URP shader'larında Material.color çoğu zaman görünür renge map olmaz
+            // (_BaseColor gerekir). Var olan tüm renk property'lerini yaz — hepsi güvenli.
+            if (mat.HasProperty(BaseColorId)) mat.SetColor(BaseColorId, color);
+            if (mat.HasProperty(ColorId)) mat.SetColor(ColorId, color);
+            mat.color = color;
         }
 
         #endregion

@@ -477,6 +477,13 @@ namespace NewCss
                 return false;
             }
 
+            // Identity cross-check: sender must own the target player object.
+            if (playerObj.OwnerClientId != clientId)
+            {
+                LogError($"Kimlik uyusmazligi: sender {clientId} != hedef owner {playerObj.OwnerClientId}");
+                return false;
+            }
+
             return true;
         }
 
@@ -541,7 +548,7 @@ namespace NewCss
             }
 
             // Clear player inventory
-            player.SetInventoryStateServerRpc(false, -1);
+            player.SetInventoryStateServer(false, -1);
             player.TriggerDropAnimationServerRpc();
 
             // Spawn item on table
@@ -626,7 +633,7 @@ namespace NewCss
             }
 
             // Give item to player and despawn
-            player.GiveItemDirectlyServerRpc(itemData.itemID);
+            player.GiveItemDirectlyServer(itemData.itemID);
             itemNetObj.Despawn(true);
 
             // Clear table state
@@ -683,7 +690,7 @@ namespace NewCss
                 LogDebug($"❌ Box type {playerBox.boxType} doesn't match product type {tableProduct.productType}");
 
                 // Oyuncunun elindeki kutuyu temizle ve idle formuna döndür
-                player.SetInventoryStateServerRpc(false, -1);
+                player.SetInventoryStateServer(false, -1);
                 player.TriggerDropAnimationServerRpc();
 
                 // Oyuncunun pozisyonunda parçalanma efekti tetikle
@@ -701,7 +708,7 @@ namespace NewCss
             LogDebug($"📦 Instant boxing: {playerBox.boxType} for client {requesterClientId}");
 
             // Clear player inventory (kutu kullanıldı)
-            player.SetInventoryStateServerRpc(false, -1);
+            player.SetInventoryStateServer(false, -1);
             player.TriggerDropAnimationServerRpc();
 
             // Masadaki ürünü kaldır
@@ -898,11 +905,16 @@ namespace NewCss
             return Resources.Load<ItemData>($"Items/{itemName}");
         }
 
+        private static ItemData[] s_cachedItems;
+
         private ItemData GetItemDataFromID(int itemID)
         {
-            ItemData[] allItems = Resources.LoadAll<ItemData>("Items");
+            if (s_cachedItems == null)
+            {
+                s_cachedItems = Resources.LoadAll<ItemData>("Items");
+            }
 
-            foreach (ItemData item in allItems)
+            foreach (ItemData item in s_cachedItems)
             {
                 if (item.itemID == itemID)
                 {

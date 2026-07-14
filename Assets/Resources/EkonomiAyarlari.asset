@@ -13,20 +13,23 @@ MonoBehaviour:
   m_Name: EkonomiAyarlari
   m_EditorClassIdentifier: Assembly-CSharp::NewCss.GameEconomySettings
   baseRentByPlayerCount: f401000084030000b0040000dc050000
-  rentGrowthMultiplier: 1.3
+  rentGrowthMultiplier: 1.15
   wealthTaxRate: 0.1
   rentIntervalDays: 4
   gracePaymentPercent: 0.8
+  rentScaledMultiplier: 1
   rewardPerBox: 50
-  penaltyPerBox: 60
+  penaltyPerBox: 40
   hangarStayDuration: 120
   prestigePerBonus: 10
   bonusPerTier: 5
+  rewardVolatility: 0
+  rewardVolatilityMean: 1
   callReward: 10
   timeSkipAmount: 20
   postCallCooldown: 30
   maxCallsPerHour: 2
-  customerLostPrestigePenalty: -2
+  customerLostPrestigePenalty: -1.5
   customerServedPrestigeBonus: 0.5
   wrongProductPrestigePenalty: -0.1
   boxDropPrestigePenalty: -0.05

@@ -21,8 +21,9 @@ namespace NewCss
                 return;
             }
 
-            // Subscribe here
-            MoneySystem.Instance.OnMoneyChanged += UpdateText;
+            // Initialize() zaten MoneySystem.OnNetworkSpawn'dan garanti cagriliyor ve
+            // burada abone olur; ayni event'e ikinci kez abone olmayi onlemek icin
+            // burada tekrar subscribe ETME (cift UpdateText cagrisini onler).
             UpdateText(MoneySystem.Instance.CurrentMoney);
         }
 

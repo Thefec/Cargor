@@ -112,10 +112,16 @@ public class NetworkWorldItem : NetworkBehaviour
 
     #region ItemData Management
 
+    private static ItemData[] s_cachedItems;
+
     private void UpdateItemDataFromID(int itemID)
     {
-        ItemData[] allItems = Resources.LoadAll<ItemData>("Items");
-        foreach (ItemData item in allItems)
+        if (s_cachedItems == null)
+        {
+            s_cachedItems = Resources.LoadAll<ItemData>("Items");
+        }
+
+        foreach (ItemData item in s_cachedItems)
         {
             if (item.itemID == itemID)
             {
@@ -358,6 +364,13 @@ public class NetworkWorldItem : NetworkBehaviour
 
         // Sadece server karar verir
         if (!IsServer) return;
+
+        // DOLU kutular ASLA kırılmaz — tıra teslim edilmeli, yolda parçalanmamalı.
+        // Boş kutular BoxDestroyOnCollisionNetcode taşır (yukarıda atlanır); ancak DOLU kutu
+        // dünya prefab'ları (RedNGOFull vb.) o script'i taşımadığından bu yola düşerler.
+        // Doluluk kontrolü olmadan fırlatılan dolu kutu ürün gibi kırılır → burada engellenir.
+        var boxInfo = GetComponent<BoxInfo>();
+        if (boxInfo != null && boxInfo.isFull) return;
 
         // Sadece fırlatılan eşyalar kırılır
         if (!_wasThrown) return;

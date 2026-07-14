@@ -207,11 +207,8 @@ namespace NewCss
         /// Mevcut bir GameObject instance'ını slot'a yerleştirir
         /// </summary>
         /// <param name="itemInstance">Yerleştirilecek instantiate edilmiş GameObject</param>
-        /// <summary>
-        /// Mevcut bir GameObject instance'ını slot'a yerleştirir
-        /// </summary>
-        /// <param name="itemInstance">Yerleştirilecek instantiate edilmiş GameObject</param>
-        public void PlaceItemInstance(GameObject itemInstance)
+        /// <param name="playAnimation">Yerel scale-up animasyonunu oynat (networked path'te ClientRpc kullandığından false verilir)</param>
+        public void PlaceItemInstance(GameObject itemInstance, bool playAnimation = true)
         {
             if (!ValidateItemInstance(itemInstance))
             {
@@ -243,8 +240,11 @@ namespace NewCss
 
             _placedItems.Add(itemInstance);
 
-            // Play placement animation
-            ItemPlacementAnimator.PlayOn(this, itemInstance);
+            // Play placement animation (networked callers replicate this via their own ClientRpc instead)
+            if (playAnimation)
+            {
+                ItemPlacementAnimator.PlayOn(this, itemInstance);
+            }
 
             LogDebug($"Item instance placed at slot {slotIndex}:  {itemInstance.name}");
         }

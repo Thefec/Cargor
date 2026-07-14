@@ -17,7 +17,7 @@ namespace NewCss
         #region Constants
 
         private const string LOG_PREFIX = "[CustomerManager]";
-        private const int DEFAULT_QUEUE_SIZE = 3;
+        public const int DEFAULT_QUEUE_SIZE = 3;
         private const float DEFAULT_SPAWN_START_HOUR = 8f;
         private const float DEFAULT_SPAWN_END_HOUR = 17f;
         private const float CUSTOMER_EXIT_HOUR = 17.5f; // 17:30 - Müşterilerin çıkışa yönlendirileceği saat
@@ -55,6 +55,9 @@ namespace NewCss
 
         [SerializeField, Tooltip("Maksimum kuyruk boyutu")]
         public int maxQueueSize = DEFAULT_QUEUE_SIZE;
+
+        [Tooltip("Sabirli Musteriler perki: min/maxWaitTime carpani (CustomerAI.InitializeServerState'te okunur). Perk yoksa 1f.")]
+        public float patienceMultiplier = 1f;
 
         #endregion
 
@@ -256,6 +259,8 @@ namespace NewCss
 
         private void Start()
         {
+            if (Instance != this) return;
+
             LocalizationHelper.OnLocaleChanged += OnLocaleChanged;
             
             if (IsServer)
@@ -660,17 +665,17 @@ namespace NewCss
                 return;
             }
 
-            networkObject.Spawn();
-
             var customerAI = customerObject.GetComponent<CustomerAI>();
             if (customerAI == null)
             {
                 LogError("Customer prefab has no CustomerAI component!");
-                networkObject.Despawn();
+                Destroy(customerObject);
                 return;
             }
 
             SetupCustomerAI(customerAI, queueIndex);
+
+            networkObject.Spawn();
             SetupCustomerClientRpc(networkObject.NetworkObjectId, queueIndex);
 
             _customerQueue.Add(customerAI);
@@ -999,21 +1004,6 @@ namespace NewCss
         #endregion
 
         #region Public API
-
-        /// <summary>
-        /// M��teri spawn iste�i (ServerRpc)
-        /// </summary>
-        [ServerRpc(RequireOwnership = false)]
-        public void RequestCustomerSpawnServerRpc()
-        {
-            if (!IsWithinSpawningHours()) return;
-
-            int availableIndex = GetNextAvailableQueueIndex();
-            if (availableIndex != -1)
-            {
-                SpawnCustomer(availableIndex);
-            }
-        }
 
         /// <summary>
         /// Kalan mteri saysn dndrr

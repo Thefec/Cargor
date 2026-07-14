@@ -1,9 +1,10 @@
+using Unity.Netcode;
 using UnityEngine;
 
 namespace NewCss
 {
     /// <summary>
-    /// Kamyon trigger bölgesi - kutu teslimatýný algýlar ve iþler. 
+    /// Kamyon trigger bï¿½lgesi - kutu teslimatï¿½nï¿½ algï¿½lar ve iï¿½ler. 
     /// </summary>
     public class TruckTrigger : MonoBehaviour
     {
@@ -46,8 +47,17 @@ namespace NewCss
                 return;
             }
 
-            mainTruck.HandleDeliveryServerRpc(box.boxType, box.isFull);
-            Destroy(other.gameObject);
+            mainTruck.ProcessDelivery(box.boxType, box.isFull);
+
+            NetworkObject boxNetworkObject = other.GetComponent<NetworkObject>();
+            if (boxNetworkObject != null && boxNetworkObject.IsSpawned)
+            {
+                boxNetworkObject.Despawn(true);
+            }
+            else
+            {
+                Destroy(other.gameObject);
+            }
         }
 
         #endregion

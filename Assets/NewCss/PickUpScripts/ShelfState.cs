@@ -489,42 +489,6 @@ namespace NewCss
         #region Server RPCs - Place Item
 
         /// <summary>
-        /// Rafa item yerleştirir (RequireOwnership = false - tüm client'lar çağırabilir)
-        /// </summary>
-        [ServerRpc(RequireOwnership = false)]
-        public void PlaceItemOnShelfServerRpc(NetworkObjectReference itemRef, ServerRpcParams rpcParams = default)
-        {
-            if (!IsServer) return;
-
-            ulong requesterClientId = rpcParams.Receive.SenderClientId;
-            Debug.Log($"{LOG_PREFIX} 📥 PlaceItemOnShelfServerRpc - Client {requesterClientId}");
-
-            // Validation
-            if (!ValidatePlaceItemRequest(requesterClientId, out Transform playerTransform))
-            {
-                return;
-            }
-
-            // Box category validation - only allow Box category items on shelf
-            if (!ValidateItemIsBox(itemRef))
-            {
-                Debug.LogWarning($"{LOG_PREFIX} ❌ Only Box category items can be placed on shelf!");
-                return;
-            }
-
-            // Boş slot bul
-            int slotIndex = FindEmptySlotIndex();
-            if (slotIndex == -1)
-            {
-                Debug.LogWarning($"{LOG_PREFIX} ❌ Shelf is FULL!");
-                return;
-            }
-
-            // Item'ı yerleştir
-            PlaceItemInSlot(itemRef, slotIndex, requesterClientId);
-        }
-
-        /// <summary>
         /// Server-side version that bypasses validation.
         /// Used when PlayerInventory has already performed validation.
         /// </summary>
@@ -653,8 +617,7 @@ namespace NewCss
         /// <summary>
         /// Raftan item alır (RequireOwnership = false - tüm client'lar çağırabilir)
         /// </summary>
-        [ServerRpc(RequireOwnership = false)]
-        public void TakeItemFromShelfServerRpc(ulong requesterClientId, ulong itemNetworkId, ServerRpcParams rpcParams = default)
+        public void TakeItemFromShelfServer(ulong requesterClientId, ulong itemNetworkId)
         {
             if (!IsServer) return;
 
@@ -746,7 +709,7 @@ namespace NewCss
             networkObj.Despawn();
 
             // Player'a item ver
-            playerInventory.SetInventoryStateServerRpc(true, itemID);
+            playerInventory.SetInventoryStateServer(true, itemID);
 
             Debug.Log($"{LOG_PREFIX} ✅ Item successfully given to player {clientId}");
         }

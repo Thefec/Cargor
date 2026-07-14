@@ -301,9 +301,9 @@ public class PlayerSpawner : NetworkBehaviour
             GameObject playerInstance = Instantiate(PlayerPrefab);
             
             // Spawn pozisyonu ayarla
-            int spawnIndex = (int)(clientId % (ulong)spawnPoints.Length);
             if (spawnPoints != null && spawnPoints.Length > 0)
             {
+                int spawnIndex = (int)(clientId % (ulong)spawnPoints.Length);
                 Transform spawnPoint = spawnPoints[spawnIndex];
                 playerInstance.transform.position = spawnPoint.position;
                 playerInstance.transform.rotation = spawnPoint.rotation;

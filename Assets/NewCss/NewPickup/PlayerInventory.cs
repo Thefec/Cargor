@@ -137,6 +137,7 @@ public partial class PlayerInventory : NetworkBehaviour
     private static readonly Dictionary<ulong, float> s_itemPickupLocks = new();
     private static readonly object s_lockObject = new();
     private static bool s_cleanupStarted;
+    private static bool s_serverStoppedSubscribed;
 
     #endregion
     #region Network Variables
@@ -372,7 +373,31 @@ public partial class PlayerInventory : NetworkBehaviour
         {
             StartCoroutine(LockCleanupLoop());
             s_cleanupStarted = true;
+
+            // Host menüye dönüp yeniden host açtığında s_cleanupStarted bir daha
+            // resetlenmediği için loop yeniden başlamıyordu (G19). Server tamamen
+            // durduğunda static state'i resetleyip bir sonraki host açılışına hazırlıyoruz.
+            if (!s_serverStoppedSubscribed && NetworkManager.Singleton != null)
+            {
+                NetworkManager.Singleton.OnServerStopped += HandleServerStoppedResetLockState;
+                s_serverStoppedSubscribed = true;
+            }
         }
+    }
+
+    private static void HandleServerStoppedResetLockState(bool wasHost)
+    {
+        lock (s_lockObject)
+        {
+            s_itemPickupLocks.Clear();
+        }
+        s_cleanupStarted = false;
+
+        if (NetworkManager.Singleton != null)
+        {
+            NetworkManager.Singleton.OnServerStopped -= HandleServerStoppedResetLockState;
+        }
+        s_serverStoppedSubscribed = false;
     }
 
     private void SubscribeToNetworkEvents()
@@ -647,21 +672,10 @@ public partial class PlayerInventory : NetworkBehaviour
         onPickedUp?.Invoke();
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    public void ClearCurrentItemServerRpc()
+    public void SetInventoryStateServer(bool hasItemValue, int itemID)
     {
-        if (!_hasItem.Value) return;
+        if (!IsServer) return;
 
-        _hasItem.Value = false;
-        _currentItemID.Value = -1;
-
-        _playerMovement?.SetCarrying(false);
-        ClearHeldItemVisualClientRpc();
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    public void SetInventoryStateServerRpc(bool hasItemValue, int itemID)
-    {
         _hasItem.Value = hasItemValue;
         _currentItemID.Value = itemID;
 
@@ -686,9 +700,9 @@ public partial class PlayerInventory : NetworkBehaviour
         StartDropAnimationClientRpc();
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    public void GiveItemDirectlyServerRpc(int itemID)
+    public void GiveItemDirectlyServer(int itemID)
     {
+        if (!IsServer) return;
         if (_hasItem.Value) return;
 
         var itemData = GetItemDataFromID(itemID);

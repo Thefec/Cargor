@@ -736,7 +736,7 @@ namespace NewCss
             networkObj.Despawn();
 
             // Player'a item ver
-            playerInventory.SetInventoryStateServerRpc(true, itemID);
+            playerInventory.SetInventoryStateServer(true, itemID);
 
             LogDebug($"✅ Item successfully given to player {clientId}");
         }

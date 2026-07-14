@@ -16,7 +16,6 @@ GameObject:
   - component: {fileID: 8593384166932901962}
   - component: {fileID: 5720792940072625199}
   - component: {fileID: -8294635952294633647}
-  - component: {fileID: 9017802967801636667}
   - component: {fileID: -8067674825034525546}
   m_Layer: 7
   m_Name: BlueFull
@@ -203,25 +202,6 @@ MonoBehaviour:
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
---- !u!114 &9017802967801636667
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3544878022416520156}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a7c82736062490f40a06cbe5f3b97b31, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NewCss.BoxFallPenalty
-  dropMoneyPenalty: 10
-  dropPrestigePenalty: 0.01
-  boxDropSound: {fileID: 0}
-  soundVolume: 1
-  minVelocityForSound: 2
-  use2DSound: 0
-  maxSoundDistance: 50
 --- !u!82 &-8067674825034525546
 AudioSource:
   m_ObjectHideFlags: 0

@@ -217,14 +217,16 @@ public class LobbySaver : MonoBehaviour
 
     private void HandleApplicationPause()
     {
-        LogDebug("Application paused - clearing lobby");
-        ClearLobby();
+        // Standalone'da alt-tab/overlay gibi siradan pause olaylarinda lobiden
+        // gercekten cikmak istemiyoruz; bu yuzden ClearLobby cagirmiyoruz.
+        LogDebug("Application paused - lobby kept (no leave)");
     }
 
     private void HandleApplicationLostFocus()
     {
-        LogDebug("Application lost focus - clearing lobby");
-        ClearLobby();
+        // Alt-tab, Steam overlay veya Discord'a gecis gibi siradan focus
+        // kaybinda lobiden cikmiyoruz; aktif co-op oyununu bozuyordu.
+        LogDebug("Application lost focus - lobby kept (no leave)");
     }
 
     private void HandleApplicationQuit()

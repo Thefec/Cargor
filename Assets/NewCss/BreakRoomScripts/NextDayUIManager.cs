@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Steamworks;
-using Steamworks.Data;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -82,6 +81,8 @@ namespace NewCss
         private string _currentPlayerListText = string.Empty;
         private bool _wasActive = false;
         private List<string> _playersInBreakRoom = new List<string>();
+        private bool _rosterSubscribed;
+        private Coroutine _rosterSubscribeRoutine;
 
         #endregion
 
@@ -111,11 +112,25 @@ namespace NewCss
             UpdateNextDayUI();
             SetupCursor();
             LocalizationSettings.SelectedLocaleChanged += HandleLocaleChanged;
+
+            TrySubscribeToRosterChanged();
         }
 
         private void OnDisable()
         {
             LocalizationSettings.SelectedLocaleChanged -= HandleLocaleChanged;
+
+            if (_rosterSubscribeRoutine != null)
+            {
+                StopCoroutine(_rosterSubscribeRoutine);
+                _rosterSubscribeRoutine = null;
+            }
+
+            if (_rosterSubscribed && GameStateManager.Instance != null)
+            {
+                GameStateManager.Instance.OnRosterChanged -= UpdateNextDayUI;
+            }
+            _rosterSubscribed = false;
 
             // UI kapandığında hareketi aç
             if (_wasActive)
@@ -123,6 +138,47 @@ namespace NewCss
                 UnlockPlayerMovement();
                 _wasActive = false;
             }
+        }
+
+        /// <summary>
+        /// GameStateManager.Instance erken OnEnable sırasında henüz null olabilir; bu durumda
+        /// abonelik hiç kurulmaz ve geç-katılan oyuncuda UI güncellenmez. Instance hazır
+        /// olana kadar coroutine ile beklenip abonelik güvenceye alınıyor.
+        /// </summary>
+        private void TrySubscribeToRosterChanged()
+        {
+            if (_rosterSubscribed)
+            {
+                return;
+            }
+
+            if (GameStateManager.Instance != null)
+            {
+                GameStateManager.Instance.OnRosterChanged += UpdateNextDayUI;
+                _rosterSubscribed = true;
+                return;
+            }
+
+            if (_rosterSubscribeRoutine == null)
+            {
+                _rosterSubscribeRoutine = StartCoroutine(SubscribeToRosterWhenReady());
+            }
+        }
+
+        private System.Collections.IEnumerator SubscribeToRosterWhenReady()
+        {
+            while (GameStateManager.Instance == null)
+            {
+                yield return null;
+            }
+
+            if (!_rosterSubscribed)
+            {
+                GameStateManager.Instance.OnRosterChanged += UpdateNextDayUI;
+                _rosterSubscribed = true;
+            }
+
+            _rosterSubscribeRoutine = null;
         }
 
         private void Update()
@@ -278,45 +334,30 @@ namespace NewCss
         {
             HideAllPlayerElements();
 
-            Lobby? currentLobby = GetCurrentLobby();
+            // Tek doğruluk kaynağı: server-authoritative roster (GameStateManager).
+            // Steam lobi Members okuması client/host arasında tutarsız olabiliyordu
+            // (persona henüz inmemiş / lobi referansı client'ta boş dönebiliyor).
+            var rosterNames = GameStateManager.Instance?.GetRosterPlayerNames();
 
-            if (!currentLobby.HasValue)
+            if (rosterNames == null || rosterNames.Count == 0)
             {
                 ShowLocalPlayer();
                 return;
             }
 
-            ShowLobbyPlayers(currentLobby.Value);
+            ShowRosterPlayers(rosterNames);
         }
 
-        private Lobby? GetCurrentLobby()
+        private void ShowRosterPlayers(List<string> rosterNames)
         {
-            if (LobbySaver.instance != null && LobbySaver.instance.CurrentLobby.HasValue)
-            {
-                return LobbySaver.instance.CurrentLobby.Value;
-            }
-
-            return null;
-        }
-
-        private void ShowLobbyPlayers(Lobby lobby)
-        {
-            var members = lobby.Members?.ToArray();
-
-            if (members == null || members.Length == 0)
-            {
-                ShowLocalPlayer();
-                return;
-            }
-
-            int displayCount = Mathf.Min(members.Length, playerUIElements.Length);
+            int displayCount = Mathf.Min(rosterNames.Count, playerUIElements.Length);
 
             for (int i = 0; i < displayCount; i++)
             {
-                ShowPlayer(i, members[i].Name);
+                ShowPlayer(i, rosterNames[i]);
             }
 
-            LogDebug($"Updated UI - Showing {displayCount} players");
+            LogDebug($"Updated UI - Showing {displayCount} players (roster)");
         }
 
         private void ShowLocalPlayer()

@@ -21,16 +21,16 @@ namespace NewCss
         public int[] baseRentByPlayerCount = { 500, 900, 1200, 1500 };
 
         [Tooltip("Her kira döneminde kira artış çarpanı (örn: 1.3 = %30 artış)")]
-        public float rentGrowthMultiplier = 1.3f;
-
-        [Tooltip("Satın alınan upgrade değerinin yüzde kaçı kira vergisi olarak eklenir (0-1)")]
-        public float wealthTaxRate = 0.1f;
+        public float rentGrowthMultiplier = 1.15f;
 
         [Tooltip("Kaç günde bir kira alınır")]
         public int rentIntervalDays = 4;
 
         [Tooltip("Grace period'da oyuncudan alınan para yüzdesi (0-1). Kalan para oyuncuda kalır.")]
         public float gracePaymentPercent = 0.8f;
+
+        [Tooltip("Kaldıraçlı Kira perki: scaledRent'e uygulanan çarpan. Perk yoksa 1f.")]
+        public float rentScaledMultiplier = 1f;
 
         // ─────────────────────────────────────────────────────────────
         //  TIR / TESLİMAT  (Truck)
@@ -42,7 +42,7 @@ namespace NewCss
         public int rewardPerBox = 50;
 
         [Tooltip("Yanlış renk kutu tesliminde kutu başına ceza (TL)")]
-        public int penaltyPerBox = 60;
+        public int penaltyPerBox = 40;
 
         [Tooltip("Tırın hangarda bekleme süresi (saniye). Süre dolunca boş da olsa kalkar.")]
         public float hangarStayDuration = 120f;
@@ -51,7 +51,13 @@ namespace NewCss
         public float prestigePerBonus = 10f;
 
         [Tooltip("Her prestige katmanında kutu başına eklenen bonus (TL)")]
-        public int bonusPerTier = 5;
+        public float bonusPerTier = 5f;
+
+        [Tooltip("Yüksek Volatilite perki: kutu başına ödül dağılımının +-yüzdesi (0 = kapalı).")]
+        public float rewardVolatility = 0f;
+
+        [Tooltip("Yüksek Volatilite perki: ortalama ödül çarpanı (RNG merkezi, EV her zaman pozitif olacak şekilde).")]
+        public float rewardVolatilityMean = 1f;
 
         // ─────────────────────────────────────────────────────────────
         //  TELEFON  (PhoneCallManager)
@@ -78,7 +84,7 @@ namespace NewCss
         [Header("=== PRESTİJ AYARLARI ===")]
 
         [Tooltip("Müşteri kaçtığında (bekleme süresi dolunca) uygulanan prestige cezası (negatif olmalı)")]
-        public float customerLostPrestigePenalty = -2f;
+        public float customerLostPrestigePenalty = -1.5f;
 
         [Tooltip("Müşteriye başarılı servis yapıldığında kazanılan prestige bonusu")]
         public float customerServedPrestigeBonus = 0.5f;
@@ -104,14 +110,13 @@ namespace NewCss
         }
 
         /// <summary>
-        /// Kira dönemine ve toplam upgrade değerine göre hesaplanmış kira miktarını döndürür.
+        /// Kira dönemine göre hesaplanmış kira miktarını döndürür.
         /// </summary>
-        public float CalculateRent(int playerCount, int rentCycle, float totalUpgradeValue)
+        public float CalculateRent(int playerCount, int rentCycle)
         {
             float baseRent = GetBaseRent(playerCount);
-            float scaledRent = baseRent * Mathf.Pow(rentGrowthMultiplier, rentCycle);
-            float wealthTax  = totalUpgradeValue * wealthTaxRate;
-            return scaledRent + wealthTax;
+            float scaledRent = baseRent * Mathf.Pow(rentGrowthMultiplier, rentCycle) * rentScaledMultiplier;
+            return scaledRent;
         }
 
         // ─────────────────────────────────────────────────────────────
@@ -184,7 +189,7 @@ namespace NewCss
 
                 // Prestij tier hesabı (Truck.cs mantığı)
                 int prestigeTiers = Mathf.FloorToInt(prestige / prestigePerBonus);
-                int rewardPerBoxActual = rewardPerBox + (prestigeTiers * bonusPerTier);
+                int rewardPerBoxActual = Mathf.RoundToInt(rewardPerBox + (prestigeTiers * bonusPerTier));
 
                 // Günlük gelir / ceza
                 float revenue = correctDeliveries * rewardPerBoxActual;
@@ -205,7 +210,7 @@ namespace NewCss
 
                 if (isRentDay)
                 {
-                    rentAmount = CalculateRent(playerCount, rentCycle, totalUpgradeValue);
+                    rentAmount = CalculateRent(playerCount, rentCycle);
 
                     if (cashBeforeRent >= rentAmount)
                     {

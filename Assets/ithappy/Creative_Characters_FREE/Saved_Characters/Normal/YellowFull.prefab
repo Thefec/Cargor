@@ -16,7 +16,6 @@ GameObject:
   - component: {fileID: 4516736637328552670}
   - component: {fileID: 4042364039625215522}
   - component: {fileID: -7785935903677429326}
-  - component: {fileID: 581514947145421228}
   - component: {fileID: -5960094693702142406}
   m_Layer: 7
   m_Name: YellowFull
@@ -203,25 +202,6 @@ MonoBehaviour:
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
---- !u!114 &581514947145421228
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7458859209666148350}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a7c82736062490f40a06cbe5f3b97b31, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NewCss.BoxFallPenalty
-  dropMoneyPenalty: 10
-  dropPrestigePenalty: 0.01
-  boxDropSound: {fileID: 0}
-  soundVolume: 1
-  minVelocityForSound: 2
-  use2DSound: 0
-  maxSoundDistance: 50
 --- !u!82 &-5960094693702142406
 AudioSource:
   m_ObjectHideFlags: 0

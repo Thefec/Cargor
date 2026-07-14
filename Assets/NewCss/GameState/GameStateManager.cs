@@ -2,8 +2,14 @@ using UnityEngine;
 using UnityEngine.UI;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
+using Unity.Collections;
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Text;
 using UnityEngine.SceneManagement;
+using Steamworks;
+using TMPro;
 
 namespace NewCss
 {
@@ -12,24 +18,272 @@ namespace NewCss
         public static GameStateManager Instance { get; private set; }
 
         [Header("Win/Lose Settings")]
-        
+
         [Header("UI Panels - Assign your existing panels")]
         public GameObject winPanel;
         public GameObject losePanel;
-        
+
         [Header("Exit Buttons - Assign your existing buttons")]
         public Button winExitButton;
         public Button loseExitButton;
-        
+
+        [Header("End Game Player Roster (opsiyonel)")]
+        [SerializeField, Tooltip("Win panelinde oyuncu listesini gösterecek TMP metni (atanmazsa gösterilmez)")]
+        private TextMeshProUGUI winPlayerListText;
+        [SerializeField, Tooltip("Lose panelinde oyuncu listesini gösterecek TMP metni (atanmazsa gösterilmez)")]
+        private TextMeshProUGUI losePlayerListText;
+
+        #region Player Roster (server-authoritative)
+
+        private const int ROSTER_NAME_MAX_UTF8_BYTES = 60;
+        private const string ROSTER_FALLBACK_NAME = "Player";
+
+        /// <summary>
+        /// Server-authoritative oyuncu roster'ı. Break Room ve End Game UI'ları
+        /// TEK bu kaynaktan oyuncu adı/sayısı okumalı — Steam lobi Members okuması
+        /// client/host arasında tutarsız (persona henüz inmemiş olabilir, lobi
+        /// referansı client'ta güvenilir dolmayabilir).
+        /// </summary>
+        private readonly NetworkList<PlayerRosterEntry> _playerRoster = new NetworkList<PlayerRosterEntry>();
+
+        public event Action OnRosterChanged;
+
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+
+            _playerRoster.OnListChanged += HandleRosterListChanged;
+
+            if (IsServer)
+            {
+                // Yeni spawn = yeni oturum; önceki oturumdan sızmış roster girdisi olmasın.
+                // Bu, roster temizliğinin TEK deterministik noktası: senkron olarak burada
+                // çalışır, hemen altındaki IsClient bloğundaki SubmitLocalNameServerRpc
+                // (host için bile) ancak bir sonraki network tick'inde işlenir - yani Clear
+                // her zaman submit'ten önce garantili biter.
+                ClearPlayerRoster();
+                NetworkManager.Singleton.OnClientDisconnectCallback += HandleClientDisconnected;
+            }
+
+            if (IsClient)
+            {
+                SubmitLocalNameServerRpc(BuildLocalRosterName());
+            }
+
+            _gameEndState.OnValueChanged += HandleGameEndStateChanged;
+
+            // Late-join / geç subscribe güvenliği: OnValueChanged yalnızca DEĞİŞİKLİKTE
+            // tetiklenir, spawn anındaki mevcut değeri kapsamaz. Oyun zaten bitmiş
+            // durumdaysa (örn. geç katılan bir client) ekranı burada uygula.
+            if (_gameEndState.Value != GameEndState.None)
+            {
+                ApplyGameEndState(_gameEndState.Value);
+            }
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            base.OnNetworkDespawn();
+
+            _playerRoster.OnListChanged -= HandleRosterListChanged;
+            _gameEndState.OnValueChanged -= HandleGameEndStateChanged;
+
+            if (NetworkManager.Singleton != null)
+            {
+                NetworkManager.Singleton.OnClientDisconnectCallback -= HandleClientDisconnected;
+            }
+        }
+
+        private void HandleGameEndStateChanged(GameEndState previous, GameEndState current)
+        {
+            ApplyGameEndState(current);
+        }
+
+        private void ApplyGameEndState(GameEndState state)
+        {
+            switch (state)
+            {
+                case GameEndState.Won:
+                    gameEnded = true;
+                    playerWon = true;
+                    Time.timeScale = 0f;
+                    ShowWinScreen();
+                    break;
+                case GameEndState.Lost:
+                    gameEnded = true;
+                    playerWon = false;
+                    Time.timeScale = 0f;
+                    ShowLoseScreen();
+                    break;
+            }
+        }
+
+        private void HandleRosterListChanged(NetworkListEvent<PlayerRosterEntry> _)
+        {
+            OnRosterChanged?.Invoke();
+        }
+
+        private string BuildLocalRosterName()
+        {
+            string raw = SteamClient.IsValid ? SteamClient.Name : null;
+            return string.IsNullOrWhiteSpace(raw) ? ROSTER_FALLBACK_NAME : raw;
+        }
+
+        private static FixedString64Bytes ToRosterFixedName(string raw)
+        {
+            string safe = string.IsNullOrWhiteSpace(raw) ? ROSTER_FALLBACK_NAME : raw;
+
+            while (Encoding.UTF8.GetByteCount(safe) > ROSTER_NAME_MAX_UTF8_BYTES && safe.Length > 0)
+            {
+                int newLength = safe.Length - 1;
+
+                // Kesim noktası bir surrogate pair'i ortadan bölmesin: kesimden sonra
+                // son kalan karakter lone high surrogate olacaksa (düşük eşi az önce
+                // atıldıysa) çifti birlikte at.
+                if (newLength > 0 && char.IsHighSurrogate(safe[newLength - 1]))
+                {
+                    newLength--;
+                }
+
+                safe = safe.Substring(0, newLength);
+            }
+
+            if (safe.Length == 0)
+            {
+                safe = ROSTER_FALLBACK_NAME;
+            }
+
+            try
+            {
+                return new FixedString64Bytes(safe);
+            }
+            catch (Exception ex)
+            {
+                // Beklenmedik bir kod noktası ctor'da patlarsa oyuncu roster'dan
+                // tamamen düşmesin - güvenli fallback isme dön.
+                Debug.LogWarning($"ToRosterFixedName: FixedString64Bytes ctor failed for '{safe}', falling back. {ex.Message}");
+                return new FixedString64Bytes(ROSTER_FALLBACK_NAME);
+            }
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        private void SubmitLocalNameServerRpc(string rawName, ServerRpcParams rpcParams = default)
+        {
+            ulong senderClientId = rpcParams.Receive.SenderClientId;
+            FixedString64Bytes fixedName = ToRosterFixedName(rawName);
+
+            for (int i = 0; i < _playerRoster.Count; i++)
+            {
+                if (_playerRoster[i].ClientId == senderClientId)
+                {
+                    // Idempotent: aynı client tekrar bildirirse (reconnect) günceller, çoğaltmaz.
+                    if (!_playerRoster[i].Name.Equals(fixedName))
+                    {
+                        _playerRoster[i] = new PlayerRosterEntry { ClientId = senderClientId, Name = fixedName };
+                    }
+                    return;
+                }
+            }
+
+            _playerRoster.Add(new PlayerRosterEntry { ClientId = senderClientId, Name = fixedName });
+        }
+
+        private void HandleClientDisconnected(ulong clientId)
+        {
+            if (!IsServer)
+            {
+                return;
+            }
+
+            for (int i = _playerRoster.Count - 1; i >= 0; i--)
+            {
+                if (_playerRoster[i].ClientId == clientId)
+                {
+                    _playerRoster.RemoveAt(i);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Yeni bir oyun/lobi oturumu başlarken roster'ı temizler. Yalnızca server çağırmalı
+        /// (idempotent, client'ta no-op).
+        /// </summary>
+        public void ClearPlayerRoster()
+        {
+            // NetworkObject henüz spawn olmadıysa IsServer güvenilir değil (InitializeForCurrentScene
+            // NetworkSpawn'dan önce de tetiklenebilir) - spawn olmamışsa sessizce çık.
+            if (!IsSpawned || !IsServer)
+            {
+                return;
+            }
+
+            _playerRoster.Clear();
+        }
+
+        /// <summary>
+        /// Roster'daki oyuncu isimlerini döndürür (server-authoritative, tüm makinelerde tutarlı).
+        /// </summary>
+        public List<string> GetRosterPlayerNames()
+        {
+            var names = new List<string>(_playerRoster.Count);
+            foreach (var entry in _playerRoster)
+            {
+                names.Add(entry.Name.ToString());
+            }
+            return names;
+        }
+
+        public int RosterPlayerCount => _playerRoster.Count;
+
+        #endregion
+
         [Header("Economy Settings")]
         [SerializeField, Tooltip("Tüm ekonomi sabitlerini içeren ScriptableObject")]
         private GameEconomySettings economySettings;
 
         private bool gameEnded = false;
         private bool playerWon = false;
-        private bool hasGameEverStarted = false; 
+        private bool hasGameEverStarted = false;
+
+        /// <summary>
+        /// Server-authoritative oyun sonu durumu (Win/Lose/None). ClientRpc yerine
+        /// NetworkVariable kullanılır ki state, spawn/late-join zamanlamasından
+        /// bağımsız olarak her makineye güvenilir şekilde replike olsun — fire-and-forget
+        /// bir RPC'nin aksine, bu değer NetworkObject'in normal state senkronizasyonunun
+        /// bir parçasıdır.
+        /// </summary>
+        private enum GameEndState : byte { None = 0, Won = 1, Lost = 2 }
+
+        private readonly NetworkVariable<GameEndState> _gameEndState = new NetworkVariable<GameEndState>(
+            GameEndState.None,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server);
         
         public bool HasGameEverStarted => hasGameEverStarted;
+
+        /// <summary>
+        /// Oyunun (harita/gameplay) gerçekten başladığını server-authoritative olarak işaretler.
+        /// Çağıran taraf (SteamManager), oyun sahnesi tam yüklendikten SONRA çağırmalı —
+        /// erken çağrılırsa DifficultyManager.ApplyMoneySettings başlangıç parasını
+        /// atlayabilir (bkz. DifficultyManager.ApplyMoneySettings). Idempotent.
+        /// </summary>
+        public void MarkGameStarted()
+        {
+            hasGameEverStarted = true;
+        }
+
+        /// <summary>
+        /// Yeni bir host oturumu (StartHost) başlarken hasGameEverStarted'ı run-scoped
+        /// sıfırlar. GameStateManager DontDestroyOnLoad olduğundan bu bayrak normalde
+        /// resetlenmez; aynı process içinde menüye dönüp ikinci bir oyun başlatılırsa
+        /// eski true değeri kalır ve ApplyMoneySettings/IsFirstGameLoad yanlış davranır.
+        /// SteamManager.ExecuteHostStart başında (LateJoinGuard.ResetGuard ile birlikte)
+        /// çağrılmalı.
+        /// </summary>
+        public void ResetGameStartedFlag()
+        {
+            hasGameEverStarted = false;
+        }
         
         // Scene management
         private string currentGameScene = "";
@@ -77,6 +331,8 @@ namespace NewCss
             {
                 SceneManager.sceneLoaded -= OnSceneLoaded;
             }
+
+            _playerRoster.Dispose();
         }
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -117,8 +373,14 @@ namespace NewCss
             // *** HER OYUN SCENE'İNDE ZORUNLU RESET ***
             Debug.Log("FORCE RESETTING game state for any game scene load");
             gameEnded = false;           // ZORUNLU RESET
-            playerWon = false;           // ZORUNLU RESET  
+            playerWon = false;           // ZORUNLU RESET
             Time.timeScale = 1f;         // ZORUNLU RESET
+            // Roster'ı burada TEKRAR temizlemiyoruz: bu metod sahne-load event'i ile
+            // bir frame gecikmeli tetiklenir ve OnNetworkSpawn'daki (server dalı) senkron
+            // Clear + client'ların SubmitLocalNameServerRpc'si arasına girip host'un
+            // kendi roster girdisini silebilirdi (sıralama garantisizdi). Roster temizliği
+            // artık TEK noktada, OnNetworkSpawn'ın server dalında, herhangi bir submit
+            // RPC'si işlenmeden ÖNCE yapılıyor - bkz. yukarısı ClearPlayerRoster().
     
             // UI referanslarını tekrar bul (çünkü yeni sahne)
             FindUIReferences();
@@ -277,7 +539,15 @@ namespace NewCss
             gameEnded = false;
             playerWon = false;
             // hasGameEverStarted'ı resetlemeyin - sadece oyun gerçekten ilk kez başladığında true yapılacak
-    
+
+            // Aynı process içinde yeni bir oturum başlarsa (DontDestroyOnLoad) önceki
+            // Won/Lost durumu NetworkVariable'da sızmasın - yoksa yeni bir client
+            // OnNetworkSpawn'da eski sonucu tekrar uygular.
+            if (IsSpawned && IsServer)
+            {
+                _gameEndState.Value = GameEndState.None;
+            }
+
             // Time scale'i normale döndür
             Time.timeScale = 1f;
     
@@ -334,13 +604,6 @@ namespace NewCss
                     : -2f;
                 PrestigeManager.Instance.ModifyPrestige(penalty);
                 Debug.Log($"Prestige penalty applied: {penalty}");
-                
-                // Prestige sıfırın altına düştüyse oyun biter
-                if (PrestigeManager.Instance.GetPrestige() <= 0)
-                {
-                    Debug.Log("=== PRESTIGE ZERO - GAME OVER ===");
-                    TriggerLose();
-                }
             }
             else
             {
@@ -372,66 +635,48 @@ namespace NewCss
         private void TriggerWin()
         {
             Debug.Log("=== GAME WON ===");
-            gameEnded = true;
-            playerWon = true;
-            
-            Time.timeScale = 0f;
-            ShowWinScreen();
-            
-            // Network sync - notify all clients
-            if (IsServer)
-            {
-                ShowWinScreenClientRpc();
-            }
-        }
 
-        [ClientRpc]
-        private void ShowWinScreenClientRpc()
-        {
-            // ClientRpc is called on ALL machines including the server
-            // Server already showed the screen in TriggerWin(), so skip it here
-            if (IsServer) return;
-            
-            gameEnded = true;
-            playerWon = true;
-            Time.timeScale = 0f;
-            ShowWinScreen();
+            // Server-authoritative: karar burada, tüm makineler _gameEndState NetworkVariable'ının
+            // OnValueChanged callback'i üzerinden AYNI sonucu görür (bkz. ApplyGameEndState).
+            // Yalnızca IsSpawned && IsServer iken yazılabilir; bu metodun tüm çağıranları zaten
+            // server-gate'li (DayCycleManager.Update / NextDay / CustomerAI.OnCustomerLost).
+            if (IsSpawned && IsServer)
+            {
+                _gameEndState.Value = GameEndState.Won;
+            }
         }
 
         public void TriggerLose()
         {
             Debug.Log("=== GAME LOST ===");
-            gameEnded = true;
-            playerWon = false;
-            
-            Time.timeScale = 0f;
-            ShowLoseScreen();
-            
-            // Network sync - notify all clients
-            if (IsServer)
+
+            if (IsSpawned && IsServer)
             {
-                ShowLoseScreenClientRpc();
+                _gameEndState.Value = GameEndState.Lost;
             }
         }
 
-        [ClientRpc]
-        private void ShowLoseScreenClientRpc()
+        /// <summary>
+        /// Roster'daki (server-authoritative) oyuncu isimlerini verilen TMP metnine yazar.
+        /// Alan Inspector'dan atanmadıysa no-op (mevcut davranış bozulmaz).
+        /// </summary>
+        private void RenderRosterInto(TextMeshProUGUI target)
         {
-            // ClientRpc is called on ALL machines including the server
-            // Server already showed the screen in TriggerLose(), so skip it here
-            if (IsServer) return;
-            
-            gameEnded = true;
-            playerWon = false;
-            Time.timeScale = 0f;
-            ShowLoseScreen();
+            if (target == null)
+            {
+                return;
+            }
+
+            var names = GetRosterPlayerNames();
+            target.text = names.Count > 0 ? string.Join("\n", names) : string.Empty;
         }
 
         private void ShowWinScreen()
         {
             Debug.Log("=== SHOWING WIN SCREEN ===");
             HidePanelsOnly();
-            
+            RenderRosterInto(winPlayerListText);
+
             // Eğer panel yoksa tekrar bulmaya çalış
             if (winPanel == null)
             {
@@ -468,7 +713,8 @@ namespace NewCss
         {
             Debug.Log("=== SHOWING LOSE SCREEN ===");
             HidePanelsOnly();
-            
+            RenderRosterInto(losePlayerListText);
+
             // Eğer panel yoksa tekrar bulmaya çalış
             if (losePanel == null)
             {

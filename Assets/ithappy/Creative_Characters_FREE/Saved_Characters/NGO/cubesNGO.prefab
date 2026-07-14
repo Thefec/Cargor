@@ -220,6 +220,7 @@ MonoBehaviour:
   itemData: {fileID: 11400000, guid: 80329b6e6aade7442968f935e3588059, type: 2}
   rb: {fileID: 9091366128738092273}
   itemCollider: {fileID: 4868909871770925404}
+  impactSpeedThreshold: 3
 --- !u!114 &5070490684102402495
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -292,7 +293,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NewCss.BoxFallPenalty
   dropMoneyPenalty: 5
-  dropPrestigePenalty: 0.05
+  economySettings: {fileID: 11400000, guid: 415dc128c56df644f9af98009bf37743, type: 2}
   boxDropSound: {fileID: 8300000, guid: 016732318ef656a4392c44070b4a51aa, type: 3}
   soundVolume: 1
   minVelocityForSound: 2

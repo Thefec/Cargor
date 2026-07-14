@@ -77,6 +77,12 @@ namespace NewCss
         private int   rentIntervalDays    => economySettings != null ? economySettings.rentIntervalDays    : 4;
         private float gracePaymentPercent => economySettings != null ? economySettings.gracePaymentPercent : 0.8f;
 
+        // ── Acil Fren perki (emergency_brake) — server-authoritative, tek kullanımlık ──
+        private const float EMERGENCY_BRAKE_PRESTIGE_PENALTY = -5f;
+
+        /// <summary>Acil Fren perki satın alındığında true olur; bir kez tetiklenip tükenir.</summary>
+        public bool insuranceAvailable = false;
+
         #endregion
 
         #region Network Variables
@@ -95,6 +101,7 @@ namespace NewCss
         private bool _moneyCheckCompleted;
         private int _rentPaymentCount;   // Kaçıncı kira ödemesi
         private bool _graceUsed;         // İlk kira affı kullanıldı mı
+        private bool _gameOverStopProcessing; // Game-over sonrası Update() işleme döngüsünü durdurur (server-only)
 
         // Periyodik kontrol flag'leri
         private PeriodicCheckState _periodicChecks;
@@ -260,7 +267,7 @@ namespace NewCss
                 _lastUIUpdateTime = Time.time;
             }
 
-            if (!IsSpawned || !IsServer || _networkIsDayOver.Value)
+            if (!IsSpawned || !IsServer || _networkIsDayOver.Value || _gameOverStopProcessing)
             {
                 return;
             }
@@ -380,6 +387,12 @@ namespace NewCss
             _lunchNotified = false;
             _moneyCheckCompleted = false;
             _periodicChecks.Reset();
+
+            // Kira/sigorta state'i önceki oturumdan sızmasın (yeni oyun / menüye dönüş / replay).
+            _rentPaymentCount = 0;
+            _graceUsed = false;
+            insuranceAvailable = false;
+            _gameOverStopProcessing = false;
         }
 
         private void AdvanceTime()
@@ -533,10 +546,28 @@ namespace NewCss
                 _rentPaymentCount++;
                 Debug.Log($"{LOG_PREFIX} Grace period used. Took {graceAmount} ({gracePaymentPercent * 100}% of {currentMoney}). Needed: {rentAmount}");
             }
+            else if (insuranceAvailable)
+            {
+                // Acil Fren perki: iflası bir kez önler, tükenir. O günün geliri sıfırlanmış sayılır
+                // (para zaten yetersizdi) ve prestij cezası uygulanır — bedelsiz değil.
+                insuranceAvailable = false;
+                if (PrestigeManager.Instance != null)
+                {
+                    PrestigeManager.Instance.ModifyPrestige(EMERGENCY_BRAKE_PRESTIGE_PENALTY);
+                }
+                _rentPaymentCount++;
+                Debug.Log($"{LOG_PREFIX} Emergency Brake perk consumed. Rent {rentAmount} waived, prestige penalty {EMERGENCY_BRAKE_PRESTIGE_PENALTY} applied.");
+            }
             else
             {
                 // 2. kez ödeyememe → Game Over
                 Debug.Log($"{LOG_PREFIX} Cannot pay rent: {rentAmount}. Available: {currentMoney}. GAME OVER!");
+                // Game-over döngüsünü durdur: Update() sadece _gameOverStopProcessing==true iken
+                // ProcessDayEnd çağrısını keser. Bu set edilmezse her server frame'de buraya
+                // tekrar girilip TriggerLose() + log spam olur. _networkIsDayOver BİLEREK
+                // set edilmiyor: onu true yapmak HandleDayOverChanged'i tetikleyip yanlış
+                // "gün bitti" ekranını açar ve NextDayServerRpc guard'ını bozar.
+                _gameOverStopProcessing = true;
                 GameStateManager.Instance?.TriggerLose();
                 return false;
             }
@@ -546,17 +577,16 @@ namespace NewCss
         }
 
         /// <summary>
-        /// Kira hesaplama: (TemelKira × 1.3^dönem) + (UpgradeDeğeri × %10)
+        /// Kira hesaplama: TemelKira × rentGrowthMultiplier^dönem × rentScaledMultiplier
         /// </summary>
         private int CalculateRent()
         {
             int playerCount = GetPlayerCount();
-            int totalUpgradeValue = GetTotalUpgradeValue();
 
             float finalRent;
             if (economySettings != null)
             {
-                finalRent = economySettings.CalculateRent(playerCount, _rentPaymentCount, totalUpgradeValue);
+                finalRent = economySettings.CalculateRent(playerCount, _rentPaymentCount);
             }
             else
             {
@@ -564,7 +594,7 @@ namespace NewCss
                 Debug.LogWarning($"{LOG_PREFIX} economySettings atanmamış! Fallback değerler kullanılıyor.");
                 int baseRent    = playerCount == 1 ? 500 : playerCount == 2 ? 900 : playerCount == 3 ? 1200 : 1500;
                 float scaled    = baseRent * Mathf.Pow(1.3f, _rentPaymentCount);
-                finalRent       = scaled + totalUpgradeValue * 0.1f;
+                finalRent       = scaled;
             }
 
             int result = Mathf.RoundToInt(finalRent);
@@ -573,33 +603,25 @@ namespace NewCss
         }
 
         /// <summary>
-        /// Bağlı oyuncu sayısını döndürür
+        /// Kira hesabı için oyuncu sayısını döndürür.
+        /// Tek doğruluk kaynağı server-authoritative roster'dır (GameStateManager._playerRoster,
+        /// Break Room / Win-Lose ekranlarının da okuduğu kaynak). ConnectedClientsList anlık
+        /// bağlantı listesidir ve kira tick'inden hemen önce disconnect olan bir oyuncu yüzünden
+        /// roster ile tutarsız düşebilir (bkz. N7); bu yüzden yalnızca roster erişilemezse/boşsa
+        /// fallback olarak kullanılır.
         /// </summary>
         private int GetPlayerCount()
         {
+            if (GameStateManager.Instance != null && GameStateManager.Instance.RosterPlayerCount > 0)
+            {
+                return GameStateManager.Instance.RosterPlayerCount;
+            }
+
             if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
             {
                 return NetworkManager.Singleton.ConnectedClientsList.Count;
             }
             return 1;
-        }
-
-        /// <summary>
-        /// Satın alınan tüm upgrade'lerin toplam maliyetini döndürür
-        /// </summary>
-        private int GetTotalUpgradeValue()
-        {
-            if (UpgradeManager.Instance == null) return 0;
-
-            int total = 0;
-            foreach (ItemType t in Enum.GetValues(typeof(ItemType)))
-            {
-                if (UpgradeManager.Instance.IsPurchased(t))
-                {
-                    total += UpgradeAssets.GetCost(t);
-                }
-            }
-            return total;
         }
 
         #endregion
@@ -624,6 +646,17 @@ namespace NewCss
         [ServerRpc(RequireOwnership = false)]
         public void NextDayServerRpc()
         {
+            // Exploit guard: gun gercekten server tarafinda bitmis olmali
+            // (kira/para kontrolu + break room hazir -> _networkIsDayOver true)
+            // yoksa herhangi bir client bu RPC'yi cagirip elapsedTime'i sifirlayarak
+            // o gunun kira kontrolunu hic calistirmadan gunu atlayabilir.
+            if (!_networkIsDayOver.Value || !_networkIsBreakRoomReady.Value)
+            {
+                Debug.LogWarning($"{LOG_PREFIX} NextDayServerRpc reddedildi: gun henuz bitmedi " +
+                                  $"(IsDayOver={_networkIsDayOver.Value}, IsBreakRoomReady={_networkIsBreakRoomReady.Value})");
+                return;
+            }
+
             NextDay();
         }
 
@@ -680,8 +713,12 @@ namespace NewCss
 
             if (breakRoomManager != null)
             {
-                breakRoomManager.requiredPlayers = breakRoomManager.GetSteamLobbyPlayerCount();
-                Debug.Log($"{LOG_PREFIX} BreakRoomManager.requiredPlayers updated: {breakRoomManager.requiredPlayers}");
+                // requiredPlayers artık TEK yoldan yazılıyor: BreakRoomManager.UpdateLobbyPlayers
+                // (GameStateManager.OnRosterChanged event'i tarafından tetiklenir). Burada ikinci
+                // bir doğrudan yazma yoluyla sessiz tutarsızlık riski almamak için sadece
+                // roster/lobi senkronizasyonunu tetikliyoruz.
+                breakRoomManager.CheckAndUpdateLobbyPlayers();
+                Debug.Log($"{LOG_PREFIX} BreakRoomManager roster senkronizasyonu tetiklendi, requiredPlayers={breakRoomManager.requiredPlayers}");
             }
         }
 

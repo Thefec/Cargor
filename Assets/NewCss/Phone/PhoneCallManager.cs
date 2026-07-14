@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -73,11 +74,31 @@ namespace NewCss
         private bool _isActionExecuted;
         private bool _isNetworkReady;
 
-        // Anti-spam
+        // Anti-spam (client-side, sadece UI/feedback icin — asil kontrol serverda yapilir)
         private float _cooldownTimer;
         private bool _isOnCooldown;
         private int _callsThisHour;
         private int _lastCallHour = -1;
+
+        // Anti-spam (server-side, per-client — asil guvenlik katmani, hackli client bunu atlayamaz)
+        private class ServerCallState
+        {
+            public float CooldownEndTime;
+            public int CallsThisHour;
+            public int LastCallHour = -1;
+        }
+
+        private readonly Dictionary<ulong, ServerCallState> _serverCallStates = new Dictionary<ulong, ServerCallState>();
+
+        private ServerCallState GetOrCreateServerCallState(ulong clientId)
+        {
+            if (!_serverCallStates.TryGetValue(clientId, out ServerCallState state))
+            {
+                state = new ServerCallState();
+                _serverCallStates[clientId] = state;
+            }
+            return state;
+        }
 
         #endregion
 
@@ -361,6 +382,34 @@ namespace NewCss
                 return;
             }
 
+            // Server-side anti-spam (asil guvenlik katmani — client-side kontroller sadece UI icindir,
+            // hackli/spamlanan RPC istekleri burada engellenir)
+            ServerCallState callState = GetOrCreateServerCallState(clientId);
+            int currentHour = DayCycleManager.Instance != null ? DayCycleManager.Instance.CurrentHour : -1;
+
+            // Saatlik reset
+            if (currentHour != callState.LastCallHour)
+            {
+                callState.CallsThisHour = 0;
+                callState.LastCallHour = currentHour;
+            }
+
+            // Cooldown kontrolu
+            if (Time.time < callState.CooldownEndTime)
+            {
+                LogDebug("Server rejected: Client " + clientId + " on cooldown (" + (callState.CooldownEndTime - Time.time).ToString("F1") + "s left)");
+                CallFailedClientRpc(clientId);
+                return;
+            }
+
+            // Saatlik limit kontrolu
+            if (callState.CallsThisHour >= maxCallsPerHour)
+            {
+                LogDebug("Server rejected: Client " + clientId + " hit hourly limit (" + callState.CallsThisHour + "/" + maxCallsPerHour + ")");
+                CallFailedClientRpc(clientId);
+                return;
+            }
+
             // 1. Musteri spawnla
             bool spawnSuccess = false;
             if (CustomerManager.Instance != null)
@@ -386,6 +435,11 @@ namespace NewCss
             {
                 MoneySystem.Instance.AddMoney(callReward);
             }
+
+            // Server-side anti-spam state guncelle (basarili cagri)
+            callState.CooldownEndTime = Time.time + postCallCooldown;
+            callState.CallsThisHour++;
+            callState.LastCallHour = currentHour;
 
             // 4. Basari efektleri
             CallSucceededClientRpc(clientId, callReward);

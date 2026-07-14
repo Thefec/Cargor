@@ -1,4 +1,5 @@
 using UnityEngine;
+using Unity.Netcode;
 
 namespace NewCss
 {
@@ -14,7 +15,7 @@ namespace NewCss
         public GameEconomySettings economySettings;
 
         // Backward-compat: SO atanmamışsa eski hard-coded değer
-        private float dropPrestigePenalty => economySettings != null ? -economySettings.boxDropPrestigePenalty : 0.05f;
+        private float dropPrestigePenalty => economySettings != null ? economySettings.boxDropPrestigePenalty : -0.05f;
 
         [Header("Sound Settings")]
         [Tooltip("Sound to play when box hits the ground")]
@@ -161,6 +162,15 @@ namespace NewCss
 
         private void ApplyPenalty()
         {
+            // Ekonomik ceza (para/prestij) yalnizca server'da uygulanir.
+            // Aksi halde her client kendi ServerRpc'sini tetikleyip cezayi
+            // client sayisi kadar tekrarlar. Ses zaten bu guard'in disinda
+            // kaliyor (OnCollisionEnter'da PlayDropSound ayri cagriliyor).
+            if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
+            {
+                return;
+            }
+
             bool penaltySuccessful = false;
 
             if (MoneySystem.Instance != null)

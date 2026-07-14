@@ -276,7 +276,7 @@ public partial class PlayerInventory : NetworkBehaviour
         if (worldItem != null)
         {
             worldItem.SetItemData(_currentItemData);
-            PreserveBoxInfoOnWorldItem(worldItem.gameObject);
+            ApplyServerAuthoritativeBoxInfo(spawnedItem, worldItemPrefab);
             StartCoroutine(DelayedEnablePickup(worldItem));
 
             if (force != Vector3.zero)
@@ -309,18 +309,39 @@ public partial class PlayerInventory : NetworkBehaviour
         }
     }
 
-    private void PreserveBoxInfoOnWorldItem(GameObject worldItem)
+    /// <summary>
+    /// Dünya kutusunun BoxInfo (isFull/boxType) değerini SERVER-OTORİTER kaynaktan set eder.
+    /// Bu metot SpawnWorldItemAtPosition ServerRpc içinden çağrılır (RequestDropServerRpc /
+    /// RequestThrowServerRpc), yani sunucu tarafında çalışır ve _heldItemVisual client-only bir
+    /// görsel objedir (null olabilir, spawn zamanlamasına bağlıdır). Bu yüzden asıl kaynak olarak
+    /// worldItemPrefab'ın (== _currentItemData.worldPrefab) kendi BoxInfo'su kullanılır — aynı
+    /// desen PlayerInventory.Shelf.cs:676-682 ve PlayerInventory.Interaction.cs:342-348'de de
+    /// kullanılıyor. _heldItemVisual sadece prefab'ta BoxInfo yoksa fallback olarak devreye girer.
+    /// </summary>
+    private void ApplyServerAuthoritativeBoxInfo(GameObject worldItem, GameObject worldItemPrefab)
     {
+        var worldBoxInfo = worldItem.GetComponent<BoxInfo>();
+        if (worldBoxInfo == null) return;
+
+        var prefabBoxInfo = worldItemPrefab != null ? worldItemPrefab.GetComponent<BoxInfo>() : null;
+
+        if (prefabBoxInfo != null)
+        {
+            worldBoxInfo.isFull = prefabBoxInfo.isFull;
+            worldBoxInfo.boxType = prefabBoxInfo.boxType;
+            Debug.Log($"[PlayerInventory] Server-authoritative BoxInfo applied from worldPrefab: isFull={worldBoxInfo.isFull}");
+            return;
+        }
+
+        // Fallback: prefab'ta BoxInfo yoksa (beklenmedik durum), _heldItemVisual'dan dene.
         if (_heldItemVisual == null) return;
 
         var heldBoxInfo = _heldItemVisual.GetComponent<BoxInfo>();
-        var worldBoxInfo = worldItem.GetComponent<BoxInfo>();
-
-        if (heldBoxInfo != null && worldBoxInfo != null)
+        if (heldBoxInfo != null)
         {
             worldBoxInfo.isFull = heldBoxInfo.isFull;
             worldBoxInfo.boxType = heldBoxInfo.boxType;
-            Debug.Log($"[PlayerInventory] Preserved box info on world item: isFull={worldBoxInfo.isFull}");
+            Debug.Log($"[PlayerInventory] Fallback: preserved box info from _heldItemVisual: isFull={worldBoxInfo.isFull}");
         }
     }
 
@@ -332,11 +353,16 @@ public partial class PlayerInventory : NetworkBehaviour
     #endregion
     #region Item Data Management
 
+    private static ItemData[] s_cachedItems;
+
     private static ItemData GetItemDataFromID(int itemID)
     {
-        var allItems = Resources.LoadAll<ItemData>("Items");
+        if (s_cachedItems == null)
+        {
+            s_cachedItems = Resources.LoadAll<ItemData>("Items");
+        }
 
-        foreach (var item in allItems)
+        foreach (var item in s_cachedItems)
         {
             if (item.itemID == itemID)
             {

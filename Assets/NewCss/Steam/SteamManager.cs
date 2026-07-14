@@ -217,6 +217,18 @@ public class SteamManager : MonoBehaviour
     private bool _isLobbyJoinValid;
     private bool _isLoadingScene;
     private Coroutine _errorMessageCoroutine;
+
+    // Late-join reddi UX: whitelist-dışı biri NGO ConnectionApproval'da reddedilince
+    // (bkz. LateJoinGuard.ApproveConnection) client tarafında mesaj göstermek + temiz
+    // çıkış yapmak için. Bkz. HookLateJoinRejectionHandler / HandleLateJoinRejection.
+    private bool _lateJoinRejectionHandlerHooked;
+    private bool _handlingRejection;
+    // Bu bağlantı denemesinde local client NGO'ya gerçekten bağlandı mı (OnClientConnected
+    // aldı mı)? Reddedilme (ApproveConnection Approved=false) durumunda client HİÇ bağlanmaz →
+    // false kalır. Normal çıkış (LeaveLobby) ise bağlandıktan SONRA olur → true. Bu, "reddi
+    // normal-leave'den ayırmanın" tek güvenilir sinyali (nm.DisconnectReason her Shutdown'da
+    // generic bir string ile dolduğu için ayrım için kullanılamaz).
+    private bool _clientConnectedThisSession;
     private Coroutine _loadingDotsCoroutine;
     private Coroutine _lobbyIdColorCoroutine;
 
@@ -547,6 +559,23 @@ public class SteamManager : MonoBehaviour
         switch (sceneEvent.SceneEventType)
         {
             case SceneEventType.LoadEventCompleted:
+                StartCoroutine(HideLoadingScreenCoroutine());
+
+                // hasGameEverStarted'ı burada (sahne tam yüklendikten SONRA) işaretle.
+                // Daha erken set edilirse DifficultyManager.ApplyMoneySettings bunu
+                // "oyun zaten başladı" sanıp SetMoney'i atlayabilir ve başlangıç
+                // parası hiç uygulanmaz. LoadEventCompleted, TÜM client'lar sahneyi
+                // yükleyip NetworkObject'ler spawn olduktan sonra tetiklenir — bu yüzden
+                // bilerek LoadComplete (server'ın kendi lokal yüklemesi, çok daha erken
+                // ve DifficultyManager'ın ilk para atamasıyla yarışabilir) ile fallthrough
+                // YAPILMIYOR, sadece bu case'te çalışıyor.
+                if (sceneEvent.SceneName == GAME_SCENE_NAME &&
+                    NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
+                {
+                    NewCss.GameStateManager.Instance?.MarkGameStarted();
+                }
+                break;
+
             case SceneEventType.LoadComplete:
                 StartCoroutine(HideLoadingScreenCoroutine());
                 break;
@@ -594,6 +623,24 @@ public class SteamManager : MonoBehaviour
 
             transport.targetSteamId = lobby.Id;
 
+            // Geç-join yasağı: auto-bootstrap ile muhafızı garanti et (manuel sahne kurulumu
+            // gerekmez), her yeni host oturumunda temiz sayfa aç (eski whitelist/GameStarted
+            // bir önceki oturumdan sızmasın), sonra approval'ı kur.
+            var lateJoinGuard = LateJoinGuard.EnsureInstance();
+            lateJoinGuard.ResetGuard();
+
+            // GameStateManager DontDestroyOnLoad olduğundan hasGameEverStarted eski
+            // oturumdan sızabilir (aynı process'te menüye dönüp yeni oyun başlatma) —
+            // run-scoped sıfırla ki ApplyMoneySettings/IsFirstGameLoad yeni oturumu
+            // doğru okusun.
+            NewCss.GameStateManager.Instance?.ResetGameStartedFlag();
+
+            NetworkManager.Singleton.NetworkConfig.ConnectionData =
+                System.BitConverter.GetBytes(SteamClient.SteamId.Value);
+
+            NetworkManager.Singleton.NetworkConfig.ConnectionApproval = true;
+            NetworkManager.Singleton.ConnectionApprovalCallback = lateJoinGuard.ApproveConnection;
+
             if (NetworkManager.Singleton.StartHost())
             {
                 _isLobbyJoinValid = true;
@@ -630,6 +677,21 @@ public class SteamManager : MonoBehaviour
 
         transport.targetSteamId = lobby.Owner.Id;
 
+        // Geç-join yasağı: NGO'da ConnectionApproval config hash'e dahil edilir — client
+        // burada da true set etmezse host'un true değeriyle hash uyuşmaz ve TÜM bağlantılar
+        // (lobi aşaması dahil) reddedilir. Ayrıca ConnectionApproval false iken client
+        // ConnectionData payload'ını (SteamId) hiç göndermez, bu yüzden Start'tan önce ikisi
+        // de burada set edilmeli.
+        NetworkManager.Singleton.NetworkConfig.ConnectionApproval = true;
+        NetworkManager.Singleton.NetworkConfig.ConnectionData =
+            System.BitConverter.GetBytes(SteamClient.SteamId.Value);
+
+        // Late-join reddi UX: yeni bir bağlantı denemesi başlıyor. Guard'ı ve
+        // "bu oturumda bağlandı mı" sinyalini sıfırla — bu client henüz bağlanmadı.
+        _handlingRejection = false;
+        _clientConnectedThisSession = false;
+        HookLateJoinRejectionHandler();
+
         if (!NetworkManager.Singleton.StartClient())
         {
             ShowErrorMessage("Bağlantı başarısız!");
@@ -638,6 +700,73 @@ public class SteamManager : MonoBehaviour
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// Late-join reddi UX: NGO ConnectionApproval'da reddedilen bir client'ın boş Steam
+    /// lobisinde takılı kalmadan mesaj görüp menüye dönmesini sağlar. Sadece bir kez abone
+    /// olunur (client oturumu boyunca NetworkManager.Singleton kalıcıdır); host tarafı
+    /// bu abonelikten hiç geçmez çünkü sadece TryStartClient (pure client yolu) çağırır.
+    /// </summary>
+    private void HookLateJoinRejectionHandler()
+    {
+        var nm = NetworkManager.Singleton;
+        if (nm == null || _lateJoinRejectionHandlerHooked) return;
+
+        _lateJoinRejectionHandlerHooked = true;
+        nm.OnClientConnectedCallback += HandleClientConnectedForRejectionTracking;
+        nm.OnClientDisconnectCallback += HandleLateJoinRejection;
+    }
+
+    /// <summary>
+    /// Local client NGO'ya başarıyla bağlandığında işaretlenir. Reddedilme (ApproveConnection
+    /// Approved=false) durumunda bu HİÇ çağrılmaz — client approval aşamasında düşer. Bu yüzden
+    /// "bağlandıktan sonra normal çıkış" ile "hiç bağlanamadan red" arasında ayrımın güvenilir
+    /// sinyali budur.
+    /// </summary>
+    private void HandleClientConnectedForRejectionTracking(ulong clientId)
+    {
+        var nm = NetworkManager.Singleton;
+        if (nm == null || nm.IsServer) return;
+        if (clientId == nm.LocalClientId) _clientConnectedThisSession = true;
+    }
+
+    /// <summary>
+    /// OnClientDisconnectCallback üzerinden tetiklenir. İki durumu ayırt etmek kritik:
+    /// 1) NGO ConnectionApproval reddi (LateJoinGuard.ApproveConnection, Approved=false) —
+    ///    client HİÇ bağlanamadan düşer (_clientConnectedThisSession=false). Sunucunun
+    ///    reason'ını (ServerDisconnectReason, "Oyun zaten başladı.") gösterip lobiden çıkılır.
+    /// 2) Kullanıcı-kaynaklı normal çıkış (LeaveLobby -> Shutdown) — client daha önce bağlanmıştı
+    ///    (_clientConnectedThisSession=true). YOKSAY.
+    /// UYARI: nm.DisconnectReason AYRIM İÇİN KULLANILAMAZ — NGO her Shutdown()'da onu generic bir
+    /// string ("...NetworkConnectionManager was shutdown.") ile doldurur; normal çıkışta da boş
+    /// DEĞİLDİR. Tek güvenilir sinyal "bu oturumda hiç bağlandı mı".
+    /// Not: LeaveLobby()->Shutdown() bu callback'i ikinci kez (hâlâ connected=false ile) tetikler
+    /// → _handlingRejection re-entrancy guard'ı şart; guard TryStartClient'ta sıfırlanır. Ayrıca
+    /// temizlik bir sonraki frame'e erteleniyor: bu callback NGO'nun Shutdown/transport akışının
+    /// içinden gelebildiği için doğrudan LeaveLobby() re-entrant Shutdown'a yol açar.
+    /// </summary>
+    private void HandleLateJoinRejection(ulong clientId)
+    {
+        var nm = NetworkManager.Singleton;
+        if (nm == null || nm.IsServer) return; // sadece pure client; host'ta hiçbir şey yapma
+
+        if (_clientConnectedThisSession) return; // bağlanmıştı → normal çıkış, yoksay
+        if (_handlingRejection) return;          // re-entrancy guard
+        _handlingRejection = true;
+
+        string reason = nm.DisconnectReason; // redte ServerDisconnectReason önceliklidir
+
+        StartCoroutine(HandleRejectionCleanupNextFrame(reason));
+    }
+
+    private IEnumerator HandleRejectionCleanupNextFrame(string reason)
+    {
+        yield return null; // NGO disconnect/Shutdown akışının tamamlanmasını bekle (re-entrant Shutdown'dan kaçın)
+        if (this == null || !Application.isPlaying) yield break;
+
+        ShowErrorMessage(reason);
+        LeaveLobby();
     }
 
     private FacepunchTransport GetFacepunchTransport()
@@ -952,6 +1081,19 @@ public class SteamManager : MonoBehaviour
         PlayButtonSound();
 
         if (!ValidateGameStart()) return;
+
+        // Geç-join yasağı: sahne yüklenmeden önce orijinal lobi üyelerini whitelist'e al
+        // ve muhafızı aktive et. Yeni bağlantı denemeleri bundan sonra reddedilir; sadece
+        // whitelist'teki SteamId'ler (bağlantı kopması sonrası) reconnect edebilir.
+        if (LateJoinGuard.Instance != null)
+        {
+            var roster = _currentLobby.Members.Select(m => m.Id.Value).ToList();
+            LateJoinGuard.Instance.MarkGameStarted(roster);
+        }
+        else
+        {
+            LogError("LateJoinGuard.Instance bulunamadı! Geç-join yasağı kurulamadı.");
+        }
 
         DisableStartButton();
         ShowLoadingScreen();

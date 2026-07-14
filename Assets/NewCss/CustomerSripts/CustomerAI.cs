@@ -199,6 +199,10 @@ namespace NewCss
 
             InitializeComponents();
 
+            // G10 fix: event başladıktan sonra spawn olan customer da aktif event çarpanlarını alsın.
+            // OnActiveEventChanged her peer'de yerel çalıştığından bu da her peer'de çağrılmalı.
+            EventEffectManager.Instance?.ApplyEventEffectToNewObject(gameObject);
+
             if (IsServer)
             {
                 InitializeServerState();
@@ -394,7 +398,9 @@ namespace NewCss
 
         private void InitializeServerState()
         {
-            _actualWaitTime = Random.Range(minWaitTime, maxWaitTime);
+            // Sabirli Musteriler perki (patient_customers): CustomerManager.patienceMultiplier ile olceklenir (default 1f).
+            float patienceMultiplier = manager != null ? manager.patienceMultiplier : 1f;
+            _actualWaitTime = Random.Range(minWaitTime, maxWaitTime) * patienceMultiplier;
 
             if (manager != null && HasValidProductPrefabs())
             {
@@ -915,8 +921,18 @@ namespace NewCss
             int slotIndex = dropOffTable.ItemCount;
             _placedProductSlotIndex = slotIndex; // Cache for later checking
 
-            // ✅ 2. Ürünü geçici pozisyonda oluştur (PlaceItemInstance pozisyonu ayarlayacak)
-            var product = Instantiate(productPrefabs[productIndex]);
+            // ✅ 2. Ürünü doğrudan hedef slot pozisyon/rotasyonunda oluştur.
+            //    Böylece NetworkTransform (Interpolate:1) client'ta origin->slot "kayması"
+            //    üretmez; spawn zaten doğru yerde olur (PlaceItemInstance idempotent olarak
+            //    aynı pozisyonu tekrar set eder, delta ~0).
+            var slotPoints = dropOffTable.SlotPoints;
+            Transform targetSlot = (slotPoints != null && slotIndex >= 0 && slotIndex < slotPoints.Length)
+                ? slotPoints[slotIndex]
+                : null;
+
+            var product = targetSlot != null
+                ? Instantiate(productPrefabs[productIndex], targetSlot.position, targetSlot.rotation)
+                : Instantiate(productPrefabs[productIndex]);
 
             // ✅ 3. Fizik ayarlarını yap
             var rb = product.GetComponent<Rigidbody>();
@@ -944,15 +960,44 @@ namespace NewCss
             }
 
             // ✅ 5. DisplayTable'a kaydet — bu hem pozisyonu doğru slot'a ayarlar hem ItemCount'u artırır
-            //    PlaceItemInstance, _placedItems.Count'u kullanarak slotPoints[slotIndex]'e yerleştirir
-            dropOffTable.PlaceItemInstance(product);
+            //    PlaceItemInstance, _placedItems.Count'u kullanarak slotPoints[slotIndex]'e yerleştirir.
+            //    Animasyonu burada oynatma (playAnimation:false) — server-only çalışır ve client'lara
+            //    hiç replike edilmezdi. Animasyon ClientRpc ile tüm client'larda (host dahil) tetiklenir.
+            dropOffTable.PlaceItemInstance(product, playAnimation: false);
 
             // ✅ 6. Spawn sonrası pozisyonu sabitle (network replication sonrası kayma önlemi)
             StartCoroutine(EnsureProductFrozenAfterSpawn(product));
 
+            // ✅ 7. Yerleştirme animasyonunu (küçükten büyüğe scale-up) tüm client'larda tetikle
+            if (networkObject != null)
+            {
+                PlayPlacementAnimationClientRpc(networkObject.NetworkObjectId);
+            }
+
             Debug.Log($"{LOG_PREFIX} Placed product: {productPrefabs[productIndex].name} at slot {slotIndex}, position {product.transform.position}");
 
             return product;
+        }
+
+        /// <summary>
+        /// Tüm client'larda ürün yerleştirme animasyonunu (küçükten büyüğe scale) tetikler.
+        /// Race condition koruması: obje henüz client'ta spawn olmamışsa animasyon sessizce atlanır.
+        /// </summary>
+        [ClientRpc]
+        private void PlayPlacementAnimationClientRpc(ulong networkObjectId)
+        {
+            if (NetworkManager.Singleton?.SpawnManager == null) return;
+
+            if (!NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(
+                    networkObjectId, out NetworkObject netObj))
+            {
+                Debug.Log($"{LOG_PREFIX} ⚠️ PlayPlacementAnimation: NetworkObject {networkObjectId} not found on this client (race condition - safe to ignore)");
+                return;
+            }
+
+            if (netObj == null || netObj.gameObject == null) return;
+
+            ItemPlacementAnimator.PlayOn(this, netObj.gameObject);
         }
 
         private int GetProductIndex()

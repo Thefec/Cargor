@@ -7,6 +7,10 @@ namespace NewCss
 {
     public class EventEffectManager : NetworkBehaviour
     {
+        // Her peer'de yerel olarak set edilir (server-only DEĞİL); geç-spawn Truck/CustomerAI
+        // OnNetworkSpawn'undan erişmek için. Sahnede tek instance olduğu varsayılır.
+        public static EventEffectManager Instance { get; private set; }
+
         [Header("Manager References")]
         public CustomerManager customerManager;
         public UpgradePanel upgradePanel;
@@ -23,7 +27,7 @@ namespace NewCss
         // List of active events
         private List<string> eventNames = new List<string>
         {
-            "INTENSIVE DAY",
+            "BUSY DAY",
             "DELIVERY BONUS",
             "ANGRY CUSTOMERS",
             "RELAXED DAY",
@@ -33,7 +37,9 @@ namespace NewCss
             "GOLDEN BOX DAY",
             "OPPORTUNITY DAY",
             "FATIGUE PROBLEM",
-            "VIP SERVICE"
+            "VIP SERVICE",
+            "RAINY DAY",
+            "MARKETING DAY"
         };
 
         // Store original values
@@ -82,6 +88,8 @@ namespace NewCss
         {
             base.OnNetworkSpawn();
 
+            Instance = this;
+
             InitializeEventMultipliers();
             DayCycleManager.OnNewDay += OnNewDayHandler;
             currentActiveEvent.OnValueChanged += OnActiveEventChanged;
@@ -97,11 +105,16 @@ namespace NewCss
             base.OnNetworkDespawn();
             DayCycleManager.OnNewDay -= OnNewDayHandler;
             currentActiveEvent.OnValueChanged -= OnActiveEventChanged;
+
+            if (Instance == this)
+            {
+                Instance = null;
+            }
         }
 
         private void InitializeEventMultipliers()
         {
-            eventMultipliers["INTENSIVE DAY"] = new EventMultipliers
+            eventMultipliers["BUSY DAY"] = new EventMultipliers
             {
                 rewardPerBoxMultiplier = 1f,
                 exitDelayMultiplier = 1f,
@@ -109,7 +122,7 @@ namespace NewCss
                 playerMoveSpeedMultiplier = 1f,
                 playerSprintSpeedMultiplier = 1f,
                 staminaRegenRateMultiplier = 1f,
-                dailyCustomerMultiplier = 1.5f, // 50% more customers per day
+                dailyCustomerMultiplier = 1.3f, // 30% more customers per day
                 isGoldenBoxDay = false,
                 isVIPServiceDay = false,
                 upgradeCostMultiplier = 1f
@@ -254,6 +267,34 @@ namespace NewCss
                 isVIPServiceDay = true,
                 upgradeCostMultiplier = 1f
             };
+
+            eventMultipliers["RAINY DAY"] = new EventMultipliers
+            {
+                rewardPerBoxMultiplier = 1f,
+                exitDelayMultiplier = 1f,
+                customerWaitTimeMultiplier = 1f,
+                playerMoveSpeedMultiplier = 1f,
+                playerSprintSpeedMultiplier = 1f,
+                staminaRegenRateMultiplier = 1f,
+                dailyCustomerMultiplier = 0.8f, // 20% fewer customers
+                isGoldenBoxDay = false,
+                isVIPServiceDay = false,
+                upgradeCostMultiplier = 1f
+            };
+
+            eventMultipliers["MARKETING DAY"] = new EventMultipliers
+            {
+                rewardPerBoxMultiplier = 0.7f, // 30% less earnings per box
+                exitDelayMultiplier = 1f,
+                customerWaitTimeMultiplier = 1f,
+                playerMoveSpeedMultiplier = 1f,
+                playerSprintSpeedMultiplier = 1f,
+                staminaRegenRateMultiplier = 1f,
+                dailyCustomerMultiplier = 1.2f, // 20% more customers
+                isGoldenBoxDay = false,
+                isVIPServiceDay = false,
+                upgradeCostMultiplier = 1f
+            };
         }
 
         private void OnNewDayHandler()
@@ -303,6 +344,17 @@ namespace NewCss
             return 1f;
         }
 
+        private PlayerMovement GetOwnedPlayer()
+        {
+            PlayerMovement[] players = FindObjectsOfType<PlayerMovement>();
+            foreach (var player in players)
+            {
+                if (player != null && player.IsOwner)
+                    return player;
+            }
+            return null;
+        }
+
         private void ApplyEventEffectLocally(string eventName)
         {
             if (!eventMultipliers.ContainsKey(eventName))
@@ -329,8 +381,8 @@ namespace NewCss
                 Debug.Log($"Event '{eventName}': Customer multiplier set to {multipliers.dailyCustomerMultiplier}");
             }
 
-            // Apply player movement changes
-            PlayerMovement playerController = FindObjectOfType<PlayerMovement>();
+            // Apply player movement changes (only to THIS peer's owned player)
+            PlayerMovement playerController = GetOwnedPlayer();
             if (playerController != null)
             {
                 eventStartPlayerMoveSpeed = playerController.moveSpeed;
@@ -356,7 +408,7 @@ namespace NewCss
                 truck.rewardPerBox = (int)(currentValues.rewardPerBox * multipliers.rewardPerBoxMultiplier);
                 truck.exitDelay = currentValues.exitDelay * multipliers.exitDelayMultiplier;
 
-                if (multipliers.isVIPServiceDay && Random.Range(0f, 1f) < 0.1f)
+                if (IsServer && multipliers.isVIPServiceDay && Random.Range(0f, 1f) < 0.1f)
                 {
                     truck.rewardPerBox = (int)(truck.rewardPerBox * 1.1f);
                 }
@@ -386,8 +438,8 @@ namespace NewCss
                 customerManager.eventCustomerMultiplier = eventStartEventCustomerMultiplier;
             }
 
-            // Restore player movement
-            PlayerMovement playerController = FindObjectOfType<PlayerMovement>();
+            // Restore player movement (same owned-player selection as apply, avoids drift)
+            PlayerMovement playerController = GetOwnedPlayer();
             if (playerController != null && eventStartPlayerMoveSpeed > 0)
             {
                 playerController.moveSpeed = eventStartPlayerMoveSpeed;
@@ -446,7 +498,7 @@ namespace NewCss
                 truck.rewardPerBox = (int)(currentValues.rewardPerBox * multipliers.rewardPerBoxMultiplier);
                 truck.exitDelay = currentValues.exitDelay * multipliers.exitDelayMultiplier;
 
-                if (multipliers.isVIPServiceDay && Random.Range(0f, 1f) < 0.1f)
+                if (IsServer && multipliers.isVIPServiceDay && Random.Range(0f, 1f) < 0.1f)
                 {
                     truck.rewardPerBox = (int)(truck.rewardPerBox * 1.1f);
                 }
@@ -492,29 +544,5 @@ namespace NewCss
             return eventNames[currentActiveEvent.Value];
         }
 
-        [ServerRpc(RequireOwnership = false)]
-        public void TestEventServerRpc(int eventIndex)
-        {
-            if (eventIndex >= 0 && eventIndex < eventNames.Count)
-            {
-                currentActiveEvent.Value = eventIndex;
-            }
-            else
-            {
-                currentActiveEvent.Value = -1;
-            }
-        }
-
-        [System.Obsolete("Used for debugging only")]
-        public void TestEvent(string eventName)
-        {
-            if (!IsServer) return;
-
-            int eventIndex = eventNames.IndexOf(eventName);
-            if (eventIndex != -1)
-            {
-                TestEventServerRpc(eventIndex);
-            }
-        }
     }
 }
