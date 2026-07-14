@@ -11,3 +11,5 @@
 - [FAZ2 kota-verim kalibrasyonu](quota_throughput_calibration.md) — C1 aktivasyonu playtest verisi olmadan ÖNERİLMEZ; ~4-6 kutu/dk eşiği, detay plans/economy-audit-2026-07-13.md
 - [FAZ2 wealthTax kırık kablolama](wealthtax_broken_wiring.md) — ✅ÇÖZÜLDÜ (Seçenek A, 9d2c3b0): wealthTax terimi kira formülünden tamamen kaldırıldı + ölü Yol B silindi (479dbf0)
 - [Kutu düşme cezası merkezileştirme](box_drop_penalty_centralization.md) — boxDropMoneyPenalty=5 (tek değer, kutu/ürün ayrımı yok), wrongDeliveryPrestigePenalty=-0.2 onay, Truck penaltyPerBox default 60→40
+- [Telefon pasif/reaktif yeniden tasarım](phone_passive_redesign.md) — saatte %30 çalar (event ×1.5), açınca +20TL+0.5 prestij cezasız; eski timeSkip/maxCallsPerHour/cooldown kaldır
+- [Prestij tavanı bug + düzeltme](prestige_cap_bug_and_fix.md) — gerçek kodda maxPrestige clamp HİÇ YOK (GDD'nin 100'ü uygulanmıyor); yeni clamp eklenip 150 yapılması kararı, 1P/2P etkilenmiyor
