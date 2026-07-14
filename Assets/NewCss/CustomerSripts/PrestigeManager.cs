@@ -15,6 +15,9 @@ public class PrestigeManager : NetworkBehaviour
     [Tooltip("Initial prestige value")]
     public float startingPrestige = 15f;
 
+    [Tooltip("Maximum prestige (üst tavan). Kutu-başı ödül tier'ının sınırsız şişmesini önler. GDD 100 diyordu ama uygulanmıyordu; economist önerisi 150.")]
+    public float maxPrestige = 150f;
+
     [Tooltip("UI Text displaying the prestige value")]
     public TMP_Text prestigeText;
 
@@ -151,13 +154,17 @@ public class PrestigeManager : NetworkBehaviour
     {
         if (!IsServer) return;
 
-        float oldPrestige = currentPrestige.Value;
-        currentPrestige.Value += amount;
+        float newPrestige = currentPrestige.Value + amount;
 
-        if (currentPrestige.Value <= 0f && GameStateManager.Instance != null)
+        // Alt sınır: ham değer <=0 ise game over (clamp ÖNCESİ kontrol — 0'a kırpmak
+        // iflas sinyalini yutmasın).
+        if (newPrestige <= 0f && GameStateManager.Instance != null)
         {
             GameStateManager.Instance.TriggerLose();
         }
+
+        // Üst tavan: prestij maxPrestige'i aşamaz; alt sınır 0.
+        currentPrestige.Value = Mathf.Clamp(newPrestige, 0f, maxPrestige);
     }
 
     public void AddPrestige(float amount)
