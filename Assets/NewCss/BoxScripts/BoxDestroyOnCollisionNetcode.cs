@@ -31,9 +31,6 @@ namespace NewCss
         [SerializeField, Tooltip("Kırılma için gereken minimum çarpma hızı (m/s)")]
         private float impactSpeedThreshold = 3f;
 
-        [SerializeField, Tooltip("Sadece boş kutular kırılabilir mi?")]
-        private bool onlyIfEmpty = false;
-
         [Header("=== DEBUG ===")]
         [SerializeField, Tooltip("Debug loglarını göster")]
         private bool showDebugLogs = false;
@@ -47,12 +44,6 @@ namespace NewCss
         /// Kutu bir kez kırıldığında tekrar tetiklenmez.
         /// </summary>
         private bool _isDestroyed = false;
-
-        /// <summary>
-        /// Fırlatılma bayrağı. Sadece fırlatılan kutular kırılır.
-        /// Bırakılan kutular yere güvenle konulur.
-        /// </summary>
-        private bool _wasThrown = false;
 
         private BoxInfo _boxInfo;
         private Rigidbody _rigidbody;
@@ -86,11 +77,9 @@ namespace NewCss
             // 2. Sadece server çarpışma kararı verir (authoritative)
             if (!IsServer) return;
 
-            // 3. Sadece fırlatılan kutular kırılır (bırakılan kutular güvenle yere konulur)
-            if (!_wasThrown) return;
-
-            // 4. Dolu kutu kontrolü (opsiyonel — varsayılan: her kutu kırılabilir)
-            if (onlyIfEmpty && _boxInfo != null && _boxInfo.isFull) return;
+            // 3. DOLU kutular ASLA kırılmaz — tıra teslim edilmeli, yolda parçalanmamalı.
+            //    Sadece BOŞ kutular kırılır (bırakılınca da fırlatılınca da).
+            if (_boxInfo != null && _boxInfo.isFull) return;
 
             // ─── HIZ KONTROLÜ ─────────────────────────────────────
             // Çarpışma anındaki göreceli hız (relativeVelocity)
@@ -110,14 +99,12 @@ namespace NewCss
         }
 
         /// <summary>
-        /// Kutuyu fırlatılmış olarak işaretler.
-        /// Sadece fırlatılan kutular çarpışma sonrası kırılır.
-        /// PlayerInventory tarafından fırlatma sırasında çağrılır.
+        /// Geriye dönük uyumluluk: PlayerInventory fırlatma sırasında çağırır.
+        /// Kutu kırılma artık fırlatma/bırakma ayrımına DEĞİL, doluluğa bağlı
+        /// (dolu = kırılmaz, boş = kırılır), bu yüzden bu metot artık no-op.
         /// </summary>
         public void MarkAsThrown()
         {
-            _wasThrown = true;
-            LogDebug("Kutu fırlatılmış olarak işaretlendi — çarpışma sonrası kırılacak.");
         }
 
         #endregion

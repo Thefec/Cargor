@@ -805,16 +805,29 @@ namespace NewCss
             };
         }
 
+        private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+        private static readonly int ColorId = Shader.PropertyToID("_Color");
+
         private static void SetObjectColor(GameObject obj, Color color)
         {
             if (obj == null) return;
 
+            // Renderer doğrudan obje üstünde değilse (parent+child mesh) çocuklara da bak.
             var renderer = obj.GetComponent<Renderer>();
-            if (renderer != null)
+            if (renderer == null)
             {
-                renderer.material = new Material(renderer.material);
-                renderer.material.color = color;
+                renderer = obj.GetComponentInChildren<Renderer>();
             }
+            if (renderer == null) return;
+
+            var mat = new Material(renderer.material);
+            renderer.material = mat;
+
+            // URP shader'larında Material.color çoğu zaman görünür renge map olmaz
+            // (_BaseColor gerekir). Var olan tüm renk property'lerini yaz — hepsi güvenli.
+            if (mat.HasProperty(BaseColorId)) mat.SetColor(BaseColorId, color);
+            if (mat.HasProperty(ColorId)) mat.SetColor(ColorId, color);
+            mat.color = color;
         }
 
         #endregion
