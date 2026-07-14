@@ -6,15 +6,13 @@ namespace NewCss
     [RequireComponent(typeof(AudioSource))]
     public class BoxFallPenalty : MonoBehaviour
     {
-        [Header("Penalty Settings")]
-        [Tooltip("Money deducted when the box hits the ground")]
-        public int dropMoneyPenalty = 10;
-
         [Header("Economy Settings")]
         [Tooltip("Tüm ekonomi sabitlerini içeren ScriptableObject")]
         public GameEconomySettings economySettings;
 
-        // Backward-compat: SO atanmamışsa eski hard-coded değer
+        // Ceza değerleri artık merkezi SO'dan okunur (prefab başına gömülü değer YOK — tutarlı).
+        // SO atanmamışsa Awake'de Resources.Load fallback devreye girer; o da yoksa güvenli varsayılan.
+        private int dropMoneyPenalty => economySettings != null ? economySettings.boxDropMoneyPenalty : 5;
         private float dropPrestigePenalty => economySettings != null ? economySettings.boxDropPrestigePenalty : -0.05f;
 
         [Header("Sound Settings")]
@@ -34,11 +32,13 @@ namespace NewCss
         [Tooltip("Maximum distance for 3D sound (only if use2DSound is false)")]
         public float maxSoundDistance = 50f;
 
-        private bool hasBeenThrown = false;
         private bool penaltyApplied = false;
         private Rigidbody rb;
         private AudioSource audioSource;
-        private float throwVelocityThreshold = 1f;
+
+        // Kırılma eşiğiyle (BoxDestroyOnCollisionNetcode.impactSpeedThreshold = 3) hizalı:
+        // bu hızın ALTINDA çarpma (yumuşak bırakma) ne kırar ne de cezalandırır.
+        private float impactSpeedThreshold = 3f;
 
         private void Awake()
         {
@@ -50,7 +50,7 @@ namespace NewCss
             rb = GetComponent<Rigidbody>();
             audioSource = GetComponent<AudioSource>();
 
-            // AudioSource ayarlar�n� yap
+            // AudioSource ayarlarını yap
             if (audioSource != null)
             {
                 audioSource.playOnAwake = false;
@@ -58,12 +58,12 @@ namespace NewCss
 
                 if (use2DSound)
                 {
-                    // 2D ses - her yerden ayn� �ekilde duyulur
+                    // 2D ses - her yerden aynı şekilde duyulur
                     audioSource.spatialBlend = 0f;
                 }
                 else
                 {
-                    // 3D ses - uzakl��a g�re azal�r
+                    // 3D ses - uzaklığa göre azalır
                     audioSource.spatialBlend = 1f;
                     audioSource.maxDistance = maxSoundDistance;
                     audioSource.rolloffMode = AudioRolloffMode.Linear;
@@ -77,83 +77,46 @@ namespace NewCss
             ValidateComponents();
         }
 
-        public void SetThrown()
-        {
-            hasBeenThrown = true;
-            penaltyApplied = false;
-        }
+        // Geriye dönük uyumluluk (dışarıdan çağıran yok): ceza artık salt çarpma-hızına
+        // dayalıdır; fırlatma/bırakma ayrımı yapılmaz. İmzalar korundu.
+        public void SetThrown() { }
 
-        public void SetThrownWithVelocity()
-        {
-            if (rb != null && rb.linearVelocity.magnitude > throwVelocityThreshold)
-            {
-                SetThrown();
-            }
-        }
+        public void SetThrownWithVelocity() { }
 
         private void OnCollisionEnter(Collision collision)
         {
-            if (!hasBeenThrown)
-            {
-                if (rb != null && rb.linearVelocity.magnitude > throwVelocityThreshold)
-                {
-                    SetThrown();
-                }
-                else
-                {
-                    return;
-                }
-            }
+            if (penaltyApplied) return;
 
-            if (penaltyApplied)
-            {
-                return;
-            }
+            // Çarpma hızı — eşiğin altındaki yumuşak temaslar (nazik bırakma) cezasızdır.
+            float impactVelocity = collision.relativeVelocity.magnitude;
+            if (impactVelocity < impactSpeedThreshold) return;
 
-            if (IsGroundCollision(collision))
-            {
-                // �arpma h�z�n� al
-                float impactVelocity = collision.relativeVelocity.magnitude;
-
-                // Sesi �al
-                PlayDropSound(impactVelocity);
-
-                // Penalt� uygula
-                ApplyPenalty();
-            }
-        }
-
-        private bool IsGroundCollision(Collision collision)
-        {
-            GameObject hitObject = collision.gameObject;
-
-            bool isGroundDirect = hitObject.CompareTag("Ground");
-            bool isGroundRoot = collision.transform.root.CompareTag("Ground");
-            bool isGroundLayer = hitObject.layer == LayerMask.NameToLayer("Ground");
-
-            return isGroundDirect || isGroundRoot || isGroundLayer;
+            // Yüzey-bağımsız: yer/duvar/raf fark etmez; sert çarpma = ceza.
+            // (Eski IsGroundCollision kısıtı kaldırıldı → tutarlı, öngörülebilir davranış.)
+            PlayDropSound(impactVelocity);
+            ApplyPenalty();
         }
 
         private void PlayDropSound(float impactVelocity)
         {
-            // E�er ses dosyas� atanm��sa ve minimum h�z a��lm��sa
+            // Eğer ses dosyası atanmışsa ve minimum hız aşılmışsa
             if (boxDropSound != null && audioSource != null && impactVelocity >= minVelocityForSound)
             {
-                // Ses ayarlar�n� g�ncelle
+                // Ses ayarlarını güncelle
                 if (use2DSound)
                 {
-                    // 2D ses i�in sabit volume
+                    // 2D ses için sabit volume
                     audioSource.volume = soundVolume;
                 }
                 else
                 {
-                    // 3D ses i�in �arpma h�z�na g�re volume (opsiyonel)
+                    // 3D ses için çarpma hızına göre volume (opsiyonel)
                     float velocityFactor = Mathf.Clamp01(impactVelocity / 10f);
                     // Minimum 0.5 volume garantisi
                     audioSource.volume = Mathf.Max(soundVolume * velocityFactor, soundVolume * 0.5f);
                 }
 
-                // Sesi �al
+                // Sesi çal
                 audioSource.PlayOneShot(boxDropSound, soundVolume);
 
                 Debug.Log($"Playing drop sound with velocity: {impactVelocity}, volume: {audioSource.volume}");
@@ -180,7 +143,7 @@ namespace NewCss
                     MoneySystem.Instance.SpendMoney(dropMoneyPenalty);
                     penaltySuccessful = true;
                 }
-                catch (System.Exception e)
+                catch (System.Exception)
                 {
                 }
             }
@@ -191,7 +154,7 @@ namespace NewCss
                 {
                     PrestigeManager.Instance.ModifyPrestige(dropPrestigePenalty);
                 }
-                catch (System.Exception e)
+                catch (System.Exception)
                 {
                 }
             }
@@ -211,7 +174,6 @@ namespace NewCss
 
         public void ResetPenalty()
         {
-            hasBeenThrown = false;
             penaltyApplied = false;
         }
 
@@ -230,28 +192,19 @@ namespace NewCss
 
         public void TestPenalty()
         {
-            hasBeenThrown = true;
             penaltyApplied = false;
             ApplyPenalty();
         }
 
         public string GetState()
         {
-            return $"HasBeenThrown: {hasBeenThrown}, PenaltyApplied: {penaltyApplied}, Velocity: {(rb != null ? rb.linearVelocity.magnitude.ToString("F2") : "No RB")}";
+            return $"PenaltyApplied: {penaltyApplied}, Velocity: {(rb != null ? rb.linearVelocity.magnitude.ToString("F2") : "No RB")}";
         }
 
         private void OnDrawGizmosSelected()
         {
-            if (hasBeenThrown && !penaltyApplied)
-            {
-                Gizmos.color = Color.yellow;
-                Gizmos.DrawWireSphere(transform.position, 0.5f);
-            }
-            else if (penaltyApplied)
-            {
-                Gizmos.color = Color.red;
-                Gizmos.DrawWireSphere(transform.position, 0.5f);
-            }
+            Gizmos.color = penaltyApplied ? Color.red : Color.yellow;
+            Gizmos.DrawWireSphere(transform.position, 0.5f);
         }
     }
 }

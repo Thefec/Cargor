@@ -100,7 +100,7 @@ namespace NewCss
         // Bunlar public field olarak kalmalı; EventEffectManager ve UpgradePanel runtime'da yazıyor.
         // Awake() içinde SO'dan başlangıç değerleri atanacak.
         [HideInInspector] public int   rewardPerBox     = 50;
-        [HideInInspector] public int   penaltyPerBox    = 60;
+        [HideInInspector] public int   penaltyPerBox    = 40;
         [HideInInspector] public float prestigePerBonus = 10f;
         [HideInInspector] public float bonusPerTier     = 5f;
 
@@ -578,6 +578,11 @@ namespace NewCss
         private void ProcessWrongDelivery()
         {
             MoneySystem.Instance?.SpendMoney(penaltyPerBox);
+
+            // Yanlış kargo göndermek itibarı da düşürür (para cezasına ek — tematik tutarlılık:
+            // müşteri kaçma/yanlış ürün de prestij düşürüyor). Değer merkezi SO'dan; server-only bağlam.
+            float prestigePenalty = economySettings != null ? economySettings.wrongDeliveryPrestigePenalty : -0.2f;
+            PrestigeManager.Instance?.ModifyPrestige(prestigePenalty);
         }
 
         #endregion

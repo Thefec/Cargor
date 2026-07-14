@@ -10,3 +10,4 @@
 - [Roguelite perk fiyatlandırma v3.2 ONAY](roguelite_perk_pricing.md) — T3 gate gün≥9, Ucuz Kira tablo, Raf doğrusal, Prestij Simsarı fiyat+etki düzeltildi (18x→2.5x), toplam 9945 TL
 - [FAZ2 kota-verim kalibrasyonu](quota_throughput_calibration.md) — C1 aktivasyonu playtest verisi olmadan ÖNERİLMEZ; ~4-6 kutu/dk eşiği, detay plans/economy-audit-2026-07-13.md
 - [FAZ2 wealthTax kırık kablolama](wealthtax_broken_wiring.md) — ✅ÇÖZÜLDÜ (Seçenek A, 9d2c3b0): wealthTax terimi kira formülünden tamamen kaldırıldı + ölü Yol B silindi (479dbf0)
+- [Kutu düşme cezası merkezileştirme](box_drop_penalty_centralization.md) — boxDropMoneyPenalty=5 (tek değer, kutu/ürün ayrımı yok), wrongDeliveryPrestigePenalty=-0.2 onay, Truck penaltyPerBox default 60→40

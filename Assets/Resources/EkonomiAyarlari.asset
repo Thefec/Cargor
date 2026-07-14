@@ -25,6 +25,7 @@ MonoBehaviour:
   bonusPerTier: 5
   rewardVolatility: 0
   rewardVolatilityMean: 1
+  boxDropMoneyPenalty: 5
   callReward: 10
   timeSkipAmount: 20
   postCallCooldown: 30
@@ -33,3 +34,4 @@ MonoBehaviour:
   customerServedPrestigeBonus: 0.5
   wrongProductPrestigePenalty: -0.1
   boxDropPrestigePenalty: -0.05
+  wrongDeliveryPrestigePenalty: -0.2

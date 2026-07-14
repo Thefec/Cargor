@@ -60,6 +60,15 @@ namespace NewCss
         public float rewardVolatilityMean = 1f;
 
         // ─────────────────────────────────────────────────────────────
+        //  KUTU DÜŞME / ÇARPMA CEZASI  (BoxFallPenalty)
+        // ─────────────────────────────────────────────────────────────
+
+        [Header("=== KUTU DÜŞME AYARLARI ===")]
+
+        [Tooltip("Kutu/ürün sert çarpma ile düştüğünde uygulanan para cezası (TL). Yüzeyden bağımsız (yer/duvar/raf aynı). Boş kutu ücretsiz olduğundan ceza yalnızca dikkatsizliği caydırır.")]
+        public int boxDropMoneyPenalty = 5;
+
+        // ─────────────────────────────────────────────────────────────
         //  TELEFON  (PhoneCallManager)
         // ─────────────────────────────────────────────────────────────
 
@@ -94,6 +103,9 @@ namespace NewCss
 
         [Tooltip("Kutu yere düştüğünde uygulanan prestige cezası (negatif olmalı)")]
         public float boxDropPrestigePenalty = -0.05f;
+
+        [Tooltip("Tıra yanlış renk kutu teslim edildiğinde uygulanan prestige cezası (negatif olmalı). Para cezası (penaltyPerBox) ayrıca uygulanır.")]
+        public float wrongDeliveryPrestigePenalty = -0.2f;
 
         // ─────────────────────────────────────────────────────────────
         //  YARDIMCI METODLAR
