@@ -169,7 +169,6 @@ namespace NewCss
             new GameEvent("GOLDEN BOX DAY", "EventGoldenBoxDay", EventType.Positive, "EACH CORRECT DELIVERED BOX EARNS EXTRA 5%.", "EventGoldenBoxDayDesc"),
             new GameEvent("OPPORTUNITY DAY", "EventOpportunityDay", EventType.Positive, "UPGRADE COSTS DECREASE BY 10%.", "EventOpportunityDayDesc"),
             new GameEvent("FATIGUE PROBLEM", "EventFatigueProblem", EventType.Negative, "STAMINA REGENERATION TIME INCREASES BY 30%.", "EventFatigueProblemDesc"),
-            new GameEvent("QUOTA DAY", "EventQuotaDay", EventType.Neutral, "ALL TRUCKS REQUEST ONLY ONE COLOR OF BOX.", "EventQuotaDayDesc"),
             new GameEvent("VIP SERVICE", "EventVipService", EventType.Positive, "10% CHANCE BOXES ARE PERFECT AND EARN 10% MORE.", "EventVipServiceDesc"),
             new GameEvent("SURPRISE AUDIT", "EventSurpriseAudit", EventType.Negative, "ALL FAULTY OPERATIONS PENALIZE DOUBLE.", "EventSurpriseAuditDesc"),
             new GameEvent("RAINY DAY", "EventRainyDay", EventType.Positive, "20% FEWER CUSTOMERS ARRIVE.", "EventRainyDayDesc"),
