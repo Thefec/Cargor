@@ -244,7 +244,9 @@ namespace NewCss
         private bool IsLocalPlayer(Collider other)
         {
             if (!other.CompareTag("Character")) return false;
-            var netObj = other.GetComponent<NetworkObject>();
+            // Collider NetworkObject ile aynı GameObject'te olmayabilir → parent fallback
+            // (codebase deseni: PagedUIPanelTrigger).
+            var netObj = other.GetComponent<NetworkObject>() ?? other.GetComponentInParent<NetworkObject>();
             return netObj != null && netObj.IsOwner && netObj.IsLocalPlayer;
         }
 
