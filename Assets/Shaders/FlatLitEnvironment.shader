@@ -19,6 +19,7 @@ Shader "Custom/FlatLitEnvironment"
         [Header(Lighting)]
         _ShadowSharpness ("Shadow Sharpness", Range(0.01, 1.0)) = 0.5
         _LightSteps ("Light Steps (Cel)", Range(1, 5)) = 3
+        _CelSmoothness ("Cel Smoothness", Range(0, 1)) = 0.5
         _NormalInfluence ("Normal Influence", Range(0, 1)) = 0.6
     }
 
@@ -61,6 +62,7 @@ Shader "Custom/FlatLitEnvironment"
                 float  _AmbientStrength;
                 float  _ShadowSharpness;
                 float  _LightSteps;
+                float  _CelSmoothness;
                 float  _NormalInfluence;
                 float4 _EdgeColor;
                 float  _EdgeWidth;
@@ -127,7 +129,13 @@ Shader "Custom/FlatLitEnvironment"
                 NdotL = NdotL * 0.5 + 0.5;
 
                 float steps = max(1.0, _LightSteps);
-                float celShade = floor(NdotL * steps) / steps;
+                float x  = NdotL * steps;
+                float fl = floor(x);
+                float fr = x - fl;
+                // _CelSmoothness=0 -> eski sert davranis; artikca bant kenari yumusar.
+                float edge0 = 1.0 - max(_CelSmoothness, 1e-4); // smoothness=0'da sifira bolme koru
+                float soft = smoothstep(edge0, 1.0, fr);
+                float celShade = (fl + soft) / steps;
                 float lightFactor = lerp(1.0, celShade, _NormalInfluence);
 
                 // ── Shadow sharpness ──
@@ -152,7 +160,11 @@ Shader "Custom/FlatLitEnvironment"
                     LIGHT_LOOP_BEGIN(additionalLightsCount)
                         Light addLight = GetAdditionalLight(lightIndex, IN.positionWS);
                         float addNdotL = saturate(dot(normalWS, addLight.direction));
-                        float addCel   = floor(addNdotL * steps) / steps;
+                        float axf = addNdotL * steps;
+                        float afl = floor(axf);
+                        float afr = axf - afl;
+                        float asoft = smoothstep(1.0 - max(_CelSmoothness, 1e-4), 1.0, afr);
+                        float addCel = (afl + asoft) / steps;
                         float addFactor = lerp(1.0, addCel, _NormalInfluence);
                         finalColor += baseColor * addLight.color * addFactor 
                                  * addLight.distanceAttenuation 
