@@ -42,6 +42,13 @@ namespace NewCss
         [SerializeField, Tooltip("Etkileşim alanını Gizmo ile göster")]
         private bool showInteractionRange = true;
 
+        [Header("=== INTERACTION OUTLINE ===")]
+        [SerializeField, Tooltip("Oyuncu masaya yaklaşınca yanan outline rengi")]
+        private Color outlineColor = new Color(1f, 0.82f, 0.2f, 1f);
+
+        [SerializeField, Tooltip("Outline kalınlığı (QuickOutline)")]
+        private float outlineWidth = 5f;
+
         #endregion
 
         #region Network Variables
@@ -58,6 +65,7 @@ namespace NewCss
 
         private GameObject _currentItemOnTable;
         private BoxCollider _interactionTrigger;
+        private Outline _outline;
 
         // Static table registry
         private static readonly List<Table> _allTables = new();
@@ -114,6 +122,7 @@ namespace NewCss
         private void Start()
         {
             SetupInteractionTrigger();
+            SetupOutline();
         }
 
         private void OnDestroy()
@@ -192,6 +201,51 @@ namespace NewCss
         {
             _interactionTrigger = FindOrCreateInteractionTrigger();
             ConfigureInteractionTrigger(_interactionTrigger);
+        }
+
+        /// <summary>
+        /// QuickOutline component'ini kurar (kapalı başlar). Oyuncu etkileşim alanına
+        /// girince client-side açılır — raflardaki etkileşim geri bildiriminin masa karşılığı.
+        /// </summary>
+        private void SetupOutline()
+        {
+            _outline = GetComponent<Outline>();
+            if (_outline == null)
+            {
+                _outline = gameObject.AddComponent<Outline>();
+            }
+
+            _outline.OutlineMode = Outline.Mode.OutlineAll;
+            _outline.OutlineColor = outlineColor;
+            _outline.OutlineWidth = outlineWidth;
+            _outline.enabled = false;
+        }
+
+        private void OnTriggerEnter(Collider other)
+        {
+            if (_outline != null && IsLocalPlayer(other))
+            {
+                _outline.enabled = true;
+            }
+        }
+
+        private void OnTriggerExit(Collider other)
+        {
+            if (_outline != null && IsLocalPlayer(other))
+            {
+                _outline.enabled = false;
+            }
+        }
+
+        /// <summary>
+        /// Etkileşim outline'ı yalnızca bu makinenin kendi oyuncusu için tetiklenir
+        /// (client-side görsel). Aksi halde başka oyuncular yaklaşınca da yanardı.
+        /// </summary>
+        private bool IsLocalPlayer(Collider other)
+        {
+            if (!other.CompareTag("Character")) return false;
+            var netObj = other.GetComponent<NetworkObject>();
+            return netObj != null && netObj.IsOwner && netObj.IsLocalPlayer;
         }
 
         private BoxCollider FindOrCreateInteractionTrigger()
