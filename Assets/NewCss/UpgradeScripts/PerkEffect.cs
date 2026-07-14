@@ -138,11 +138,14 @@ namespace NewCss
             ctx.Truck.penaltyPerBox = Mathf.RoundToInt(ctx.Economy.penaltyPerBox * 1.55f);
         }
 
-        // Telefon Hattı (relic): maxCallsPerHour 2 → 3 (+1, mevcut mekaniğe bağlanış)
+        // Telefon Hattı (relic): PhoneCallManager reaktif V3'e geçti (kontenjan kavramı yok,
+        // saatlik çalma OLASILIĞI var). Eski hedef alan (maxCallsPerHour, kaldırıldı) yerine
+        // eski perk gücü (+%50, 2→3) additive bonus olarak phoneRingPerkBonus'a taşındı.
+        // economist onaylı additive model (izole eşdeğer 0.30+0.15=0.45).
         private static void ApplyPhoneLine(int level, PerkContext ctx)
         {
             if (ctx.Economy == null || level <= 0) return;
-            ctx.Economy.maxCallsPerHour = 3;
+            ctx.Economy.phoneRingPerkBonus = 0.15f;
         }
 
         // ─────────────────────────────────────────────────────────────

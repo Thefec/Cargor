@@ -26,10 +26,11 @@ MonoBehaviour:
   rewardVolatility: 0
   rewardVolatilityMean: 1
   boxDropMoneyPenalty: 5
-  callReward: 10
-  timeSkipAmount: 20
-  postCallCooldown: 30
-  maxCallsPerHour: 2
+  phoneRingChancePerHour: 0.3
+  phoneRingEventMultiplier: 1.5
+  phoneRingPerkBonus: 0
+  callMoneyReward: 20
+  callPrestigeReward: 0.5
   customerLostPrestigePenalty: -1.5
   customerServedPrestigeBonus: 0.5
   wrongProductPrestigePenalty: -0.1

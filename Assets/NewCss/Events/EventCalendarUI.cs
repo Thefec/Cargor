@@ -173,7 +173,7 @@ namespace NewCss
             new GameEvent("SURPRISE AUDIT", "EventSurpriseAudit", EventType.Negative, "ALL FAULTY OPERATIONS PENALIZE DOUBLE.", "EventSurpriseAuditDesc"),
             new GameEvent("RAINY DAY", "EventRainyDay", EventType.Positive, "20% FEWER CUSTOMERS ARRIVE.", "EventRainyDayDesc"),
             new GameEvent("MARKETING DAY", "EventMarketingDay", EventType.Negative, "20% MORE CUSTOMERS, BUT 30% LESS EARNINGS.", "EventMarketingDayDesc"),
-            new GameEvent("CUSTOMER SUPPORT", "EventCustomerSupport", EventType.Negative, "RECEPTION PHONE RINGS 30% MORE OFTEN.", "EventCustomerSupportDesc"),
+            new GameEvent("CUSTOMER SUPPORT", "EventCustomerSupport", EventType.Positive, "RECEPTION PHONE RINGS 50% MORE OFTEN.", "EventCustomerSupportDesc"),
             new GameEvent("FESTIVAL DAY", "EventFestivalDay", EventType.Positive, "RANDOM BONUS IS EARNED AT DAY START.", "EventFestivalDayDesc")
         };
 

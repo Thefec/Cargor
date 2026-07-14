@@ -14,6 +14,10 @@ namespace NewCss
         // FESTIVAL DAY para bonusu (ve gelecekteki event ekonomi değerleri) için merkezi SO.
         private GameEconomySettings _economySettings;
 
+        // FESTIVAL DAY bonusunun gün başına yalnız 1 kez verilmesini garanti eder.
+        // Host'ta OnNewDay çift-tetiklenir (DayCycleManager doğrudan Invoke + ClientRpc yerel).
+        private int _lastFestivalBonusDay = -1;
+
         [Header("Manager References")]
         public CustomerManager customerManager;
         public UpgradePanel upgradePanel;
@@ -372,9 +376,13 @@ namespace NewCss
             }
 
             // FESTIVAL DAY: gün başı tek seferlik rastgele para bonusu (server-only).
+            // currentDay guard'ı host'taki OnNewDay çift-tetiklemesine karşı idempotency sağlar
+            // (aksi halde bonus host'a iki kez uygulanırdı).
             if (currentActiveEvent.Value != -1 &&
-                eventNames[currentActiveEvent.Value] == "FESTIVAL DAY")
+                eventNames[currentActiveEvent.Value] == "FESTIVAL DAY" &&
+                currentDay != _lastFestivalBonusDay)
             {
+                _lastFestivalBonusDay = currentDay;
                 ApplyFestivalBonus();
             }
 

@@ -69,22 +69,25 @@ namespace NewCss
         public int boxDropMoneyPenalty = 5;
 
         // ─────────────────────────────────────────────────────────────
-        //  TELEFON  (PhoneCallManager)
+        //  TELEFON  (PhoneCallManager - REAKTİF V3)
         // ─────────────────────────────────────────────────────────────
 
         [Header("=== TELEFON AYARLARI ===")]
 
-        [Tooltip("Başarılı telefon aramasında verilen para ödülü (TL)")]
-        public int callReward = 10;
+        [Tooltip("Mesai saatleri içinde her oyun-saati değiştiğinde telefonun çalma olasılığı (0-1)")]
+        public float phoneRingChancePerHour = 0.30f;
 
-        [Tooltip("Başarılı aramada atlanacak oyun içi süre (dakika)")]
-        public float timeSkipAmount = 20f;
+        [Tooltip("CUSTOMER SUPPORT etkinliği günü çalma olasılığına uygulanan çarpan")]
+        public float phoneRingEventMultiplier = 1.5f;
 
-        [Tooltip("Başarılı aramadan sonra bir sonraki aramaya kadar bekleme süresi (saniye)")]
-        public float postCallCooldown = 30f;
+        [Tooltip("Telefon Hattı perki aktifken saatlik çalma olasılığına eklenen additive bonus")]
+        public float phoneRingPerkBonus = 0f;
 
-        [Tooltip("Saatte yapılabilecek maksimum arama sayısı")]
-        public int maxCallsPerHour = 2;
+        [Tooltip("Telefon açıldığında verilen para ödülü (TL)")]
+        public int callMoneyReward = 20;
+
+        [Tooltip("Telefon açıldığında verilen prestij ödülü")]
+        public float callPrestigeReward = 0.5f;
 
         // ─────────────────────────────────────────────────────────────
         //  PRESTİJ CEZA / ÖDÜL  (GameStateManager, CustomerAI, BoxFallPenalty)
