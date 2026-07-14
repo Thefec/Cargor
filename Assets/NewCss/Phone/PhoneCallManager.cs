@@ -366,7 +366,7 @@ namespace NewCss
                 {
                     ringingSound.Play();
                 }
-                phoneWaitBar?.SetFillAmount(1f);
+                phoneWaitBar?.StartCountdown(ringDuration);
             }
             else
             {
