@@ -108,6 +108,18 @@ namespace NewCss
         public float wrongDeliveryPrestigePenalty = -0.2f;
 
         // ─────────────────────────────────────────────────────────────
+        //  ETKİNLİK (Event)
+        // ─────────────────────────────────────────────────────────────
+
+        [Header("=== ETKİNLİK AYARLARI ===")]
+
+        [Tooltip("FESTIVAL DAY: gün başında verilen rastgele para bonusu alt sınırı (TL)")]
+        public int festivalBonusMin = 100;
+
+        [Tooltip("FESTIVAL DAY: gün başında verilen rastgele para bonusu üst sınırı (TL)")]
+        public int festivalBonusMax = 300;
+
+        // ─────────────────────────────────────────────────────────────
         //  YARDIMCI METODLAR
         // ─────────────────────────────────────────────────────────────
 

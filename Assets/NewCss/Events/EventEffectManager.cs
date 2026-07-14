@@ -11,6 +11,9 @@ namespace NewCss
         // OnNetworkSpawn'undan erişmek için. Sahnede tek instance olduğu varsayılır.
         public static EventEffectManager Instance { get; private set; }
 
+        // FESTIVAL DAY para bonusu (ve gelecekteki event ekonomi değerleri) için merkezi SO.
+        private GameEconomySettings _economySettings;
+
         [Header("Manager References")]
         public CustomerManager customerManager;
         public UpgradePanel upgradePanel;
@@ -39,7 +42,10 @@ namespace NewCss
             "FATIGUE PROBLEM",
             "VIP SERVICE",
             "RAINY DAY",
-            "MARKETING DAY"
+            "MARKETING DAY",
+            "SURPRISE AUDIT",
+            "FESTIVAL DAY",
+            "CUSTOMER SUPPORT"
         };
 
         // Store original values
@@ -89,6 +95,11 @@ namespace NewCss
             base.OnNetworkSpawn();
 
             Instance = this;
+
+            if (_economySettings == null)
+            {
+                _economySettings = Resources.Load<GameEconomySettings>("EkonomiAyarlari");
+            }
 
             InitializeEventMultipliers();
             DayCycleManager.OnNewDay += OnNewDayHandler;
@@ -295,6 +306,52 @@ namespace NewCss
                 isVIPServiceDay = false,
                 upgradeCostMultiplier = 1f
             };
+
+            // SURPRISE AUDIT: çarpanlar nötr; çift-ceza GetPenaltyMultiplier() ile isim-tabanlı uygulanır.
+            eventMultipliers["SURPRISE AUDIT"] = new EventMultipliers
+            {
+                rewardPerBoxMultiplier = 1f,
+                exitDelayMultiplier = 1f,
+                customerWaitTimeMultiplier = 1f,
+                playerMoveSpeedMultiplier = 1f,
+                playerSprintSpeedMultiplier = 1f,
+                staminaRegenRateMultiplier = 1f,
+                dailyCustomerMultiplier = 1f,
+                isGoldenBoxDay = false,
+                isVIPServiceDay = false,
+                upgradeCostMultiplier = 1f
+            };
+
+            // FESTIVAL DAY: çarpanlar nötr; gün başı tek seferlik para bonusu OnNewDayHandler'da verilir.
+            eventMultipliers["FESTIVAL DAY"] = new EventMultipliers
+            {
+                rewardPerBoxMultiplier = 1f,
+                exitDelayMultiplier = 1f,
+                customerWaitTimeMultiplier = 1f,
+                playerMoveSpeedMultiplier = 1f,
+                playerSprintSpeedMultiplier = 1f,
+                staminaRegenRateMultiplier = 1f,
+                dailyCustomerMultiplier = 1f,
+                isGoldenBoxDay = false,
+                isVIPServiceDay = false,
+                upgradeCostMultiplier = 1f
+            };
+
+            // CUSTOMER SUPPORT: çarpanlar nötr; telefon çalma sıklığı çarpanı PhoneCallManager
+            // tarafından IsEventActive("CUSTOMER SUPPORT") ile okunur (reaktif telefon sistemi).
+            eventMultipliers["CUSTOMER SUPPORT"] = new EventMultipliers
+            {
+                rewardPerBoxMultiplier = 1f,
+                exitDelayMultiplier = 1f,
+                customerWaitTimeMultiplier = 1f,
+                playerMoveSpeedMultiplier = 1f,
+                playerSprintSpeedMultiplier = 1f,
+                staminaRegenRateMultiplier = 1f,
+                dailyCustomerMultiplier = 1f,
+                isGoldenBoxDay = false,
+                isVIPServiceDay = false,
+                upgradeCostMultiplier = 1f
+            };
         }
 
         private void OnNewDayHandler()
@@ -314,7 +371,30 @@ namespace NewCss
                 currentActiveEvent.Value = -1;
             }
 
+            // FESTIVAL DAY: gün başı tek seferlik rastgele para bonusu (server-only).
+            if (currentActiveEvent.Value != -1 &&
+                eventNames[currentActiveEvent.Value] == "FESTIVAL DAY")
+            {
+                ApplyFestivalBonus();
+            }
+
             NotifyUpgradePanelRefreshClientRpc();
+        }
+
+        /// <summary>
+        /// FESTIVAL DAY etkinliğinde gün başında bir kez rastgele para bonusu verir.
+        /// Yalnızca server çağırır (MoneySystem server-authoritative).
+        /// </summary>
+        private void ApplyFestivalBonus()
+        {
+            if (!IsServer || MoneySystem.Instance == null) return;
+
+            int min = _economySettings != null ? _economySettings.festivalBonusMin : 100;
+            int max = _economySettings != null ? _economySettings.festivalBonusMax : 300;
+            int bonus = Random.Range(min, max + 1); // üst sınır dahil
+
+            MoneySystem.Instance.AddMoney(bonus);
+            Debug.Log($"[EventEffectManager] FESTIVAL DAY bonusu: +{bonus} TL");
         }
 
         [ClientRpc]
@@ -342,6 +422,17 @@ namespace NewCss
             if (eventMultipliers.TryGetValue(name, out var mult))
                 return mult.upgradeCostMultiplier;
             return 1f;
+        }
+
+        /// <summary>
+        /// SURPRISE AUDIT etkinliğinde tüm ceza değerleri (yanlış teslim, kutu düşme,
+        /// müşteri kaçma) bu çarpanla ölçeklenir (2×). Diğer günlerde 1× (etkisiz).
+        /// Ceza uygulayan sistemler bu değeri okur.
+        /// </summary>
+        public float GetPenaltyMultiplier()
+        {
+            if (currentActiveEvent.Value == -1) return 1f;
+            return eventNames[currentActiveEvent.Value] == "SURPRISE AUDIT" ? 2f : 1f;
         }
 
         private PlayerMovement GetOwnedPlayer()

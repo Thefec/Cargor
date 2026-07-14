@@ -602,6 +602,10 @@ namespace NewCss
                 float penalty = economySettings != null
                     ? economySettings.customerLostPrestigePenalty
                     : -2f;
+                // SURPRISE AUDIT günü tüm cezalar 2× (yoksa 1×).
+                float penaltyMult = EventEffectManager.Instance != null
+                    ? EventEffectManager.Instance.GetPenaltyMultiplier() : 1f;
+                penalty *= penaltyMult;
                 PrestigeManager.Instance.ModifyPrestige(penalty);
                 Debug.Log($"Prestige penalty applied: {penalty}");
             }

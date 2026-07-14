@@ -577,12 +577,16 @@ namespace NewCss
 
         private void ProcessWrongDelivery()
         {
-            MoneySystem.Instance?.SpendMoney(penaltyPerBox);
+            // SURPRISE AUDIT günü tüm cezalar 2× (yoksa 1×).
+            float penaltyMult = EventEffectManager.Instance != null
+                ? EventEffectManager.Instance.GetPenaltyMultiplier() : 1f;
+
+            MoneySystem.Instance?.SpendMoney(Mathf.RoundToInt(penaltyPerBox * penaltyMult));
 
             // Yanlış kargo göndermek itibarı da düşürür (para cezasına ek — tematik tutarlılık:
             // müşteri kaçma/yanlış ürün de prestij düşürüyor). Değer merkezi SO'dan; server-only bağlam.
             float prestigePenalty = economySettings != null ? economySettings.wrongDeliveryPrestigePenalty : -0.2f;
-            PrestigeManager.Instance?.ModifyPrestige(prestigePenalty);
+            PrestigeManager.Instance?.ModifyPrestige(prestigePenalty * penaltyMult);
         }
 
         #endregion

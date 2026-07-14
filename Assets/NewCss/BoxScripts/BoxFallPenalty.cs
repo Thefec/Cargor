@@ -136,11 +136,15 @@ namespace NewCss
 
             bool penaltySuccessful = false;
 
+            // SURPRISE AUDIT günü tüm cezalar 2× (yoksa 1×).
+            float penaltyMult = EventEffectManager.Instance != null
+                ? EventEffectManager.Instance.GetPenaltyMultiplier() : 1f;
+
             if (MoneySystem.Instance != null)
             {
                 try
                 {
-                    MoneySystem.Instance.SpendMoney(dropMoneyPenalty);
+                    MoneySystem.Instance.SpendMoney(Mathf.RoundToInt(dropMoneyPenalty * penaltyMult));
                     penaltySuccessful = true;
                 }
                 catch (System.Exception)
@@ -152,7 +156,7 @@ namespace NewCss
             {
                 try
                 {
-                    PrestigeManager.Instance.ModifyPrestige(dropPrestigePenalty);
+                    PrestigeManager.Instance.ModifyPrestige(dropPrestigePenalty * penaltyMult);
                 }
                 catch (System.Exception)
                 {

@@ -35,3 +35,5 @@ MonoBehaviour:
   wrongProductPrestigePenalty: -0.1
   boxDropPrestigePenalty: -0.05
   wrongDeliveryPrestigePenalty: -0.2
+  festivalBonusMin: 100
+  festivalBonusMax: 300
