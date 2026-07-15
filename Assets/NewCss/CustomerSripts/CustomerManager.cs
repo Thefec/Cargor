@@ -206,12 +206,14 @@ namespace NewCss
         private readonly List<BoxInfo.BoxType> _customerColorBag = new();
 
         /// <summary>
-        /// Mevcut tıra kayırmanın "hafif" kalmasını sağlar: aynı renge en fazla MAX_CONSECUTIVE_FAVOR
-        /// kez üst üste kayırılır, sonra zorla dengeli torbaya düşülür (art arda aynı renk şikâyeti önlenir).
+        /// "Orta" kayırma dengesi: dengeli torba ANA kaynaktır; mevcut tıra yalnız FAVOR_CHANCE
+        /// olasılığıyla hafif meyledilir (tek tır dururken ~yarısı o renge uyar, gerisi çeşitli).
+        /// Nihai renk üzerinde art arda en fazla MAX_CONSECUTIVE_SAME_COLOR aynı renge izin verilir.
         /// </summary>
-        private const int MAX_CONSECUTIVE_FAVOR = 2;
-        private BoxInfo.BoxType _lastFavoredColor;
-        private int _consecutiveFavorCount;
+        private const int MAX_CONSECUTIVE_SAME_COLOR = 2;
+        private const float FAVOR_CHANCE = 0.35f;
+        private BoxInfo.BoxType _lastCustomerColor;
+        private int _consecutiveColorCount;
 
         /// <summary>
         /// Renk→index map cache'i. Tüm müşteriler aynı productPrefabs içeriğini taşıdığından ilk
@@ -370,7 +372,7 @@ namespace NewCss
             _dayInitialized = true;
             _customersExitedToday = false; // Yeni gün için çıkış flag'ini sıfırla
             _customerColorBag.Clear(); // Renk torbasını sıfırla (gün başı yeni torba)
-            _consecutiveFavorCount = 0; // Kayırma streak'ini sıfırla (gün başı)
+            _consecutiveColorCount = 0; // Renk streak'ini sıfırla (gün başı)
 
             CalculateSpawnSchedule();
             UpdateRemainingCustomersUI();
@@ -923,36 +925,60 @@ namespace NewCss
         }
 
         /// <summary>
-        /// Bir sonraki müşteri rengini belirler: o an hangarda kapasitesi olan (tır var + dolu değil)
-        /// bir tır rengine HAFİF kayırır — ama aynı renge en fazla MAX_CONSECUTIVE_FAVOR kez üst üste;
-        /// bu sınır aşılınca zorla dengeli torbaya düşer (art arda aynı renk şikâyetini önler).
-        /// Favori tır yoksa/renk havuzu boşsa yine torbadan çeker.
+        /// Bir sonraki müşteri rengini belirler ("Orta" denge):
+        /// 1) Ana kaynak dengeli torba (1:1:1); mevcut tıra yalnız FAVOR_CHANCE olasılığıyla hafif meyil.
+        /// 2) Nihai renk üzerinde art arda MAX_CONSECUTIVE_SAME_COLOR sınırı zorlanır (uzun aynı-renk serisi
+        ///    olamaz — sınır aşılacaksa farklı bir renge zorlanır).
         /// </summary>
         private BoxInfo.BoxType PickCustomerColor(Dictionary<BoxInfo.BoxType, List<int>> colorIndexMap)
         {
             BoxInfo.BoxType? favoredColor = GetFavoredHangarTruckColor();
-            bool favorAvailable = favoredColor.HasValue &&
+            bool canFavor = favoredColor.HasValue &&
                 colorIndexMap.TryGetValue(favoredColor.Value, out var favoredCandidates) &&
                 favoredCandidates.Count > 0;
 
-            // Kayırma sınırı: aynı rengi üst üste MAX_CONSECUTIVE_FAVOR kez verdiysek streak'i kır.
-            bool streakCapped = favorAvailable &&
-                                 favoredColor.Value == _lastFavoredColor &&
-                                 _consecutiveFavorCount >= MAX_CONSECUTIVE_FAVOR;
+            // Ana kaynak: dengeli torba. Sadece bazen (FAVOR_CHANCE) mevcut tıra hafif meyil.
+            BoxInfo.BoxType chosen = (canFavor && Random.value < FAVOR_CHANCE)
+                ? favoredColor.Value
+                : DrawNextCustomerColorFromBag();
 
-            if (favorAvailable && !streakCapped)
+            // Nihai renk cap'i: art arda sınırı aşacaksa farklı renge zorla.
+            if (chosen == _lastCustomerColor && _consecutiveColorCount >= MAX_CONSECUTIVE_SAME_COLOR)
             {
-                _consecutiveFavorCount = favoredColor.Value == _lastFavoredColor ? _consecutiveFavorCount + 1 : 1;
-                _lastFavoredColor = favoredColor.Value;
-                return favoredColor.Value;
+                chosen = PickDifferentColor(chosen, colorIndexMap);
             }
 
-            // Torbaya düş: streak sıfırlanır (torbanın çektiği renk favoriyle aynı çıksa bile
-            // sayaç 0'dan başlar, böylece cap her zaman uzun serileri kesmeye devam eder).
-            _consecutiveFavorCount = 0;
-            BoxInfo.BoxType bagColor = DrawNextCustomerColorFromBag();
-            _lastFavoredColor = bagColor;
-            return bagColor;
+            // Streak takibi (nihai renk üzerinde).
+            if (chosen == _lastCustomerColor)
+            {
+                _consecutiveColorCount++;
+            }
+            else
+            {
+                _lastCustomerColor = chosen;
+                _consecutiveColorCount = 1;
+            }
+
+            return chosen;
+        }
+
+        /// <summary>
+        /// Verilen renkten farklı, ürünü olan bir rengi rastgele döndürür (art arda cap'i için).
+        /// Başka uygun renk yoksa aynı rengi döndürür (güvenlik ağı).
+        /// </summary>
+        private BoxInfo.BoxType PickDifferentColor(BoxInfo.BoxType avoid, Dictionary<BoxInfo.BoxType, List<int>> colorIndexMap)
+        {
+            _favoredColorScratch.Clear();
+            foreach (var kvp in colorIndexMap)
+            {
+                if (kvp.Key != avoid && kvp.Value.Count > 0)
+                {
+                    _favoredColorScratch.Add(kvp.Key);
+                }
+            }
+
+            if (_favoredColorScratch.Count == 0) return avoid;
+            return _favoredColorScratch[Random.Range(0, _favoredColorScratch.Count)];
         }
 
         /// <summary>
