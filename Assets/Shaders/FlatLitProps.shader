@@ -9,7 +9,6 @@ Shader "Custom/FlatLitProps"
 
         [Header(Detail)]
         _DetailStrength ("Detail Visibility", Range(0, 1)) = 0.3
-        _DetailContrast ("Detail Contrast", Range(0.5, 3.0)) = 1.5
 
         [Header(Normal Map)]
         [Toggle(_USE_NORMAL_MAP)] _UseNormalMap ("Use Normal Map", Float) = 0
@@ -66,7 +65,6 @@ Shader "Custom/FlatLitProps"
                 float  _CelSmoothness;
                 float  _NormalInfluence;
                 float  _DetailStrength;
-                float  _DetailContrast;
             CBUFFER_END
 
             TEXTURE2D(_BaseMap);
@@ -116,10 +114,7 @@ Shader "Custom/FlatLitProps"
                 // Texture'daki renk farklarini (detaylari) ayikla
                 // Luminance = texture'in parlaklik degeri
                 half texLum = dot(texColor.rgb, half3(0.299, 0.587, 0.114));
-                
-                // Kontrasti artir: detaylar daha belirgin olsun
-                half detailMask = saturate((texLum - 0.5) * _DetailContrast + 0.5);
-                
+
                 // Flat renk: BaseColor * texture ortalama tonu
                 half3 flatColor = _BaseColor.rgb * texLum;
                 
