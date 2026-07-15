@@ -45,7 +45,7 @@ namespace NewCss
         public int penaltyPerBox = 40;
 
         [Tooltip("Tırın hangarda bekleme süresi (saniye). Süre dolunca boş da olsa kalkar.")]
-        public float hangarStayDuration = 120f;
+        public float hangarStayDuration = 30f;
 
         [Tooltip("Her prestige bonusu için gereken prestige miktarı")]
         public float prestigePerBonus = 10f;

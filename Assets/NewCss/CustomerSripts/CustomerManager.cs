@@ -197,9 +197,28 @@ namespace NewCss
 
         #endregion
 
-        #region Private Fields - Deterministic Loot
+        #region Private Fields - Color Bag
 
-        private int _deterministicLootCounter; // Her 3 müşteriden 1'i tır rengine uygun ürün bırakır
+        /// <summary>
+        /// Renk-önce dengeli torba: [Red, Yellow, Blue] karıştırılmış, replacement'sız çekilir.
+        /// Her 3 müşteride üç renk de garanti gelir.
+        /// </summary>
+        private readonly List<BoxInfo.BoxType> _customerColorBag = new();
+
+        /// <summary>
+        /// Mevcut tıra kayırmanın "hafif" kalmasını sağlar: aynı renge en fazla MAX_CONSECUTIVE_FAVOR
+        /// kez üst üste kayırılır, sonra zorla dengeli torbaya düşülür (art arda aynı renk şikâyeti önlenir).
+        /// </summary>
+        private const int MAX_CONSECUTIVE_FAVOR = 2;
+        private BoxInfo.BoxType _lastFavoredColor;
+        private int _consecutiveFavorCount;
+
+        /// <summary>
+        /// Renk→index map cache'i. Tüm müşteriler aynı productPrefabs içeriğini taşıdığından ilk
+        /// kurulumda hesaplanıp tekrar kullanılır; prefab sayısı değişirse (guard) yeniden kurulur.
+        /// </summary>
+        private Dictionary<BoxInfo.BoxType, List<int>> _colorIndexMap;
+        private int _colorIndexMapProductCount = -1;
 
         #endregion
 
@@ -350,7 +369,8 @@ namespace NewCss
             _nextScheduledIndex = 0;
             _dayInitialized = true;
             _customersExitedToday = false; // Yeni gün için çıkış flag'ini sıfırla
-            _deterministicLootCounter = 0; // Deterministic loot sayacını sıfırla
+            _customerColorBag.Clear(); // Renk torbasını sıfırla (gün başı yeni torba)
+            _consecutiveFavorCount = 0; // Kayırma streak'ini sıfırla (gün başı)
 
             CalculateSpawnSchedule();
             UpdateRemainingCustomersUI();
@@ -877,66 +897,181 @@ namespace NewCss
         #region Product Assignment
 
         /// <summary>
-        /// Son kullanılan ürünleri hariç tutarak rastgele ürün index'i döndürür. 
-        /// Ardışık aynı ürün seçimini kesinlikle engeller.
-        /// Deterministic loot: Her 3 müşteriden 1'i sıradaki tır rengine uygun ürün bırakır.
+        /// Önce renk seçer (dengeli torba + mevcut tıra hafif kayırma), sonra o renkten rastgele
+        /// bir ürün prefabı index'i döndürür. Ardışık aynı ürün seçimini kesinlikle engeller.
+        /// Renk→index eşlemesi <paramref name="productPrefabs"/> üzerinden (ProductInfo.productType ile)
+        /// runtime kurulur/cache'lenir — sabit değildir, prefab listesi değişirse otomatik güncellenir.
         /// </summary>
-        public int GetRandomProductIndexExcludingRecent(int productCount)
+        public int GetRandomProductIndexExcludingRecent(GameObject[] productPrefabs)
         {
+            int productCount = productPrefabs?.Length ?? 0;
             if (productCount <= 0) return -1;
             if (productCount == 1) return 0;
 
-            _deterministicLootCounter++;
+            Dictionary<BoxInfo.BoxType, List<int>> colorIndexMap = GetOrBuildColorIndexMap(productPrefabs);
 
-            // Deterministic loot: Her 3. müşteri (1, 4, 7, ...) tır rengine uygun ürün bırakır
-            if (_deterministicLootCounter % 3 == 1)
-            {
-                int deterministicIndex = GetDeterministicProductIndex(productCount);
-                if (deterministicIndex >= 0)
-                {
-                    AddToProductHistory(deterministicIndex);
-                    LogDebug($"Deterministic loot assigned: product index {deterministicIndex}");
-                    return deterministicIndex;
-                }
-            }
+            BoxInfo.BoxType chosenColor = PickCustomerColor(colorIndexMap);
+            List<int> pool = colorIndexMap.TryGetValue(chosenColor, out var indices) && indices.Count > 0
+                ? indices
+                : Enumerable.Range(0, productCount).ToList(); // güvenlik ağı: map boşsa tüm ürünlere düş
 
-            var candidates = BuildProductCandidates(productCount);
-            int chosen = SelectProductIndex(candidates, productCount);
+            var candidates = BuildProductCandidatesFromPool(pool);
+            int chosen = SelectProductIndex(candidates, pool);
             AddToProductHistory(chosen);
 
             return chosen;
         }
 
         /// <summary>
-        /// Sıradaki kamyon rengine uygun ürün index'ini döndürür
+        /// Bir sonraki müşteri rengini belirler: o an hangarda kapasitesi olan (tır var + dolu değil)
+        /// bir tır rengine HAFİF kayırır — ama aynı renge en fazla MAX_CONSECUTIVE_FAVOR kez üst üste;
+        /// bu sınır aşılınca zorla dengeli torbaya düşer (art arda aynı renk şikâyetini önler).
+        /// Favori tır yoksa/renk havuzu boşsa yine torbadan çeker.
         /// </summary>
-        private int GetDeterministicProductIndex(int productCount)
+        private BoxInfo.BoxType PickCustomerColor(Dictionary<BoxInfo.BoxType, List<int>> colorIndexMap)
         {
-            if (TruckSpawner.Instance == null) return -1;
+            BoxInfo.BoxType? favoredColor = GetFavoredHangarTruckColor();
+            bool favorAvailable = favoredColor.HasValue &&
+                colorIndexMap.TryGetValue(favoredColor.Value, out var favoredCandidates) &&
+                favoredCandidates.Count > 0;
 
-            BoxInfo.BoxType? nextTruckColor = TruckSpawner.Instance.NextTruckColor;
-            if (!nextTruckColor.HasValue) return -1;
+            // Kayırma sınırı: aynı rengi üst üste MAX_CONSECUTIVE_FAVOR kez verdiysek streak'i kır.
+            bool streakCapped = favorAvailable &&
+                                 favoredColor.Value == _lastFavoredColor &&
+                                 _consecutiveFavorCount >= MAX_CONSECUTIVE_FAVOR;
 
-            // BoxType sıralamasına göre ürün index'i (Red=0, Yellow=1, Blue=2)
-            int targetIndex = (int)nextTruckColor.Value;
-
-            // Ürün sayısı yeterli mi kontrol et
-            if (targetIndex < productCount)
+            if (favorAvailable && !streakCapped)
             {
-                return targetIndex;
+                _consecutiveFavorCount = favoredColor.Value == _lastFavoredColor ? _consecutiveFavorCount + 1 : 1;
+                _lastFavoredColor = favoredColor.Value;
+                return favoredColor.Value;
             }
 
-            return -1;
+            // Torbaya düş: streak sıfırlanır (torbanın çektiği renk favoriyle aynı çıksa bile
+            // sayaç 0'dan başlar, böylece cap her zaman uzun serileri kesmeye devam eder).
+            _consecutiveFavorCount = 0;
+            BoxInfo.BoxType bagColor = DrawNextCustomerColorFromBag();
+            _lastFavoredColor = bagColor;
+            return bagColor;
         }
 
-        private List<int> BuildProductCandidates(int productCount)
+        /// <summary>
+        /// Hangarda kapasitesi olan (Truck present + dolu değil) tırların renklerinden birini rastgele
+        /// döndürür (çoklu hangar için hangar-0 sabit bias'ı önlenir), hiç yoksa null.
+        /// </summary>
+        private BoxInfo.BoxType? GetFavoredHangarTruckColor()
         {
-            var candidates = new List<int>(productCount);
+            TruckSpawner spawner = TruckSpawner.Instance;
+            if (spawner == null || spawner.hangarSpawnPoints == null) return null;
 
-            for (int i = 0; i < productCount; i++)
+            _favoredColorScratch.Clear();
+            for (int i = 0; i < spawner.hangarSpawnPoints.Count; i++)
+            {
+                Truck truck = spawner.GetTruckAtHangar(i);
+                if (truck != null && !truck.IsFull)
+                {
+                    _favoredColorScratch.Add(truck.requestedBoxType);
+                }
+            }
+
+            if (_favoredColorScratch.Count == 0) return null;
+            return _favoredColorScratch[Random.Range(0, _favoredColorScratch.Count)];
+        }
+
+        private readonly List<BoxInfo.BoxType> _favoredColorScratch = new();
+
+        /// <summary>
+        /// Renk-önce dengeli torbadan (replacement'sız) bir sonraki rengi çeker.
+        /// Torba boşsa [Red, Yellow, Blue] ile yeniden doldurup karıştırır.
+        /// </summary>
+        private BoxInfo.BoxType DrawNextCustomerColorFromBag()
+        {
+            if (_customerColorBag.Count == 0)
+            {
+                _customerColorBag.Add(BoxInfo.BoxType.Red);
+                _customerColorBag.Add(BoxInfo.BoxType.Yellow);
+                _customerColorBag.Add(BoxInfo.BoxType.Blue);
+                ShuffleColorBag(_customerColorBag);
+            }
+
+            int lastIndex = _customerColorBag.Count - 1;
+            BoxInfo.BoxType color = _customerColorBag[lastIndex];
+            _customerColorBag.RemoveAt(lastIndex);
+            return color;
+        }
+
+        private static void ShuffleColorBag(List<BoxInfo.BoxType> bag)
+        {
+            for (int i = bag.Count - 1; i > 0; i--)
+            {
+                int j = Random.Range(0, i + 1);
+                (bag[i], bag[j]) = (bag[j], bag[i]);
+            }
+        }
+
+        /// <summary>
+        /// productPrefabs dizisini tarayarak renk→ürün-index map'i kurar (ProductInfo.productType ile).
+        /// Sonuç, aynı dizi referansı için weak-cache'lenir (runtime bir kez kurulur, sabit değildir).
+        /// </summary>
+        private Dictionary<BoxInfo.BoxType, List<int>> GetOrBuildColorIndexMap(GameObject[] productPrefabs)
+        {
+            // Aynı ürün sayısıyla daha önce kurulduysa yeniden kullan (tüm müşteriler aynı listeyi taşır).
+            if (_colorIndexMap != null && _colorIndexMapProductCount == productPrefabs.Length)
+            {
+                return _colorIndexMap;
+            }
+
+            var map = new Dictionary<BoxInfo.BoxType, List<int>>
+            {
+                { BoxInfo.BoxType.Red, new List<int>() },
+                { BoxInfo.BoxType.Yellow, new List<int>() },
+                { BoxInfo.BoxType.Blue, new List<int>() },
+            };
+
+            for (int i = 0; i < productPrefabs.Length; i++)
+            {
+                GameObject prefab = productPrefabs[i];
+                if (prefab == null) continue;
+
+                ProductInfo productInfo = prefab.GetComponent<ProductInfo>();
+                if (productInfo == null)
+                {
+                    LogWarning($"Product prefab '{prefab.name}' has no ProductInfo, skipped in color map.");
+                    continue;
+                }
+
+                BoxInfo.BoxType boxType = ProductTypeToBoxType(productInfo.productType);
+                map[boxType].Add(i);
+            }
+
+            _colorIndexMap = map;
+            _colorIndexMapProductCount = productPrefabs.Length;
+            return map;
+        }
+
+        /// <summary>
+        /// Table.IsValidBoxProductCombination ile birebir eşleşen ürün→kutu renk eşlemesi:
+        /// Toy→Red, Clothing→Yellow, Glass→Blue.
+        /// </summary>
+        private static BoxInfo.BoxType ProductTypeToBoxType(ProductInfo.ProductType productType)
+        {
+            return productType switch
+            {
+                ProductInfo.ProductType.Toy => BoxInfo.BoxType.Red,
+                ProductInfo.ProductType.Clothing => BoxInfo.BoxType.Yellow,
+                ProductInfo.ProductType.Glass => BoxInfo.BoxType.Blue,
+                _ => BoxInfo.BoxType.Red,
+            };
+        }
+
+        private List<int> BuildProductCandidatesFromPool(List<int> pool)
+        {
+            var candidates = new List<int>(pool.Count);
+
+            foreach (int i in pool)
             {
                 // Önce ardışık tekrarı kesinlikle engelle
-                if (i == _lastProductIndex && productCount > 1)
+                if (i == _lastProductIndex && pool.Count > 1)
                 {
                     continue;
                 }
@@ -951,16 +1086,16 @@ namespace NewCss
             return candidates;
         }
 
-        private int SelectProductIndex(List<int> candidates, int productCount)
+        private int SelectProductIndex(List<int> candidates, List<int> pool)
         {
             // Eğer hiç aday kalmadıysa, sadece son ürünü hariç tut
             if (candidates.Count == 0)
             {
                 var fallbackCandidates = new List<int>();
-                for (int i = 0; i < productCount; i++)
+                foreach (int i in pool)
                 {
                     // Son ürünü kesinlikle ekleme (2'den fazla ürün varsa)
-                    if (i != _lastProductIndex || productCount <= 1)
+                    if (i != _lastProductIndex || pool.Count <= 1)
                     {
                         fallbackCandidates.Add(i);
                     }
@@ -971,8 +1106,8 @@ namespace NewCss
                     return fallbackCandidates[Random.Range(0, fallbackCandidates.Count)];
                 }
 
-                // Son çare: herhangi birini seç (tek ürün varsa)
-                return Random.Range(0, productCount);
+                // Son çare: havuzdan herhangi birini seç
+                return pool[Random.Range(0, pool.Count)];
             }
 
             return candidates[Random.Range(0, candidates.Count)];

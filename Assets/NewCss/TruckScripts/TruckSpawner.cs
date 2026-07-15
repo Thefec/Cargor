@@ -34,8 +34,8 @@ namespace NewCss
         #region Constants
 
         private const string LOG_PREFIX = "[TruckSpawner]";
-        private const int MIN_CARGO_AMOUNT = 3;
-        private const int MAX_CARGO_AMOUNT = 7;
+        private const int MIN_CARGO_AMOUNT = 2;
+        private const int MAX_CARGO_AMOUNT = 6;
         private const int BOX_TYPE_COUNT = 3;
 
         #endregion
@@ -83,6 +83,7 @@ namespace NewCss
         private readonly Dictionary<int, Truck> _activeTrucks = new();
         private readonly Dictionary<int, Coroutine> _hangarRespawnCoroutines = new();
         private readonly Queue<BoxInfo.BoxType> _plannedTruckColors = new();
+        private readonly List<BoxInfo.BoxType> _truckColorBag = new();
         private const int TRUCK_COLOR_QUEUE_SIZE = 5;
 
         #endregion
@@ -507,7 +508,7 @@ namespace NewCss
             }
             else
             {
-                boxType = (BoxInfo.BoxType)Random.Range(0, BOX_TYPE_COUNT);
+                boxType = DrawNextBagColor();
             }
 
             // Refill the queue if needed
@@ -518,14 +519,46 @@ namespace NewCss
         }
 
         /// <summary>
-        /// Planlanan kamyon renklerini yeniden doldurur
+        /// Planlanan kamyon renklerini dengeli torba (bag) yöntemiyle yeniden doldurur.
+        /// Her 3 ardışık tırda üç renk de garanti gelir.
         /// </summary>
         private void RefillPlannedTruckColors()
         {
             while (_plannedTruckColors.Count < TRUCK_COLOR_QUEUE_SIZE)
             {
-                BoxInfo.BoxType newColor = (BoxInfo.BoxType)Random.Range(0, BOX_TYPE_COUNT);
-                _plannedTruckColors.Enqueue(newColor);
+                _plannedTruckColors.Enqueue(DrawNextBagColor());
+            }
+        }
+
+        /// <summary>
+        /// Dengeli torbadan (replacement'sız) bir sonraki rengi çeker.
+        /// Torba boşsa [Yellow, Blue, Red] ile yeniden doldurup karıştırır.
+        /// </summary>
+        private BoxInfo.BoxType DrawNextBagColor()
+        {
+            if (_truckColorBag.Count == 0)
+            {
+                _truckColorBag.Add(BoxInfo.BoxType.Yellow);
+                _truckColorBag.Add(BoxInfo.BoxType.Blue);
+                _truckColorBag.Add(BoxInfo.BoxType.Red);
+                ShuffleColorBag(_truckColorBag);
+            }
+
+            int lastIndex = _truckColorBag.Count - 1;
+            BoxInfo.BoxType color = _truckColorBag[lastIndex];
+            _truckColorBag.RemoveAt(lastIndex);
+            return color;
+        }
+
+        /// <summary>
+        /// Fisher-Yates shuffle.
+        /// </summary>
+        private static void ShuffleColorBag(List<BoxInfo.BoxType> bag)
+        {
+            for (int i = bag.Count - 1; i > 0; i--)
+            {
+                int j = Random.Range(0, i + 1);
+                (bag[i], bag[j]) = (bag[j], bag[i]);
             }
         }
 

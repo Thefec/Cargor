@@ -404,7 +404,7 @@ namespace NewCss
 
             if (manager != null && HasValidProductPrefabs())
             {
-                _assignedProductIndex = manager.GetRandomProductIndexExcludingRecent(productPrefabs.Length);
+                _assignedProductIndex = manager.GetRandomProductIndexExcludingRecent(productPrefabs);
                 _networkAssignedProductIndex.Value = _assignedProductIndex;
 
                 Debug.Log($"{LOG_PREFIX} Spawned with product index: {_assignedProductIndex} ({productPrefabs[_assignedProductIndex].name})");

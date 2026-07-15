@@ -20,7 +20,7 @@ MonoBehaviour:
   rentScaledMultiplier: 1
   rewardPerBox: 50
   penaltyPerBox: 40
-  hangarStayDuration: 120
+  hangarStayDuration: 30
   prestigePerBonus: 10
   bonusPerTier: 5
   rewardVolatility: 0
