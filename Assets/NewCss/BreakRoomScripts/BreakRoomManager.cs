@@ -394,6 +394,22 @@ namespace NewCss
         }
 
         /// <summary>
+        /// N10: Server-auth break-room-ready NetworkVariable HER peer'de değiştiğinde
+        /// (DayCycleManager.HandleBreakRoomReadyChanged) çağrılır. Yerel trigger tespitini
+        /// lag nedeniyle kaçırmış client'ların da Next Day UI'ını göstermesini/hareketi
+        /// kilitlemesini garanti eder. Idempotent (ShowPanel + LockAllPlayersMovement zaten
+        /// tekrar-güvenli); yalnızca ready=true senkronlanır — false tarafındaki reset/unlock
+        /// mevcut akışların (OnNextDayUIClosed / ResetForNewDay) sahipliğinde bırakılır.
+        /// </summary>
+        public void OnBreakRoomReadyStateSynced(bool ready)
+        {
+            if (ready)
+            {
+                ShowNextDayUIAndLockMovement();
+            }
+        }
+
+        /// <summary>
         /// Tüm oyuncuların hareketini kilitler/açar
         /// </summary>
         public void LockAllPlayersMovement(bool locked)

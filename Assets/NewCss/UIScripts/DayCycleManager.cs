@@ -801,6 +801,23 @@ namespace NewCss
         [ServerRpc(RequireOwnership = false)]
         private void SetBreakRoomReadyServerRpc(bool ready)
         {
+            // N3 server-auth: client'in "herkes break room'da" iddiasina KORU KORUNE guvenme.
+            // Bu RPC server'da calisir; ready=true yalnizca server kendi otoriter presence
+            // verisiyle (BreakRoomManager.IsReady = server-side AreAllPlayersInRoom) + sure-bitti
+            // kosulunu dogrularsa kabul edilir. Aksi halde lag-desync veya hileli client bypass'i
+            // reddedilir (gunu erken atlatamaz).
+            if (ready)
+            {
+                var breakRoom = BreakRoomManager.Instance;
+                if (breakRoom == null || !breakRoom.IsReady || !IsTimeUp)
+                {
+                    Debug.LogWarning($"{LOG_PREFIX} SetBreakRoomReadyServerRpc reddedildi: " +
+                                     $"server presence dogrulamasi basarisiz " +
+                                     $"(BreakRoom={(breakRoom != null ? breakRoom.IsReady.ToString() : "null")}, IsTimeUp={IsTimeUp}).");
+                    return;
+                }
+            }
+
             _networkIsBreakRoomReady.Value = ready;
         }
 
@@ -856,7 +873,14 @@ namespace NewCss
 
         private void HandleBreakRoomReadyChanged(bool previousValue, bool newValue)
         {
-            // Gerekirse burada ek işlem yapılabilir
+            // N10: server-auth ready durumu artık HER peer'e NetworkVariable ile yayılıyor.
+            // UI/hareket-kilidi senkronunu burada tetikle ki yerel trigger tespitini lag'de
+            // kaçırmış client'lar da Next Day UI'ını görsün (server-auth state ↔ yerel UI
+            // kopukluğu kapandı). Idempotent; false tarafı mevcut reset/unlock akışlarında.
+            if (newValue)
+            {
+                BreakRoomManager.Instance?.OnBreakRoomReadyStateSynced(true);
+            }
         }
 
         #endregion
