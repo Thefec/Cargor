@@ -443,10 +443,15 @@ namespace NewCss
 
             LogDebug($"📥 PlaceItemOnShelfFromServer - Client {requesterClientId}");
 
+            // Reddedilirse orphan (spawn edilmiş ama hiçbir slota/parent'a bağlanmamış) item
+            // kalmaması için, çağıran taraf item'ı önceden spawn etmiş olsa da red durumunda despawn edilir.
+            itemRef.TryGet(out NetworkObject orphanCandidate);
+
             // Dolu mu kontrol et
             if (IsFull)
             {
                 LogDebug("❌ Shelf is FULL!");
+                DespawnOrphanItem(orphanCandidate);
                 return;
             }
 
@@ -454,6 +459,7 @@ namespace NewCss
             if (!ValidateItemIsBox(itemRef))
             {
                 LogDebug("❌ Only Box category items can be placed on shelf!");
+                DespawnOrphanItem(orphanCandidate);
                 return;
             }
 
@@ -467,6 +473,7 @@ namespace NewCss
                 if (requireSpecificBoxType && boxInfo != null && boxInfo.boxType != acceptedBoxType)
                 {
                     LogDebug($"❌ Wrong box type! Expected: {acceptedBoxType}, Got: {boxInfo.boxType}");
+                    DespawnOrphanItem(orphanCandidate);
                     return;
                 }
             }
@@ -476,11 +483,24 @@ namespace NewCss
             if (slotIndex == -1)
             {
                 LogDebug("❌ No empty slot found!");
+                DespawnOrphanItem(orphanCandidate);
                 return;
             }
 
             // Item'ı yerleştir
             PlaceItemInSlot(itemRef, slotIndex, requesterClientId, boxInfo);
+        }
+
+        /// <summary>
+        /// Reddedilen bir yerleştirme isteğinde önceden spawn edilmiş item'ı despawn eder
+        /// ki sahnede parent'sız/kinematik olmayan bir "orphan" item kalmasın.
+        /// </summary>
+        private static void DespawnOrphanItem(NetworkObject orphanItem)
+        {
+            if (orphanItem != null && orphanItem.IsSpawned)
+            {
+                orphanItem.Despawn();
+            }
         }
 
         /// <summary>

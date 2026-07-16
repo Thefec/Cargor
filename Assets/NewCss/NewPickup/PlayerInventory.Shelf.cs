@@ -481,8 +481,8 @@ public partial class PlayerInventory : NetworkBehaviour
             var shelf = collider.GetComponent<ShelfState>();
             if (shelf == null) continue;
 
-            // ✅ ÖNEMLİ: IsPlayerInRange kontrolü
-            if (!shelf.IsPlayerInRange(playerTransform))
+            // ✅ ÖNEMLİ: IsPlayerInRange kontrolü (detectionRange fallback ile hizalanmış)
+            if (!shelf.IsPlayerInRange(playerTransform, detectionRange))
             {
                 Debug.Log($"[PlayerInventory] Shelf {shelf.name} found but player NOT in range");
                 continue;
@@ -553,8 +553,12 @@ public partial class PlayerInventory : NetworkBehaviour
         ResetProcessingInteractionForClientRpc(clientId);
     }
 
+    /// <summary>
+    /// internal: Table.cs gibi diğer server-side sınıfların, kendi validasyon reddi sonrasında
+    /// client'ın _isProcessingInteraction kilidini cooldown timer'ı beklemeden sıfırlayabilmesi için.
+    /// </summary>
     [ClientRpc]
-    private void ResetProcessingInteractionForClientRpc(ulong targetClientId)
+    internal void ResetProcessingInteractionForClientRpc(ulong targetClientId)
     {
         if (NetworkManager.Singleton.LocalClientId == targetClientId)
         {
