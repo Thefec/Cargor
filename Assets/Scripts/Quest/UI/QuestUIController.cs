@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -22,6 +23,9 @@ namespace NewCss.Quest
         private const string TRIGGER_OPEN = "Open";
         private const string TRIGGER_CLOSE = "Close";
 
+        private const string LOC_KEY_ACCEPT_REJECTED = "Quest_AlreadyAcceptedToday";
+        private const float FEEDBACK_DISPLAY_DURATION = 2.5f;
+
         #endregion
 
         #region Serialized Fields
@@ -41,6 +45,10 @@ namespace NewCss.Quest
         [SerializeField, Tooltip("Kapat butonu")]
         private Button closeButton;
 
+        [Header("=== FEEDBACK ===")]
+        [SerializeField, Tooltip("Günlük kabul limiti gibi red mesajlarının gösterildiği kısa süreli metin alanı (opsiyonel)")]
+        private TMP_Text feedbackText;
+
         [Header("=== DEBUG ===")]
         [SerializeField, Tooltip("Debug loglarını göster")]
         private bool showDebugLogs = true;
@@ -56,6 +64,8 @@ namespace NewCss.Quest
         // Cached animation durations
         private float _cachedOpenDuration = -1f;
         private float _cachedCloseDuration = -1f;
+
+        private Coroutine _feedbackCoroutine;
 
         #endregion
 
@@ -162,6 +172,7 @@ namespace NewCss.Quest
             QuestManager.OnQuestsAssigned += RefreshAllSlots;
             QuestManager.OnQuestProgressUpdated += HandleQuestProgressUpdated;
             QuestManager.OnQuestStatusChanged += HandleQuestStatusChanged;
+            QuestManager.OnAcceptRejectedLocal += HandleAcceptRejectedLocal;
         }
 
         private void UnsubscribeFromQuestEvents()
@@ -169,6 +180,7 @@ namespace NewCss.Quest
             QuestManager.OnQuestsAssigned -= RefreshAllSlots;
             QuestManager.OnQuestProgressUpdated -= HandleQuestProgressUpdated;
             QuestManager.OnQuestStatusChanged -= HandleQuestStatusChanged;
+            QuestManager.OnAcceptRejectedLocal -= HandleAcceptRejectedLocal;
         }
 
         #endregion
@@ -183,6 +195,40 @@ namespace NewCss.Quest
         private void HandleQuestStatusChanged(string questId, QuestStatus status)
         {
             RefreshAllSlots();
+        }
+
+        /// <summary>
+        /// Sunucu günlük kabul limiti nedeniyle bir accept isteğini reddettiğinde (sadece bu client'ta) tetiklenir.
+        /// Basit, kısa süreli bir geri bildirim metni gösterir.
+        /// </summary>
+        private void HandleAcceptRejectedLocal()
+        {
+            if (feedbackText == null)
+            {
+                LogDebug("Accept rejected (already accepted today) - feedbackText not assigned, skipping visual feedback");
+                return;
+            }
+
+            feedbackText.text = LocalizationHelper.GetLocalizedString(LOC_KEY_ACCEPT_REJECTED);
+
+            if (_feedbackCoroutine != null)
+            {
+                StopCoroutine(_feedbackCoroutine);
+            }
+
+            _feedbackCoroutine = StartCoroutine(ClearFeedbackAfterDelay());
+        }
+
+        private IEnumerator ClearFeedbackAfterDelay()
+        {
+            yield return new WaitForSeconds(FEEDBACK_DISPLAY_DURATION);
+
+            if (feedbackText != null)
+            {
+                feedbackText.text = "";
+            }
+
+            _feedbackCoroutine = null;
         }
 
         #endregion

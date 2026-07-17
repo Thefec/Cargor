@@ -294,10 +294,14 @@ namespace NewCss.Quest
             bool canAccept = _currentProgress.status == QuestStatus.Available;
             bool canCollect = _currentProgress.status == QuestStatus.Completed;
 
+            // Günlük kabul limiti dolduysa (başka bir slottan görev alındıysa) buton görünür
+            // kalır ama tıklanamaz + gri görünür (Selectable.interactable=false -> disabledColor).
+            bool hasAcceptedToday = QuestManager.Instance != null && QuestManager.Instance.HasAcceptedQuestTodayClient;
+
             if (acceptButton != null)
             {
                 acceptButton.gameObject.SetActive(canAccept);
-                acceptButton.interactable = canAccept;
+                acceptButton.interactable = canAccept && !hasAcceptedToday;
             }
 
             if (collectButton != null)

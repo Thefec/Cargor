@@ -538,6 +538,10 @@ MonoBehaviour:
     m_Localized: '{0} oyuncak paketle'
     m_Metadata:
       m_Items: []
+  - m_Id: 30570000000000107
+    m_Localized: Bugün zaten bir görev aldın
+    m_Metadata:
+      m_Items: []
   - m_Id: 30570000000000084
     m_Localized: Kapasite 0
     m_Metadata:

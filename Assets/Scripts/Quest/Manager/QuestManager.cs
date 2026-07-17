@@ -41,6 +41,12 @@ namespace NewCss.Quest
         /// </summary>
         public static event Action<string, int, int> OnQuestProgressUpdated;
 
+        /// <summary>
+        /// Görev kabul isteği server tarafından reddedildiğinde (günlük limit doldu) sadece
+        /// isteği yapan client'ta tetiklenir. UI bu event ile "zaten kabul ettin" geri bildirimi verebilir.
+        /// </summary>
+        public static event Action OnAcceptRejectedLocal;
+
         #endregion
 
         #region Serialized Fields
@@ -59,6 +65,13 @@ namespace NewCss.Quest
 
         private NetworkList<QuestProgress> _dailyQuests;
         private readonly NetworkVariable<int> _currentQuestTier = new(0);
+
+        /// <summary>
+        /// Bugün bir görev kabul edilip edilmediğini client'lara görünür kılar (writePerm: Server, default).
+        /// HasAcceptedQuestToday() ile tutarlı tutulur: yalnızca AcceptQuestInternal'in başarı yolunda true olur,
+        /// yeni gün atamasında (AssignDailyQuests) false'a döner.
+        /// </summary>
+        private readonly NetworkVariable<bool> _hasAcceptedToday = new(false);
 
         #endregion
 
@@ -80,6 +93,12 @@ namespace NewCss.Quest
         /// Günlük görev sayısı
         /// </summary>
         public int DailyQuestCount => _dailyQuests?.Count ?? 0;
+
+        /// <summary>
+        /// Bugün bir görev kabul edilip edilmediği (client-görünür, server-authoritative NV'den okunur).
+        /// R2b UI bunu kullanarak "kabul et" butonunu devre dışı bırakabilir / durum gösterebilir.
+        /// </summary>
+        public bool HasAcceptedQuestTodayClient => _hasAcceptedToday.Value;
 
         #endregion
 
@@ -177,6 +196,7 @@ namespace NewCss.Quest
         {
             _dailyQuests.OnListChanged += HandleDailyQuestsChanged;
             _currentQuestTier.OnValueChanged += HandleQuestTierChanged;
+            _hasAcceptedToday.OnValueChanged += HandleHasAcceptedTodayChanged;
         }
 
         private void UnsubscribeFromNetworkEvents()
@@ -187,6 +207,7 @@ namespace NewCss.Quest
             }
 
             _currentQuestTier.OnValueChanged -= HandleQuestTierChanged;
+            _hasAcceptedToday.OnValueChanged -= HandleHasAcceptedTodayChanged;
         }
 
         private void SubscribeToDayCycleEvents()
@@ -257,6 +278,15 @@ namespace NewCss.Quest
         private void HandleQuestTierChanged(int previousValue, int newValue)
         {
             LogDebug($"Quest tier changed: {previousValue} -> {newValue}");
+        }
+
+        /// <summary>
+        /// Günlük kabul limiti (_hasAcceptedToday) değiştiğinde mevcut UI-refresh event'ini tetikler.
+        /// Böylece bir slot kabul edildiğinde diğer slotlardaki accept butonları anında grileşir.
+        /// </summary>
+        private void HandleHasAcceptedTodayChanged(bool previousValue, bool newValue)
+        {
+            OnQuestsAssigned?.Invoke();
         }
 
         private void HandleNewDay()
@@ -336,6 +366,9 @@ namespace NewCss.Quest
 
             // Clear existing quests
             _dailyQuests.Clear();
+
+            // Yeni gün -> günlük kabul limiti sıfırlanır
+            _hasAcceptedToday.Value = false;
 
             // Get available quests based on tier
             var availableQuests = GetAvailableQuestsForTier();
@@ -458,7 +491,8 @@ namespace NewCss.Quest
                 return;
             }
 
-            AcceptQuestInternal(slotIndex);
+            // Host durumu: server ve client aynı süreçte, istek sahibi host'un kendisi
+            AcceptQuestInternal(slotIndex, NetworkManager.LocalClientId);
         }
 
         /// <summary>
@@ -524,9 +558,10 @@ namespace NewCss.Quest
         #region Server RPCs
 
         [ServerRpc(RequireOwnership = false)]
-        private void AcceptQuestServerRpc(int slotIndex)
+        private void AcceptQuestServerRpc(int slotIndex, ServerRpcParams rpcParams = default)
         {
-            AcceptQuestInternal(slotIndex);
+            // SenderClientId ServerRpcParams'tan alınır - client tarafından spoof edilemez
+            AcceptQuestInternal(slotIndex, rpcParams.Receive.SenderClientId);
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -545,7 +580,7 @@ namespace NewCss.Quest
 
         #region Internal Methods
 
-        private void AcceptQuestInternal(int slotIndex)
+        private void AcceptQuestInternal(int slotIndex, ulong requesterClientId)
         {
             if (slotIndex < 0 || slotIndex >= _dailyQuests.Count) return;
 
@@ -557,13 +592,38 @@ namespace NewCss.Quest
             if (HasAcceptedQuestToday())
             {
                 LogDebug("Already accepted a quest today - limit is 1 per day");
+                NotifyAcceptRejectedClientRpc(BuildTargetedClientRpcParams(requesterClientId));
                 return;
             }
 
             progress.status = QuestStatus.Active;
             _dailyQuests[slotIndex] = progress;
+            _hasAcceptedToday.Value = true;
 
             LogDebug($"Quest accepted: {progress.questId}");
+        }
+
+        /// <summary>
+        /// Yalnızca isteği yapan client'ı hedefleyen ClientRpcParams üretir (broadcast değil).
+        /// </summary>
+        private static ClientRpcParams BuildTargetedClientRpcParams(ulong clientId)
+        {
+            return new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams
+                {
+                    TargetClientIds = new ulong[] { clientId }
+                }
+            };
+        }
+
+        /// <summary>
+        /// Günlük limit nedeniyle reddedilen kabul isteğini yalnızca istek sahibi client'a bildirir.
+        /// </summary>
+        [ClientRpc]
+        private void NotifyAcceptRejectedClientRpc(ClientRpcParams clientRpcParams = default)
+        {
+            OnAcceptRejectedLocal?.Invoke();
         }
 
         /// <summary>

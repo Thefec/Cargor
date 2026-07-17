@@ -535,6 +535,10 @@ MonoBehaviour:
     m_Key: Quest_PackToy
     m_Metadata:
       m_Items: []
+  - m_Id: 30570000000000107
+    m_Key: Quest_AlreadyAcceptedToday
+    m_Metadata:
+      m_Items: []
   - m_Id: 30570000000000084
     m_Key: Upgrade_MoreCapacityNone
     m_Metadata:

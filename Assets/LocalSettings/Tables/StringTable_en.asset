@@ -540,6 +540,10 @@ MonoBehaviour:
     m_Localized: Pack {0} toys
     m_Metadata:
       m_Items: []
+  - m_Id: 30570000000000107
+    m_Localized: You already accepted a quest today
+    m_Metadata:
+      m_Items: []
   - m_Id: 30570000000000084
     m_Localized: Capacity 0
     m_Metadata:
