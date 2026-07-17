@@ -16,7 +16,7 @@ MonoBehaviour:
   questTitle: "Se\xE7ici Paket Canavar\u0131"
   questDescription: "5 k\u0131rm\u0131z\u0131 kutu paketle"
   tier: 0
-  questType: 0
+  questType: 3
   requirement:
     targetCount: 5
     requireSpecificBoxType: 1
