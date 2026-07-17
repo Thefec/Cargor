@@ -5,6 +5,19 @@ metadata:
   type: project
 ---
 
+> ✅ **UYGULANDI + DOĞRULANDI (2026-07-18):** `PrestigeManager.cs:19` `maxPrestige=150f` ve satır 167
+> `Mathf.Clamp(newPrestige, 0f, maxPrestige)` artık GERÇEK/CANLI kodda var (bu kayıttaki karar
+> uygulanmış). AMA 2026-07-18 turunda (`plans/economy-audit-2026-07-17.md` §2) tavan-dolma günleri
+> BURADAKİ tablodan FARKLI çıktı: **4P gün8, 3P gün9, 2P gün11, 1P gün14** (aşağıdaki tablo: 4P gün15,
+> 3P/2P hiç dolmuyor). Fark bug değil, **metodoloji düzeltmesi**: bu kayıttaki sim (ve 2026-07-13
+> denetimi) `customerServedPrestigeBonus`'u `correctDeliveries` (tır-teslim sayısı, tır-kapasitesine
+> tabi) üzerinden veriyordu. 2026-07-18'de gerçek kod okunarak (`Truck.cs`'de bu bonusa hiç referans
+> yok — CustomerAI akışından geliyor) prestij artık tır tavanından BAĞIMSIZ `demandAdjusted`
+> (müşteri-servis) üzerinden veriliyor → daha hızlı büyüyor → tavana daha erken çarpıyor. Yeni
+> analiz "2P/3P/4P hedeften (gün~14) erken tavana çarpıyor" sonucuna vardı — 2026-07-18 turunda
+> DEĞİŞTİRİLMEDİ (yalnız modellendi/raporlandı), ayrı bir takip turu önerildi. Detay:
+> [[truck_hangar_window_cap]], `plans/economy-audit-2026-07-17.md` §2.
+
 2026-07-14 bulgusu + karar. `economy-audit-2026-07-13.md` §1'in "3-4P'de prestij gün 9-13'te 100 tavanına donuyor" bulgusu **yanlış kod yoluna dayanıyordu**: o rapor Node.js sim'i `GameEconomySettings.RunSimulation()`'ı (editör-only debug context-menu aracı, `GameEconomySettings.cs:216` `prestige = Mathf.Clamp(prestige, 0f, 100f)`) birebir taklit etmişti. **Gerçek networked yol** (`PrestigeManager.ModifyPrestigeServerRpc`, satır 149-161) prestiji **hiç kırpmıyor** — sadece `<=0` kontrolüyle oyunu bitiriyor, üst sınır YOK. Bu daha önce [[roguelite_perk_pricing]] hafızasında da not edilmişti (Prestij Simsarı fiyatlaması bağlamında) ama bugüne kadar "prestij tavanı" pacing kararına bu çelişki taşınmamıştı.
 
 Yani şu an CANLI OYUNDA: `GDD.md:338`'in belgelediği "Maksimum prestij: 100" **hiçbir zaman uygulanmamış bir tasarım niyeti**, gerçek kod bunu hiç zorlamıyor → 3-4P grupları teorik olarak prestiji sınırsız büyütüp `Truck.cs:626-627`'deki kutu-başı ödül tier'ını (`prestigePerBonus=10, bonusPerTier=5`) sınırsız şişirebilir. Bu, "donma" değil **sınırsız geç-oyun enflasyonu** riski — önceki teşhisten daha ciddi bir bug.

@@ -8,8 +8,10 @@
 - [Upgrade çift sistem çakışması](upgrade_dual_system.md) — ✅ÇÖZÜLDÜ (479dbf0): Yol B (ItemType/UpgradeAssets/UpgradeManager) silindi, tek sistem UpgradePanel kaldı (tarihsel kayıt)
 - [Upgrade fiyatlandırma çerçevesi](upgrade_pricing_framework.md) — 7 upgrade karakterine göre farklı payback hedefi (1.4-3.2 gün); v2'de gerçek maxLevel'e göre revize, bkz. UPGRADE_PRICING_REPORT.md v2
 - [Roguelite perk fiyatlandırma v3.2 ONAY](roguelite_perk_pricing.md) — T3 gate gün≥9, Ucuz Kira tablo, Raf doğrusal, Prestij Simsarı fiyat+etki düzeltildi (18x→2.5x), toplam 9945 TL
-- [FAZ2 kota-verim kalibrasyonu](quota_throughput_calibration.md) — C1 aktivasyonu playtest verisi olmadan ÖNERİLMEZ; ~4-6 kutu/dk eşiği, detay plans/economy-audit-2026-07-13.md
+- [FAZ2 kota-verim kalibrasyonu](quota_throughput_calibration.md) — ⚠️GÜNCEL DEĞİL: QuotaManager.cs TAMAMEN SİLİNDİ (0c026ef, 2026-07-14), C1 konusu kapandı, aktivasyon önerme
 - [FAZ2 wealthTax kırık kablolama](wealthtax_broken_wiring.md) — ✅ÇÖZÜLDÜ (Seçenek A, 9d2c3b0): wealthTax terimi kira formülünden tamamen kaldırıldı + ölü Yol B silindi (479dbf0)
 - [Kutu düşme cezası merkezileştirme](box_drop_penalty_centralization.md) — boxDropMoneyPenalty=5 (tek değer, kutu/ürün ayrımı yok), wrongDeliveryPrestigePenalty=-0.2 onay, Truck penaltyPerBox default 60→40
 - [Telefon pasif/reaktif yeniden tasarım](phone_passive_redesign.md) — saatte %30 çalar (event ×1.5), açınca +20TL+0.5 prestij cezasız; eski timeSkip/maxCallsPerHour/cooldown kaldır
-- [Prestij tavanı bug + düzeltme](prestige_cap_bug_and_fix.md) — gerçek kodda maxPrestige clamp HİÇ YOK (GDD'nin 100'ü uygulanmıyor); yeni clamp eklenip 150 yapılması kararı, 1P/2P etkilenmiyor
+- [Prestij tavanı bug + düzeltme](prestige_cap_bug_and_fix.md) — ✅UYGULANDI (doğrulandı 2026-07-18): maxPrestige=150 canlı kodda; 2026-07-18'de tavan-dolma günleri metodoloji düzeltmesiyle değişti (bkz not)
+- [Tır/hangar penceresi tavanı](truck_hangar_window_cap.md) — YENİ (2026-07-18): hangarStayDuration=30s ekonominin en yüklü kaldıracı çıktı; hangar sayısı (1vs2) OPTIMISTIC modelde önemsiz, asıl darboğaz tır-saati/gün-uzunluğu oranı
+- [Quest ödül dengesi (EV mekaniği + easy3 fix)](quest_reward_balance.md) — pick-2-of-n EV formülü; easy3 180TL→30TL EV düzeltmesi UYGULANDI (2026-07-18), easy1/2 değişmedi
