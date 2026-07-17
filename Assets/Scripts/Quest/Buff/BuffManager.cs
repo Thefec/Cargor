@@ -179,6 +179,12 @@ namespace NewCss.Quest
 
                 case NetworkListEvent<BuffData>.EventType.Value:
                     OnBuffUpdated?.Invoke(changeEvent.Value);
+                    // Stacking: Add ilk effect'i uyguladi; burada yalniz artan delta kadar ek uygula.
+                    var stackDelta = new BuffData(
+                        changeEvent.Value.buffType,
+                        changeEvent.Value.amount - changeEvent.PreviousValue.amount,
+                        changeEvent.Value.remainingDays);
+                    ApplyBuffEffect(stackDelta);
                     break;
             }
         }
