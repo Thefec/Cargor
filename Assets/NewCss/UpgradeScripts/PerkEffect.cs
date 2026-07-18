@@ -92,11 +92,13 @@ namespace NewCss
             ctx.Economy.customerServedPrestigeBonus = 0.5f + 0.15f * level;
         }
 
-        // Hızlı Hangar (relic): hangarStayDuration 120 → 156 (+%30)
+        // Hızlı Hangar (relic): hangarStayDuration taban(Economy.hangarStayDuration) × 1.30.
+        // Not: Eskiden 120f hardcode tabandan hesaplanıyordu (canlı taban Economy.hangarStayDuration=30
+        // ile uyumsuz, bug); diğer Apply* metodları gibi Economy'den okunacak şekilde düzeltildi.
         private static void ApplyFastHangar(int level, PerkContext ctx)
         {
-            if (ctx.Truck == null || level <= 0) return;
-            ctx.Truck.hangarStayDuration = 120f * 1.30f;
+            if (ctx.Truck == null || ctx.Economy == null || level <= 0) return;
+            ctx.Truck.hangarStayDuration = ctx.Economy.hangarStayDuration * 1.30f;
         }
 
         // Enerjik Ekip (relic): staminaRegenRate 1 → 2.5 (mevcut mekaniğe bağlanış, ekonomik değer değil)

@@ -347,7 +347,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000036
-    m_Localized: "Kamyon hareket h\u0131z\u0131 %20 azal\u0131r."
+    m_Localized: "Kamyonlar sahneyi %50 daha yava\u015f terk eder."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000037
@@ -355,7 +355,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000038
-    m_Localized: "Genel hareket h\u0131z\u0131 %10 yava\u015Flar."
+    m_Localized: "Genel hareket h\u0131z\u0131 %20 yava\u015Flar."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000039
@@ -363,7 +363,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000040
-    m_Localized: "Dayan\u0131kl\u0131l\u0131k yenileme s\xFCresi %30 artar."
+    m_Localized: "Dayan\u0131kl\u0131l\u0131k %40 daha yava\u015f yenilenir ve ko\u015fu h\u0131z\u0131 %30 azal\u0131r."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000041
@@ -403,7 +403,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000050
-    m_Localized: "M\xFC\u015Fteri sabr\u0131 %10 artar."
+    m_Localized: "M\xFC\u015Fteri sabr\u0131 %30 artar."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000051
@@ -411,7 +411,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000052
-    m_Localized: "Kamyonlar sahneyi %10 daha h\u0131zl\u0131 terk eder."
+    m_Localized: "Kamyonlar sahneyi %30 daha h\u0131zl\u0131 terk eder."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000053
@@ -419,7 +419,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000054
-    m_Localized: "Do\u011Fru teslim edilen her kutu %5 ekstra kazan\u0131r."
+    m_Localized: "Do\u011Fru teslim edilen her kutu %30 ekstra kazan\u0131r. Ayr\u0131ca %20 daha fazla m\xFC\u015Fteri gelir, kamyonlar %20 daha h\u0131zl\u0131 \xE7\u0131kar ve hareket h\u0131z\u0131 %20 artar, ancak dayan\u0131kl\u0131l\u0131k %20 daha yava\u015F yenilenir."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000055
@@ -427,7 +427,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000056
-    m_Localized: "Y\xFCkseltme maliyetleri %10 azal\u0131r."
+    m_Localized: "Y\xFCkseltme maliyetleri %20 azal\u0131r."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000057

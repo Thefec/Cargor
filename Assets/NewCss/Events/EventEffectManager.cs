@@ -392,14 +392,27 @@ namespace NewCss
         /// <summary>
         /// FESTIVAL DAY etkinliğinde gün başında bir kez rastgele para bonusu verir.
         /// Yalnızca server çağırır (MoneySystem server-authoritative).
+        /// economist FAZ2 önerisi: bonus sabit değil, o anki kiranın %10-%20'si (kira dönemle
+        /// büyüdükçe bonus da ölçeklensin). currentRent alınamazsa (DayCycleManager.Instance null)
+        /// eski sabit min/max davranışına düşülür.
         /// </summary>
         private void ApplyFestivalBonus()
         {
             if (!IsServer || MoneySystem.Instance == null) return;
 
-            int min = _economySettings != null ? _economySettings.festivalBonusMin : 100;
-            int max = _economySettings != null ? _economySettings.festivalBonusMax : 300;
-            int bonus = Random.Range(min, max + 1); // üst sınır dahil
+            int bonus;
+            if (DayCycleManager.Instance != null)
+            {
+                int currentRent = DayCycleManager.Instance.GetCurrentRentAmount();
+                bonus = Mathf.RoundToInt(Random.Range(currentRent * 0.10f, currentRent * 0.20f));
+            }
+            else
+            {
+                // Fallback: DayCycleManager erişilemiyorsa eski sabit değerler
+                int min = _economySettings != null ? _economySettings.festivalBonusMin : 100;
+                int max = _economySettings != null ? _economySettings.festivalBonusMax : 300;
+                bonus = Random.Range(min, max + 1); // üst sınır dahil
+            }
 
             MoneySystem.Instance.AddMoney(bonus);
             Debug.Log($"[EventEffectManager] FESTIVAL DAY bonusu: +{bonus} TL");

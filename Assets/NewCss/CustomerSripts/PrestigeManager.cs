@@ -15,8 +15,8 @@ public class PrestigeManager : NetworkBehaviour
     [Tooltip("Initial prestige value")]
     public float startingPrestige = 15f;
 
-    [Tooltip("Maximum prestige (üst tavan). Kutu-başı ödül tier'ının sınırsız şişmesini önler. GDD 100 diyordu ama uygulanmıyordu; economist önerisi 150.")]
-    public float maxPrestige = 150f;
+    [Tooltip("Maximum prestige (üst tavan). Kutu-başı ödül tier'ının sınırsız şişmesini önler. GDD 100 diyordu ama uygulanmıyordu; economist FAZ2 önerisi 240 (pacing/upgrade turu, bkz. plans/economy-balance-round.md).")]
+    public float maxPrestige = 240f;
 
     [Tooltip("UI Text displaying the prestige value")]
     public TMP_Text prestigeText;

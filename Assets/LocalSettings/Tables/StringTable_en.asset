@@ -349,7 +349,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000036
-    m_Localized: Truck movement speed decreases by 20%.
+    m_Localized: Trucks leave the scene 50% slower.
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000037
@@ -357,7 +357,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000038
-    m_Localized: Overall movement speed slows down by 10%.
+    m_Localized: Overall movement speed slows down by 20%.
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000039
@@ -365,7 +365,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000040
-    m_Localized: Stamina regeneration time increases by 30%.
+    m_Localized: Stamina regenerates 40% slower and sprint speed decreases by 30%.
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000041
@@ -405,7 +405,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000050
-    m_Localized: Customer patience increases by 10%.
+    m_Localized: Customer patience increases by 30%.
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000051
@@ -413,7 +413,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000052
-    m_Localized: Trucks leave the scene 10% faster.
+    m_Localized: Trucks leave the scene 30% faster.
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000053
@@ -421,7 +421,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000054
-    m_Localized: Each correct delivered box earns extra 5%.
+    m_Localized: Each correct delivered box earns extra 30%. Also brings 20% more customers, 20% faster truck exits and 20% faster movement, but stamina regenerates 20% slower.
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000055
@@ -429,7 +429,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000056
-    m_Localized: Upgrade costs decrease by 10%.
+    m_Localized: Upgrade costs decrease by 20%.
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000057

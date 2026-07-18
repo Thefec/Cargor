@@ -603,6 +603,13 @@ namespace NewCss
         }
 
         /// <summary>
+        /// Dış sistemler (örn. EventEffectManager/FESTIVAL DAY) için o anki kira döngüsüne göre
+        /// hesaplanan güncel kira miktarını döndürür (henüz ödenmemiş/gerçekleşmemiş olsa bile).
+        /// Server-authoritative değildir salt-okunur bir hesaplamadır; CalculateRent() ile aynı formülü kullanır.
+        /// </summary>
+        public int GetCurrentRentAmount() => CalculateRent();
+
+        /// <summary>
         /// Kira hesabı için oyuncu sayısını döndürür.
         /// Tek doğruluk kaynağı server-authoritative roster'dır (GameStateManager._playerRoster,
         /// Break Room / Win-Lose ekranlarının da okuduğu kaynak). ConnectedClientsList anlık
