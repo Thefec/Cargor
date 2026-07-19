@@ -15,12 +15,21 @@ namespace NewCss.Quest
         public int currentProgress;
         public int targetProgress;
 
-        public QuestProgress(string id, int target)
+        /// <summary>
+        /// F9 fix: server'ın bu quest ataması için ürettiği deterministik reroll seed'i.
+        /// Client, QuestData.RerollSelection(rewardSeed) çağırarak server ile birebir aynı ödül/ceza
+        /// seçimini üretir (bkz. QuestManager.GetQuestData). NetworkList replikasyonu ile late-join'de
+        /// de otomatik doğru gelir.
+        /// </summary>
+        public int rewardSeed;
+
+        public QuestProgress(string id, int target, int seed)
         {
             questId = id;
             status = QuestStatus.Available;
             currentProgress = 0;
             targetProgress = target;
+            rewardSeed = seed;
         }
 
         /// <summary>
@@ -44,6 +53,7 @@ namespace NewCss.Quest
             serializer.SerializeValue(ref status);
             serializer.SerializeValue(ref currentProgress);
             serializer.SerializeValue(ref targetProgress);
+            serializer.SerializeValue(ref rewardSeed);
         }
 
         public bool Equals(QuestProgress other)
@@ -51,11 +61,12 @@ namespace NewCss.Quest
             return questId.Equals(other.questId) &&
                    status == other.status &&
                    currentProgress == other.currentProgress &&
-                   targetProgress == other.targetProgress;
+                   targetProgress == other.targetProgress &&
+                   rewardSeed == other.rewardSeed;
         }
 
         public override bool Equals(object obj) => obj is QuestProgress other && Equals(other);
-        public override int GetHashCode() => HashCode.Combine(questId.GetHashCode(), (int)status, currentProgress, targetProgress);
+        public override int GetHashCode() => HashCode.Combine(questId.GetHashCode(), (int)status, currentProgress, targetProgress, rewardSeed);
         public static bool operator ==(QuestProgress left, QuestProgress right) => left.Equals(right);
         public static bool operator !=(QuestProgress left, QuestProgress right) => !left.Equals(right);
     }

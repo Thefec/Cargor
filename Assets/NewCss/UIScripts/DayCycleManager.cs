@@ -339,7 +339,6 @@ namespace NewCss
             _networkElapsedTime.OnValueChanged += HandleElapsedTimeChanged;
             _networkCurrentDay.OnValueChanged += HandleCurrentDayChanged;
             _networkIsDayOver.OnValueChanged += HandleDayOverChanged;
-            _networkIsBreakRoomReady.OnValueChanged += HandleBreakRoomReadyChanged;
         }
 
         private void UnsubscribeFromNetworkEvents()
@@ -347,7 +346,6 @@ namespace NewCss
             _networkElapsedTime.OnValueChanged -= HandleElapsedTimeChanged;
             _networkCurrentDay.OnValueChanged -= HandleCurrentDayChanged;
             _networkIsDayOver.OnValueChanged -= HandleDayOverChanged;
-            _networkIsBreakRoomReady.OnValueChanged -= HandleBreakRoomReadyChanged;
         }
 
         #endregion
@@ -674,6 +672,36 @@ namespace NewCss
         {
             if (!IsServer) return;
 
+            // Kazanma kontrolü tüm NetworkVariable mutasyonlarından ÖNCE: eski akış günü
+            // ilerletip süreyi sıfırladıktan SONRA kazanmayı yakalıyordu — sayaç/saat
+            // değişiklikleri tüm peer'lara replike oluyor ve currentDay'i poll'layan
+            // sistemler (örn. GarageDoorController.ResetDailyFlags) zafer ekranında
+            // tepki veriyordu. Ulaşılacak gün değeri CheckWinCondition'a parametre
+            // geçilir (tetiklenme eşiği/zamanlaması değişmedi); kazanma tetiklenirse
+            // hiçbir gün-durumu yazılmadan çıkılır. _gameOverStopProcessing kaybetme
+            // yolundaki gibi Update()'in tekrar girmesini keser.
+            int upcomingDay = _networkCurrentDay.Value + 1;
+            if (upcomingDay >= MAX_DAYS)
+            {
+                Debug.Log($"{LOG_PREFIX} Completed day {MAX_DAYS}! Checking win condition...");
+                CheckWinCondition(upcomingDay);
+
+                if (GameStateManager.Instance != null && GameStateManager.Instance.GameEnded)
+                {
+                    _gameOverStopProcessing = true;
+
+                    // Gün-sonu paneli normal akışta metodun sonundaki HideDayEndScreenClientRpc
+                    // ile kapanır; win erken-çıkışı o satıra ulaşmadığından panel tüm
+                    // client'larda zafer ekranının altında açık kalıyordu. Yalnızca panel
+                    // gizlenir — OnNewDay/TriggerNewDayEventClientRpc gibi "yeni gün" olayları
+                    // bilinçli olarak tetiklenmez.
+                    HideDayEndScreenClientRpc();
+
+                    Debug.Log($"{LOG_PREFIX} Game won — no day-state mutation, no Day {upcomingDay} start.");
+                    return;
+                }
+            }
+
             // Zaman ve gün sayacını güncelle
             _networkElapsedTime.Value = 0f;
             _networkCurrentDay.Value++;
@@ -687,13 +715,6 @@ namespace NewCss
             _networkIsDayOver.Value = false;
             _networkIsBreakRoomReady.Value = false;
 
-            // Check win condition after completing day (when moving to next day after day 16)
-            if (_networkCurrentDay.Value >= MAX_DAYS)
-            {
-                Debug.Log($"{LOG_PREFIX} Completed day {MAX_DAYS}! Checking win condition...");
-                CheckWinCondition();
-            }
-
             // Event'leri tetikle
             OnNewDay?.Invoke();
             TriggerNewDayEventClientRpc();
@@ -706,11 +727,11 @@ namespace NewCss
             UpdateBreakRoomPlayerCount();
         }
 
-        private void CheckWinCondition()
+        private void CheckWinCondition(int completedDay)
         {
             if (GameStateManager.Instance != null)
             {
-                GameStateManager.Instance.CheckWinCondition();
+                GameStateManager.Instance.CheckWinCondition(completedDay);
             }
         }
 
@@ -859,11 +880,6 @@ namespace NewCss
         private void HandleDayOverChanged(bool previousValue, bool newValue)
         {
             SetDayEndScreenActive(newValue);
-        }
-
-        private void HandleBreakRoomReadyChanged(bool previousValue, bool newValue)
-        {
-            // Gerekirse burada ek işlem yapılabilir
         }
 
         #endregion

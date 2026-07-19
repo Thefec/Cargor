@@ -3,8 +3,8 @@ using UnityEngine;
 namespace NewCss
 {
     /// <summary>
-    /// TutorialTruck için trigger collision handler. 
-    /// Item'larýn truck'a teslim edilmesini algýlar.
+    /// TutorialTruck iï¿½in trigger collision handler. 
+    /// Item'larï¿½n truck'a teslim edilmesini algï¿½lar.
     /// </summary>
     public class TutorialTruckTrigger : MonoBehaviour
     {
@@ -25,16 +25,19 @@ namespace NewCss
 
         private void OnTriggerEnter(Collider other)
         {
-            if (tutorialTruck == null) return;
+            if (!CanProcessDelivery())
+            {
+                return;
+            }
 
-            // Hazýr deðilse iþleme
+            // Hazï¿½r deï¿½ilse iï¿½leme
             if (!tutorialTruck.IsReadyForDelivery)
             {
                 Debug.Log($"{LOG_PREFIX} Item entered but truck not ready - ignoring");
                 return;
             }
 
-            // NetworkWorldItem kontrolü
+            // NetworkWorldItem kontrolï¿½
             var worldItem = other.GetComponent<NetworkWorldItem>();
             if (worldItem == null)
             {
@@ -43,7 +46,7 @@ namespace NewCss
 
             if (worldItem == null) return;
 
-            // BoxInfo kontrolü
+            // BoxInfo kontrolï¿½
             var boxInfo = other.GetComponent<BoxInfo>();
             if (boxInfo == null)
             {
@@ -56,16 +59,35 @@ namespace NewCss
                 return;
             }
 
+            // Dolu olmayan kutular teslimat sayï¿½lmaz - ana TruckTrigger deseniyle hizalï¿½
+            if (!boxInfo.isFull)
+            {
+                Debug.Log($"{LOG_PREFIX} Box entered trigger but is not full - ignoring");
+                return;
+            }
+
             Debug.Log($"{LOG_PREFIX} Box entered trigger - Type: {boxInfo.boxType}, IsFull: {boxInfo.isFull}");
 
-            // Teslimatý iþle
-            tutorialTruck.HandleItemDelivery(boxInfo.boxType, boxInfo.isFull);
+            // Teslimatï¿½ iï¿½le
+            bool delivered = tutorialTruck.HandleItemDelivery(boxInfo.boxType, boxInfo.isFull);
 
-            // Item'ý despawn et
+            // Teslimat kabul edilmediyse (hazï¿½r deï¿½il / tamamlanmï¿½ï¿½ / ï¿½ï¿½kï¿½ï¿½ta) kutuyu yok etme
+            if (!delivered)
+            {
+                Debug.Log($"{LOG_PREFIX} Delivery not processed - box left intact");
+                return;
+            }
+
+            // Item'ï¿½ despawn et
             if (worldItem.NetworkObject != null && worldItem.NetworkObject.IsSpawned)
             {
                 worldItem.NetworkObject.Despawn();
             }
+        }
+
+        private bool CanProcessDelivery()
+        {
+            return tutorialTruck != null && tutorialTruck.IsServer;
         }
 
         #endregion

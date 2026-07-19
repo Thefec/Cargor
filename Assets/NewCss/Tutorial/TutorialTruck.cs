@@ -299,17 +299,20 @@ namespace NewCss
         #region Delivery Handling
 
         /// <summary>
-        /// TutorialTruckTrigger tarafından çağrılır
+        /// TutorialTruckTrigger tarafından çağrılır.
+        /// Dönüş değeri: teslimat işlendiyse (başarılı ya da yanlış-renk cezası uygulandıysa) true,
+        /// sessizce reddedildiyse (hazır değil / tamamlanmış / çıkışta / dolu değil) false.
+        /// Çağıran, kutuyu despawn edip etmeyeceğine bu değere göre karar verir.
         /// </summary>
-        public void HandleItemDelivery(BoxInfo.BoxType boxType, bool isFull)
+        public bool HandleItemDelivery(BoxInfo.BoxType boxType, bool isFull)
         {
             if (!IsServer)
             {
                 HandleDeliveryServerRpc(boxType, isFull);
-                return;
+                return false;
             }
 
-            ProcessDeliveryInternal(boxType, isFull);
+            return ProcessDeliveryInternal(boxType, isFull);
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -318,42 +321,45 @@ namespace NewCss
             ProcessDeliveryInternal(boxType, isFull);
         }
 
-        private void ProcessDeliveryInternal(BoxInfo.BoxType boxType, bool isFull)
+        private bool ProcessDeliveryInternal(BoxInfo.BoxType boxType, bool isFull)
         {
-            if (!IsServer) return;
+            if (!IsServer) return false;
 
             // Hazır değilse teslimat kabul etme
             if (!_isReadyForDelivery.Value)
             {
                 LogDebug("❌ Delivery rejected - Truck not ready!");
-                return;
+                return false;
             }
 
             // Zaten tamamlandıysa kabul etme
             if (_isDeliveryComplete.Value)
             {
                 LogDebug("❌ Delivery rejected - Already complete!");
-                return;
+                return false;
             }
 
             // Çıkış yapıyorsa kabul etme
             if (_isExiting.Value)
             {
                 LogDebug("❌ Delivery rejected - Truck is exiting!");
-                return;
+                return false;
             }
 
             if (isFull && boxType == requestedBoxType)
             {
                 ProcessSuccessfulDelivery(boxType);
+                return true;
             }
             else if (isFull)
             {
                 ProcessWrongDelivery(boxType);
+                return true;
             }
             else
             {
                 LogDebug("❌ Delivery rejected - Box is not full!");
+                return false;
             }
         }
 

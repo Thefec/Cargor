@@ -503,7 +503,7 @@ namespace NewCss.Quest
             var players = FindObjectsOfType<PlayerMovement>();
             foreach (var player in players)
             {
-                player.sprintDuration += amount;
+                ApplyMaxStaminaToPlayer(player, amount);
             }
         }
 
@@ -512,7 +512,7 @@ namespace NewCss.Quest
             var players = FindObjectsOfType<PlayerMovement>();
             foreach (var player in players)
             {
-                player.moveSpeed += amount;
+                ApplySpeedToPlayer(player, amount);
             }
         }
 
@@ -521,8 +521,26 @@ namespace NewCss.Quest
             var players = FindObjectsOfType<PlayerMovement>();
             foreach (var player in players)
             {
-                player.staminaRegenRate += amount;
+                ApplyStaminaRegenToPlayer(player, amount);
             }
+        }
+
+        // F10 fix: tek-objelik mutasyon burada toplanır - hem yukarıdaki FindObjectsOfType toplu uygulama
+        // hem de aşağıdaki ApplyActiveBuffsTo catch-up API'si AYNI metodları çağırır (mutasyon mantığı
+        // kopyalanmaz, tek kaynak).
+        private static void ApplyMaxStaminaToPlayer(PlayerMovement player, float amount)
+        {
+            player.sprintDuration += amount;
+        }
+
+        private static void ApplySpeedToPlayer(PlayerMovement player, float amount)
+        {
+            player.moveSpeed += amount;
+        }
+
+        private static void ApplyStaminaRegenToPlayer(PlayerMovement player, float amount)
+        {
+            player.staminaRegenRate += amount;
         }
 
         private void ApplyDayDurationBuff(float amount)
@@ -547,8 +565,91 @@ namespace NewCss.Quest
             var customers = FindObjectsOfType<CustomerAI>();
             foreach (var customer in customers)
             {
-                customer.minWaitTime += amount;
-                customer.maxWaitTime += amount;
+                ApplyCustomerWaitTimeToCustomer(customer, amount);
+            }
+        }
+
+        // F10 fix: bkz. yukarıdaki ApplyMaxStaminaToPlayer notu - tek kaynak, catch-up API tarafından da kullanılır.
+        private static void ApplyCustomerWaitTimeToCustomer(CustomerAI customer, float amount)
+        {
+            customer.minWaitTime += amount;
+            customer.maxWaitTime += amount;
+        }
+
+        #endregion
+
+        #region Catch-up API (F10 fix: late-join / sonradan spawn tüketicileri)
+
+        // GetInstanceID() kullanılıyor, NetworkObjectId DEĞİL: CustomerManager.SpawnCustomer,
+        // catch-up'ı networkObject.Spawn() ÇAĞRILMADAN ÖNCE tetikler (bkz. CustomerManager.cs) - o anda
+        // NetworkObjectId henüz atanmamış olur (0 döner, tüm henüz-spawn-edilmemiş objelerde çakışır).
+        // GetInstanceID() Instantiate anından itibaren her obje için garantili benzersizdir.
+        private readonly HashSet<int> _playerCatchupApplied = new HashSet<int>();
+        private readonly HashSet<int> _customerCatchupApplied = new HashSet<int>();
+
+        /// <summary>
+        /// F10 fix: buff verildiği anda sahnede olmayan (late-join oyuncusu ya da BuffManager senkronundan
+        /// sonra spawn olan oyuncu) bir PlayerMovement'a, o ana kadar birikmiş TÜM aktif kalıcı buff'ları
+        /// (MaxStamina/MoveSpeed/WalkSpeed/StaminaRegenRate/TempSpeedBoost) tek seferde uygular.
+        /// PlayerMovement.OnNetworkSpawn içinden çağrılır.
+        /// ÇİFT-UYGULAMA GUARD: aynı obje (GetInstanceID) için ikinci çağrı no-op'tur (HashSet.Add false
+        /// döner). Bu, olası bir NetworkList "geçmişi replay et" senaryosunda (bu NGO sürümünde olmuyor -
+        /// bkz. F10 bug raporu: late-join'de OnListChanged pre-existing kayıtlar için hiç tetiklenmiyor,
+        /// o yüzden gerçek çift-uygulama riski yok) veya bu metodun yanlışlıkla iki kez çağrılması
+        /// durumunda korumayı garantiler.
+        /// </summary>
+        public void ApplyActiveBuffsTo(PlayerMovement player)
+        {
+            if (player == null || _activeBuffs == null) return;
+            if (!_playerCatchupApplied.Add(player.GetInstanceID())) return;
+
+            for (int i = 0; i < _activeBuffs.Count; i++)
+            {
+                var buff = _activeBuffs[i];
+                if (!buff.isActive) continue;
+
+                switch (buff.buffType)
+                {
+                    case BuffType.MaxStamina:
+                        ApplyMaxStaminaToPlayer(player, buff.amount);
+                        break;
+
+                    case BuffType.MoveSpeed:
+                    case BuffType.WalkSpeed:
+                    case BuffType.TempSpeedBoost:
+                        ApplySpeedToPlayer(player, buff.amount);
+                        break;
+
+                    case BuffType.StaminaRegenRate:
+                        ApplyStaminaRegenToPlayer(player, buff.amount);
+                        break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// F10 fix: buff verildiği anda sahnede olmayan, sonradan spawn edilen bir CustomerAI'a o ana kadar
+        /// birikmiş TÜM aktif CustomerWaitTime buff'larını tek seferde uygular.
+        /// ÇAĞRI YERİ ÖNEMLİ: CustomerManager.SpawnCustomer içinde networkObject.Spawn() ÇAĞRILMADAN ÖNCE
+        /// çağrılmalıdır - CustomerAI.InitializeServerState, Spawn() sırasında senkron çalışan
+        /// OnNetworkSpawn içinden minWaitTime/maxWaitTime'ı okuyup _actualWaitTime'ı hesaplıyor; buff bu
+        /// okumadan önce uygulanmış olmalı, yoksa buff'lu süre geç kalan müşteriye yansımaz.
+        /// ÇİFT-UYGULAMA GUARD: bkz. ApplyActiveBuffsTo(PlayerMovement) - aynı mantık, GetInstanceID bazlı.
+        /// </summary>
+        public void ApplyActiveBuffsTo(CustomerAI customer)
+        {
+            if (customer == null || _activeBuffs == null) return;
+            if (!_customerCatchupApplied.Add(customer.GetInstanceID())) return;
+
+            for (int i = 0; i < _activeBuffs.Count; i++)
+            {
+                var buff = _activeBuffs[i];
+                if (!buff.isActive) continue;
+
+                if (buff.buffType == BuffType.CustomerWaitTime)
+                {
+                    ApplyCustomerWaitTimeToCustomer(customer, buff.amount);
+                }
             }
         }
 

@@ -647,16 +647,20 @@ namespace NewCss
         {
             if (!IsServer) return;
 
-            LogDebug($"📥 TakeItemFromShelfServerRpc - Client {requesterClientId} wants item {itemNetworkId}");
+            // Güvenlik: requesterClientId client tarafından sağlanıyor, spoof edilebilir.
+            // Gerçek çağıran her zaman ağ katmanının doğruladığı SenderClientId'dir.
+            ulong senderClientId = rpcParams.Receive.SenderClientId;
+
+            LogDebug($"📥 TakeItemFromShelfServerRpc - Client {senderClientId} wants item {itemNetworkId}");
 
             // Validation
-            if (!ValidateTakeItemRequest(requesterClientId, itemNetworkId, out PlayerInventory playerInventory, out int slotIndex))
+            if (!ValidateTakeItemRequest(senderClientId, itemNetworkId, out PlayerInventory playerInventory, out int slotIndex))
             {
                 return;
             }
 
             // Item'ı al
-            TakeItemFromSlot(slotIndex, playerInventory, requesterClientId);
+            TakeItemFromSlot(slotIndex, playerInventory, senderClientId);
         }
 
         private bool ValidateTakeItemRequest(ulong clientId, ulong itemNetworkId, out PlayerInventory playerInventory, out int slotIndex)
@@ -683,6 +687,14 @@ namespace NewCss
             if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out var client))
             {
                 LogDebug($"❌ Client {clientId} not found");
+                return false;
+            }
+
+            // F16 fix: PlayerObject henüz atanmamış olabilir (late-join/spawn timing) — null-check
+            // olmadan GetComponent çağrısı NRE fırlatırdı.
+            if (client.PlayerObject == null)
+            {
+                LogDebug($"❌ PlayerObject not assigned for client {clientId}");
                 return false;
             }
 

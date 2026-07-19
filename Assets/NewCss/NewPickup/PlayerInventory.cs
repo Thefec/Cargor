@@ -255,6 +255,40 @@ public partial class PlayerInventory : NetworkBehaviour
         CleanupServerLocks();
     }
 
+    // F13 fix: Oyuncu elinde item varken despawn olursa (disconnect, PlayerSpawner
+    // cleanup, NetworkManager.Shutdown → ExitToMenuCoroutine) item'ı sessizce kaybetmek
+    // yerine son pozisyonuna dünya objesi olarak geri koyuyoruz. Bu, PlayerSpawner'daki
+    // OnClientDisconnected/CleanupExistingPlayers/CleanupAndDestroy gibi TÜM despawn
+    // çağrı noktalarını tek yerden kapsar (PlayerSpawner'a dokunmadan).
+    public override void OnNetworkDespawn()
+    {
+        if (IsServer && _hasItem.Value)
+        {
+            TryReturnHeldItemToWorldOnDespawn();
+        }
+
+        base.OnNetworkDespawn();
+    }
+
+    /// <summary>
+    /// Elde tutulan item'ı, normal "bırak" akışıyla AYNI server-otoriter yolu
+    /// (SpawnWorldItemAtPosition, bkz. PlayerInventory.Visual.cs) kullanarak dünyaya
+    /// geri spawnlar. isFull/boxType/renk bu sayede korunur (G28 tuzağına düşülmez —
+    /// görsel kopyadan değil, worldItemPrefab'ın server-otoriter BoxInfo'sundan kurulur).
+    /// NetworkManager.Shutdown() sürecinde (ExitToMenuCoroutine, MainMenu'ye dönüş)
+    /// yeni NetworkObject spawn etmeye çalışmamak için ShutdownInProgress guard'ı var —
+    /// aksi halde spawn sırasında hata/exception riski var.
+    /// </summary>
+    private void TryReturnHeldItemToWorldOnDespawn()
+    {
+        var networkManager = NetworkManager.Singleton;
+        if (networkManager == null || networkManager.ShutdownInProgress) return;
+        if (_currentItemData == null) return;
+
+        Debug.Log($"[PlayerInventory] Player despawned while holding item ({_currentItemData.itemName}) — returning it to world at {transform.position}");
+        SpawnWorldItemAtPosition(transform.position, Vector3.zero);
+    }
+
     private void Update()
     {
         if (!IsOwner) return;
@@ -596,6 +630,14 @@ public partial class PlayerInventory : NetworkBehaviour
 
     public void DropItemToPosition(Vector3 position, Action<NetworkObject> onDropped)
     {
+        // F15 fix: bu API NV yazıyor + Spawn yapıyor, IsServer kontrolsüz çağrılırsa
+        // client'ta network state'e izinsiz yazma hatası/istisnasına yol açar.
+        if (!IsServer)
+        {
+            Debug.LogWarning("[PlayerInventory] DropItemToPosition sadece server'da çağrılabilir.");
+            return;
+        }
+
         if (_hasItem.Value)
         {
             StartCoroutine(DropItemToPositionCoroutine(position, onDropped));
@@ -643,6 +685,14 @@ public partial class PlayerInventory : NetworkBehaviour
 
     public void PickupItemFromTable(NetworkObject itemNetworkObject, Action onPickedUp)
     {
+        // F15 fix: bu API NV yazıyor + Despawn yapıyor, IsServer kontrolsüz çağrılırsa
+        // client'ta network state'e izinsiz yazma hatası/istisnasına yol açar.
+        if (!IsServer)
+        {
+            Debug.LogWarning("[PlayerInventory] PickupItemFromTable sadece server'da çağrılabilir.");
+            return;
+        }
+
         if (!_hasItem.Value)
         {
             StartCoroutine(PickupItemFromTableCoroutine(itemNetworkObject, onPickedUp));

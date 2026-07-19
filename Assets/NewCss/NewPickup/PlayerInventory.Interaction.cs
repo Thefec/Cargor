@@ -491,6 +491,12 @@ public partial class PlayerInventory : NetworkBehaviour
         _hasItem.Value = true;
         _currentItemID.Value = GetItemID(itemData);
 
+        // F14 fix: dedicated server'da (host değilken) ClientRpc yerel çalışmaz, bu yüzden
+        // canBePickedUp NV'yi server-side de burada kapatıyoruz. DisablePickup() idempotent
+        // (NetworkVariable'a aynı değeri iki kez yazmak zararsız) — host'ta ClientRpc üzerinden
+        // ikinci çağrı gelse de sorun olmaz.
+        worldItem.DisablePickup();
+
         OnItemPickedUpClientRpc(itemNetworkId);
         StartCoroutine(DelayedDespawnAndUnlock(worldItem, itemNetworkId));
 

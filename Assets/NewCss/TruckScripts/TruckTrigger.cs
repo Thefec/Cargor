@@ -47,7 +47,13 @@ namespace NewCss
                 return;
             }
 
-            mainTruck.ProcessDelivery(box.boxType, box.isFull);
+            bool delivered = mainTruck.ProcessDelivery(box.boxType, box.isFull);
+
+            // Teslimat sessizce reddedildiyse (tamamlanmış / giriş yapıyor) kutuyu yok etme
+            if (!delivered)
+            {
+                return;
+            }
 
             NetworkObject boxNetworkObject = other.GetComponent<NetworkObject>();
             if (boxNetworkObject != null && boxNetworkObject.IsSpawned)

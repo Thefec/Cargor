@@ -37,8 +37,10 @@ Salt-okunur qa taramaları → önceliklendirilmiş bulgu listesi → onaylı d�
 - [x] **N7** `DayCycleManager.cs:601-613` `GetPlayerCount` → roster otorite (`GameStateManager.RosterPlayerCount`, BreakRoomManager ile aynı desen), fallback ConnectedClients→1. Kira formülü değişmedi. **kontrol ONAY, commit'li.** ✅
 **P2 — KÜÇÜK / latent:**
 - [ ] **N8** `LateJoinGuard.cs:139` kapasite TOCTOU (teorik, düşük).
-- [ ] **N9** `GameStateManager.cs:102-119` `ApplyGameEndState` switch'te `None` case yok (latent).
-- [ ] **N10** `DayCycleManager.cs:842-845` `HandleBreakRoomReadyChanged` boş gövde; server-auth state ↔ yerel UI tetikleyici ikiye ayrık (N3 ile ilişkili).
+- [x] **N9** `GameStateManager.cs:102-119` `ApplyGameEndState` switch'te `None` case yok (latent). **2026-07-18 kod turunda fix'lendi (D3/F6).**
+- [x] **N10** `DayCycleManager.cs:842-845` `HandleBreakRoomReadyChanged` boş gövde. **2026-07-18 kod turunda temizlendi (D4/F8).**
+
+> **N3 notu (2026-07-18 kod turu):** qa minimal fix tasarımı çıkardı — `BreakRoomManager`'a server-side bounds-check (`VerifyServerSidePresence`: ConnectedClients PlayerObject pozisyonu `_triggerCollider.bounds.Contains`, ClientNetworkTransform sayesinde server pozisyonları biliyor) + `SetBreakRoomReadyServerRpc`'de `ready=true` yolunu bu doğrulamayla gate'le (~15 satır). **ERTELENDİ:** lag'de false-negative → "hazır ama gün bitmiyor" soft-lock riski play-test'siz alınamaz; ayrıca kullanıcı telefon-proximity emsalinde "arkadaş co-op, hile boş ver" dedi. Uygulanacaksa play-test'li ayrı tur.
 
 ### Dilim: Çekirdek döngü + ekonomi  🚧 (2026-07-12, qa korrektlik taraması)
 Bulgular (müdür 3'ünü kodda doğruladı):
@@ -100,6 +102,20 @@ Kapsam: truck/box/shelf akışı · müşteri/kuyruk/prestij · envanter/karakte
 **MERGE-BLOCKER YOK.** DraftPool/PerkEffect/UpgradePanel/UpgradeManager/RerollCurve tarandı. 6 bilinen risk regresyonsuz doğrulandı: (1) pozisyonel-index bug düzeltilmiş kalıyor (`HandleUpgradeLevelsChanged` artık `changeEvent.Index`→`ReplayUpgradeLevel`, `_entries` efekt zincirinden ayrık), (2) reconnect replay idempotent (`ReplayPurchasedUpgradeLevels` sadece level>0, tüm Apply* mutlak-değer/`+=` yok), (3) gambler_case↔all_in dışlama iki katmanda simetrik (draft `BuildEligibility` + satın-alma client+server guard), (4) satın-alma server-auth (`serverCost=CalculateFinalCost` yeniden hesap; paylaşımlı ekonomi → sender-doğrulama gereksiz), (5) bulk_buy×reroll indirim sızmıyor (`_discountedUpgradeIndex=-1` temizliği), (6) tier kilidi doğru (T2 gün≥5, T3 gün≥9). Event abonelikleri temiz. **Tek P2 → ✅ FIX'Lİ (`UpgradePanel.cs:1091` null-guard, merge-hardening).** Ek not (blocker değil): `_questSystemActive` hiç true set edilmiyor → `requiresQuestSystem=true` perkler bu dalda draft'a girmiyor (Quest entegre değil, muhtemelen bilinçli).
 
 ---
+
+### Dilim: Kod turu 2026-07-18  ✅ (4 paralel qa: Quest legacy · pickup/kutu · gün-sonu/GameState · tutorial/tır/masa — **kontrol dal-sonu ONAY 3 tur, 2026-07-19 commit'li**)
+Fix'lenenler (gameplay ×4 batch, dal `feature/economy-balance-round`, dal-sonu toplu kontrol kapısı): T1 tutorial-raf spoof · T2/T3 tutorial-tır trigger drift · T4 tır-kalkış kutu-kaybı race'i (`ProcessDelivery` bool) · D2 **PrestigeManager client-delta exploit (P0, G1'in prestij ikizi)** · D3/N9 None case · D5 gün-17 sızıntısı · D4/N10 ölü handler · Q1 quest ödül-metni seed-senkron · Q2 buff catch-up (geç spawn/late-join) · Q4 SetQuestTier doğrulama · Q7 dup-questId uyarısı · F13 disconnect item iadesi · F14 DisablePickup server-side · F15 ölü API guard · F16 NRE guard · CUSTOMER SUPPORT loc %30→%50 (`80bdaf1`).
+
+> **Kontrol kapısı kaydı (2026-07-19, elektrik kesintisi sonrası tamamlandı):** tur-1 KRİTİK — D5 guard'ı NetworkVariable mutasyonlarından SONRA idi (kazanma anında gün 17'ye replike oluyor, `GarageDoorController` zafer ekranında tepki veriyordu) → müdür inline: kazanma kontrolü mutasyon ÖNCESİNE alındı, `CheckWinCondition(int? completedDayOverride)` ile eşik/zamanlama birebir korundu. tur-2 ÖNEMLİ — win erken-return'ü `HideDayEndScreenClientRpc`'yi atlıyordu (Day End paneli zafer ekranı altında açık kalır) → win dalına panel gizleme eklendi (yeni-gün olayları bilinçli tetiklenmez). tur-3 ONAY. Headless derleme her turda 0 CS.
+
+**Ertelenen/backlog (bu turda bilinçli yapılmadı):**
+- [ ] **Q3** `BuffManager` `TempMoneyPerBox` hiç tüketilmiyor (canlı quest kullanmıyor → etkisiz; implement = Truck/Table ödül noktasına wiring + economist).
+- [ ] **Q5** `QuestManager` günlük atamada `OnQuestsAssigned` ~5x tetikleniyor (gürültü/perf, davranış bozmuyor).
+- [ ] **Q6** gün-geçişi ↔ accept/collect `slotIndex` race (mikro pencere; generation sayacı fix'i).
+- [ ] **Q8** aynı-tip buff stack süresi `Max` alınıyor — hafif ödül enflasyonu, **economist doğrulasın**.
+- [ ] **P-pickup** `BoxFallPenalty` latch: `MoneySystem.Instance` geçici null ise ceza sonraki sekmeye kayabilir (bilgi, düşük).
+- [ ] **T5 DÜŞÜRÜLDÜ:** `Random.Range(2,6)`=teslim 2-5 **kasıtlı** (economist turu "teslim 2-5" ayarı) — bug değil.
+- [ ] N3 → yukarıdaki not (tasarım hazır, play-test'li tura ertelendi).
 
 ## FAZ 2 — Ekonomi + GDD sistem-boşluğu  ⬜ (bekliyor)
 Ekonomi dengesi + GDD'de tanımlı ama kodda eksik/yarım sistemler.

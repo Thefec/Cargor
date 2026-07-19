@@ -185,6 +185,14 @@ namespace NewCss.Quest
             {
                 if (quest != null && !string.IsNullOrEmpty(quest.questId))
                 {
+                    // F12 fix: duplicate questId sessizce üzerine yazılıyordu - iki farklı asset aynı
+                    // questId'yi taşırsa hangisinin kaybolduğu hiçbir yerde görünmüyordu.
+                    if (_questDatabase.TryGetValue(quest.questId, out QuestData existingQuest))
+                    {
+                        Debug.LogWarning($"{LOG_PREFIX} Duplicate questId '{quest.questId}' detected! " +
+                                          $"'{existingQuest.name}' üzerine '{quest.name}' yazılıyor.");
+                    }
+
                     _questDatabase[quest.questId] = quest;
                 }
             }
@@ -384,10 +392,14 @@ namespace NewCss.Quest
 
             foreach (var quest in selectedQuests)
             {
-                // Her görev için rastgele ödül/ceza seçimi yap
-                quest.RerollSelection();
+                // F9 fix: bu quest ataması için deterministik bir rewardSeed üret ve networked
+                // QuestProgress'e ekle. Client GetQuestData() çağrısında aynı seed'le RerollSelection
+                // yaparak server ile birebir aynı ödül/ceza seçimini görür (late-join dahil, NetworkList
+                // replikasyonu ile otomatik kapsanır).
+                int rewardSeed = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
+                quest.RerollSelection(rewardSeed);
 
-                var progress = new QuestProgress(quest.questId, quest.requirement.targetCount);
+                var progress = new QuestProgress(quest.questId, quest.requirement.targetCount, rewardSeed);
                 _dailyQuests.Add(progress);
 
                 LogDebug($"Assigned quest: {quest.questTitle} (Tier: {quest.tier}) - Rewards: {quest.GetRewardsSummary()}, Penalties: {quest.GetPenaltiesSummary()}");
@@ -520,6 +532,10 @@ namespace NewCss.Quest
 
             if (_questDatabase.TryGetValue(progress.questId.ToString(), out QuestData questData))
             {
+                // F9 fix: her okumada server'ın ürettiği seed ile deterministik reroll -> server/client
+                // birebir aynı seçim + gün değişince (yeni seed) otomatik tazelenir (eski _isInitialized
+                // bayatlığı da böyle çözülür, çünkü artık lazy-init'e hiç güvenilmiyor).
+                questData.RerollSelection(progress.rewardSeed);
                 return questData;
             }
 
@@ -550,7 +566,7 @@ namespace NewCss.Quest
                 return;
             }
 
-            _currentQuestTier.Value = tier;
+            SetQuestTierInternal(tier);
         }
 
         #endregion
@@ -573,12 +589,35 @@ namespace NewCss.Quest
         [ServerRpc(RequireOwnership = false)]
         private void SetQuestTierServerRpc(int tier)
         {
-            _currentQuestTier.Value = tier;
+            SetQuestTierInternal(tier);
         }
 
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// F11 fix: SetQuestTierServerRpc (RequireOwnership = false) doğrulamasızdı - herhangi bir client
+        /// tier'ı örn. 999 yapabiliyordu. Çağıran denetimi: tek çağıran UpgradePanel.ApplyQuestTierUpgrade
+        /// (Assets/NewCss/UpgradeScripts/UpgradePanel.cs:718-725), ve o metod HandleUpgradeLevelsChanged
+        /// üzerinden TÜM client'larda (host dahil) tetikleniyor - bkz. UpgradePanel.cs:729-731 yorum satırı:
+        /// "PerkEffect metodları idempotent olmalı (level'dan mutlak değer hesaplar, += yapmaz)". Yani meşru
+        /// bir client-context çağıran var; RPC'yi server-only yapıp silmek (G1-b) burada uygun değil.
+        /// Bunun yerine: (1) geçerli aralığa clamp (QuestTier enum'unun tanımladığı 0..Hard aralığı - bu bir
+        /// ekonomik değer değil, yapısal bir enum sınırı), (2) yalnız-artar kuralı (tier permanent upgrade,
+        /// düşürme isteği spoof/eski istek sayılır ve sessizce yok sayılır).
+        /// </summary>
+        private void SetQuestTierInternal(int tier)
+        {
+            int clamped = Mathf.Clamp(tier, 0, (int)QuestTier.Hard);
+
+            if (clamped <= _currentQuestTier.Value)
+            {
+                return;
+            }
+
+            _currentQuestTier.Value = clamped;
+        }
 
         private void AcceptQuestInternal(int slotIndex, ulong requesterClientId)
         {
@@ -654,8 +693,9 @@ namespace NewCss.Quest
 
             if (progress.status != QuestStatus.Completed) return;
 
-            // Get quest data
-            if (!_questDatabase.TryGetValue(progress.questId.ToString(), out QuestData questData)) return;
+            // Get quest data (F9 fix: GetQuestData artık progress.rewardSeed ile deterministik reroll yapıyor)
+            QuestData questData = GetQuestData(slotIndex);
+            if (questData == null) return;
 
             // Apply rewards - SelectedRewards kullanılıyor
             ApplyRewards(questData.SelectedRewards);
@@ -676,8 +716,9 @@ namespace NewCss.Quest
                 // Only apply penalty to accepted but not completed quests
                 if (progress.status != QuestStatus.Active) continue;
 
-                // Get quest data
-                if (!_questDatabase.TryGetValue(progress.questId.ToString(), out QuestData questData)) continue;
+                // Get quest data (F9 fix: GetQuestData artık progress.rewardSeed ile deterministik reroll yapıyor)
+                QuestData questData = GetQuestData(i);
+                if (questData == null) continue;
 
                 // Apply penalties - SelectedPenalties kullanılıyor
                 ApplyPenalties(questData.SelectedPenalties);

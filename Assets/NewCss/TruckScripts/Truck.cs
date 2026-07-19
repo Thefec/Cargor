@@ -482,26 +482,35 @@ namespace NewCss
             UpdateVisualsClientRpc(reqType, reqAmount);
         }
 
-        public void ProcessDelivery(BoxInfo.BoxType boxType, bool isFull)
+        /// <summary>
+        /// Dönüş değeri: teslimat işlendiyse (başarılı ya da yanlış-renk cezası uygulandıysa) true,
+        /// sessizce reddedildiyse (tamamlanmış / giriş yapıyor) false.
+        /// Çağıran, kutuyu despawn edip etmeyeceğine bu değere göre karar verir.
+        /// </summary>
+        public bool ProcessDelivery(BoxInfo.BoxType boxType, bool isFull)
         {
             if (!IsServer)
             {
-                return;
+                return false;
             }
 
             if (_isComplete.Value || _isEntering.Value)
             {
-                return;
+                return false;
             }
 
             if (isFull && boxType == _networkRequestedBoxType.Value)
             {
                 ProcessSuccessfulDelivery();
+                return true;
             }
             else if (isFull)
             {
                 ProcessWrongDelivery();
+                return true;
             }
+
+            return false;
         }
 
         #endregion

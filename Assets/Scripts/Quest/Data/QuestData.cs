@@ -124,7 +124,8 @@ namespace NewCss.Quest
         }
 
         /// <summary>
-        /// Seçimleri sıfırlar ve yeniden rastgele seçim yapar
+        /// Seçimleri sıfırlar ve yeniden rastgele seçim yapar (non-deterministik, UnityEngine.Random).
+        /// Networked akışta KULLANILMAZ - bkz. RerollSelection(int seed).
         /// </summary>
         public void RerollSelection()
         {
@@ -133,9 +134,33 @@ namespace NewCss.Quest
         }
 
         /// <summary>
-        /// Havuzdan rastgele belirtilen sayıda eleman seçer
+        /// F9 fix: server'ın ürettiği bir seed ile DETERMİNİSTİK reroll yapar (System.Random(seed)).
+        /// Aynı seed = aynı seçim; QuestManager.GetQuestData() bunu her okumada progress.rewardSeed ile
+        /// çağırarak server ve client'ın (late-join dahil) birebir aynı ödül/ceza metnini görmesini sağlar.
+        /// _isInitialized burada da true'ya çekilir ama artık "bayat kalma" riski yok çünkü GetQuestData
+        /// her çağrıda seed'i yeniden uygular (idempotent - aynı seed tekrar verilirse sonuç değişmez).
+        /// </summary>
+        public void RerollSelection(int seed)
+        {
+            var rng = new System.Random(seed);
+            _selectedRewards = GetRandomFromPool(rewardPool, MAX_SELECTED_REWARDS, rng);
+            _selectedPenalties = GetRandomFromPool(penaltyPool, MAX_SELECTED_PENALTIES, rng);
+            _isInitialized = true;
+        }
+
+        /// <summary>
+        /// Havuzdan rastgele belirtilen sayıda eleman seçer (non-deterministik, UnityEngine.Random).
         /// </summary>
         private List<QuestReward> GetRandomFromPool(List<QuestReward> pool, int maxCount)
+        {
+            return GetRandomFromPool(pool, maxCount, null);
+        }
+
+        /// <summary>
+        /// Havuzdan rastgele belirtilen sayıda eleman seçer. rng verilirse (System.Random) DETERMİNİSTİK
+        /// çalışır (F9 fix); null ise UnityEngine.Random.Range kullanılır (eski/editor davranışı).
+        /// </summary>
+        private List<QuestReward> GetRandomFromPool(List<QuestReward> pool, int maxCount, System.Random rng)
         {
             var result = new List<QuestReward>();
 
@@ -150,7 +175,7 @@ namespace NewCss.Quest
             // Fisher-Yates shuffle
             for (int i = tempPool.Count - 1; i > 0; i--)
             {
-                int randomIndex = Random.Range(0, i + 1);
+                int randomIndex = rng != null ? rng.Next(0, i + 1) : Random.Range(0, i + 1);
                 var temp = tempPool[i];
                 tempPool[i] = tempPool[randomIndex];
                 tempPool[randomIndex] = temp;

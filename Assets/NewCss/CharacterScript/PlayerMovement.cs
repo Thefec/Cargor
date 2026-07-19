@@ -218,6 +218,12 @@ namespace NewCss
             {
                 SetupCamera();
             }
+
+            // F10 fix: late-join oyuncusu veya BuffManager'ın buff listesi zaten dolmuşken sonradan spawn
+            // olan oyuncu, o ana kadar verilmiş MaxStamina/MoveSpeed/WalkSpeed/StaminaRegenRate buff'larını
+            // hiç almıyordu (BuffManager push-once FindObjectsOfType modeli, bu obje o an sahnede yoktu).
+            // Çift-uygulama guard BuffManager.ApplyActiveBuffsTo içinde (bkz. Assets/Scripts/Quest/Buff/BuffManager.cs).
+            Quest.BuffManager.Instance?.ApplyActiveBuffsTo(this);
         }
 
         #endregion

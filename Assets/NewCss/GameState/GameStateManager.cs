@@ -115,6 +115,16 @@ namespace NewCss
                     Time.timeScale = 0f;
                     ShowLoseScreen();
                     break;
+                case GameEndState.None:
+                    // Server ResetGameState() ile _gameEndState.Value'yu None'a çekince
+                    // NetworkVariable.OnValueChanged TÜM client'larda (host dahil) tetiklenir.
+                    // Bu case olmadan uzak client'larda win/lose paneli ve gameEnded/timeScale
+                    // eski haliyle sızıyordu (F6). ResetGameState()'teki davranışla aynı.
+                    gameEnded = false;
+                    playerWon = false;
+                    Time.timeScale = 1f;
+                    HidePanelsOnly();
+                    break;
             }
         }
 
@@ -291,6 +301,14 @@ namespace NewCss
 
         // Public property for checking game state
         public bool IsDayOver => gameEnded;
+
+        /// <summary>
+        /// Oyunun (win ya da lose ile) bitip bitmediği. DayCycleManager.NextDay() (F7) bu
+        /// bayrağı CheckWinCondition() sonrası okuyup zafer sonrası "Day 17"ye sızmayı önler.
+        /// IsDayOver ile aynı alanı okur ama isim DayCycleManager.IsDayOver (gün-bitti, farklı
+        /// anlam) ile karışmasın diye ayrı bir isimle eklendi.
+        /// </summary>
+        public bool GameEnded => gameEnded;
 
         void Awake()
         {
@@ -616,9 +634,12 @@ namespace NewCss
         }
 
         /// <summary>
-        /// Checks if the player has won after completing day 16 with prestige > 0 and rent paid
+        /// Checks if the player has won after completing day 16 with prestige > 0 and rent paid.
+        /// completedDayOverride: DayCycleManager.NextDay kazanma kontrolünü gün sayacını
+        /// İLERLETMEDEN önce çalıştırır (zafer anında NetworkVariable mutasyonu replike olmasın
+        /// diye); ulaşılacak gün değerini buradan geçer. null ise canlı sayaç okunur (debug yolu).
         /// </summary>
-        public void CheckWinCondition()
+        public void CheckWinCondition(int? completedDayOverride = null)
         {
             if (gameEnded)
             {
@@ -626,7 +647,7 @@ namespace NewCss
                 return;
             }
 
-            int currentDay = DayCycleManager.Instance?.currentDay ?? 1;
+            int currentDay = completedDayOverride ?? DayCycleManager.Instance?.currentDay ?? 1;
             
             // Win condition: Reach day 16 with prestige > 0
             if (currentDay >= DayCycleManager.MAX_DAYS)

@@ -128,31 +128,24 @@ public class PrestigeManager : NetworkBehaviour
         // Log temizlendi
     }
 
-    // Client calls this to request prestige modification
+    /// <summary>
+    /// Prestij ekler/çıkarır. SERVER-ONLY (bkz. MoneySystem.ModifyMoney G1-b deseni).
+    /// Önceki client-branch ham delta'yı RequestModifyPrestigeServerRpc/ModifyPrestigeServerRpc
+    /// (ikisi de [ServerRpc(RequireOwnership=false)]) üzerinden server'a yolluyordu — sınırsız
+    /// negatif amount ile herhangi bir client TriggerLose() tetikleyebiliyordu (F5 exploit).
+    /// Tüm 7 meşru çağıran (CustomerAI.HandleSuccessfulInteraction/HandleFailedInteraction,
+    /// DayCycleManager.TryProcessMoneyCheck, BoxFallPenalty.ApplyPenalty, GameStateManager.OnCustomerLost,
+    /// Truck.ProcessWrongDelivery, PhoneCallManager.AnswerServerRpc, QuestManager.ApplyRewardOrPenalty)
+    /// zaten server-context'te çalışıyor (gameplay F5 turu doğruladı) — client-context'ten çağrılan
+    /// meşru bir yol yok, RPC'ler kaldırıldı.
+    /// </summary>
     public void ModifyPrestige(float amount)
     {
-        if (IsServer)
+        if (!IsServer)
         {
-            // Server can modify directly
-            ModifyPrestigeServerRpc(amount);
+            Debug.LogWarning("PrestigeManager.ModifyPrestige client'tan cagrildi — yok sayildi (server-only).");
+            return;
         }
-        else
-        {
-            // Client requests modification from server
-            RequestModifyPrestigeServerRpc(amount);
-        }
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    private void RequestModifyPrestigeServerRpc(float amount)
-    {
-        ModifyPrestigeServerRpc(amount);
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    private void ModifyPrestigeServerRpc(float amount)
-    {
-        if (!IsServer) return;
 
         float newPrestige = currentPrestige.Value + amount;
 
@@ -213,57 +206,38 @@ public class PrestigeManager : NetworkBehaviour
         return currentPrestige.Value >= minimumRequired;
     }
 
+    /// <summary>
+    /// SERVER-ONLY (MoneySystem.ResetMoney G1-a deseni). Önceki client-branch
+    /// [ServerRpc(RequireOwnership=false)] üzerinden herhangi bir client'a açıktı;
+    /// dış çağıran yok (grep 0) — RPC'ler kaldırıldı, API korundu.
+    /// </summary>
     public void ResetPrestige()
     {
-        if (IsServer)
+        if (!IsServer)
         {
-            ResetPrestigeServerRpc();
+            Debug.LogWarning("PrestigeManager.ResetPrestige client'tan cagrildi — yok sayildi (server-only).");
+            return;
         }
-        else
-        {
-            RequestResetPrestigeServerRpc();
-        }
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    private void RequestResetPrestigeServerRpc()
-    {
-        ResetPrestigeServerRpc();
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    private void ResetPrestigeServerRpc()
-    {
-        if (!IsServer) return;
 
         currentPrestige.Value = startingPrestige;
         UpdateCustomerCapacity();
     }
 
+    /// <summary>
+    /// SERVER-ONLY (MoneySystem.SetMoney G1-a deseni). Önceki client-branch
+    /// [ServerRpc(RequireOwnership=false)] üzerinden sınırsız değere açıktı;
+    /// dış çağıran yok (grep 0) — RPC'ler kaldırıldı, clamp eklendi.
+    /// </summary>
     public void SetPrestige(float newValue)
     {
-        if (IsServer)
+        if (!IsServer)
         {
-            SetPrestigeServerRpc(newValue);
+            Debug.LogWarning("PrestigeManager.SetPrestige client'tan cagrildi — yok sayildi (server-only).");
+            return;
         }
-        else
-        {
-            RequestSetPrestigeServerRpc(newValue);
-        }
-    }
 
-    [ServerRpc(RequireOwnership = false)]
-    private void RequestSetPrestigeServerRpc(float newValue)
-    {
-        SetPrestigeServerRpc(newValue);
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    private void SetPrestigeServerRpc(float newValue)
-    {
-        if (!IsServer) return;
-
-        currentPrestige.Value = newValue;
+        currentPrestige.Value = Mathf.Clamp(newValue, 0f, maxPrestige);
+        UpdateCustomerCapacity();
     }
 
     // Utility method to check if this client can modify prestige

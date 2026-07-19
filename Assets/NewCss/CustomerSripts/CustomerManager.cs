@@ -697,6 +697,13 @@ namespace NewCss
 
             SetupCustomerAI(customerAI, queueIndex);
 
+            // F10 fix: buff verildiği anda sahnede olmayan (BuffManager listesi zaten dolmuşken sonradan
+            // spawn olan) müşteriler CustomerWaitTime buff'ını hiç almıyordu. Spawn() ÇAĞRILMADAN ÖNCE
+            // uygulanmalı: CustomerAI.InitializeServerState, Spawn() sırasında senkron çalışan
+            // OnNetworkSpawn içinden minWaitTime/maxWaitTime'ı okuyup _actualWaitTime'ı hesaplıyor.
+            // Çift-uygulama guard BuffManager.ApplyActiveBuffsTo içinde (bkz. Assets/Scripts/Quest/Buff/BuffManager.cs).
+            Quest.BuffManager.Instance?.ApplyActiveBuffsTo(customerAI);
+
             networkObject.Spawn();
             SetupCustomerClientRpc(networkObject.NetworkObjectId, queueIndex);
 
