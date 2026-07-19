@@ -73,6 +73,15 @@ namespace NewCss.Quest
         /// </summary>
         private readonly NetworkVariable<bool> _hasAcceptedToday = new(false);
 
+        /// <summary>
+        /// Q6 fix: her günlük görev atamasında (AssignDailyQuests) artan sunucu-yetkili sayaç.
+        /// Client, Accept/Collect isteklerine RPC gönderirken o an bildiği generation değerini de
+        /// ekler; server kendi değeriyle eşleşmiyorsa isteği reddeder. Böylece gün geçişi ile
+        /// uçuştaki bir Accept/Collect RPC'si arasındaki mikro pencerede, eski günün slotIndex'i
+        /// yanlışlıkla yeni günün quest'ine uygulanmaz.
+        /// </summary>
+        private readonly NetworkVariable<int> _questGeneration = new(0);
+
         #endregion
 
         #region Private Fields
@@ -272,7 +281,10 @@ namespace NewCss.Quest
             {
                 case NetworkListEvent<QuestProgress>.EventType.Add:
                 case NetworkListEvent<QuestProgress>.EventType.Clear:
-                    OnQuestsAssigned?.Invoke();
+                    // Q5 fix: Add/Clear, AssignDailyQuests() içindeki toplu atamanın (1 Clear + N Add)
+                    // parçası olarak burada ayrı ayrı tetiklenirdi (~5x). Tekil "görevler atandı"
+                    // bildirimi artık sadece NotifyQuestsAssignedClientRpc() tarafından batch
+                    // tamamlandıktan sonra TEK sefer yapılıyor; burada tekrar Invoke etmiyoruz.
                     break;
 
                 case NetworkListEvent<QuestProgress>.EventType.Value:
@@ -371,6 +383,10 @@ namespace NewCss.Quest
         private void AssignDailyQuests()
         {
             if (!IsServer) return;
+
+            // Q6 fix: yeni atama = yeni generation. Bu satırdan sonra gelen (eski generation'lı)
+            // Accept/Collect istekleri AcceptQuestInternal/CollectQuestRewardInternal tarafından reddedilir.
+            _questGeneration.Value++;
 
             // Clear existing quests
             _dailyQuests.Clear();
@@ -497,14 +513,17 @@ namespace NewCss.Quest
         /// </summary>
         public void AcceptQuest(int slotIndex)
         {
+            // Q6 fix: RPC gönderilirken o an bilinen (senkronize) generation da eklenir.
+            int knownGeneration = _questGeneration.Value;
+
             if (!IsServer)
             {
-                AcceptQuestServerRpc(slotIndex);
+                AcceptQuestServerRpc(slotIndex, knownGeneration);
                 return;
             }
 
             // Host durumu: server ve client aynı süreçte, istek sahibi host'un kendisi
-            AcceptQuestInternal(slotIndex, NetworkManager.LocalClientId);
+            AcceptQuestInternal(slotIndex, NetworkManager.LocalClientId, knownGeneration);
         }
 
         /// <summary>
@@ -512,13 +531,16 @@ namespace NewCss.Quest
         /// </summary>
         public void CollectQuestReward(int slotIndex)
         {
+            // Q6 fix: RPC gönderilirken o an bilinen (senkronize) generation da eklenir.
+            int knownGeneration = _questGeneration.Value;
+
             if (!IsServer)
             {
-                CollectQuestRewardServerRpc(slotIndex);
+                CollectQuestRewardServerRpc(slotIndex, knownGeneration);
                 return;
             }
 
-            CollectQuestRewardInternal(slotIndex);
+            CollectQuestRewardInternal(slotIndex, knownGeneration);
         }
 
         /// <summary>
@@ -574,16 +596,16 @@ namespace NewCss.Quest
         #region Server RPCs
 
         [ServerRpc(RequireOwnership = false)]
-        private void AcceptQuestServerRpc(int slotIndex, ServerRpcParams rpcParams = default)
+        private void AcceptQuestServerRpc(int slotIndex, int clientGeneration, ServerRpcParams rpcParams = default)
         {
             // SenderClientId ServerRpcParams'tan alınır - client tarafından spoof edilemez
-            AcceptQuestInternal(slotIndex, rpcParams.Receive.SenderClientId);
+            AcceptQuestInternal(slotIndex, rpcParams.Receive.SenderClientId, clientGeneration);
         }
 
         [ServerRpc(RequireOwnership = false)]
-        private void CollectQuestRewardServerRpc(int slotIndex)
+        private void CollectQuestRewardServerRpc(int slotIndex, int clientGeneration)
         {
-            CollectQuestRewardInternal(slotIndex);
+            CollectQuestRewardInternal(slotIndex, clientGeneration);
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -619,8 +641,15 @@ namespace NewCss.Quest
             _currentQuestTier.Value = clamped;
         }
 
-        private void AcceptQuestInternal(int slotIndex, ulong requesterClientId)
+        private void AcceptQuestInternal(int slotIndex, ulong requesterClientId, int clientGeneration)
         {
+            // Q6 fix: gün geçişi ile yarışan eski generation'lı istek - sessizce değil LOG'lu reddedilir.
+            if (clientGeneration != _questGeneration.Value)
+            {
+                LogDebug($"Accept reddedildi: generation uyuşmuyor (client={clientGeneration}, server={_questGeneration.Value}), slot={slotIndex}");
+                return;
+            }
+
             if (slotIndex < 0 || slotIndex >= _dailyQuests.Count) return;
 
             var progress = _dailyQuests[slotIndex];
@@ -685,8 +714,15 @@ namespace NewCss.Quest
             return false;
         }
 
-        private void CollectQuestRewardInternal(int slotIndex)
+        private void CollectQuestRewardInternal(int slotIndex, int clientGeneration)
         {
+            // Q6 fix: gün geçişi ile yarışan eski generation'lı istek - sessizce değil LOG'lu reddedilir.
+            if (clientGeneration != _questGeneration.Value)
+            {
+                LogDebug($"Collect reddedildi: generation uyuşmuyor (client={clientGeneration}, server={_questGeneration.Value}), slot={slotIndex}");
+                return;
+            }
+
             if (slotIndex < 0 || slotIndex >= _dailyQuests.Count) return;
 
             var progress = _dailyQuests[slotIndex];

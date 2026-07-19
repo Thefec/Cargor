@@ -108,12 +108,13 @@ Fix'lenenler (gameplay ×4 batch, dal `feature/economy-balance-round`, dal-sonu 
 
 > **Kontrol kapısı kaydı (2026-07-19, elektrik kesintisi sonrası tamamlandı):** tur-1 KRİTİK — D5 guard'ı NetworkVariable mutasyonlarından SONRA idi (kazanma anında gün 17'ye replike oluyor, `GarageDoorController` zafer ekranında tepki veriyordu) → müdür inline: kazanma kontrolü mutasyon ÖNCESİNE alındı, `CheckWinCondition(int? completedDayOverride)` ile eşik/zamanlama birebir korundu. tur-2 ÖNEMLİ — win erken-return'ü `HideDayEndScreenClientRpc`'yi atlıyordu (Day End paneli zafer ekranı altında açık kalır) → win dalına panel gizleme eklendi (yeni-gün olayları bilinçli tetiklenmez). tur-3 ONAY. Headless derleme her turda 0 CS.
 
-**Ertelenen/backlog (bu turda bilinçli yapılmadı):**
-- [ ] **Q3** `BuffManager` `TempMoneyPerBox` hiç tüketilmiyor (canlı quest kullanmıyor → etkisiz; implement = Truck/Table ödül noktasına wiring + economist).
-- [ ] **Q5** `QuestManager` günlük atamada `OnQuestsAssigned` ~5x tetikleniyor (gürültü/perf, davranış bozmuyor).
-- [ ] **Q6** gün-geçişi ↔ accept/collect `slotIndex` race (mikro pencere; generation sayacı fix'i).
-- [ ] **Q8** aynı-tip buff stack süresi `Max` alınıyor — hafif ödül enflasyonu, **economist doğrulasın**.
-- [ ] **P-pickup** `BoxFallPenalty` latch: `MoneySystem.Instance` geçici null ise ceza sonraki sekmeye kayabilir (bilgi, düşük).
+**Backlog kapanışı (2026-07-19 devam turu — gameplay 3 fix + economist 2 karar, kontrol ONAY 1 tur):**
+- [x] **Q5** `OnQuestsAssigned` ~5x → tek-fire: NetworkList Add/Clear case'inden Invoke kaldırıldı, tek kaynak `NotifyQuestsAssignedClientRpc` (batch sonu). Late-join güvenli: panel `OpenPanel()`'de canlı NetworkList'ten çizer, event'e bağımlı değil.
+- [x] **Q6** gün-geçişi race → `NetworkVariable<int> _questGeneration` (server-write, `_hasAcceptedToday` deseni): `AssignDailyQuests` başında ++, Accept/Collect RPC'leri generation taşır, uyuşmazsa LOG'lu red. Public API imzaları değişmedi.
+- [x] **P-pickup** `BoxFallPenalty` latch: `penaltyApplied=true` IsServer guard'ı sonrası KOŞULSUZ — ceza sonraki çarpmaya kaymaz; null sistem LogWarning'li atlanır.
+- [x] **Q3 KARAR (economist): ölü bırak.** `TempMoneyPerBox` iki yönden ölü (hiçbir quest RewardType.TempMoneyBoost vermiyor + `Truck.CalculateRewardWithPrestige` BuffManager okumuyor + `ApplyBuffEffect`'te case yok). Wiring istenirse: 1 TL/kutu × 2 gün önerisi (economist memory: `q3_tempmoneyperbox_dead.md`).
+- [x] **Q8 KARAR (economist): kuralı koru.** Stack kodu bugün hiç tetiklenmiyor (easy1-5 ödülleri doğrudan Money/Prestige, BuffManager'a uğramıyor; günde-1-kabul takım-çapında tek). POLİTİKA: medium/hard tier'a buff-tipi ödül eklenmeden önce temp-buff'lara stack tavanı (`MAX_STACK=2`) veya replace kuralı şart (economist memory: `q8_buff_stacking_policy.md`).
+- [ ] **Q6-UX (kontrol non-blocker, KÜÇÜK):** generation-mismatch reddi client'a sessiz — daily-limit reddindeki `NotifyAcceptRejectedClientRpc` emsali gibi geri bildirim eklenebilir (nadir race penceresi, cila).
 - [ ] **T5 DÜŞÜRÜLDÜ:** `Random.Range(2,6)`=teslim 2-5 **kasıtlı** (economist turu "teslim 2-5" ayarı) — bug değil.
 - [ ] N3 → yukarıdaki not (tasarım hazır, play-test'li tura ertelendi).
 

@@ -134,7 +134,12 @@ namespace NewCss
                 return;
             }
 
-            bool penaltySuccessful = false;
+            // P-pickup fix: eskiden penaltyApplied yalnizca MoneySystem basariyla cezalandirinca
+            // latch'leniyordu. MoneySystem.Instance o an gecici null ise latch hic set olmuyor ve
+            // bu carpmaya ait ceza sessizce sonraki (alakasiz) bir carpmaya "kayiyordu". Dogru
+            // davranis: bu carpma ceza hakkini burada, sonuc ne olursa olsun tuketir - sistemler
+            // musait degilse ceza O ANDA atlanir (log'lanir), sonraya tasinmaz.
+            penaltyApplied = true;
 
             // SURPRISE AUDIT günü tüm cezalar 2× (yoksa 1×).
             float penaltyMult = EventEffectManager.Instance != null
@@ -145,11 +150,14 @@ namespace NewCss
                 try
                 {
                     MoneySystem.Instance.SpendMoney(Mathf.RoundToInt(dropMoneyPenalty * penaltyMult));
-                    penaltySuccessful = true;
                 }
                 catch (System.Exception)
                 {
                 }
+            }
+            else
+            {
+                Debug.LogWarning($"{gameObject.name}: MoneySystem.Instance null - para cezasi bu carpma icin atlandi (latch yok).");
             }
 
             if (PrestigeManager.Instance != null)
@@ -162,12 +170,12 @@ namespace NewCss
                 {
                 }
             }
-
-            if (penaltySuccessful)
+            else
             {
-                penaltyApplied = true;
-                OnPenaltyApplied();
+                Debug.LogWarning($"{gameObject.name}: PrestigeManager.Instance null - prestij cezasi bu carpma icin atlandi (latch yok).");
             }
+
+            OnPenaltyApplied();
         }
 
         private void OnPenaltyApplied()
