@@ -1,12 +1,23 @@
 ---
 name: quest_easy4_5_duplicate
-description: easy4/easy5.asset birebir ayni icerik + ayni questId="4" (dictionary collision), ayrica easy2'yi (yari efor + daha yuksek EV) domine ediyor
+description: COZULDU 2026-07-20 - easy4/5 artik farkli icerik + farkli questId(4/5). Collision GITTI. Kalan kucuk: EV'leri (21.6/24) hala easy2(17.6) ustunde.
 metadata:
   type: project
 ---
 
-2026-07-18 bulgusu (`plans/economy-balance-round.md`, birleşik ekonomi turu — önceki turlarda hiç
-incelenmemiş yeni sistem). `Assets/Resources/Quests/easy4.asset` ve `easy5.asset` birebir aynı
+**✅ questId ÇAKIŞMASI + DUPLICATE İÇERİK ÇÖZÜLDÜ (2026-07-20 doğrulandı).** Artık:
+`easy4.asset` = "Mavi Raf Düzeni" (questId 4, questType 1 shelf, targetCount 4, mavi kutu),
+`easy5.asset` = "Sarı Kutu Ustası" (questId 5, questType 3 pack, targetCount 3, sarı oyuncak).
+Farklı questId → dictionary collision yok; farklı içerik → varyete kaybı yok.
+
+**KALAN KÜÇÜK (P2, playtest-bağımlı):** EV'ler hâlâ easy2'nin üstünde. node: easy4 moneyEV =
+0.4×(10+18+26)=**21.6**, easy5 = 0.4×(12+20+28)=**24**, easy2=17.6. Efor artık farklı (shelf-4 /
+pack-3 vs truck-2) olduğundan tam "dominasyon" değil ama rasyonel oyuncu yine yüksek-EV'liyi seçer.
+İzlenebilir; acil değil.
+
+---
+ESKİ BULGU (2026-07-18, artık geçersiz — o tarihte iki asset birebir aynıydı ve questId="4" çakışıyordu):
+`Assets/Resources/Quests/easy4.asset` ve `easy5.asset` birebir aynı
 içerik (başlık "Anlaşmalı Çalışan", "1 Tır Tamamla", aynı ödül/ceza havuzu) VE aynı `questId: "4"`
 (string alan, `QuestData.cs:24`).
 

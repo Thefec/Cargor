@@ -69,6 +69,11 @@ namespace NewCss
         [Tooltip("True ise görev sistemi aktif olana kadar havuza girmez (Görev Tier).")]
         public bool requiresQuestSystem;
 
+        [Tooltip("True ise bu upgrade draft havuzuna (günlük teklif/reroll) hiç girmez. Index-güvenli " +
+            "hariç tutma — upgrades listesinden ELEMAN SİLİNMEZ (NetworkList index'leri kayar, netcode " +
+            "bozulur). Eski/ölü/duplike omurgaları (Money, Customer, Water, Stamina, Queue) kapatmak için.")]
+        public bool disabledInDraft;
+
         [Header("=== LEVEL OBJECTS ===")]
         [Tooltip("Seviye objeleri (Level0, Level1, Level2...)")]
         public GameObject[] levelObjects;
@@ -419,13 +424,13 @@ namespace NewCss
 
         private void InitializeMoneyBaseValue()
         {
-            if (Truck == null) return;
-
-            var moneyUpgrade = FindEntryByName(UPGRADE_MONEY);
-            if (moneyUpgrade != null)
-            {
-                Truck.rewardPerBox = moneyUpgrade.Definition.TruckValue;
-            }
+            // NO-OP (upgrade turu 2026-07-20, economist onaylı): eskiden burada
+            // Truck.rewardPerBox = moneyUpgrade.Definition.TruckValue (=15) yazılıyordu — Truck
+            // zaten OnNetworkSpawn'da rewardPerBox'ı economySettings.rewardPerBox'tan (50, doğru
+            // taban) kuruyor (Truck.cs:212). Bu satır rewardPerBox'ı 15'e çekip tabanın ALTINA
+            // düşürüyordu (aktif zararlı — Money kartı teklifteyken bile spawn'da tetiklenirdi).
+            // Money artık draft havuzundan kalıcı olarak çıkarıldı (disabledInDraft, bkz.
+            // UpgradeDefinition.disabledInDraft / DraftPool.IsEligible) — reward'a hiç dokunma.
         }
 
         private void InitializeQueueBaseValue()
@@ -709,10 +714,12 @@ namespace NewCss
 
         private void ApplyMoneyUpgrade(EntryUI entry, int level)
         {
-            if (Truck != null)
-            {
-                Truck.rewardPerBox = entry.Definition.TruckValue + (level * 10);
-            }
+            // NO-OP (upgrade turu 2026-07-20, economist onaylı): eskiden
+            // Truck.rewardPerBox = TruckValue(15) + level*10 = 25/35/45 yazıyordu — taban 50'nin
+            // ALTINDA, yani bu upgrade'i satın alan oyuncunun kutu başı gelirini DÜŞÜRÜYORDU.
+            // Money artık draft havuzundan çıkarıldı (disabledInDraft); eski save'lerde level>0
+            // kalmış olabileceğinden (ReplayPurchasedUpgradeLevels bu case'i hâlâ çağırabilir)
+            // zararı kalıcı olarak kapatmak için gövde boşaltıldı — rewardPerBox'a asla dokunma.
         }
 
         private void ApplyQuestTierUpgrade(int level)
@@ -883,7 +890,7 @@ namespace NewCss
                 int visLevel = GetVisualLevel(i);
                 bool eligible = DraftPool.IsEligible(
                     i, def.tier, def.kind, def.requiresQuestSystem,
-                    visLevel, def.maxLevel, maxUnlocked, questActive);
+                    visLevel, def.maxLevel, maxUnlocked, questActive, def.disabledInDraft);
 
                 // Kalıcı dışlama (a): grup arkadaşlarından biri zaten satın alındıysa
                 // (level>0), bu perk bir daha hiçbir teklifte/reroll'da çıkmaz.

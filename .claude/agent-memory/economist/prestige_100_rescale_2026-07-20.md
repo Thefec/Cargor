@@ -5,7 +5,16 @@ metadata:
   type: project
 ---
 
-SPEC (henüz uygulanmadı — gameplay departmanına devredildi, bkz sohbet 2026-07-20).
+**✅ UYGULANDI (2026-07-20 doğrulandı, commit 1496949).** Kod+asset+quest'ler canlıda:
+`EkonomiAyarlari.asset` prestigePerBonus=4, customerLostPrestigePenalty=-0.6, customerServedPrestigeBonus=0.2,
+boxDropPrestigePenalty=-0.02, wrongDeliveryPrestigePenalty=-0.08, wrongProductPrestigePenalty=-0.04,
+callPrestigeReward=0.2; `PrestigeManager.cs` startingPrestige=6, maxPrestige=100, prestigePerCustomer=4,
+gösterim `:F0`; quest asset'leri (easy1-5) prestij ×0.4. Sim (`tools/economy-sim/sim.js`) bu değerlere
+senkronlandı. Sim doğrulaması: 2P/3P/4P Normal tavan günü 16/14/13 (rescale öncesi pacing korundu),
+1P hiç tavana ulaşmıyor (final 75.9). Aşağısı orijinal spec (tarihsel).
+
+---
+SPEC (2026-07-20'de yazıldı, sonra uygulandı).
 
 **Formül**: TÜM prestij miktarları (starting/ödül/ceza/quest/perk) ×k=0.4 ile ölçeklenir.
 TÜM prestij eşikleri (prestigePerCustomer, prestigePerBonus) 10→4 (temiz sabit, k ile

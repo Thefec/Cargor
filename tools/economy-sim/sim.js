@@ -1,7 +1,10 @@
 // ============================================================================
 // Cargor 16-gun ekonomi + quest simulasyonu
 // ============================================================================
-// Tarih: 2026-07-18 (economy-quest-balance turu, plans/economy-audit-2026-07-17.md)
+// Tarih: 2026-07-18, SENKRON 2026-07-20 (holistik denetim: prestij 100-rescale + P-bazli hangar).
+//   2026-07-20 degisiklikleri: prestigePerBonus 10->4, startingPrestige 15->6, maxPrestige 150->100,
+//   prestij miktarlari x0.4 (customerServed 0.5->0.2, customerLost -1.5->-0.6, wrongDelivery -0.2->-0.08,
+//   boxDrop -0.05->-0.02), quest prestij havuzlari x0.4, hangarStayDuration tek-30 -> P-bazli {90,60,40,30}.
 // Calistirma: node tools/economy-sim/sim.js
 //
 // AMAC: sim <-> kod ayrisma riskini azaltmak icin TEK kontrol noktasi. Her
@@ -53,19 +56,23 @@ const ECONOMY = {
   rentScaledMultiplier: 1.0,                        // asset:20 (perk yoksa 1; leveraged_rent perki 0.8 yapar, bu sim'de perk YOK)
   rewardPerBox: 50,                                 // asset:21 = cs:42 default
   penaltyPerBox: 40,                                // asset:22 = cs:45 default (YANLIS RENK teslimat cezasi)
-  hangarStayDuration: 30,                            // asset:23 = cs:48 default -- ONCEKI DENETIMDE 120'ydi, DEGISTI
-  prestigePerBonus: 10,                             // asset:24 = cs:51 default
+  hangarStayDuration: 30,                            // asset:23 = cs:48 LEGACY fallback (dizi bos ise)
+  // 2026-07-20 (6ef9ad6): P-bazli hangar suresi. asset:24 hex 5a/3c/28/1e = {90,60,40,30}. index=P-1.
+  hangarStayDurationByPlayerCount: [90, 60, 40, 30], // asset:24 = cs:51, GetHangarStayDuration(playerCount)
+  prestigePerBonus: 4,                              // asset:25 = cs:54 -- 2026-07-20 rescale 10->4
   bonusPerTier: 5,                                  // asset:25 = cs:54 default
   boxDropMoneyPenalty: 5,                            // asset:28 = cs:69 default (FIZIKSEL DUSME/CARPMA cezasi)
-  wrongDeliveryPrestigePenalty: -0.2,                // asset:38 = cs:111 default (Truck.cs:588 ProcessWrongDelivery'de kullanilir)
-  customerLostPrestigePenalty: -1.5,                 // asset:34 = cs:99 default
-  customerServedPrestigeBonus: 0.5,                  // asset:35 = cs:102 default
-  boxDropPrestigePenalty: -0.05,                     // asset:37 = cs:108 default
+  wrongDeliveryPrestigePenalty: -0.08,               // asset:39 = cs:114 -- 2026-07-20 rescale -0.2->-0.08 (x0.4)
+  customerLostPrestigePenalty: -0.6,                 // asset:35 = cs:102 -- 2026-07-20 rescale -1.5->-0.6 (x0.4)
+  customerServedPrestigeBonus: 0.2,                  // asset:36 = cs:105 -- 2026-07-20 rescale 0.5->0.2 (x0.4)
+  boxDropPrestigePenalty: -0.02,                     // asset:38 = cs:111 -- 2026-07-20 rescale -0.05->-0.02 (x0.4)
+  // wrongProductPrestigePenalty: -0.04 (asset:37) -- musteriye yanlis urun gosterme; sim modellemedi (kucuk).
   // wealthTaxRate: SOKULDU (bkz. header notu #4) - artik alan yok, kullanilmiyor.
 
   // Assets/NewCss/CustomerSripts/PrestigeManager.cs
-  startingPrestige: 15,                              // satir 16
-  maxPrestige: 150,                                  // satir 19 -- ONCEKI DENETIMDE clamp HIC YOKTU (bug), simdi GERCEK canli clamp var (satir 167: Mathf.Clamp(newPrestige,0,maxPrestige))
+  startingPrestige: 6,                               // satir 16 -- 2026-07-20 rescale 15->6 (x0.4)
+  maxPrestige: 100,                                  // satir 19 -- 2026-07-20 rescale 240->100 (100-skala); pratik ~96
+  prestigePerCustomer: 4,                            // PrestigeManager satir 26 -- rescale 10->4 (musteri kapasite esigi)
 
   // Assets/NewCss/GameState/DifficultyManager.cs
   baseStartingMoney: 500,                            // satir 36
@@ -122,21 +129,21 @@ const MAX_SELECTED = 2;
 function pool(items) { return items; } // [{type:'Money'|'Prestige', amount}]
 
 const QUESTS_RAW = {
-  easy1: { // "Secici Paket Canavari" - PackToy, 5 kirmizi kutu paketle
-    rewardPool: pool([{ type: 'Money', amount: 10 }, { type: 'Money', amount: 20 }, { type: 'Money', amount: 15 }, { type: 'Prestige', amount: 1 }, { type: 'Prestige', amount: 2 }]),
-    penaltyPool: pool([{ type: 'Money', amount: -10 }, { type: 'Money', amount: -15 }, { type: 'Money', amount: -5 }, { type: 'Prestige', amount: -2 }, { type: 'Prestige', amount: -1 }]),
+  easy1: { // "Secici Paket Canavari" - PackToy, 5 kirmizi kutu paketle (asset easy1, prestij x0.4 rescale)
+    rewardPool: pool([{ type: 'Money', amount: 10 }, { type: 'Money', amount: 20 }, { type: 'Money', amount: 15 }, { type: 'Prestige', amount: 0.4 }, { type: 'Prestige', amount: 0.8 }]),
+    penaltyPool: pool([{ type: 'Money', amount: -10 }, { type: 'Money', amount: -15 }, { type: 'Money', amount: -5 }, { type: 'Prestige', amount: -0.8 }, { type: 'Prestige', amount: -0.4 }]),
   },
-  easy2: { // "Yetistirici" - CompleteTruck, 2 tir tamamla
-    rewardPool: pool([{ type: 'Money', amount: 20 }, { type: 'Money', amount: 16 }, { type: 'Money', amount: 8 }, { type: 'Prestige', amount: 1 }, { type: 'Prestige', amount: 2 }]),
-    penaltyPool: pool([{ type: 'Money', amount: -6 }, { type: 'Money', amount: -12 }, { type: 'Money', amount: -18 }, { type: 'Prestige', amount: -1 }, { type: 'Prestige', amount: -2 }]),
+  easy2: { // "Yetistirici" - CompleteTruck, 2 tir tamamla (asset easy2, prestij x0.4 rescale)
+    rewardPool: pool([{ type: 'Money', amount: 20 }, { type: 'Money', amount: 16 }, { type: 'Money', amount: 8 }, { type: 'Prestige', amount: 0.4 }, { type: 'Prestige', amount: 0.8 }]),
+    penaltyPool: pool([{ type: 'Money', amount: -6 }, { type: 'Money', amount: -12 }, { type: 'Money', amount: -18 }, { type: 'Prestige', amount: -0.4 }, { type: 'Prestige', amount: -0.8 }]),
   },
   easy3_old: { // "Depo Takipcisi" - PlaceBoxOnShelf, rafa 5 kutu koy (MEVCUT/ESKI - orantisiz)
     rewardPool: pool([{ type: 'Money', amount: 100 }, { type: 'Money', amount: 150 }, { type: 'Money', amount: 200 }, { type: 'Prestige', amount: 1 }, { type: 'Prestige', amount: 2 }]),
     penaltyPool: pool([{ type: 'Money', amount: -20 }, { type: 'Money', amount: -10 }, { type: 'Prestige', amount: -1 }, { type: 'Money', amount: -5 }]), // NOT: 4 ogeli (asimetrik), 1 prestij cezasi
   },
-  easy3_new: { // ONERILEN DUZELTME - bu turda uygulanacak
-    rewardPool: pool([{ type: 'Money', amount: 15 }, { type: 'Money', amount: 25 }, { type: 'Money', amount: 35 }, { type: 'Prestige', amount: 1 }, { type: 'Prestige', amount: 2 }]),
-    penaltyPool: pool([{ type: 'Money', amount: -15 }, { type: 'Money', amount: -20 }, { type: 'Money', amount: -10 }, { type: 'Prestige', amount: -1 }, { type: 'Prestige', amount: -2 }]), // 5 ogeye tamamlandi (easy1/2 ile ayni yapi)
+  easy3_new: { // UYGULANDI (asset easy3, "Depo Takipcisi" rafa 5 kutu; prestij x0.4 rescale)
+    rewardPool: pool([{ type: 'Money', amount: 15 }, { type: 'Money', amount: 25 }, { type: 'Money', amount: 35 }, { type: 'Prestige', amount: 0.4 }, { type: 'Prestige', amount: 0.8 }]),
+    penaltyPool: pool([{ type: 'Money', amount: -15 }, { type: 'Money', amount: -20 }, { type: 'Money', amount: -10 }, { type: 'Prestige', amount: -0.4 }, { type: 'Prestige', amount: -0.8 }]),
   },
 };
 
@@ -223,14 +230,21 @@ const CARGO_AVG = CARGO_VALUES.reduce((a, b) => a + b, 0) / CARGO_VALUES.length;
  * STRICT model: her tir SADECE KENDI 30sn penceresinde uretilebilen kutuyu alir
  * (stockpile/on-uretim yok). Alt sinir (kotumser).
  */
+function hangarStayFor(playerCount) {
+  const arr = ECONOMY.hangarStayDurationByPlayerCount;
+  if (!arr || arr.length === 0) return ECONOMY.hangarStayDuration;
+  return arr[Math.min(Math.max(playerCount - 1, 0), arr.length - 1)];
+}
+
 function truckCapStrict(playerCount, boxesPerMin, day, numHangars) {
   const rate = (boxesPerMin * playerCount) / 60; // kutu/sn, takim toplami
   const tws = truckWindowSeconds(day);
+  const hangarStay = hangarStayFor(playerCount);
   let totalDeliverable = 0, totalCycleTime = 0;
   for (const cargo of CARGO_VALUES) {
     const fillTime = rate > 0 ? cargo / rate : Infinity;
-    totalDeliverable += Math.min(cargo, rate * ECONOMY.hangarStayDuration);
-    totalCycleTime += Math.min(ECONOMY.hangarStayDuration, fillTime) + OVERHEAD_TOTAL;
+    totalDeliverable += Math.min(cargo, rate * hangarStay);
+    totalCycleTime += Math.min(hangarStay, fillTime) + OVERHEAD_TOTAL;
   }
   const avgDeliverable = totalDeliverable / CARGO_VALUES.length;
   const avgCycleTime = totalCycleTime / CARGO_VALUES.length;
@@ -259,11 +273,12 @@ function truckCapOptimistic(playerCount, boxesPerMin, day, numHangars) {
 function fullTrucksPerDayEstimate(playerCount, boxesPerMin, day, numHangars) {
   const rate = (boxesPerMin * playerCount) / 60;
   const tws = truckWindowSeconds(day);
+  const hangarStay = hangarStayFor(playerCount);
   let totalCycleTime = 0, fullCount = 0;
   for (const cargo of CARGO_VALUES) {
     const fillTime = rate > 0 ? cargo / rate : Infinity;
-    totalCycleTime += Math.min(ECONOMY.hangarStayDuration, fillTime) + OVERHEAD_TOTAL;
-    if (fillTime <= ECONOMY.hangarStayDuration) fullCount++;
+    totalCycleTime += Math.min(hangarStay, fillTime) + OVERHEAD_TOTAL;
+    if (fillTime <= hangarStay) fullCount++;
   }
   const avgCycleTime = totalCycleTime / CARGO_VALUES.length;
   const cyclesPerDay = tws / avgCycleTime;

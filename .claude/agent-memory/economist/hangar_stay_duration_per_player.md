@@ -5,7 +5,15 @@ metadata:
   type: project
 ---
 
-2026-07-20 analizi (kullanici "30s cok kisa, ozellikle 1P'de" dedi). Kanit:
+**✅ UYGULANDI (2026-07-20 doğrulandı, commit 6ef9ad6).** `GameEconomySettings.cs:51`
+`hangarStayDurationByPlayerCount={90,60,40,30}` + `GetHangarStayDuration(playerCount)`;
+`Truck.cs:214` bu getter'ı çağırıyor; `EkonomiAyarlari.asset:24` hex 5a/3c/28/1e = {90,60,40,30};
+fast_hangar perk de bu tabanı kullanıyor ([[fast_hangar_perk_bug]] çözüldü). Sim P-bazlı hangara
+senkronlandı. Denetim doğrulaması: STRICT day8 kazanç P1 +27%, P2 +15%, P3 +6%, P4 0% (30s değişmedi);
+OPTIMISTIC modelde etkisiz (beklenen). Risk yok.
+
+---
+ESKİ analiz (2026-07-20, uygulama öncesi). Kullanici "30s cok kisa, ozellikle 1P'de" dedi. Kanit:
 `tools/economy-sim/sim.js` `truckCapStrict`/`truckCapOptimistic` sweep edildi
 (ECONOMY.hangarStayDuration mutate edilerek, node ile).
 

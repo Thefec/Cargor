@@ -20,9 +20,11 @@ namespace NewCss
         }
 
         public static bool IsEligible(int index, PerkTier tier, PerkKind kind, bool requiresQuest,
-            int currentLevel, int maxLevel, PerkTier maxUnlocked, bool questActive)
+            int currentLevel, int maxLevel, PerkTier maxUnlocked, bool questActive,
+            bool disabledInDraft = false)
         {
             if (currentLevel >= maxLevel) return false;
+            if (disabledInDraft) return false;
             if (requiresQuest && !questActive) return false;
             if (kind == PerkKind.LeveledBackbone) return true;
             return (int)tier <= (int)maxUnlocked;

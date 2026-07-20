@@ -7,7 +7,10 @@
 - [Prestij kırılganlığı eşikleri](prestige_fragility.md) — startingPrestige=5 ile tek rush dalgasında 3 kayıp = game over; 15+(-1.5 ceza) öneriliyor (uygulanmış)
 - [Upgrade çift sistem çakışması](upgrade_dual_system.md) — ✅ÇÖZÜLDÜ (479dbf0): Yol B (ItemType/UpgradeAssets/UpgradeManager) silindi, tek sistem UpgradePanel kaldı (tarihsel kayıt)
 - [Upgrade fiyatlandırma çerçevesi](upgrade_pricing_framework.md) — 7 upgrade karakterine göre farklı payback hedefi (1.4-3.2 gün); v2'de gerçek maxLevel'e göre revize, bkz. UPGRADE_PRICING_REPORT.md v2
-- [Roguelite perk fiyatlandırma v3.2 ONAY](roguelite_perk_pricing.md) — ✅KOD İLE DOĞRULANDI (2026-07-18): tüm fiyat/gate/reroll sahne+koda birebir uygulanmış; TEK istisna fast_hangar (bkz fast_hangar_perk_bug.md)
+- [Upgrade eski omurgalar (P0/P1)](upgrade_legacy_backbones.md) — YENİ (2026-07-20): scene'de 9 kind:0 omurga hâlâ draft havuzunda; Money AKTİF ZARARLI (reward<50), Customer ÖLÜ (wiring yok), Water/Quest Tier değersiz, Stamina↔energetic + Queue↔long_queue DUPLİKE
+- [Upgrade ROI turu 2026-07-20](upgrade_roi_2026-07-20.md) — YENİ: gelir ÜRETİM-bound (Truck/Storage gelir=0 optimistic'te), reward-çarpan perkleri underpriced no-brainer (Kumarbaz 7-29x ROI), prestij perkleri sağlıklı, per-player 1.15 throughput-scaling'i telafi etmiyor
+- [Roguelite perk fiyatlandırma v3.2 ONAY](roguelite_perk_pricing.md) — ✅KOD İLE DOĞRULANDI (2026-07-18): fiyat/gate/reroll sahne+koda birebir; UYARI: v3.2 raporu rescale ÖNCESİ ekonomiye kalibre — prestij-tabanlı perkler (Prestij Ustası/Simsarı) büyüklük varsayımı bayat, para-perkleri TL geçerli
+- [Para YALNIZ tırdan gelir](money_comes_only_from_trucks.md) — TEMEL GERÇEK (2026-07-20 kod-doğrulandı): müşteri SIFIR para verir (yalnız prestij), para=tır throughput×kutu-ödül; gelir kaldıracı ararken tıra bak, müşteriye değil
 - [FAZ2 kota-verim kalibrasyonu](quota_throughput_calibration.md) — ⚠️GÜNCEL DEĞİL: QuotaManager.cs TAMAMEN SİLİNDİ (0c026ef, 2026-07-14), C1 konusu kapandı, aktivasyon önerme
 - [FAZ2 wealthTax kırık kablolama](wealthtax_broken_wiring.md) — ✅ÇÖZÜLDÜ (Seçenek A, 9d2c3b0): wealthTax terimi kira formülünden tamamen kaldırıldı + ölü Yol B silindi (479dbf0)
 - [Kutu düşme cezası merkezileştirme](box_drop_penalty_centralization.md) — boxDropMoneyPenalty=5 (tek değer, kutu/ürün ayrımı yok), wrongDeliveryPrestigePenalty=-0.2 onay, Truck penaltyPerBox default 60→40
@@ -15,6 +18,10 @@
 - [Prestij tavanı bug + düzeltme](prestige_cap_bug_and_fix.md) — ✅UYGULANDI (doğrulandı 2026-07-18): maxPrestige=150 canlı kodda; 2026-07-18'de tavan-dolma günleri metodoloji düzeltmesiyle değişti (bkz not)
 - [Tır/hangar penceresi tavanı](truck_hangar_window_cap.md) — YENİ (2026-07-18): hangarStayDuration=30s ekonominin en yüklü kaldıracı çıktı; hangar sayısı (1vs2) OPTIMISTIC modelde önemsiz, asıl darboğaz tır-saati/gün-uzunluğu oranı
 - [Quest ödül dengesi (EV mekaniği + easy3 fix)](quest_reward_balance.md) — pick-2-of-n EV formülü; easy3 180TL→30TL EV düzeltmesi UYGULANDI (2026-07-18), easy1/2 değişmedi
-- [fast_hangar perk kodu bug](fast_hangar_perk_bug.md) — YENİ (2026-07-18): hardcoded eski 120s taban (canlı taban 30s), vaat +%30 kod +%420; STRICT modelde 0-36% etki, OPTIMISTIC'te etkisiz
+- [fast_hangar perk kodu bug](fast_hangar_perk_bug.md) — ✅ÇÖZÜLDÜ (2026-07-20): PerkEffect.cs:102 artık GetHangarStayDuration(pc)*1.30f (P-bazlı canlı taban); hardcoded 120f gitti (tarihsel kayıt)
 - [Prestij tavanı yeniden ayar 2026-07-18](prestige_cap_retune_2026-07-18.md) — maxPrestige 150→240 önerisi (2P/3P/4P tavan günü 8-11'den 13-15'e); playtest'e bağlı geç-oyun enflasyon trade-off'u
-- [Quest easy4/5 çifti](quest_easy4_5_duplicate.md) — YENİ (2026-07-18): birebir aynı içerik + questId çakışması ("4"), ayrıca easy2'yi (yarı efor+yüksek EV) domine ediyor
+- [Prestij 0-100 rescale (k=0.4)](prestige_100_rescale_2026-07-20.md) — ✅UYGULANDI (2026-07-20, 1496949): 240→100 tavan, eşik 10→4, miktarlar×0.4; sim senkron; 2P/3P/4P tavan günü 16/14/13, 1P tavana ulaşmıyor
+- [Quest easy4/5 çifti](quest_easy4_5_duplicate.md) — ✅questId+duplicate ÇÖZÜLDÜ (2026-07-20): easy4=Mavi Raf(4)/easy5=Sarı(3) farklı; KALAN P2: EV'leri (21.6/24) hâlâ easy2(17.6) üstünde
+- [Q3: TempMoneyPerBox ölü kod](q3_tempmoneyperbox_dead.md) — YENİ (2026-07-19): KARAR=bırak; ne quest veriyor ne Truck.cs tüketiyor; wiring için yedek sayı (+1TL/kutu, 2gün) hazır
+- [Q8: buff stack politikası](q8_buff_stacking_policy.md) — YENİ (2026-07-19): şu an sıfır etki (easy1-5 hiç buff vermiyor); permanent additive KORU, temp buff'a ileride MAX_STACK=2 cap öner
+- [hangarStayDuration P-bazlı](hangar_stay_duration_per_player.md) — ✅UYGULANDI (2026-07-20, 6ef9ad6): 90/60/40/30 (1P-4P) canlı; GetHangarStayDuration getter; STRICT day8 kazanç P1+27%/P2+15%/P3+6%/P4 0%, OPTIMISTIC'te etkisiz

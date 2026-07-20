@@ -1,11 +1,18 @@
 ---
 name: fast_hangar_perk_bug
-description: PerkEffect.ApplyFastHangar hardcoded eski 120s tabanini kullaniyor (canli taban 30s) - aciklama +%30 vaat ediyor ama kod +%420 veriyor (156s absolut atama)
+description: COZULDU 2026-07-20 - ApplyFastHangar artik ctx.Economy.GetHangarStayDuration(pc)*1.30f kullaniyor (P-bazli canli taban). Tarihsel bulgu kaydi.
 metadata:
   type: project
 ---
 
-2026-07-18 bulgusu (`plans/economy-balance-round.md`, birleşik ekonomi turu). `Assets/NewCss/UpgradeScripts/PerkEffect.cs:96-100`:
+**✅ ÇÖZÜLDÜ (2026-07-20 doğrulandı, denetim turu).** `Assets/NewCss/UpgradeScripts/PerkEffect.cs:102` artık:
+`ctx.Truck.hangarStayDuration = ctx.Economy.GetHangarStayDuration(pc) * 1.30f;` — hardcoded 120f
+kaldırıldı, canlı P-bazlı taban kullanılıyor (önerilenden de iyi: skaler değil P-bazlı). Bu memory
+tarihsel kayıt olarak tutuluyor; aksiyon gerektirmez.
+
+---
+ESKİ BULGU (2026-07-18, `plans/economy-balance-round.md`, birleşik ekonomi turu). O tarihte
+`Assets/NewCss/UpgradeScripts/PerkEffect.cs:96-100`:
 
 ```csharp
 private static void ApplyFastHangar(int level, PerkContext ctx)

@@ -21652,6 +21652,7 @@ MonoBehaviour:
     tier: 0
     effectId: 
     requiresQuestSystem: 0
+    disabledInDraft: 1
     levelObjects:
     - {fileID: 75128577}
     - {fileID: 252592239}
@@ -21673,6 +21674,7 @@ MonoBehaviour:
     tier: 0
     effectId: 
     requiresQuestSystem: 0
+    disabledInDraft: 1
     levelObjects:
     - {fileID: 161118048}
     - {fileID: 2032713688}
@@ -21693,6 +21695,7 @@ MonoBehaviour:
     tier: 0
     effectId: 
     requiresQuestSystem: 0
+    disabledInDraft: 1
     levelObjects:
     - {fileID: 2078412785}
     - {fileID: 2078412785}
@@ -21736,6 +21739,7 @@ MonoBehaviour:
     tier: 0
     effectId: 
     requiresQuestSystem: 0
+    disabledInDraft: 1
     levelObjects:
     - {fileID: 1150600358}
     - {fileID: 430473471}
@@ -21755,6 +21759,7 @@ MonoBehaviour:
     tier: 0
     effectId: 
     requiresQuestSystem: 0
+    disabledInDraft: 1
     levelObjects:
     - {fileID: 938998739}
     - {fileID: 215373536}
@@ -21774,7 +21779,7 @@ MonoBehaviour:
     kind: 0
     tier: 0
     effectId: 
-    requiresQuestSystem: 0
+    requiresQuestSystem: 1
     levelObjects: []
     garageDoorControllers: []
   - displayName: Ucuz Kira
@@ -21926,7 +21931,7 @@ MonoBehaviour:
     TruckValue: 10
     WaitTime: 5
     maxLevel: 1
-    baseCost: 220
+    baseCost: 400
     costStep: 0
     kind: 1
     tier: 1
@@ -21962,7 +21967,7 @@ MonoBehaviour:
     TruckValue: 10
     WaitTime: 5
     maxLevel: 1
-    baseCost: 200
+    baseCost: 300
     costStep: 0
     kind: 1
     tier: 0
@@ -21998,7 +22003,7 @@ MonoBehaviour:
     TruckValue: 10
     WaitTime: 5
     maxLevel: 1
-    baseCost: 300
+    baseCost: 450
     costStep: 0
     kind: 1
     tier: 1
