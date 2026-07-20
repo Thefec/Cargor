@@ -78,7 +78,7 @@ namespace NewCss
         private float gracePaymentPercent => economySettings != null ? economySettings.gracePaymentPercent : 0.8f;
 
         // ── Acil Fren perki (emergency_brake) — server-authoritative, tek kullanımlık ──
-        private const float EMERGENCY_BRAKE_PRESTIGE_PENALTY = -5f;
+        private const float EMERGENCY_BRAKE_PRESTIGE_PENALTY = -2f;
 
         /// <summary>Acil Fren perki satın alındığında true olur; bir kez tetiklenip tükenir.</summary>
         public bool insuranceAvailable = false;

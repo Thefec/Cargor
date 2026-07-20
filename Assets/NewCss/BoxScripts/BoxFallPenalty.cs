@@ -13,7 +13,7 @@ namespace NewCss
         // Ceza değerleri artık merkezi SO'dan okunur (prefab başına gömülü değer YOK — tutarlı).
         // SO atanmamışsa Awake'de Resources.Load fallback devreye girer; o da yoksa güvenli varsayılan.
         private int dropMoneyPenalty => economySettings != null ? economySettings.boxDropMoneyPenalty : 5;
-        private float dropPrestigePenalty => economySettings != null ? economySettings.boxDropPrestigePenalty : -0.05f;
+        private float dropPrestigePenalty => economySettings != null ? economySettings.boxDropPrestigePenalty : -0.02f;
 
         [Header("Sound Settings")]
         [Tooltip("Sound to play when box hits the ground")]

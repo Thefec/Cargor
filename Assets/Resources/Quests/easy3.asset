@@ -32,10 +32,10 @@ MonoBehaviour:
     amount: 35
     durationDays: 0
   - rewardType: 1
-    amount: 1
+    amount: 0.4
     durationDays: 0
   - rewardType: 1
-    amount: 2
+    amount: 0.8
     durationDays: 0
   penaltyPool:
   - rewardType: 0
@@ -48,8 +48,8 @@ MonoBehaviour:
     amount: -10
     durationDays: 0
   - rewardType: 1
-    amount: -1
+    amount: -0.4
     durationDays: 0
   - rewardType: 1
-    amount: -2
+    amount: -0.8
     durationDays: 0

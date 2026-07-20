@@ -29,10 +29,10 @@ MonoBehaviour:
     amount: 16
     durationDays: 0
   - rewardType: 1
-    amount: 1
+    amount: 0.4
     durationDays: 0
   - rewardType: 1
-    amount: 2
+    amount: 0.8
     durationDays: 0
   - rewardType: 0
     amount: 8
@@ -48,8 +48,8 @@ MonoBehaviour:
     amount: -18
     durationDays: 0
   - rewardType: 1
-    amount: -1
+    amount: -0.4
     durationDays: 0
   - rewardType: 1
-    amount: -2
+    amount: -0.8
     durationDays: 0

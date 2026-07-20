@@ -48,7 +48,7 @@ namespace NewCss
         public float hangarStayDuration = 30f;
 
         [Tooltip("Her prestige bonusu için gereken prestige miktarı")]
-        public float prestigePerBonus = 10f;
+        public float prestigePerBonus = 4f;
 
         [Tooltip("Her prestige katmanında kutu başına eklenen bonus (TL)")]
         public float bonusPerTier = 5f;
@@ -87,7 +87,7 @@ namespace NewCss
         public int callMoneyReward = 20;
 
         [Tooltip("Telefon açıldığında verilen prestij ödülü")]
-        public float callPrestigeReward = 0.5f;
+        public float callPrestigeReward = 0.2f;
 
         // ─────────────────────────────────────────────────────────────
         //  PRESTİJ CEZA / ÖDÜL  (GameStateManager, CustomerAI, BoxFallPenalty)
@@ -96,19 +96,19 @@ namespace NewCss
         [Header("=== PRESTİJ AYARLARI ===")]
 
         [Tooltip("Müşteri kaçtığında (bekleme süresi dolunca) uygulanan prestige cezası (negatif olmalı)")]
-        public float customerLostPrestigePenalty = -1.5f;
+        public float customerLostPrestigePenalty = -0.6f;
 
         [Tooltip("Müşteriye başarılı servis yapıldığında kazanılan prestige bonusu")]
-        public float customerServedPrestigeBonus = 0.5f;
+        public float customerServedPrestigeBonus = 0.2f;
 
         [Tooltip("Müşteriye yanlış ürün gösterildiğinde uygulanan prestige cezası (negatif olmalı)")]
-        public float wrongProductPrestigePenalty = -0.1f;
+        public float wrongProductPrestigePenalty = -0.04f;
 
         [Tooltip("Kutu yere düştüğünde uygulanan prestige cezası (negatif olmalı)")]
-        public float boxDropPrestigePenalty = -0.05f;
+        public float boxDropPrestigePenalty = -0.02f;
 
         [Tooltip("Tıra yanlış renk kutu teslim edildiğinde uygulanan prestige cezası (negatif olmalı). Para cezası (penaltyPerBox) ayrıca uygulanır.")]
-        public float wrongDeliveryPrestigePenalty = -0.2f;
+        public float wrongDeliveryPrestigePenalty = -0.08f;
 
         // ─────────────────────────────────────────────────────────────
         //  ETKİNLİK (Event)

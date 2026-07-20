@@ -13,17 +13,17 @@ public class PrestigeManager : NetworkBehaviour
 
     [Header("Prestige Settings")]
     [Tooltip("Initial prestige value")]
-    public float startingPrestige = 15f;
+    public float startingPrestige = 6f;
 
-    [Tooltip("Maximum prestige (üst tavan). Kutu-başı ödül tier'ının sınırsız şişmesini önler. GDD 100 diyordu ama uygulanmıyordu; economist FAZ2 önerisi 240 (pacing/upgrade turu, bkz. plans/economy-balance-round.md).")]
-    public float maxPrestige = 240f;
+    [Tooltip("Maximum prestige (üst tavan / görünür 0-100 skalası). Kutu-başı ödül tier'ının sınırsız şişmesini önler. Tüm prestij ekonomisi 240→100'e küçültüldü (miktarlar ×0.4, eşikler 10→4); pratik tavan ~96, 100 bilinçli güvenlik payı. bkz. .claude/agent-memory/economist/prestige_100_rescale_2026-07-20.md")]
+    public float maxPrestige = 100f;
 
     [Tooltip("UI Text displaying the prestige value")]
     public TMP_Text prestigeText;
 
     [Header("Customer Capacity Settings")]
     [Tooltip("Prestige required per additional customer")]
-    public float prestigePerCustomer = 10f;
+    public float prestigePerCustomer = 4f;
 
     [Tooltip("Base customer capacity")]
     public int baseCustomerCapacity = 1;
@@ -174,7 +174,7 @@ public class PrestigeManager : NetworkBehaviour
     {
         if (prestigeText != null)
         {
-            prestigeText.text = $"{currentPrestige.Value:F2}";
+            prestigeText.text = $"{currentPrestige.Value:F0}";
         }
     }
 
@@ -193,8 +193,8 @@ public class PrestigeManager : NetworkBehaviour
 
     /// <summary>
     /// Returns the current customer capacity based on prestige
-    /// Formula: Base + (Prestige / 10)
-    /// Example: 50 prestige = 1 base + 5 bonus = 6 customers
+    /// Formula: Base + (Prestige / prestigePerCustomer)  [prestigePerCustomer=4, 100-skala]
+    /// Example: 40 prestige = 1 base + 10 bonus = 11 customers
     /// </summary>
     public int GetCustomerCapacity()
     {

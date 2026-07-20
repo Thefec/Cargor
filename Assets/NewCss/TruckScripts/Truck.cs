@@ -101,7 +101,7 @@ namespace NewCss
         // Awake() içinde SO'dan başlangıç değerleri atanacak.
         [HideInInspector] public int   rewardPerBox     = 50;
         [HideInInspector] public int   penaltyPerBox    = 40;
-        [HideInInspector] public float prestigePerBonus = 10f;
+        [HideInInspector] public float prestigePerBonus = 4f;
         [HideInInspector] public float bonusPerTier     = 5f;
 
         #endregion
@@ -594,7 +594,7 @@ namespace NewCss
 
             // Yanlış kargo göndermek itibarı da düşürür (para cezasına ek — tematik tutarlılık:
             // müşteri kaçma/yanlış ürün de prestij düşürüyor). Değer merkezi SO'dan; server-only bağlam.
-            float prestigePenalty = economySettings != null ? economySettings.wrongDeliveryPrestigePenalty : -0.2f;
+            float prestigePenalty = economySettings != null ? economySettings.wrongDeliveryPrestigePenalty : -0.08f;
             PrestigeManager.Instance?.ModifyPrestige(prestigePenalty * penaltyMult);
         }
 

@@ -619,7 +619,7 @@ namespace NewCss
             {
                 float penalty = economySettings != null
                     ? economySettings.customerLostPrestigePenalty
-                    : -2f;
+                    : -0.8f;
                 // SURPRISE AUDIT günü tüm cezalar 2× (yoksa 1×).
                 float penaltyMult = EventEffectManager.Instance != null
                     ? EventEffectManager.Instance.GetPenaltyMultiplier() : 1f;

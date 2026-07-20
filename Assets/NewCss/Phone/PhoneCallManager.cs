@@ -48,7 +48,7 @@ namespace NewCss
         private float PhoneRingEventMultiplier => economySettings != null ? economySettings.phoneRingEventMultiplier : 1.5f;
         private float PhoneRingPerkBonus => economySettings != null ? economySettings.phoneRingPerkBonus : 0f;
         private int   CallMoneyReward => economySettings != null ? economySettings.callMoneyReward : 20;
-        private float CallPrestigeReward => economySettings != null ? economySettings.callPrestigeReward : 0.5f;
+        private float CallPrestigeReward => economySettings != null ? economySettings.callPrestigeReward : 0.2f;
 
         [Header("=== AUDIO ===")]
         [SerializeField, Tooltip("Telefon calarken loop calan ses")]

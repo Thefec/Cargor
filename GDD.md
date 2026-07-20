@@ -215,7 +215,7 @@ Yeni gün başladığında tetiklenen merkezi event. Aşağıdaki sistemler bu e
 | Kaynak | Miktar | Koşul |
 |--------|--------|-------|
 | Doğru kutu teslimi | +50 TL/kutu | Tıra doğru renk kutu |
-| Prestij bonusu | +5 TL/kutu × tier | Her 10 prestij = 1 tier |
+| Prestij bonusu | +5 TL/kutu × tier | Her 4 prestij = 1 tier |
 | Telefon araması | +10 TL/arama | Başarılı arama |
 | Görev ödülleri | Değişken | Göreve bağlı |
 
@@ -246,7 +246,7 @@ Tüm ekonomik değerler tek bir `GameEconomySettings` ScriptableObject'ten yöne
 │   ├── rewardPerBox: 50 TL (doğru teslimat)
 │   ├── penaltyPerBox: 40 TL (yanlış teslimat)
 │   ├── hangarStayDuration: 120s (tır bekleme)
-│   ├── prestigePerBonus: 10 (bonus tier başına prestij)
+│   ├── prestigePerBonus: 4 (bonus tier başına prestij; 100-skala)
 │   └── bonusPerTier: 5 TL (tier başına ek ödül)
 │
 ├── 📞 TELEFON AYARLARI
@@ -256,10 +256,10 @@ Tüm ekonomik değerler tek bir `GameEconomySettings` ScriptableObject'ten yöne
 │   └── maxCallsPerHour: 2
 │
 └── ⭐ PRESTİJ AYARLARI
-    ├── customerLostPrestigePenalty: -1.5
-    ├── customerServedPrestigeBonus: +0.5
-    ├── wrongProductPrestigePenalty: -0.1
-    └── boxDropPrestigePenalty: -0.05
+    ├── customerLostPrestigePenalty: -0.6
+    ├── customerServedPrestigeBonus: +0.2
+    ├── wrongProductPrestigePenalty: -0.04
+    └── boxDropPrestigePenalty: -0.02
 ```
 
 ### 4.3 Prestij-Bazlı Gelir Çarpanı
@@ -268,12 +268,12 @@ $$\text{KutuBaşıGelir} = \text{rewardPerBox} + \left\lfloor \frac{\text{presti
 
 | Prestij | Tier | Kutu Başı Gelir |
 |---------|------|----------------|
-| 0-9 | 0 | 50 TL |
-| 10-19 | 1 | 55 TL |
-| 20-29 | 2 | 60 TL |
-| 30-39 | 3 | 65 TL |
-| 40-49 | 4 | 70 TL |
-| 50+ | 5 | 75 TL |
+| 0-3 | 0 | 50 TL |
+| 4-7 | 1 | 55 TL |
+| 8-11 | 2 | 60 TL |
+| 12-15 | 3 | 65 TL |
+| 16-19 | 4 | 70 TL |
+| 20+ | 5+ | 75+ TL (tavan 100 prestij → tier 25 → 175 TL) |
 
 ---
 
@@ -333,38 +333,38 @@ Burada:
 
 | Parametre | Değer |
 |-----------|-------|
-| Başlangıç prestiji | **15.0** |
+| Başlangıç prestiji | **6.0** |
 | Minimum prestij | **0** (altına düşerse GAME OVER) |
 | Maksimum prestij | **100** |
-| Müşteri kapasitesi formülü | `1 + floor(prestige / 10)` |
+| Müşteri kapasitesi formülü | `1 + floor(prestige / 4)` |
 | Maksimum müşteri kapasitesi | **20** |
 
 ### 6.2 Prestij Değişim Kaynakları
 
 | Eylem | Prestij Değişimi | Sıklık |
 |-------|-----------------|--------|
-| Müşteriye başarılı servis | **+0.5** | Her başarılı servis |
-| Müşteri kaçtı (sabır bitti) | **-1.5** | Her kaçan müşteri |
-| Yanlış ürün gösterildi | **-0.1** | Her yanlış ürün |
-| Kutu yere düştü | **-0.05** | Her düşürme |
+| Müşteriye başarılı servis | **+0.2** | Her başarılı servis |
+| Müşteri kaçtı (sabır bitti) | **-0.6** | Her kaçan müşteri |
+| Yanlış ürün gösterildi | **-0.04** | Her yanlış ürün |
+| Kutu yere düştü | **-0.02** | Her düşürme |
 
 ### 6.3 Prestijin Oyuna Etkisi
 
 ```mermaid
 flowchart LR
-    P["⭐ Prestij"] --> A["💰 Kutu Başı Bonus\n(her 10 prestij = +5 TL)"]
-    P --> B["👥 Müşteri Kapasitesi\n(1 + floor(P/10))"]
+    P["⭐ Prestij"] --> A["💰 Kutu Başı Bonus\n(her 4 prestij = +5 TL)"]
+    P --> B["👥 Müşteri Kapasitesi\n(1 + floor(P/4))"]
     P --> C["💀 Game Over Kontrolü\n(P ≤ 0 → Kaybet)"]
 ```
 
 ### 6.4 Prestij Dengesi Analizi
 
 > [!CAUTION]
-> **Prestij yönetimi önemli.** Başlangıç prestiji 15.0 (Faz-1 dengesi); 10 müşteri kaçırma (10 × -1.5 = -15.0) oyunu bitirir. İlk günlerde prestij yönetimi yine de kritiktir.
+> **Prestij yönetimi önemli.** Başlangıç prestiji 6.0 (100-skala); 10 müşteri kaçırma (10 × -0.6 = -6.0) oyunu bitirir. İlk günlerde prestij yönetimi yine de kritiktir.
 
 Bir oyuncunun prestij dengesini sağlayabilmesi için:
-- Her 1 kaçırılan müşteriye karşı **3 başarılı servis** yapılmalıdır (-1.5 / +0.5 = 3:1 oran)
-- Her 1 yanlış ürüne karşı **1 başarılı servis** yeterlidir (-0.1 / +0.5)
+- Her 1 kaçırılan müşteriye karşı **3 başarılı servis** yapılmalıdır (-0.6 / +0.2 = 3:1 oran)
+- Her 1 yanlış ürüne karşı **1 başarılı servis** yeterlidir (-0.04 / +0.2)
 
 ---
 
@@ -445,8 +445,8 @@ sequenceDiagram
 
 ### 8.3 Teslimat Ekonomisi
 
-**Doğru teslimat geliri** (prestij = 25 varsayımıyla):
-$$\text{Gelir} = 50 + \left\lfloor \frac{25}{10} \right\rfloor \times 5 = 50 + 10 = 60\ \text{TL/kutu}$$
+**Doğru teslimat geliri** (prestij = 24 varsayımıyla):
+$$\text{Gelir} = 50 + \left\lfloor \frac{24}{4} \right\rfloor \times 5 = 50 + 30 = 80\ \text{TL/kutu}$$
 
 **Yanlış teslimat cezası**: -40 TL/kutu (sabit)
 

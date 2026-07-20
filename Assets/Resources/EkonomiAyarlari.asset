@@ -21,7 +21,7 @@ MonoBehaviour:
   rewardPerBox: 50
   penaltyPerBox: 40
   hangarStayDuration: 30
-  prestigePerBonus: 10
+  prestigePerBonus: 4
   bonusPerTier: 5
   rewardVolatility: 0
   rewardVolatilityMean: 1
@@ -30,11 +30,11 @@ MonoBehaviour:
   phoneRingEventMultiplier: 1.5
   phoneRingPerkBonus: 0
   callMoneyReward: 20
-  callPrestigeReward: 0.5
-  customerLostPrestigePenalty: -1.5
-  customerServedPrestigeBonus: 0.5
-  wrongProductPrestigePenalty: -0.1
-  boxDropPrestigePenalty: -0.05
-  wrongDeliveryPrestigePenalty: -0.2
+  callPrestigeReward: 0.2
+  customerLostPrestigePenalty: -0.6
+  customerServedPrestigeBonus: 0.2
+  wrongProductPrestigePenalty: -0.04
+  boxDropPrestigePenalty: -0.02
+  wrongDeliveryPrestigePenalty: -0.08
   festivalBonusMin: 100
   festivalBonusMax: 300

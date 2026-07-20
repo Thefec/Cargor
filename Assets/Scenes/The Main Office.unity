@@ -25672,10 +25672,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  startingPrestige: 15
-  maxPrestige: 240
+  startingPrestige: 6
+  maxPrestige: 100
   prestigeText: {fileID: 731110736}
-  prestigePerCustomer: 10
+  prestigePerCustomer: 4
   baseCustomerCapacity: 1
   maxCustomerCapacity: 20
   customerCapacityText: {fileID: 0}

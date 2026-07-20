@@ -971,7 +971,7 @@ MonoBehaviour:
   exitDelay: 2
   rewardPerBox: 20
   penaltyPerBox: 50
-  prestigePerBonus: 10
+  prestigePerBonus: 4
   bonusPerTier: 5
   enterAudioSource: {fileID: -3324958721656954846}
   enterAnimationClip: {fileID: 8300000, guid: e5cdd21af685937478f8a5590bbb9ffd, type: 3}
