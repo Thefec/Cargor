@@ -211,7 +211,8 @@ namespace NewCss
             {
                 rewardPerBox      = economySettings.rewardPerBox;
                 penaltyPerBox     = economySettings.penaltyPerBox;
-                hangarStayDuration= economySettings.hangarStayDuration;
+                hangarStayDuration= economySettings.GetHangarStayDuration(
+                    DifficultyManager.Instance != null ? DifficultyManager.Instance.PlayerCount : 1);
                 prestigePerBonus  = economySettings.prestigePerBonus;
                 bonusPerTier      = economySettings.bonusPerTier;
             }

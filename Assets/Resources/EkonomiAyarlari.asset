@@ -21,6 +21,7 @@ MonoBehaviour:
   rewardPerBox: 50
   penaltyPerBox: 40
   hangarStayDuration: 30
+  hangarStayDurationByPlayerCount: 5a0000003c000000280000001e000000
   prestigePerBonus: 4
   bonusPerTier: 5
   rewardVolatility: 0

@@ -44,8 +44,11 @@ namespace NewCss
         [Tooltip("Yanlış renk kutu tesliminde kutu başına ceza (TL)")]
         public int penaltyPerBox = 40;
 
-        [Tooltip("Tırın hangarda bekleme süresi (saniye). Süre dolunca boş da olsa kalkar.")]
+        [Tooltip("Tırın hangarda bekleme süresi (saniye). Süre dolunca boş da olsa kalkar. LEGACY skaler: yalnız hangarStayDurationByPlayerCount boş/null ise fallback olarak kullanılır.")]
         public float hangarStayDuration = 30f;
+
+        [Tooltip("Oyuncu sayısına göre tır hangar bekleme süresi (saniye). index = oyuncuSayısı-1. 1P uzun (yavaş üretim → tır dolsun; 30s'de yarı-boş kalkıyordu), 4P kısa. economist P-bazlı denge 2026-07-20 (bkz. .claude/agent-memory/economist/hangar_stay_duration_per_player.md).")]
+        public int[] hangarStayDurationByPlayerCount = { 90, 60, 40, 30 };
 
         [Tooltip("Her prestige bonusu için gereken prestige miktarı")]
         public float prestigePerBonus = 4f;
@@ -134,6 +137,19 @@ namespace NewCss
         {
             int index = Mathf.Clamp(playerCount - 1, 0, baseRentByPlayerCount.Length - 1);
             return baseRentByPlayerCount[index];
+        }
+
+        /// <summary>
+        /// Oyuncu sayısına göre tır hangar bekleme süresini (saniye) döndürür.
+        /// playerCount 1-4 arası; dışarıda en yakın uç değer. Dizi boş/null ise legacy
+        /// skaler hangarStayDuration'a düşer (güvenli fallback).
+        /// </summary>
+        public float GetHangarStayDuration(int playerCount)
+        {
+            if (hangarStayDurationByPlayerCount == null || hangarStayDurationByPlayerCount.Length == 0)
+                return hangarStayDuration;
+            int index = Mathf.Clamp(playerCount - 1, 0, hangarStayDurationByPlayerCount.Length - 1);
+            return hangarStayDurationByPlayerCount[index];
         }
 
         /// <summary>
