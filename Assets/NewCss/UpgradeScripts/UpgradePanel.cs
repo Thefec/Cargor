@@ -392,14 +392,18 @@ namespace NewCss
             panel.SetActive(false);
         }
 
+        /// <summary>
+        /// Tüm upgrade'lerin görsel durumunu seviye-0 tabanına kurar. `_entries` (o günün ≤3
+        /// kartlık draft teklifi) yerine TAM `upgrades` listesi üzerinde döner — eski hâli
+        /// teklifte olmayan upgrade'lerin levelObjects[0]'ını hiç aktive etmiyordu
+        /// (bkz. FindDefinitionByName notu, aynı bug sınıfı). Satın alınmış seviyeler bunun
+        /// ardından ReplayPurchasedUpgradeLevels ile uygulanır.
+        /// </summary>
         private void InitializeLevelObjects()
         {
-            foreach (var entry in _entries)
+            for (int i = 0; i < upgrades.Count; i++)
             {
-                if (entry.Definition.levelObjects.Length > 0)
-                {
-                    entry.Definition.levelObjects[0].SetActive(true);
-                }
+                UpdateLevelObjects(new EntryUI { Definition = upgrades[i], UpgradeIndex = i }, 0);
             }
         }
 
@@ -415,7 +419,7 @@ namespace NewCss
         {
             if (PlayerMovement == null) return;
 
-            var staminaUpgrade = FindEntryByName(UPGRADE_STAMINA);
+            var staminaUpgrade = FindDefinitionByName(UPGRADE_STAMINA);
             if (staminaUpgrade != null)
             {
                 PlayerMovement.staminaRegenRate = staminaUpgrade.Definition.StaminaValue;
@@ -437,7 +441,7 @@ namespace NewCss
         {
             if (CustomerManager == null) return;
 
-            var queueUpgrade = FindEntryByName(UPGRADE_QUEUE);
+            var queueUpgrade = FindDefinitionByName(UPGRADE_QUEUE);
             if (queueUpgrade != null)
             {
                 CustomerManager.maxQueueSize = queueUpgrade.Definition.starterValue;
@@ -446,21 +450,11 @@ namespace NewCss
 
         private void InitializeTruckUpgrade()
         {
-            var truckEntry = FindEntryByName(UPGRADE_TRUCK);
+            var truckEntry = FindDefinitionByName(UPGRADE_TRUCK);
             if (truckEntry == null) return;
 
-            // İlk hangar aktif
-            if (truckEntry.Definition.levelObjects.Length > 0)
-            {
-                truckEntry.Definition.levelObjects[0].SetActive(true);
-            }
-
-            // Diğer hangarlar kapalı
-            for (int i = 1; i < truckEntry.Definition.levelObjects.Length; i++)
-            {
-                truckEntry.Definition.levelObjects[i].SetActive(false);
-            }
-
+            // Seviye 0: yalnız ilk hangar aktif, diğerleri kapalı.
+            UpdateLevelObjects(truckEntry, 0);
             UpdateGarageDoorControllers(truckEntry, 0);
         }
 
@@ -631,9 +625,15 @@ namespace NewCss
 
         private void UpdateLevelObjects(EntryUI entry, int currentLevel)
         {
-            for (int i = 0; i < entry.Definition.levelObjects.Length; i++)
+            var levelObjects = entry.Definition.levelObjects;
+            if (levelObjects == null) return;
+
+            // null guard: artık TÜM upgrade'ler için çağrılıyor (bkz. InitializeLevelObjects),
+            // atanmamış slotu olan bir tanım tüm kurulumu NRE ile düşürmesin.
+            for (int i = 0; i < levelObjects.Length; i++)
             {
-                entry.Definition.levelObjects[i].SetActive(i <= currentLevel);
+                if (levelObjects[i] == null) continue;
+                levelObjects[i].SetActive(i <= currentLevel);
             }
         }
 
@@ -642,22 +642,18 @@ namespace NewCss
             var controllers = truckEntry.Definition.garageDoorControllers;
             if (controllers == null || controllers.Length == 0) return;
 
-            // Tüm kapıları deaktif et
-            foreach (var controller in controllers)
+            // Kilit artık `enabled` bayrağıyla değil GarageDoorController.isUnlocked ile yönetiliyor.
+            // Gerekçe: `enabled=false` kapıyı yalnızca Update'i durdurarak "dondururdu" — sahne
+            // default'u enabled=true olduğu için kilitleme yolu atlandığında TÜM kapılar açılıyordu
+            // (bkz. InitializeTruckUpgrade / FindDefinitionByName notu). isUnlocked default'u false,
+            // yani hata yönü fail-closed. Kontrolcüyü enabled bırakıyoruz ki kilitlenen bir kapının
+            // kapanma animasyonu tamamlanabilsin.
+            for (int i = 0; i < controllers.Length; i++)
             {
-                if (controller != null)
-                {
-                    controller.enabled = false;
-                }
-            }
+                if (controllers[i] == null) continue;
 
-            // Mevcut seviye ve altındakileri aktif et
-            for (int i = 0; i <= currentLevel && i < controllers.Length; i++)
-            {
-                if (controllers[i] != null)
-                {
-                    controllers[i].enabled = true;
-                }
+                controllers[i].enabled = true;
+                controllers[i].SetUnlocked(i <= currentLevel);
             }
         }
 
@@ -1420,6 +1416,27 @@ namespace NewCss
         private EntryUI FindEntryByName(string displayName)
         {
             return _entries.FirstOrDefault(e => e.Definition.displayName == displayName);
+        }
+
+        /// <summary>
+        /// İsimle upgrade arar — <see cref="_entries"/> (o günün ≤3 kartlık draft teklifi) yerine
+        /// TAM <c>upgrades</c> listesinde. Başlangıç kurulumu (Initialize*) draft'ın o an ne
+        /// teklif ettiğinden bağımsız olmalı: <see cref="FindEntryByName"/> kullanıldığında kart
+        /// teklifte yoksa null dönüp kurulum sessizce atlanıyordu. Garaj kapılarında bu, hiçbir
+        /// kontrolcünün devre dışı bırakılmaması (sahne default'u enabled=true) ve satın
+        /// alınmamış TÜM hangar kapılarının openTime'da açılması demekti.
+        /// Aynı gerekçe <see cref="ReplayUpgradeLevel"/> için de geçerli (bkz. oradaki not).
+        /// </summary>
+        private EntryUI FindDefinitionByName(string displayName)
+        {
+            for (int i = 0; i < upgrades.Count; i++)
+            {
+                if (upgrades[i].displayName == displayName)
+                {
+                    return new EntryUI { Definition = upgrades[i], UpgradeIndex = i };
+                }
+            }
+            return null;
         }
 
         private Transform FindChildRecursive(Transform parent, string childName)
