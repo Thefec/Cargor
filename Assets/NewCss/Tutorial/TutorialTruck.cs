@@ -537,13 +537,16 @@ namespace NewCss
             SetObjectColor(rightDoor, targetColor);
         }
 
+        /// <summary>Bkz. <c>Truck.TruckBlue</c> — ACES tonemapping tam doygun maviyi mora kaydırıyor.</summary>
+        private static readonly Color TruckBlue = new Color(0.2f, 0.4f, 0.8f);
+
         private static Color GetColorForBoxType(BoxInfo.BoxType boxType)
         {
             return boxType switch
             {
                 BoxInfo.BoxType.Red => Color.red,
                 BoxInfo.BoxType.Yellow => Color.yellow,
-                BoxInfo.BoxType.Blue => Color.blue,
+                BoxInfo.BoxType.Blue => TruckBlue,
                 _ => Color.white
             };
         }

@@ -1,6 +1,6 @@
 # Economist Agent Memory Index
 
-- [Python yok, Node.js kullan](env_no_python.md) — bu makinede python3/python/py PATH'te yok, hesaplamalar için node kullan
+- [Python/Node ortamı](env_no_python.md) — GÜNCEL 2026-07-25: python3 artık PATH'te ama sim.js entegrasyonu için Node tercih devam ediyor
 - [Kira ölüm sarmalı kök nedeni](rent_death_spiral.md) — ✅ÇÖZÜLDÜ: kök neden rentGrowthMultiplier (startingMoney değil), 1.3→1.15 uygulandı; wealthTax aslında inert'ti (asıl kaldıraç yalnız rentGrowth)
 - [Başlangıç parası çelişkisi](money_config_conflict.md) — ÇÖZÜLDÜ (2026-07-12 doğrulandı): startingMoney=500, moneyMultiplierPerPlayer=1.0, rentGrowthMultiplier=1.15 artık senkron
 - [Eksik event'ler G9 kalibrasyonu](missing_events_g9.md) — ✅BÜYÜK ÖLÇÜDE UYGULANDI (2026-07-18 doğrulandı): BUSY/RAINY/MARKETING/AUDIT/SUPPORT kod ile eşleşiyor; kalan boşluk FESTIVAL DAY (hâlâ sabit TL, bkz economy-balance-round.md P2)
@@ -17,11 +17,14 @@
 - [Telefon pasif/reaktif yeniden tasarım](phone_passive_redesign.md) — ✅TAM UYGULANDI (2026-07-18 doğrulandı): additive+clamp(0.65) formülü PhoneCallManager.GetEffectiveRingChance()'ta birebir
 - [Prestij tavanı bug + düzeltme](prestige_cap_bug_and_fix.md) — ✅UYGULANDI (doğrulandı 2026-07-18): maxPrestige=150 canlı kodda; 2026-07-18'de tavan-dolma günleri metodoloji düzeltmesiyle değişti (bkz not)
 - [Tır/hangar penceresi tavanı](truck_hangar_window_cap.md) — YENİ (2026-07-18): hangarStayDuration=30s ekonominin en yüklü kaldıracı çıktı; hangar sayısı (1vs2) OPTIMISTIC modelde önemsiz, asıl darboğaz tır-saati/gün-uzunluğu oranı
-- [Quest ödül dengesi (EV mekaniği + easy3 fix)](quest_reward_balance.md) — pick-2-of-n EV formülü; easy3 180TL→30TL EV düzeltmesi UYGULANDI (2026-07-18), easy1/2 değişmedi
+- [Quest ödül dengesi (EV mekaniği + easy3 fix)](quest_reward_balance.md) — ⚠️TARİHSEL (2026-07-25): easy1-5 siliniyor, EV formülü [[quest_tier_redesign_2026-07-25]]'te tekrar kullanıldı
 - [fast_hangar perk kodu bug](fast_hangar_perk_bug.md) — ✅ÇÖZÜLDÜ (2026-07-20): PerkEffect.cs:102 artık GetHangarStayDuration(pc)*1.30f (P-bazlı canlı taban); hardcoded 120f gitti (tarihsel kayıt)
 - [Prestij tavanı yeniden ayar 2026-07-18](prestige_cap_retune_2026-07-18.md) — maxPrestige 150→240 önerisi (2P/3P/4P tavan günü 8-11'den 13-15'e); playtest'e bağlı geç-oyun enflasyon trade-off'u
 - [Prestij 0-100 rescale (k=0.4)](prestige_100_rescale_2026-07-20.md) — ✅UYGULANDI (2026-07-20, 1496949): 240→100 tavan, eşik 10→4, miktarlar×0.4; sim senkron; 2P/3P/4P tavan günü 16/14/13, 1P tavana ulaşmıyor
-- [Quest easy4/5 çifti](quest_easy4_5_duplicate.md) — ✅questId+duplicate ÇÖZÜLDÜ (2026-07-20): easy4=Mavi Raf(4)/easy5=Sarı(3) farklı; KALAN P2: EV'leri (21.6/24) hâlâ easy2(17.6) üstünde
+- [Quest easy4/5 çifti](quest_easy4_5_duplicate.md) — ⚠️TARİHSEL (2026-07-25): easy4/5 dahil tüm easy1-5 siliniyor, bkz [[quest_tier_redesign_2026-07-25]]
 - [Q3: TempMoneyPerBox ölü kod](q3_tempmoneyperbox_dead.md) — YENİ (2026-07-19): KARAR=bırak; ne quest veriyor ne Truck.cs tüketiyor; wiring için yedek sayı (+1TL/kutu, 2gün) hazır
 - [Q8: buff stack politikası](q8_buff_stacking_policy.md) — YENİ (2026-07-19): şu an sıfır etki (easy1-5 hiç buff vermiyor); permanent additive KORU, temp buff'a ileride MAX_STACK=2 cap öner
 - [hangarStayDuration P-bazlı](hangar_stay_duration_per_player.md) — ✅UYGULANDI (2026-07-20, 6ef9ad6): 90/60/40/30 (1P-4P) canlı; GetHangarStayDuration getter; STRICT day8 kazanç P1+27%/P2+15%/P3+6%/P4 0%, OPTIMISTIC'te etkisiz
+- [Quest 3-tier yeniden tasarım (Easy/Medium/Hard)](quest_tier_redesign_2026-07-25.md) — YENİ CANLI TABLO: 15 quest (5/tier), EV 20/36/60 TL, targetCount+limit+Görev Tier fiyat önerisi, tüm sim-doğrulandı
+- [CompleteTruck renk kısıtı + ürün-renk eşlemesi](quest_completetruck_color_constraint.md) — YENİ: CompleteTruck ASLA renk-kilitlenemez (soft-lock bug), Toy=Red/Clothing=Yellow/Glass=Blue sabit eşleme
+- [AnswerPhone+CompleteSpecificColorTruck bağlandı](quest_answerphone_colortruck_2026-07-25.md) — 5→7 quest/tier (21 toplam); AnswerPhone P-BAĞIMSIZ (target 2/3/4, tam ödül şablonu OK); ColorTruck target 1/2/3 (renk-bag KOD-DOĞRULANMIŞ tam 1/3); limit/EV bandı bozulmadı

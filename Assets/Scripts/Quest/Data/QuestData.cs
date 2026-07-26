@@ -30,6 +30,9 @@ namespace NewCss.Quest
         [TextArea(2, 4)]
         public string questDescription;
 
+        [Tooltip("Görev kartı ikonu. Boş bırakılırsa quest slot prefab'ındaki varsayılan ikon korunur.")]
+        public Sprite icon;
+
         [Header("=== TIER & TYPE ===")]
         [Tooltip("Görev zorluk tier'ı")]
         public QuestTier tier = QuestTier.Easy;

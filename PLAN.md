@@ -8,19 +8,22 @@
 
 ## 🎯 Şu an aktif iş
 
-**RELEASE PUSH** — buglar → denge → Steam çıkışı. Branch: `feature/roguelite-upgrade-draft`.
-→ Faz kapsamı & bug envanteri: **[plans/release-push.md](plans/release-push.md)** · oturum logu: **[plans/devam.md](plans/devam.md)**
+**EKONOMİ DENGE + QUEST TURU.** Branch: `feature/economy-balance-round` (= `main` + 1 commit `c729dbb`; `origin/main` = `57b9be3`).
+→ Oturum logu (**önce bunu oku**): **[plans/devam.md](plans/devam.md)**
 
-- ✅ **Roguelite Upgrade Draft BİTTİ** (Task 0-9 commit'li, 16 perk sahnede authored, ekonomi v3.2/9945 TL, qa merge-öncesi tarama: **blocker yok**). Kod olarak `main`'e merge'e hazır — tek kalan: FAZ 0 late-join çok-oyunculu Play testi (kullanıcıda). Detay: [plans/roguelite-draft.md](plans/roguelite-draft.md).
-- ✅ **FAZ 1 bug-avı** büyük ölçüde bitti: 21+ bulgu kapandı (G1-G28 exploit/korrektlik + N7/E1/E2/E4 netcode/çekirdek). Kalan açıklar release-push.md'de (N1-N6/N8-N10, G9-artış2, G15/G23/G24/G25/G28, C1).
+- ✅ **Roguelite draft + RELEASE PUSH FAZ 0/1 kapandı** — main'e merge+push'lu (`5833070`, +73 commit). Arşiv niteliğinde: [plans/roguelite-draft.md](plans/roguelite-draft.md), [plans/release-push.md](plans/release-push.md).
+- ✅ **Ekonomi turları merge'li:** prestij 0–240 → **0–100 rescale** (`1496949`) · hangar bekleme süresi oyuncu-bazlı 1P=90…4P=30 (`6ef9ad6`) · upgrade draft temizliği + Money zararlı-bug + perk fiyat (`57b9be3`).
+- ✅ **Hangar kapısı kök-neden fix'i** (`c729dbb`, commit'li, **push yok**) — kilit `enabled` yerine `isUnlocked` guard'ında, fail-closed.
+- 🚧 **Quest yeniden tasarımı — Seçenek B uygulandı, COMMIT'SİZ.** 3 tier de canlı, 15 yeni asset üretildi, kontrol ONAY, headless derleme 0 CS hata. → **[plans/quest-redesign-2026-07-25.md](plans/quest-redesign-2026-07-25.md)**
 
 ### ⏭️ Sıradaki adım (buradan devam)
-1. 🔧 **Commit'siz bug fix'leri kapat (bu oturum):** dolu-kutu-fırlatınca-parçalanma (`NetworkWorldItem` doluluk kontrolü + `RedFull.prefab` veri) + client NaN-frustum spam'i (`WorldSpaceCanvasCameraBinder`). Kullanıcı play-test'i ✅. Kalan: kontrol kapısı + seçici commit (hassas font/SteamManager/ProjectSettings dosyalarına dokunmadan).
-2. 🙋 **Manuel test borcu:** [plans/manuel-gorevler.md](plans/manuel-gorevler.md) — A0 (bu oturum fix'leri) + A/B/C/D (güvenlik regresyonu, FAZ 0 merge blocker, roguelite draft senkron, ekonomi ölçümü).
-3. 📊 **FAZ 2 açık kararlar:** C1 kota-ölümü (playtest-blocked, [plans/economy-audit-2026-07-13.md](plans/economy-audit-2026-07-13.md)); C5 wealthTax ✅ çözüldü (`9d2c3b0`).
+1. 🙋 **Kullanıcıda:** Unity'de eski `Assets/Resources/Quests/easy1-5.asset` sil (yoksa havuz 10 Easy + 5 Med + 5 Hard olur) → quest play-test → **commit kararı** (quest turu hâlâ commit'siz).
+2. 📊 **En büyük açık yapısal bulgu: tır penceresi cap** — tır 8:00–17:00 (9s) vs talep 7:00–18:00 (11s) → talebin **%18'i sıfır kapasite**. Para yalnız tırdan geliyor → bu doğrudan gelir tavanı. Kod-doğrulandı, değer seçimi economist+playtest'e bağlı.
+3. 🔧 **Quest ölü tetikleyiciler** (7 tipten 4'ü çağrısız): `AnswerPhone` + `CompleteSpecificColorTruck` bağlanabilir (§7.6) → kullanılabilir tip 3'ten 5'e çıkar. `HandleTruckCompleted` hardcoded `Red` bug'ı da burada.
+4. 🧹 **Temizlik onayı bekliyor:** kök `herhangi` (0 bayt) + `Assets/_Recovery/0 (10..13).unity`.
 
-> ⚠️ Netcode/sahne/prefab işleri → batchmode EditMode sadece derlemeyi doğrular; senkron/UI için Play/gerçek Unity gerekir.
-> ℹ️ Çalışma ağacındaki hassas dosyalar (late-join fix, SteamManager, fontlar, ProjectSettings) Steam testine bağlı — commit'siz bırakıldı.
+> ⚠️ Batchmode EditMode **yalnız derlemeyi** doğrular; netcode senkron / UI / Play davranışı için gerçek Unity gerekir.
+> ℹ️ Çalışma ağacında kalıcı gürültü: ~52 font/materyal churn + `UpgradeEntry.prefab` UI redesign kolu — commit'lerde dışarıda bırakılıyor ([[unity-batchmode-artifacts]]).
 
 ---
 
@@ -34,12 +37,17 @@
 ## 🗂️ Plan dosyaları
 | Dosya | İçerik | Durum |
 |---|---|---|
-| **[plans/release-push.md](plans/release-push.md)** | RELEASE PUSH fazları (FAZ 0 test → FAZ 1 bug envanteri → ekonomi → Steam) + gerçek bug envanteri (G/N/E) | 🚧 **aktif — gerçek kaynak** |
-| **[plans/devam.md](plans/devam.md)** | Oturum logu (en son ne yapıldı + sırada ne) — oturum başında ÖNCE bunu oku | 🚧 canlı |
-| **[plans/manuel-gorevler.md](plans/manuel-gorevler.md)** | 🙋 **Senin yapacakların** — Unity Play/UI/multiplayer teyitleri | 🔴 A0+A/B/C/D testi bekliyor |
-| [plans/roguelite-draft.md](plans/roguelite-draft.md) | Draft sistemi tasarım + uygulama (Task 0-9) | ✅ bitti (merge-pending) |
-| [plans/economy-audit-2026-07-13.md](plans/economy-audit-2026-07-13.md) | FAZ 2 ekonomi denetimi (16-gün sim, C1/C5 kararları) | 📖 karar-referans |
-| [plans/economy-balance.md](plans/economy-balance.md) | Ekonomi denge (Faz 1 değerleri) | ✅ bitti (playtest teyidi borcu) |
+| **[plans/devam.md](plans/devam.md)** | Oturum logu (en son ne yapıldı + sırada ne) — oturum başında ÖNCE bunu oku | 🚧 **canlı — gerçek kaynak** |
+| **[plans/quest-redesign-2026-07-25.md](plans/quest-redesign-2026-07-25.md)** | Quest derin analizi + 15-asset tasarımı + Seçenek B | 🚧 aktif (commit'siz) |
+| [plans/economy-audit-2026-07-20.md](plans/economy-audit-2026-07-20.md) | Holistik ekonomi denetimi (7 sistem) — **tır penceresi cap** burada | 📖 açık bulgu kaynağı |
+| [plans/economy-balance-round.md](plans/economy-balance-round.md) | Birleşik ekonomi turu (quest/upgrade/event ortak denge) | ✅ uygulandı |
+| [plans/upgrade-round-2026-07-20.md](plans/upgrade-round-2026-07-20.md) | Upgrade fiyat/ROI turu (disabledInDraft, Money bug, perk fiyat) | ✅ uygulandı |
+| [plans/upgrade-isim-listesi.md](plans/upgrade-isim-listesi.md) | 25 upgrade İngilizce⇄Türkçe isim tablosu + duplike/ölü tespiti | 📖 referans (sahnede uygulandı) |
+| [plans/playtest-2026-07-19.md](plans/playtest-2026-07-19.md) | 🙋 **Senin yapacakların** — 27 maddelik play-test checklist'i | 🔴 bekliyor |
+| [plans/manuel-gorevler.md](plans/manuel-gorevler.md) | 🙋 Unity Play/UI/multiplayer teyitleri (eski tur) | 🟡 kısmen bayat |
+| [plans/release-push.md](plans/release-push.md) | RELEASE PUSH fazları + bug envanteri (G/N/E) | 🗄️ FAZ 0/1 kapandı |
+| [plans/roguelite-draft.md](plans/roguelite-draft.md) | Draft sistemi tasarım + uygulama (Task 0-9) | ✅ bitti + merge'li |
+| [plans/economy-audit-2026-07-13.md](plans/economy-audit-2026-07-13.md) · [economy-audit-2026-07-17.md](plans/economy-audit-2026-07-17.md) · [economy-balance.md](plans/economy-balance.md) | Eski ekonomi denetimleri | 📖 tarihsel referans |
 | [plans/roadmap.md](plans/roadmap.md) | Orijinal yol haritası + Sprint 0-3 + departman tablosu | 📖 referans |
 | [plans/archive/2026-07-changelog.md](plans/archive/2026-07-changelog.md) | Değişiklik günlüğü, bitmiş kararlar | 🗄️ arşiv |
 

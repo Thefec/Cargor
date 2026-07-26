@@ -74,6 +74,10 @@ namespace NewCss
             "bozulur). Eski/ölü/duplike omurgaları (Money, Customer, Water, Stamina, Queue) kapatmak için.")]
         public bool disabledInDraft;
 
+        [Header("=== VISUAL ===")]
+        [Tooltip("Kart ikonu. Boş bırakılırsa entry prefab'ındaki varsayılan (placeholder) ikon korunur.")]
+        public Sprite icon;
+
         [Header("=== LEVEL OBJECTS ===")]
         [Tooltip("Seviye objeleri (Level0, Level1, Level2...)")]
         public GameObject[] levelObjects;
@@ -132,12 +136,60 @@ namespace NewCss
         private const string LOG_PREFIX = "[UpgradePanel]";
         private const int PANEL_OPEN_HOUR = 10;
 
-        // Upgrade Names
+        // Omurga (LeveledBackbone) KANONİK ANAHTARLARI — yalnız kod içi kimlik, oyuncuya görünmez.
+        // displayName artık oyuncuya görünen (ve değişebilen) metin olduğu için eşleşme doğrudan
+        // displayName üzerinden YAPILMAZ; her zaman ResolveUpgradeKey'den geç.
         private const string UPGRADE_QUEUE = "Queue";
         private const string UPGRADE_STAMINA = "Stamina";
         private const string UPGRADE_MONEY = "Money";
         private const string UPGRADE_TRUCK = "Truck";
         private const string UPGRADE_QUEST_TIER = "Quest Tier";
+
+        /// <summary>
+        /// Sahnedeki omurga kimliğini (effectId veya displayName) kanonik anahtara çeviren tablo.
+        /// Gerekçe: omurgaların sahnede effectId'si boştu, bu yüzden tarihsel olarak displayName ile
+        /// eşleşiyorlardı. 2026-07-25'te isimler Türkçeleştirilince ("Quest Tier" → "Görev Kademesi")
+        /// TÜM eşleşmeler sessizce koptu — Görev Tier hiç uygulanmadı, garaj kapısı kilidi açılmadı.
+        /// Bir omurgayı yeniden adlandırırken YA yeni adı buraya ekle YA da sahnede effectId'sini
+        /// ilgili <c>bb_*</c> anahtarına ayarla (tercih edilen, isimden bağımsız yol).
+        /// <see cref="WarnMissingBackbones"/> çözülemeyen omurgayı başlangıçta hata olarak basar.
+        /// </summary>
+        private static readonly Dictionary<string, string> UpgradeKeyAliases =
+            new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            // effectId ile (kalıcı — isim değişse de bozulmaz)
+            { "bb_queue",      UPGRADE_QUEUE },
+            { "bb_stamina",    UPGRADE_STAMINA },
+            { "bb_money",      UPGRADE_MONEY },
+            { "bb_truck",      UPGRADE_TRUCK },
+            { "bb_quest_tier", UPGRADE_QUEST_TIER },
+
+            // Orijinal İngilizce sahne adları (HEAD sahnesi hâlâ bunları taşıyor)
+            { "Queue",      UPGRADE_QUEUE },
+            { "Stamina",    UPGRADE_STAMINA },
+            { "Money",      UPGRADE_MONEY },
+            { "Truck",      UPGRADE_TRUCK },
+            { "Quest Tier", UPGRADE_QUEST_TIER },
+
+            // Önerilen İngilizce adlar (plans/upgrade-isim-listesi.md §B)
+            { "Wide Queue",   UPGRADE_QUEUE },
+            { "Hardy Crew",   UPGRADE_STAMINA },
+            { "Solid Till",   UPGRADE_MONEY },
+            { "Extra Hangar", UPGRADE_TRUCK },
+
+            // Türkçe adlar (2026-07-25 yeniden adlandırması — sahnede şu an bunlar var)
+            { "Geniş Kuyruk",   UPGRADE_QUEUE },
+            { "Dinç Ekip",      UPGRADE_STAMINA },
+            { "Sağlam Kasa",    UPGRADE_MONEY },
+            { "Ek Hangar",      UPGRADE_TRUCK },
+            { "Görev Kademesi", UPGRADE_QUEST_TIER },
+        };
+
+        /// <summary>Kod tarafında etkisi olan, sahnede MUTLAKA bulunması gereken omurgalar.</summary>
+        private static readonly string[] RequiredBackboneKeys =
+        {
+            UPGRADE_QUEUE, UPGRADE_STAMINA, UPGRADE_MONEY, UPGRADE_TRUCK, UPGRADE_QUEST_TIER
+        };
 
         // UI Element Names
         private const string UI_NAME_TEXT = "NameText";
@@ -145,6 +197,9 @@ namespace NewCss
         private const string UI_COST_TEXT = "CostText";
         private const string UI_CONTENT_TEXT = "ContentText";
         private const string UI_BUY_BUTTON = "BuyButton";
+        // İkon slotu adayları — entry prefab'ında bu adlardan biriyle bir Image çocuğu aranır.
+        // Eşleşme BÜYÜK/KÜÇÜK HARF DUYARSIZ: "icon", "Icon", "IconImage" hepsi çalışır.
+        private static readonly string[] UI_ICON_NAMES = { "Icon", "IconImage" };
         private const string UI_BUTTON_TEXT = "Text";
         private const string UI_BUTTON_TEXT_TMP = "Text (TMP)";
 
@@ -174,6 +229,7 @@ namespace NewCss
             public TMP_Text CostText;
             public TMP_Text ContentText;
             public Button BuyButton;
+            public Image IconImage;
         }
 
         #endregion
@@ -396,7 +452,7 @@ namespace NewCss
         /// Tüm upgrade'lerin görsel durumunu seviye-0 tabanına kurar. `_entries` (o günün ≤3
         /// kartlık draft teklifi) yerine TAM `upgrades` listesi üzerinde döner — eski hâli
         /// teklifte olmayan upgrade'lerin levelObjects[0]'ını hiç aktive etmiyordu
-        /// (bkz. FindDefinitionByName notu, aynı bug sınıfı). Satın alınmış seviyeler bunun
+        /// (bkz. FindDefinitionByKey notu, aynı bug sınıfı). Satın alınmış seviyeler bunun
         /// ardından ReplayPurchasedUpgradeLevels ile uygulanır.
         /// </summary>
         private void InitializeLevelObjects()
@@ -409,6 +465,7 @@ namespace NewCss
 
         private void InitializeBaseValues()
         {
+            WarnMissingBackbones();
             InitializeStaminaBaseValue();
             InitializeMoneyBaseValue();
             InitializeQueueBaseValue();
@@ -419,7 +476,7 @@ namespace NewCss
         {
             if (PlayerMovement == null) return;
 
-            var staminaUpgrade = FindDefinitionByName(UPGRADE_STAMINA);
+            var staminaUpgrade = FindDefinitionByKey(UPGRADE_STAMINA);
             if (staminaUpgrade != null)
             {
                 PlayerMovement.staminaRegenRate = staminaUpgrade.Definition.StaminaValue;
@@ -441,7 +498,7 @@ namespace NewCss
         {
             if (CustomerManager == null) return;
 
-            var queueUpgrade = FindDefinitionByName(UPGRADE_QUEUE);
+            var queueUpgrade = FindDefinitionByKey(UPGRADE_QUEUE);
             if (queueUpgrade != null)
             {
                 CustomerManager.maxQueueSize = queueUpgrade.Definition.starterValue;
@@ -450,7 +507,7 @@ namespace NewCss
 
         private void InitializeTruckUpgrade()
         {
-            var truckEntry = FindDefinitionByName(UPGRADE_TRUCK);
+            var truckEntry = FindDefinitionByKey(UPGRADE_TRUCK);
             if (truckEntry == null) return;
 
             // Seviye 0: yalnız ilk hangar aktif, diğerleri kapalı.
@@ -609,7 +666,7 @@ namespace NewCss
 
         private void HandleSpecialUpgrades(EntryUI entry, int newLevel)
         {
-            if (entry.Definition.displayName != UPGRADE_TRUCK) return;
+            if (ResolveUpgradeKey(entry.Definition) != UPGRADE_TRUCK) return;
 
             UpdateGarageDoorControllers(entry, newLevel);
 
@@ -645,7 +702,7 @@ namespace NewCss
             // Kilit artık `enabled` bayrağıyla değil GarageDoorController.isUnlocked ile yönetiliyor.
             // Gerekçe: `enabled=false` kapıyı yalnızca Update'i durdurarak "dondururdu" — sahne
             // default'u enabled=true olduğu için kilitleme yolu atlandığında TÜM kapılar açılıyordu
-            // (bkz. InitializeTruckUpgrade / FindDefinitionByName notu). isUnlocked default'u false,
+            // (bkz. InitializeTruckUpgrade / FindDefinitionByKey notu). isUnlocked default'u false,
             // yani hata yönü fail-closed. Kontrolcüyü enabled bırakıyoruz ki kilitlenen bir kapının
             // kapanma animasyonu tamamlanabilsin.
             for (int i = 0; i < controllers.Length; i++)
@@ -663,32 +720,33 @@ namespace NewCss
 
         private void ApplyUpgradeEffect(EntryUI entry, int level)
         {
+            // Önce omurga anahtarı: sahnede effectId dolu olsa bile omurgalar PerkEffect'e GİTMEZ.
+            switch (ResolveUpgradeKey(entry.Definition))
+            {
+                case UPGRADE_QUEUE:
+                    ApplyQueueUpgrade(entry, level);
+                    return;
+
+                case UPGRADE_STAMINA:
+                    ApplyStaminaUpgrade(entry, level);
+                    return;
+
+                case UPGRADE_MONEY:
+                    ApplyMoneyUpgrade(entry, level);
+                    return;
+
+                case UPGRADE_QUEST_TIER:
+                    ApplyQuestTierUpgrade(level);
+                    return;
+
+                case UPGRADE_TRUCK:
+                    return; // etkisi HandleSpecialUpgrades'te (garaj kapıları + TruckSpawner)
+            }
+
             string effectId = entry.Definition.effectId;
             if (!string.IsNullOrEmpty(effectId))
             {
                 PerkEffect.Apply(effectId, level, BuildPerkContext());
-                return;
-            }
-
-            string upgradeName = entry.Definition.displayName;
-
-            switch (upgradeName)
-            {
-                case UPGRADE_QUEUE:
-                    ApplyQueueUpgrade(entry, level);
-                    break;
-
-                case UPGRADE_STAMINA:
-                    ApplyStaminaUpgrade(entry, level);
-                    break;
-
-                case UPGRADE_MONEY:
-                    ApplyMoneyUpgrade(entry, level);
-                    break;
-
-                case UPGRADE_QUEST_TIER:
-                    ApplyQuestTierUpgrade(level);
-                    break;
             }
         }
 
@@ -870,12 +928,36 @@ namespace NewCss
         }
 
         /// <summary>
+        /// Server-only: quest sistemi gerçekten oynanabilir mi? — sahnede bir QuestManager VAR ve
+        /// havuzunda en az bir quest tanımlı. Bu bayrak "Görev Kademesi" upgrade'inin draft'a girip
+        /// giremeyeceğini belirler (<c>requiresQuestSystem</c> → <see cref="DraftPool.IsEligible"/>).
+        ///
+        /// Eskiden bayrağı hiçbir yer <c>true</c> yapmıyordu: upgrade hiç teklif edilmiyor →
+        /// <c>SetQuestTier</c> hiç çağrılmıyor → <c>_currentQuestTier</c> ömür boyu 0 → Medium/Hard
+        /// quest'ler oyunda ULAŞILAMAZ kalıyordu (2026-07-25 tespiti, plans/quest-redesign §7.0-3).
+        /// Quest asset'i yoksa bayrak yine false kalır; boş bir sistemin kartı draft'ı kirletmesin.
+        /// </summary>
+        private void RefreshQuestSystemFlag()
+        {
+            if (!IsServer) return;
+
+            var questManager = Quest.QuestManager.Instance;
+            bool active = questManager != null && questManager.HasQuests;
+
+            if (_questSystemActive.Value == active) return;
+
+            _questSystemActive.Value = active;
+            LogDebug($"Quest sistemi bayrağı: {active}");
+        }
+
+        /// <summary>
         /// Server-only: verilen elverişlilik listesine göre eligibility hesaplar.
         /// <see cref="GenerateDailyOfferServer"/> ve reroll akışı arasında paylaşılır.
         /// </summary>
         private List<bool> BuildEligibility(int currentDay, out PerkTier maxUnlocked)
         {
             maxUnlocked = DraftPool.MaxUnlockedTier(currentDay);
+            RefreshQuestSystemFlag();
             bool questActive = _questSystemActive.Value;
             var exclusionGroups = BuildExclusionGroups();
 
@@ -1197,14 +1279,13 @@ namespace NewCss
             // Set initial localized name
             entry.NameText.text = GetLocalizedUpgradeName(def);
 
-            // Level Text
+            // Level Text — OPSİYONEL. Kart tasarımında seviye metni olmayabilir; yokluğu kartın
+            // tamamen kurulamamasına (ve hiç görünmemesine) yol açmamalı.
             entry.LevelText = FindTextComponent(go, UI_LEVEL_TEXT);
-            if (entry.LevelText == null)
+            if (entry.LevelText != null)
             {
-                LogError($"LevelText not found for {def.displayName}");
-                return false;
+                entry.LevelText.raycastTarget = false;
             }
-            entry.LevelText.raycastTarget = false;
 
             // Cost Text
             entry.CostText = FindTextComponent(go, UI_COST_TEXT);
@@ -1239,7 +1320,46 @@ namespace NewCss
                 return false;
             }
 
+            // Icon — OPSİYONEL. Slot prefab'da yoksa kart yine kurulur.
+            entry.IconImage = FindIconComponent(go);
+            ApplyIcon(entry, def);
+
             return true;
+        }
+
+        /// <summary>
+        /// Entry prefab'ındaki ikon slotunu bulur. Ad eşleşmesi büyük/küçük harf duyarsızdır
+        /// ("icon" da "Icon" da olur) ve yalnızca üzerinde <see cref="Image"/> olan obje kabul edilir —
+        /// aynı ada sahip ama Image'siz bir konteyner slotu yanlışlıkla kapmaz.
+        /// </summary>
+        private Image FindIconComponent(GameObject go)
+        {
+            foreach (var iconName in UI_ICON_NAMES)
+            {
+                var iconTransform = FindChildRecursiveIgnoreCase(go.transform, iconName);
+                var image = iconTransform?.GetComponent<Image>();
+                if (image != null) return image;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Upgrade tanımındaki ikonu karta yazar. Tanımda ikon yoksa prefab'ın varsayılan
+        /// (placeholder) sprite'ı olduğu gibi bırakılır — kart boş görünmez.
+        /// </summary>
+        private void ApplyIcon(EntryUI entry, UpgradeDefinition def)
+        {
+            if (entry.IconImage == null) return;
+
+            entry.IconImage.raycastTarget = false;
+
+            if (def.icon != null)
+            {
+                entry.IconImage.sprite = def.icon;
+            }
+
+            entry.IconImage.enabled = entry.IconImage.sprite != null;
         }
 
         private bool TrySetTextComponent(GameObject go, string elementName, string text)
@@ -1289,15 +1409,21 @@ namespace NewCss
                 entry.NameText.text = displayName;
             }
 
-            // Update level text with localized format
-            string levelTemplate = LocalizationHelper.GetLocalizedString(LOC_KEY_LEVEL);
-            try
+            // Update icon (tanım değişmiş olabilir — örn. draft kartı yeniden bağlandığında)
+            ApplyIcon(entry, entry.Definition);
+
+            // Update level text with localized format (slot opsiyonel)
+            if (entry.LevelText != null)
             {
-                entry.LevelText.text = string.Format(levelTemplate, currentVisualLevel);
-            }
-            catch
-            {
-                entry.LevelText.text = $"Level: {currentVisualLevel}";
+                string levelTemplate = LocalizationHelper.GetLocalizedString(LOC_KEY_LEVEL);
+                try
+                {
+                    entry.LevelText.text = string.Format(levelTemplate, currentVisualLevel);
+                }
+                catch
+                {
+                    entry.LevelText.text = $"Level: {currentVisualLevel}";
+                }
             }
 
             // Update content text with localized value
@@ -1413,30 +1539,67 @@ namespace NewCss
             return DayCycleManager.Instance?.CurrentHour ?? 0;
         }
 
-        private EntryUI FindEntryByName(string displayName)
+        /// <summary>
+        /// Bir tanımın kanonik omurga anahtarı; omurga değilse (perk vb.) null.
+        /// Sıra: effectId → displayName. Perk effectId'leri (cheap_rent, all_in, ...) tabloda
+        /// olmadığı için null döner — bu doğru davranış, onlar PerkEffect'e gider.
+        /// </summary>
+        private static string ResolveUpgradeKey(UpgradeDefinition definition)
         {
-            return _entries.FirstOrDefault(e => e.Definition.displayName == displayName);
+            if (definition == null) return null;
+
+            string effectId = definition.effectId?.Trim();
+            if (!string.IsNullOrEmpty(effectId) && UpgradeKeyAliases.TryGetValue(effectId, out string byEffectId))
+                return byEffectId;
+
+            string name = definition.displayName?.Trim();
+            if (!string.IsNullOrEmpty(name) && UpgradeKeyAliases.TryGetValue(name, out string byName))
+                return byName;
+
+            return null;
+        }
+
+        private EntryUI FindEntryByKey(string upgradeKey)
+        {
+            return _entries.FirstOrDefault(e => ResolveUpgradeKey(e.Definition) == upgradeKey);
         }
 
         /// <summary>
-        /// İsimle upgrade arar — <see cref="_entries"/> (o günün ≤3 kartlık draft teklifi) yerine
-        /// TAM <c>upgrades</c> listesinde. Başlangıç kurulumu (Initialize*) draft'ın o an ne
-        /// teklif ettiğinden bağımsız olmalı: <see cref="FindEntryByName"/> kullanıldığında kart
-        /// teklifte yoksa null dönüp kurulum sessizce atlanıyordu. Garaj kapılarında bu, hiçbir
-        /// kontrolcünün devre dışı bırakılmaması (sahne default'u enabled=true) ve satın
-        /// alınmamış TÜM hangar kapılarının openTime'da açılması demekti.
+        /// Kanonik anahtarla upgrade arar — <see cref="_entries"/> (o günün ≤3 kartlık draft
+        /// teklifi) yerine TAM <c>upgrades</c> listesinde. Başlangıç kurulumu (Initialize*)
+        /// draft'ın o an ne teklif ettiğinden bağımsız olmalı: <see cref="FindEntryByKey"/>
+        /// kullanıldığında kart teklifte yoksa null dönüp kurulum sessizce atlanıyordu. Garaj
+        /// kapılarında bu, hiçbir kontrolcünün kilitlenmemesi ve satın alınmamış TÜM hangar
+        /// kapılarının openTime'da açılması demekti.
         /// Aynı gerekçe <see cref="ReplayUpgradeLevel"/> için de geçerli (bkz. oradaki not).
         /// </summary>
-        private EntryUI FindDefinitionByName(string displayName)
+        private EntryUI FindDefinitionByKey(string upgradeKey)
         {
             for (int i = 0; i < upgrades.Count; i++)
             {
-                if (upgrades[i].displayName == displayName)
+                if (ResolveUpgradeKey(upgrades[i]) == upgradeKey)
                 {
                     return new EntryUI { Definition = upgrades[i], UpgradeIndex = i };
                 }
             }
             return null;
+        }
+
+        /// <summary>
+        /// Kod tarafında etkisi olan bir omurga sahnede çözülemiyorsa yüksek sesle bildirir.
+        /// 2026-07-25'teki sessiz kırılmanın (Türkçe yeniden adlandırma tüm displayName
+        /// eşleşmelerini kopardı) bir daha fark edilmeden geçmemesi için.
+        /// </summary>
+        private void WarnMissingBackbones()
+        {
+            foreach (var key in RequiredBackboneKeys)
+            {
+                if (FindDefinitionByKey(key) != null) continue;
+
+                LogError($"Omurga '{key}' sahnedeki upgrades listesinde bulunamadı — etkisi HİÇ " +
+                         "uygulanmayacak. Yeniden adlandırıldıysa yeni adı UpgradeKeyAliases'a ekle " +
+                         "ya da sahnede effectId'sini ilgili bb_* anahtarına ayarla.");
+            }
         }
 
         private Transform FindChildRecursive(Transform parent, string childName)
@@ -1447,6 +1610,25 @@ namespace NewCss
                     return child;
 
                 Transform found = FindChildRecursive(child, childName);
+                if (found != null)
+                    return found;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// <see cref="FindChildRecursive"/>'in büyük/küçük harf duyarsız sürümü. Sahnede/prefab'da
+        /// obje adının kasası ("icon" vs "Icon") sessiz bir eşleşme kopmasına yol açmasın diye.
+        /// </summary>
+        private Transform FindChildRecursiveIgnoreCase(Transform parent, string childName)
+        {
+            foreach (Transform child in parent)
+            {
+                if (string.Equals(child.name, childName, StringComparison.OrdinalIgnoreCase))
+                    return child;
+
+                Transform found = FindChildRecursiveIgnoreCase(child, childName);
                 if (found != null)
                     return found;
             }
@@ -1476,7 +1658,7 @@ namespace NewCss
         [ContextMenu("Test Truck Level 0")]
         private void DebugTestTruckLevel0()
         {
-            var truckEntry = FindEntryByName(UPGRADE_TRUCK);
+            var truckEntry = FindEntryByKey(UPGRADE_TRUCK);
             if (truckEntry != null)
             {
                 UpdateGarageDoorControllers(truckEntry, 0);
@@ -1486,7 +1668,7 @@ namespace NewCss
         [ContextMenu("Test Truck Level 1")]
         private void DebugTestTruckLevel1()
         {
-            var truckEntry = FindEntryByName(UPGRADE_TRUCK);
+            var truckEntry = FindEntryByKey(UPGRADE_TRUCK);
             if (truckEntry != null)
             {
                 UpdateGarageDoorControllers(truckEntry, 1);
@@ -1496,7 +1678,7 @@ namespace NewCss
         [ContextMenu("Test Truck Level 2")]
         private void DebugTestTruckLevel2()
         {
-            var truckEntry = FindEntryByName(UPGRADE_TRUCK);
+            var truckEntry = FindEntryByKey(UPGRADE_TRUCK);
             if (truckEntry != null)
             {
                 UpdateGarageDoorControllers(truckEntry, 2);

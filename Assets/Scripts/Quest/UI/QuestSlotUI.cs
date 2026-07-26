@@ -34,6 +34,10 @@ namespace NewCss.Quest
         [SerializeField, Tooltip("İlerleme metni")]
         private TMP_Text progressText;
 
+        [Header("=== ICON ===")]
+        [SerializeField, Tooltip("Görev ikonu. QuestData.icon boşsa prefab'daki varsayılan sprite korunur.")]
+        private Image iconImage;
+
         [Header("=== BUTTONS ===")]
         [SerializeField, Tooltip("Kabul Et butonu")]
         private Button acceptButton;
@@ -220,6 +224,7 @@ namespace NewCss.Quest
         private void UpdateUI()
         {
             UpdateTextElements();
+            UpdateIcon();
             UpdateProgressUI();
             UpdateButtonStates();
             HideRemovedElements(); // Her güncellemede kaldırılan elementleri gizle
@@ -248,6 +253,22 @@ namespace NewCss.Quest
                 string penaltyLabel = LocalizationHelper.GetLocalizedString("Quest_Penalty");
                 penaltiesText.text = $"{penaltyLabel}: {_currentQuestData.GetPenaltiesSummary()}";
             }
+        }
+
+        /// <summary>
+        /// Görev ikonunu karta yazar. QuestData'da ikon yoksa prefab'ın varsayılan sprite'ı
+        /// olduğu gibi bırakılır (kart boş görünmez); hiç sprite yoksa Image kapatılır.
+        /// </summary>
+        private void UpdateIcon()
+        {
+            if (iconImage == null) return;
+
+            if (_currentQuestData != null && _currentQuestData.icon != null)
+            {
+                iconImage.sprite = _currentQuestData.icon;
+            }
+
+            iconImage.enabled = iconImage.sprite != null;
         }
 
         private void UpdateProgressUI()

@@ -16,6 +16,9 @@ namespace NewCss.Quest
         private const string LOG_PREFIX = "[QuestManager]";
         private const int DAILY_QUEST_COUNT = 3;
 
+        /// <summary>Quest asset'lerinin kanonik klasörü (Assets/Resources/&lt;bu&gt;).</summary>
+        private const string QUEST_RESOURCE_FOLDER = "Quests";
+
         #endregion
 
         #region Singleton
@@ -104,6 +107,13 @@ namespace NewCss.Quest
         public int DailyQuestCount => _dailyQuests?.Count ?? 0;
 
         /// <summary>
+        /// Havuzda oynanabilir en az bir quest var mı? <see cref="UpgradePanel"/> bunu
+        /// "Görev Kademesi" upgrade'ini draft'a sokup sokmayacağına karar verirken okur —
+        /// quest'i olmayan bir sistemin kartı teklif havuzunu kirletmesin.
+        /// </summary>
+        public bool HasQuests => _questDatabase != null && _questDatabase.Count > 0;
+
+        /// <summary>
         /// Bugün bir görev kabul edilip edilmediği (client-görünür, server-authoritative NV'den okunur).
         /// R2b UI bunu kullanarak "kabul et" butonunu devre dışı bırakabilir / durum gösterebilir.
         /// </summary>
@@ -186,8 +196,42 @@ namespace NewCss.Quest
             _dailyQuests = new NetworkList<QuestProgress>();
         }
 
+        /// <summary>
+        /// <c>allQuests</c>'i normalize eder: null girişleri atar, ardından
+        /// <c>Resources/Quests</c> altındaki tüm QuestData asset'lerinden listede olmayanları ekler.
+        ///
+        /// Gerekçe: 15 asset'i tek tek inspector'a sürüklemek gereksiz ve unutulmaya açık bir adım —
+        /// klasör zaten quest'lerin tek kaynağı. Inspector'a elle eklenmiş asset'ler korunur ve
+        /// sırada önce gelir; silinmiş asset'lerin geride bıraktığı null referanslar temizlenir
+        /// (bu olmadan liste "boş değil ama hepsi null" durumuna düşebiliyordu).
+        /// </summary>
+        private void CollectQuestAssets()
+        {
+            var merged = new List<QuestData>();
+            var seen = new HashSet<QuestData>();
+
+            foreach (var quest in allQuests)
+            {
+                if (quest != null && seen.Add(quest)) merged.Add(quest);
+            }
+
+            int fromInspector = merged.Count;
+
+            foreach (var quest in Resources.LoadAll<QuestData>(QUEST_RESOURCE_FOLDER))
+            {
+                if (quest != null && seen.Add(quest)) merged.Add(quest);
+            }
+
+            allQuests = merged;
+
+            LogDebug($"Quest asset'leri toplandı: {fromInspector} inspector + " +
+                     $"{merged.Count - fromInspector} Resources/{QUEST_RESOURCE_FOLDER} = {merged.Count}");
+        }
+
         private void BuildQuestDatabase()
         {
+            CollectQuestAssets();
+
             _questDatabase = new Dictionary<string, QuestData>();
 
             foreach (var quest in allQuests)
@@ -471,6 +515,14 @@ namespace NewCss.Quest
         {
             if (!IsServer) return;
 
+            // Renk filtreleri YALNIZ o rengi gerçekten taşıyan quest tipleri için anlamlıdır.
+            // Eskiden her iki filtre de tipe bakmadan körlemesine uygulanıyordu; `HandleTruckCompleted`
+            // sabit `Red` gönderdiği için renk-kilitli bir CompleteTruck quest'i SESSİZ SOFT-LOCK
+            // oluyordu: oyuncu kabul eder, kırmızı olmayan her tır ilerlemeyi atlar, gün sonu ceza yer.
+            // (2026-07-25 tespiti, plans/quest-redesign-2026-07-25.md §7.0-1.)
+            bool boxTypeApplies = questType == QuestType.PlaceBoxOnShelf || questType == QuestType.PackToy;
+            bool truckColorApplies = questType == QuestType.CompleteSpecificColorTruck;
+
             for (int i = 0; i < _dailyQuests.Count; i++)
             {
                 var progress = _dailyQuests[i];
@@ -485,10 +537,12 @@ namespace NewCss.Quest
                 if (questData.questType != questType) continue;
 
                 // Check box type if required (PlaceBoxOnShelf, PackToy için)
-                if (questData.requirement.requireSpecificBoxType && questData.requirement.requiredBoxType != boxType) continue;
+                if (boxTypeApplies && questData.requirement.requireSpecificBoxType
+                    && questData.requirement.requiredBoxType != boxType) continue;
 
                 // Check truck color if required (CompleteSpecificColorTruck için)
-                if (questData.requirement.requireSpecificTruckColor && questData.requirement.requiredTruckColor != boxType) continue;
+                if (truckColorApplies && questData.requirement.requireSpecificTruckColor
+                    && questData.requirement.requiredTruckColor != boxType) continue;
 
                 // Update progress
                 progress.currentProgress += amount;

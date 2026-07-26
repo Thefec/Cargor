@@ -338,6 +338,11 @@ namespace NewCss
 
             CallAnsweredClientRpc(clientId, moneyReward);
 
+            // Quest sistemi: AnswerPhone tetikleyicisi tanımlıydı ama hiçbir yerden çağrılmıyordu.
+            // Burası doğru tek nokta — ServerRpc (server-only) ve yukarıdaki `!_isRinging` guard'ı
+            // rakip oyuncuların aynı çağrıyı ikinci kez saymasını engelliyor.
+            Quest.QuestTracker.NotifyPhoneAnswered();
+
             LogDebug("Call answered by Client " + clientId + "! +" + moneyReward + " TL, +" + prestigeReward + " prestij");
         }
 

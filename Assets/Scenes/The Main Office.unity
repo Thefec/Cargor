@@ -889,6 +889,7 @@ MonoBehaviour:
   spatialBlend: 1
   maxHearingDistance: 30
   motorVolume: 0.6
+  isUnlocked: 0
   isOpen: 0
   hasOpenedToday: 0
   hasClosedToday: 0
@@ -21588,9 +21589,9 @@ MonoBehaviour:
   contentParent: {fileID: 1936013672}
   entryPrefab: {fileID: 6823907041773892244, guid: b8cab5a1a5e815b43a8c22802bc05fe1, type: 3}
   rerollButton: {fileID: 1833674189}
-  rerollCostText: {fileID: 231966165}
+  rerollCostText: {fileID: 905209503}
   upgrades:
-  - displayName: Storage
+  - displayName: "Geni\u015F Ambar"
     displayNameLocKey: 
     contentText: adds +1 shelf
     contentTextLocKey: 
@@ -21605,6 +21606,8 @@ MonoBehaviour:
     tier: 0
     effectId: 
     requiresQuestSystem: 0
+    disabledInDraft: 0
+    icon: {fileID: 21300000, guid: 620914d8c370cc241a7374161d5821b8, type: 3}
     levelObjects:
     - {fileID: 197001364}
     - {fileID: 443791660}
@@ -21618,7 +21621,7 @@ MonoBehaviour:
     - {fileID: 701111607}
     garageDoorControllers:
     - {fileID: 0}
-  - displayName: Table
+  - displayName: "Paketleme \u0130stasyonu"
     displayNameLocKey: 
     contentText: adds +1 table
     contentTextLocKey: 
@@ -21633,11 +21636,13 @@ MonoBehaviour:
     tier: 0
     effectId: 
     requiresQuestSystem: 0
+    disabledInDraft: 0
+    icon: {fileID: 21300000, guid: c45ee5b495c91d6469e46a76c2208cc0, type: 3}
     levelObjects:
     - {fileID: 729050603}
     - {fileID: 457085722}
     garageDoorControllers: []
-  - displayName: Queue
+  - displayName: "Geni\u015F Kuyruk"
     displayNameLocKey: 
     contentText: Adds +1 customer queues
     contentTextLocKey: 
@@ -21653,13 +21658,14 @@ MonoBehaviour:
     effectId: 
     requiresQuestSystem: 0
     disabledInDraft: 1
+    icon: {fileID: 21300000, guid: 19470d6027bfb964f82ef42396e3b6cf, type: 3}
     levelObjects:
     - {fileID: 75128577}
     - {fileID: 252592239}
     - {fileID: 1296967369}
     - {fileID: 1170917375}
     garageDoorControllers: []
-  - displayName: Money
+  - displayName: "Sa\u011Flam Kasa"
     displayNameLocKey: 
     contentText: The money earned increases by 10
     contentTextLocKey: 
@@ -21675,12 +21681,13 @@ MonoBehaviour:
     effectId: 
     requiresQuestSystem: 0
     disabledInDraft: 1
+    icon: {fileID: 21300000, guid: 24d24ca9bdce87c47b55b308cbcbbe6c, type: 3}
     levelObjects:
     - {fileID: 161118048}
     - {fileID: 2032713688}
     - {fileID: 147772113}
     garageDoorControllers: []
-  - displayName: Stamina
+  - displayName: "Din\xE7 Ekip"
     displayNameLocKey: 
     contentText: Stamina recharge rate increased by 0.5
     contentTextLocKey: 
@@ -21696,12 +21703,13 @@ MonoBehaviour:
     effectId: 
     requiresQuestSystem: 0
     disabledInDraft: 1
+    icon: {fileID: 21300000, guid: 77ee12c4878a63e48aa5b9c70637fc74, type: 3}
     levelObjects:
     - {fileID: 2078412785}
     - {fileID: 2078412785}
     - {fileID: 2078412785}
     garageDoorControllers: []
-  - displayName: Truck
+  - displayName: Ek Hangar
     displayNameLocKey: 
     contentText: Opens the warehouse door.
     contentTextLocKey: 
@@ -21716,6 +21724,8 @@ MonoBehaviour:
     tier: 0
     effectId: 
     requiresQuestSystem: 0
+    disabledInDraft: 0
+    icon: {fileID: 21300000, guid: 48677efeb202c34428ff90f154e99b98, type: 3}
     levelObjects:
     - {fileID: 1477341225}
     - {fileID: 425538936}
@@ -21724,7 +21734,7 @@ MonoBehaviour:
     - {fileID: 1926636314}
     - {fileID: 902320941}
     - {fileID: 21985265}
-  - displayName: Water
+  - displayName: Su Sebili
     displayNameLocKey: 
     contentText: Water Dispenser added.
     contentTextLocKey: 
@@ -21740,11 +21750,12 @@ MonoBehaviour:
     effectId: 
     requiresQuestSystem: 0
     disabledInDraft: 1
+    icon: {fileID: 21300000, guid: e501b9ecbdf2a494cb4114527595a017, type: 3}
     levelObjects:
     - {fileID: 1150600358}
     - {fileID: 430473471}
     garageDoorControllers: []
-  - displayName: Customer
+  - displayName: "G\xFCler Y\xFCz"
     displayNameLocKey: 
     contentText: Customer waiting time increases
     contentTextLocKey: 
@@ -21760,12 +21771,13 @@ MonoBehaviour:
     effectId: 
     requiresQuestSystem: 0
     disabledInDraft: 1
+    icon: {fileID: 21300000, guid: d68fe1523ebe2fd4485aefd2003a211d, type: 3}
     levelObjects:
     - {fileID: 938998739}
     - {fileID: 215373536}
     - {fileID: 797224535}
     garageDoorControllers: []
-  - displayName: Quest Tier
+  - displayName: "G\xF6rev Kademesi"
     displayNameLocKey: 
     contentText: Unlock harder quests with better rewards
     contentTextLocKey: 
@@ -21774,12 +21786,14 @@ MonoBehaviour:
     TruckValue: 10
     WaitTime: 5
     maxLevel: 2
-    baseCost: 200
-    costStep: 150
+    baseCost: 80
+    costStep: 20
     kind: 0
     tier: 0
     effectId: 
     requiresQuestSystem: 1
+    disabledInDraft: 0
+    icon: {fileID: 21300000, guid: 3639d2ffe944c954a9ae3d1706a455e3, type: 3}
     levelObjects: []
     garageDoorControllers: []
   - displayName: Ucuz Kira
@@ -21798,6 +21812,8 @@ MonoBehaviour:
     tier: 2
     effectId: cheap_rent
     requiresQuestSystem: 0
+    disabledInDraft: 0
+    icon: {fileID: 21300000, guid: e9da932987e284945b2d381b521d9736, type: 3}
     levelObjects: []
     garageDoorControllers: []
   - displayName: "Prestij Simsar\u0131"
@@ -21815,6 +21831,8 @@ MonoBehaviour:
     tier: 2
     effectId: prestige_broker
     requiresQuestSystem: 0
+    disabledInDraft: 0
+    icon: {fileID: 21300000, guid: 038bb72800d79e24790848474964a925, type: 3}
     levelObjects: []
     garageDoorControllers: []
   - displayName: "Prestij Ustas\u0131"
@@ -21833,6 +21851,8 @@ MonoBehaviour:
     tier: 1
     effectId: prestige_master
     requiresQuestSystem: 0
+    disabledInDraft: 0
+    icon: {fileID: 21300000, guid: a45cc40ef184a354da506834fba05c72, type: 3}
     levelObjects: []
     garageDoorControllers: []
   - displayName: "H\u0131zl\u0131 Hangar"
@@ -21851,6 +21871,8 @@ MonoBehaviour:
     tier: 1
     effectId: fast_hangar
     requiresQuestSystem: 0
+    disabledInDraft: 0
+    icon: {fileID: 21300000, guid: 885aa0f8fc27d214d8fbc0c366223057, type: 3}
     levelObjects: []
     garageDoorControllers: []
   - displayName: Enerjik Ekip
@@ -21868,6 +21890,8 @@ MonoBehaviour:
     tier: 0
     effectId: energetic_crew
     requiresQuestSystem: 0
+    disabledInDraft: 0
+    icon: {fileID: 21300000, guid: dd4c1d33ff84f7647875917ab73decd8, type: 3}
     levelObjects: []
     garageDoorControllers: []
   - displayName: "\xC7evik Ekip"
@@ -21885,6 +21909,8 @@ MonoBehaviour:
     tier: 0
     effectId: agile_crew
     requiresQuestSystem: 0
+    disabledInDraft: 0
+    icon: {fileID: 21300000, guid: 59c32f26def4bc04081f6e0b84fe27b4, type: 3}
     levelObjects: []
     garageDoorControllers: []
   - displayName: "Sab\u0131rl\u0131 M\xFC\u015Fteriler"
@@ -21902,6 +21928,8 @@ MonoBehaviour:
     tier: 0
     effectId: patient_customers
     requiresQuestSystem: 0
+    disabledInDraft: 0
+    icon: {fileID: 21300000, guid: de84ab1bf7b73a24da700e4bfbe3bf92, type: 3}
     levelObjects: []
     garageDoorControllers: []
   - displayName: Uzun Kuyruk
@@ -21919,6 +21947,8 @@ MonoBehaviour:
     tier: 0
     effectId: long_queue
     requiresQuestSystem: 0
+    disabledInDraft: 0
+    icon: {fileID: 21300000, guid: aaab73675ed6b78448ba0e40b25e0ebf, type: 3}
     levelObjects: []
     garageDoorControllers: []
   - displayName: "Kumarbaz Kasas\u0131"
@@ -21937,6 +21967,8 @@ MonoBehaviour:
     tier: 1
     effectId: gambler_case
     requiresQuestSystem: 0
+    disabledInDraft: 0
+    icon: {fileID: 21300000, guid: ee37377a70dcce944966cf09cd550141, type: 3}
     levelObjects: []
     garageDoorControllers: []
   - displayName: "Telefon Hatt\u0131"
@@ -21955,6 +21987,8 @@ MonoBehaviour:
     tier: 0
     effectId: phone_line
     requiresQuestSystem: 0
+    disabledInDraft: 0
+    icon: {fileID: 21300000, guid: 941f9107dafdaed44a9a193173057261, type: 3}
     levelObjects: []
     garageDoorControllers: []
   - displayName: Mesai Saati
@@ -21973,6 +22007,8 @@ MonoBehaviour:
     tier: 0
     effectId: overtime
     requiresQuestSystem: 0
+    disabledInDraft: 0
+    icon: {fileID: 21300000, guid: c5c45d3a7f4f10e45b709a2ebda90473, type: 3}
     levelObjects: []
     garageDoorControllers: []
   - displayName: "Kald\u0131ra\xE7l\u0131 Kira"
@@ -21991,6 +22027,8 @@ MonoBehaviour:
     tier: 2
     effectId: leveraged_rent
     requiresQuestSystem: 0
+    disabledInDraft: 0
+    icon: {fileID: 21300000, guid: 462c92987fe924f48ada7bf7a6dec438, type: 3}
     levelObjects: []
     garageDoorControllers: []
   - displayName: "Y\xFCksek Volatilite"
@@ -22009,6 +22047,8 @@ MonoBehaviour:
     tier: 1
     effectId: high_volatility
     requiresQuestSystem: 0
+    disabledInDraft: 0
+    icon: {fileID: 21300000, guid: c02339879010e704c933ce5b7bac451d, type: 3}
     levelObjects: []
     garageDoorControllers: []
   - displayName: Acil Fren
@@ -22027,6 +22067,8 @@ MonoBehaviour:
     tier: 1
     effectId: emergency_brake
     requiresQuestSystem: 0
+    disabledInDraft: 0
+    icon: {fileID: 21300000, guid: 7664abe1d937cd541bc5326dfab95c0d, type: 3}
     levelObjects: []
     garageDoorControllers: []
   - displayName: Kelle Koltukta
@@ -22045,6 +22087,8 @@ MonoBehaviour:
     tier: 2
     effectId: all_in
     requiresQuestSystem: 0
+    disabledInDraft: 0
+    icon: {fileID: 21300000, guid: 51d015c8a422b4449b296c325079439a, type: 3}
     levelObjects: []
     garageDoorControllers: []
   - displayName: "Toplu Al\u0131m"
@@ -22062,6 +22106,8 @@ MonoBehaviour:
     tier: 0
     effectId: bulk_buy
     requiresQuestSystem: 0
+    disabledInDraft: 0
+    icon: {fileID: 21300000, guid: 1cbfa48d20c24864ca815ed31a0b4f41, type: 3}
     levelObjects: []
     garageDoorControllers: []
   CustomerManager: {fileID: 1958402830}
@@ -26894,7 +26940,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -17.66662, y: 9}
+  m_AnchoredPosition: {x: -17.66662, y: -9}
   m_SizeDelta: {x: 1000, y: 600}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &774882565
@@ -29827,6 +29873,7 @@ MonoBehaviour:
   spatialBlend: 1
   maxHearingDistance: 30
   motorVolume: 0.6
+  isUnlocked: 0
   isOpen: 0
   hasOpenedToday: 0
   hasClosedToday: 0
@@ -32445,14 +32492,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b506adc1ce114a34e8be989d713d34e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NewCss.QuotaManager
-  ShowTopMostFoldoutHeaderGroup: 1
-  _difficultyRatio: 0.4
-  _minimumQuota: 1
-  _quotaText: {fileID: 0}
-  _completionAudioSource: {fileID: 0}
-  _completionClip: {fileID: 0}
-  _failureClip: {fileID: 0}
-  _showDebugLogs: 1
 --- !u!4 &983457995
 Transform:
   m_ObjectHideFlags: 0
@@ -49981,7 +50020,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 543.03467, y: -0.000061035156}
+  m_AnchoredPosition: {x: 543.03467, y: 0}
   m_SizeDelta: {x: -1722.1223, y: -1038.0687}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1417025325
@@ -60608,7 +60647,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -106.1, y: -78.9}
+  m_AnchoredPosition: {x: -106.1001, y: -78.900024}
   m_SizeDelta: {x: 70, y: 70}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1740492292
@@ -63628,7 +63667,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 543.03467, y: -0.000061035156}
+  m_AnchoredPosition: {x: 543.03467, y: 0}
   m_SizeDelta: {x: -1722.1223, y: -1038.0687}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1838887037
@@ -67432,6 +67471,7 @@ MonoBehaviour:
   spatialBlend: 1
   maxHearingDistance: 30
   motorVolume: 0.6
+  isUnlocked: 0
   isOpen: 0
   hasOpenedToday: 0
   hasClosedToday: 0
@@ -67929,7 +67969,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: -14}
   m_SizeDelta: {x: -200, y: -220}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1936013673
@@ -67945,14 +67985,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.GridLayoutGroup
   m_Padding:
-    m_Left: -144
+    m_Left: -85
     m_Right: 175
-    m_Top: 10
+    m_Top: 20
     m_Bottom: 20
   m_ChildAlignment: 0
   m_StartCorner: 0
   m_StartAxis: 0
-  m_CellSize: {x: 250, y: 175}
+  m_CellSize: {x: 350, y: 320}
   m_Spacing: {x: -40, y: 0}
   m_Constraint: 1
   m_ConstraintCount: 3
@@ -70860,6 +70900,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2043697998}
+  - component: {fileID: 2043697999}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -70882,6 +70923,48 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2043697999
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2043697995}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 593a2fe42fa9d37498c96f9a383b6521, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkManager
+  NetworkManagerExpanded: 0
+  NetworkConfig:
+    ProtocolVersion: 0
+    NetworkTransport: {fileID: 0}
+    PlayerPrefab: {fileID: 0}
+    Prefabs:
+      NetworkPrefabsLists:
+      - {fileID: 11400000, guid: 6c8a4c42f539be347af3b7408a4b7aef, type: 2}
+    TickRate: 30
+    ClientConnectionBufferTimeout: 10
+    ConnectionApproval: 0
+    ConnectionData: 
+    EnableTimeResync: 0
+    TimeResyncInterval: 30
+    EnsureNetworkVariableLengthSafety: 0
+    EnableSceneManagement: 1
+    ForceSamePrefabs: 1
+    RecycleNetworkIds: 1
+    NetworkIdRecycleDelay: 120
+    RpcHashSize: 0
+    LoadSceneTimeOut: 120
+    SpawnTimeout: 10
+    EnableNetworkLogs: 1
+    NetworkTopology: 0
+    UseCMBService: 0
+    AutoSpawnPlayerPrefabClientSide: 1
+    NetworkProfilingMetrics: 1
+    OldPrefabList: []
+  RunInBackground: 1
+  LogLevel: 1
 --- !u!1 &2049225779
 GameObject:
   m_ObjectHideFlags: 0

@@ -580,8 +580,12 @@ namespace NewCss
             {
                 _isComplete.Value = true;
 
-                // Notify quest system
+                // Notify quest system. İKİ event de atılır: renksiz "herhangi bir tır" quest'leri
+                // OnTruckCompleted'ı, renk-özel quest'ler OnSpecificColorTruckCompleted'ı dinler.
+                // İkincisi tanımlıydı ama hiçbir yerden çağrılmıyordu (ölü tetikleyici).
+                // Bu blok server-only (_isComplete.Value yazımı) → event tam bir kez atılır.
                 Quest.QuestTracker.NotifyTruckCompleted();
+                Quest.QuestTracker.NotifySpecificColorTruckCompleted(_networkRequestedBoxType.Value);
             }
         }
 
@@ -813,13 +817,24 @@ namespace NewCss
             SetObjectColor(rightDoor, targetColor);
         }
 
+        /// <summary>
+        /// Mavi tır rengi. TAM DOYGUN <c>Color.blue</c> (0,0,1) KULLANILMAZ: sahnedeki post-process
+        /// zinciri (Global Volume Profile → Tonemapping mode=2 <b>ACES</b> + ColorAdjustments
+        /// postExposure 1.5, saturation +80) doygun maviyi görünür şekilde MORA kaydırıyor —
+        /// ACES RRT'nin bilinen mavi→menekşe hue kayması. Yeşil kanalı olan bu mavi kaymaya
+        /// dayanıklı ve kutu paletiyle birebir aynı (<c>NetworkWorldItem</c>,
+        /// <c>BoxDestructionEffectManager.blueBoxColor</c>) → tırın rengi yüklenecek kutunun
+        /// rengiyle eşleşiyor.
+        /// </summary>
+        private static readonly Color TruckBlue = new Color(0.2f, 0.4f, 0.8f);
+
         private static Color GetColorForBoxType(BoxInfo.BoxType boxType)
         {
             return boxType switch
             {
                 BoxInfo.BoxType.Red => Color.red,
                 BoxInfo.BoxType.Yellow => Color.yellow,
-                BoxInfo.BoxType.Blue => Color.blue,
+                BoxInfo.BoxType.Blue => TruckBlue,
                 _ => Color.white
             };
         }
