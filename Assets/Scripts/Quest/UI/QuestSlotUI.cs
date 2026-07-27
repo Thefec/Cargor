@@ -1,5 +1,8 @@
+using System.Collections.Generic;
+using System.Globalization;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace NewCss.Quest
@@ -14,6 +17,12 @@ namespace NewCss.Quest
 
         private const string LOG_PREFIX = "[QuestSlotUI]";
 
+        /// <summary>Para her zaman tam sayı gösterilir (ör. "+40").</summary>
+        private const string MONEY_NUMBER_FORMAT = "0";
+
+        /// <summary>Prestij ondalıklı olabilir; gereksiz sıfır basılmaz (0.8 -> "0.8", 2 -> "2").</summary>
+        private const string PRESTIGE_NUMBER_FORMAT = "0.#";
+
         #endregion
 
         #region Serialized Fields
@@ -25,12 +34,6 @@ namespace NewCss.Quest
         [SerializeField, Tooltip("Görev açıklaması")]
         private TMP_Text descriptionText;
 
-        [SerializeField, Tooltip("Ödüller metni")]
-        private TMP_Text rewardsText;
-
-        [SerializeField, Tooltip("Cezalar metni")]
-        private TMP_Text penaltiesText;
-
         [SerializeField, Tooltip("İlerleme metni")]
         private TMP_Text progressText;
 
@@ -38,11 +41,75 @@ namespace NewCss.Quest
         [SerializeField, Tooltip("Görev ikonu. QuestData.icon boşsa prefab'daki varsayılan sprite korunur.")]
         private Image iconImage;
 
-        [Header("=== BUTTONS ===")]
-        [SerializeField, Tooltip("Kabul Et butonu")]
-        private Button acceptButton;
+        [Header("=== ODUL: PARA ALANI ===")]
+        [SerializeField, Tooltip("Ödülün PARA kısmı, kendi alanında (ör. 'Para +40'). O gün seçilen ödülde para yoksa boşaltılır ve alan gizlenir.")]
+        private TMP_Text rewardMoneyText;
 
-        [SerializeField, Tooltip("Topla butonu")]
+        [SerializeField, Tooltip("Opsiyonel: para alanının kökü (ikon + metin grubu). Atanırsa para yokken bu obje kapanır; atanmazsa metin objesinin kendisi kapanır.")]
+        private GameObject rewardMoneyGroup;
+
+        [Header("=== ODUL: PRESTIJ ALANI ===")]
+        [SerializeField, Tooltip("Ödülün PRESTİJ kısmı, kendi alanında (ör. 'Prestij +1.4'). O gün seçilen ödülde prestij yoksa boşaltılır ve alan gizlenir.")]
+        private TMP_Text rewardPrestigeText;
+
+        [SerializeField, Tooltip("Opsiyonel: prestij alanının kökü (ikon + metin grubu).")]
+        private GameObject rewardPrestigeGroup;
+
+        [Header("=== EK ETKILER (BUFF vb.) ===")]
+        [SerializeField, Tooltip("Para/prestij DIŞINDAKİ etkiler (buff, stamina, hız, ceza azaltma...) tek kutuda. Hem ödül hem ceza tarafı buraya toplanır. Görevde böyle bir etki yoksa kutu tamamen gizlenir.")]
+        [FormerlySerializedAs("rewardExtraText")]
+        private TMP_Text extraEffectsText;
+
+        [SerializeField, Tooltip("Opsiyonel ama ÖNERİLEN: ek etki kutusunun kökü (arka plan + ikon + metin). Atanırsa etki yokken bu obje kapanır; atanmazsa yalnız metin objesi kapanır ve arka plan boş kutu olarak kalır.")]
+        private GameObject extraEffectsGroup;
+
+        [SerializeField, Tooltip("Birden fazla ek etki varsa aralarına konan ayraç")]
+        private string extraEffectsSeparator = "   ";
+
+        [Header("=== CEZA: TEK ORTAK ALAN ===")]
+        [SerializeField, Tooltip("Cezanın tamamı TEK kutuda, yan yana (ör. 'Prestij -0.8   Para -22')")]
+        private TMP_Text penaltiesText;
+
+        [SerializeField, Tooltip("Opsiyonel: ceza kutusunun kökü. Ceza yoksa kapatılır.")]
+        private GameObject penaltyGroup;
+
+        [SerializeField, Tooltip("Ceza parçalarının arasına konan ayraç (boşluk, ' | ', ' • ' vb.)")]
+        private string penaltySeparator = "   ";
+
+        [SerializeField, Tooltip("Ceza kutusunda prestij önce mi yazılsın? (kapalıysa önce para)")]
+        private bool penaltyPrestigeFirst = true;
+
+        [Header("=== METIN BICIMI ===")]
+        [SerializeField, Tooltip("Para biçimi. {0} = işaretli miktar. 'Para {0}' -> 'Para +40' · '{0} Para' -> '+40 Para' · kartta para ikonu varsa sadece '{0}'.")]
+        private string moneyFormat = "Para {0}";
+
+        [SerializeField, Tooltip("Prestij biçimi. {0} = işaretli miktar. 'Prestij {0}' -> 'Prestij +1.4'.")]
+        private string prestigeFormat = "Prestij {0}";
+
+        [SerializeField, Tooltip("Ceza kutusunun sarmalayıcı biçimi. {0} = yan yana dizilmiş ceza parçaları. Ör. 'Ceza: {0}'.")]
+        private string penaltyFormat = "{0}";
+
+        [Header("=== BUTON (TEK BUTON) ===")]
+        [SerializeField, Tooltip("Kartın TEK aksiyon butonu. Görev alınabilirken 'Kabul Et', tamamlanınca 'Topla' olur; arada (görev devam ederken) gizlenir.")]
+        [FormerlySerializedAs("acceptButton")]
+        private Button actionButton;
+
+        [SerializeField, Tooltip("Butonun yazısı. Boş bırakılırsa butonun altındaki ilk TMP metni otomatik bulunur.")]
+        private TMP_Text actionButtonLabel;
+
+        [SerializeField, Tooltip("Görev alınabilir durumdayken buton yazısı")]
+        private string acceptLabel = "Kabul Et";
+
+        [SerializeField, Tooltip("Görev tamamlandığında buton yazısı")]
+        private string collectLabel = "Topla";
+
+        [SerializeField, Tooltip("Opsiyonel çeviri anahtarı (StringTable'da varsa yazının yerine geçer, yoksa yukarıdaki düz metin kullanılır)")]
+        private string acceptLabelKey = "Quest_Accept";
+
+        [SerializeField, Tooltip("Opsiyonel çeviri anahtarı (StringTable'da varsa yazının yerine geçer)")]
+        private string collectLabelKey = "Quest_Collect";
+
+        [SerializeField, Tooltip("LEGACY: ayrı bir 'Topla' butonu. ATARSAN eski iki-butonlu davranışa dönülür. Tek buton istiyorsan BOŞ BIRAK.")]
         private Button collectButton;
 
         [Header("=== PROGRESS BAR (Devre Dışı) ===")]
@@ -79,6 +146,10 @@ namespace NewCss.Quest
         [SerializeField, Tooltip("Normal ilerleme rengi")]
         private Color normalProgressColor = Color.white;
 
+        [Header("=== LEGACY (BOS BIRAK) ===")]
+        [SerializeField, Tooltip("Eski BİRLEŞİK ödül metni. Yeni ayrı para/prestij alanlarını kullanıyorsan BOŞ BIRAK - atalı kalırsa kartta ödül iki kere yazar.")]
+        private TMP_Text rewardsText;
+
         #endregion
 
         #region Private Fields
@@ -86,6 +157,14 @@ namespace NewCss.Quest
         private int _slotIndex;
         private QuestData _currentQuestData;
         private QuestProgress _currentProgress;
+
+        // Metin kurarken tekrar tekrar alokasyon yapmamak için yeniden kullanılan tamponlar
+        private readonly List<string> _extraBuffer = new List<string>();
+        private readonly List<string> _partBuffer = new List<string>();
+
+        // Ödül + ceza taraflarından toplanan para/prestij dışı etkiler (ek etki kutusunun içeriği)
+        private readonly List<string> _combinedExtras = new List<string>();
+        private bool _warnedMissingExtraField;
 
         #endregion
 
@@ -132,9 +211,15 @@ namespace NewCss.Quest
 
         private void SetupButtonListeners()
         {
-            if (acceptButton != null)
+            if (actionButton != null)
             {
-                acceptButton.onClick.AddListener(OnAcceptClicked);
+                actionButton.onClick.AddListener(OnActionClicked);
+
+                // Yazı alanı atanmadıysa butonun altındaki ilk TMP metnini kullan (kapalı objeler dahil)
+                if (actionButtonLabel == null)
+                {
+                    actionButtonLabel = actionButton.GetComponentInChildren<TMP_Text>(true);
+                }
             }
 
             if (collectButton != null)
@@ -145,9 +230,9 @@ namespace NewCss.Quest
 
         private void RemoveButtonListeners()
         {
-            if (acceptButton != null)
+            if (actionButton != null)
             {
-                acceptButton.onClick.RemoveListener(OnAcceptClicked);
+                actionButton.onClick.RemoveListener(OnActionClicked);
             }
 
             if (collectButton != null)
@@ -242,17 +327,208 @@ namespace NewCss.Quest
                 descriptionText.text = _currentQuestData.GetFullDescription();
             }
 
-            if (rewardsText != null)
+            // Sıra önemli: ödül ve ceza, para/prestij dışı etkileri _combinedExtras'a biriktirir,
+            // ek etki kutusu en son bu birikimi yazar (ya da hiç etki yoksa kendini kapatır).
+            UpdateRewardTexts();
+            UpdatePenaltyText();
+            UpdateExtraEffectsText();
+            UpdateLegacyRewardsText();
+        }
+
+        /// <summary>
+        /// Ödülü İKİ AYRI alana yazar: para bir kutuda, prestij ayrı kutuda.
+        /// O gün seçilen 2 ödül aynı türdense (ör. +20 ve +40 para) toplanır, diğer alan gizlenir.
+        /// </summary>
+        private void UpdateRewardTexts()
+        {
+            // Ek etki birikimi HER güncellemede burada sıfırlanır (bu metot zincirin ilk halkası).
+            _combinedExtras.Clear();
+
+            SplitByType(_currentQuestData.SelectedRewards,
+                        out float money, out bool hasMoney,
+                        out float prestige, out bool hasPrestige,
+                        _extraBuffer);
+
+            SetAmountField(rewardMoneyText, rewardMoneyGroup, hasMoney, FormatMoney(money));
+            SetAmountField(rewardPrestigeText, rewardPrestigeGroup, hasPrestige, FormatPrestige(prestige));
+
+            _combinedExtras.AddRange(_extraBuffer);
+        }
+
+        /// <summary>
+        /// Cezanın para/prestij kısmını TEK kutuya yan yana yazar (ör. "Prestij -0.8   Para -22").
+        /// Para/prestij dışı cezalar buraya değil, ek etki kutusuna gider.
+        /// </summary>
+        private void UpdatePenaltyText()
+        {
+            SplitByType(_currentQuestData.SelectedPenalties,
+                        out float money, out bool hasMoney,
+                        out float prestige, out bool hasPrestige,
+                        _extraBuffer);
+
+            // Ceza tarafındaki buff benzeri etkiler de ek etki kutusuna toplanır (kutu atanmasa bile
+            // aşağıdaki uyarı yolu devrede kalsın diye ceza metni null olsa da bu adım atlanmaz).
+            _combinedExtras.AddRange(_extraBuffer);
+
+            if (penaltiesText == null)
             {
-                string rewardLabel = LocalizationHelper.GetLocalizedString("Quest_Reward");
-                rewardsText.text = $"{rewardLabel}: {_currentQuestData.GetRewardsSummary()}";
+                return;
             }
 
-            if (penaltiesText != null)
+            _partBuffer.Clear();
+
+            if (penaltyPrestigeFirst)
             {
-                string penaltyLabel = LocalizationHelper.GetLocalizedString("Quest_Penalty");
-                penaltiesText.text = $"{penaltyLabel}: {_currentQuestData.GetPenaltiesSummary()}";
+                if (hasPrestige) _partBuffer.Add(FormatPrestige(prestige));
+                if (hasMoney) _partBuffer.Add(FormatMoney(money));
             }
+            else
+            {
+                if (hasMoney) _partBuffer.Add(FormatMoney(money));
+                if (hasPrestige) _partBuffer.Add(FormatPrestige(prestige));
+            }
+
+            bool hasPenalty = _partBuffer.Count > 0;
+            string joined = string.Join(penaltySeparator ?? " ", _partBuffer);
+
+            penaltiesText.text = hasPenalty ? string.Format(SafeFormat(penaltyFormat), joined) : "";
+            SetGroupActive(penaltiesText.gameObject, penaltyGroup, hasPenalty);
+        }
+
+        /// <summary>
+        /// Ödül ve ceza taraflarından toplanan para/prestij DIŞI etkileri (buff vb.) tek kutuya yazar.
+        /// Görevde böyle bir etki yoksa kutu (grup atanmışsa arka planıyla birlikte) tamamen gizlenir.
+        /// </summary>
+        private void UpdateExtraEffectsText()
+        {
+            bool hasExtra = _combinedExtras.Count > 0;
+
+            if (extraEffectsText == null)
+            {
+                // Metin atanmasa bile grup atanmışsa en azından boş kutuyu kapat.
+                if (extraEffectsGroup != null)
+                {
+                    SetGroupActive(null, extraEffectsGroup, hasExtra);
+                }
+                else if (hasExtra && !_warnedMissingExtraField)
+                {
+                    // Buff'lı bir görev kartta sessizce eksik görünmesin; en azından bir kez uyaralım.
+                    _warnedMissingExtraField = true;
+                    Debug.LogWarning($"{LOG_PREFIX} '{_currentQuestData.questTitle}' görevinde para/prestij dışı etki var " +
+                                     $"({string.Join(", ", _combinedExtras)}) ama extraEffectsText atanmamış - kartta görünmeyecek.");
+                }
+
+                return;
+            }
+
+            extraEffectsText.text = hasExtra
+                ? string.Join(extraEffectsSeparator ?? " ", _combinedExtras)
+                : "";
+
+            SetGroupActive(extraEffectsText.gameObject, extraEffectsGroup, hasExtra);
+        }
+
+        /// <summary>
+        /// Eski birleşik ödül alanı hâlâ atalıysa doldurulur (geri uyumluluk). Normalde boş bırakılmalı.
+        /// </summary>
+        private void UpdateLegacyRewardsText()
+        {
+            if (rewardsText == null) return;
+
+            string rewardLabel = LocalizationHelper.GetLocalizedString("Quest_Reward");
+            rewardsText.text = $"{rewardLabel}: {_currentQuestData.GetRewardsSummary()}";
+        }
+
+        /// <summary>
+        /// Seçilmiş ödül/ceza listesini para ve prestij olarak ayırır, kalan türleri metin olarak biriktirir.
+        /// Aynı türden birden fazla giriş varsa TOPLANIR (ikisi de veriliyor).
+        /// </summary>
+        private static void SplitByType(List<QuestReward> entries,
+                                        out float money, out bool hasMoney,
+                                        out float prestige, out bool hasPrestige,
+                                        List<string> extras)
+        {
+            money = 0f;
+            prestige = 0f;
+            hasMoney = false;
+            hasPrestige = false;
+            extras.Clear();
+
+            if (entries == null) return;
+
+            foreach (var entry in entries)
+            {
+                if (entry == null) continue;
+
+                switch (entry.rewardType)
+                {
+                    case RewardType.Money:
+                        money += entry.amount;
+                        hasMoney = true;
+                        break;
+
+                    case RewardType.Prestige:
+                        prestige += entry.amount;
+                        hasPrestige = true;
+                        break;
+
+                    default:
+                        extras.Add(entry.GetDescription());
+                        break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Tek bir miktar alanını yazar; değer yoksa metni boşaltıp alanı (varsa grubunu) gizler.
+        /// </summary>
+        private static void SetAmountField(TMP_Text text, GameObject group, bool hasValue, string value)
+        {
+            if (text == null)
+            {
+                if (group != null) SetGroupActive(null, group, hasValue);
+                return;
+            }
+
+            text.text = hasValue ? value : "";
+            SetGroupActive(text.gameObject, group, hasValue);
+        }
+
+        /// <summary>
+        /// Grup atanmışsa onu, atanmamışsa metin objesinin kendisini açar/kapatır.
+        /// </summary>
+        private static void SetGroupActive(GameObject textObject, GameObject group, bool active)
+        {
+            var target = group != null ? group : textObject;
+            if (target == null) return;
+
+            if (target.activeSelf != active)
+            {
+                target.SetActive(active);
+            }
+        }
+
+        private string FormatMoney(float amount)
+        {
+            return string.Format(SafeFormat(moneyFormat), Signed(amount, MONEY_NUMBER_FORMAT));
+        }
+
+        private string FormatPrestige(float amount)
+        {
+            return string.Format(SafeFormat(prestigeFormat), Signed(amount, PRESTIGE_NUMBER_FORMAT));
+        }
+
+        /// <summary>Biçim metni boş ya da {0} içermiyorsa ham miktara düşer (alan asla boş kalmasın).</summary>
+        private static string SafeFormat(string format)
+        {
+            return string.IsNullOrEmpty(format) || !format.Contains("{0}") ? "{0}" : format;
+        }
+
+        /// <summary>Pozitif değerin başına '+' koyar; negatifte işaret zaten sayının içinde.</summary>
+        private static string Signed(float amount, string numberFormat)
+        {
+            string body = amount.ToString(numberFormat, CultureInfo.InvariantCulture);
+            return amount > 0f ? "+" + body : body;
         }
 
         /// <summary>
@@ -319,10 +595,21 @@ namespace NewCss.Quest
             // kalır ama tıklanamaz + gri görünür (Selectable.interactable=false -> disabledColor).
             bool hasAcceptedToday = QuestManager.Instance != null && QuestManager.Instance.HasAcceptedQuestTodayClient;
 
-            if (acceptButton != null)
+            // collectButton atalıysa eski iki-butonlu düzen; boşsa actionButton tek başına
+            // hem "Kabul Et" hem "Topla" görevini görür.
+            bool unifiedMode = collectButton == null;
+
+            if (actionButton != null)
             {
-                acceptButton.gameObject.SetActive(canAccept);
-                acceptButton.interactable = canAccept && !hasAcceptedToday;
+                bool visible = unifiedMode ? (canAccept || canCollect) : canAccept;
+
+                actionButton.gameObject.SetActive(visible);
+                actionButton.interactable = canCollect || (canAccept && !hasAcceptedToday);
+
+                if (visible)
+                {
+                    SetActionButtonLabel(canCollect);
+                }
             }
 
             if (collectButton != null)
@@ -332,19 +619,65 @@ namespace NewCss.Quest
             }
         }
 
+        /// <summary>
+        /// Tek butonun yazısını duruma göre yazar: tamamlandıysa "Topla", değilse "Kabul Et".
+        /// </summary>
+        private void SetActionButtonLabel(bool isCollectState)
+        {
+            if (actionButtonLabel == null) return;
+
+            actionButtonLabel.text = isCollectState
+                ? Localized(collectLabelKey, collectLabel)
+                : Localized(acceptLabelKey, acceptLabel);
+        }
+
+        /// <summary>
+        /// Çeviri anahtarı StringTable'da yoksa LocalizationHelper anahtarın kendisini döndürüyor;
+        /// bu durumda butonda "Quest_Accept" yazmasın diye inspector'daki düz metne düşeriz.
+        /// </summary>
+        private static string Localized(string key, string fallback)
+        {
+            if (string.IsNullOrEmpty(key)) return fallback;
+
+            string value = LocalizationHelper.GetLocalizedString(key);
+            return string.IsNullOrEmpty(value) || value == key ? fallback : value;
+        }
+
         private void SetEmptyState()
         {
             if (titleText != null) titleText.text = LocalizationHelper.GetLocalizedString("Quest_NoQuest");
             if (descriptionText != null) descriptionText.text = "";
             if (rewardsText != null) rewardsText.text = "";
-            if (penaltiesText != null) penaltiesText.text = "";
-            if (progressText != null) 
+
+            // Ödül/ceza alanlarını hem boşalt hem gizle (boş kutu iskeleti kalmasın)
+            SetAmountField(rewardMoneyText, rewardMoneyGroup, false, "");
+            SetAmountField(rewardPrestigeText, rewardPrestigeGroup, false, "");
+
+            _combinedExtras.Clear();
+
+            if (extraEffectsText != null)
+            {
+                extraEffectsText.text = "";
+                SetGroupActive(extraEffectsText.gameObject, extraEffectsGroup, false);
+            }
+            else if (extraEffectsGroup != null)
+            {
+                SetGroupActive(null, extraEffectsGroup, false);
+            }
+
+            if (penaltiesText != null)
+            {
+                penaltiesText.text = "";
+                SetGroupActive(penaltiesText.gameObject, penaltyGroup, false);
+            }
+
+            if (progressText != null)
             {
                 progressText.text = "";
                 progressText.color = normalProgressColor;
             }
 
-            if (acceptButton != null) acceptButton.gameObject.SetActive(false);
+            if (actionButton != null) actionButton.gameObject.SetActive(false);
             if (collectButton != null) collectButton.gameObject.SetActive(false);
 
             HideRemovedElements();
@@ -353,6 +686,24 @@ namespace NewCss.Quest
         #endregion
 
         #region Button Handlers
+
+        /// <summary>
+        /// Tek butonun tıklaması: görev tamamlandıysa ödülü toplar, alınabilir durumdaysa kabul eder.
+        /// Aradaki durumlarda buton zaten gizli olduğu için hiçbir şey yapmaz (çift-koruma).
+        /// </summary>
+        private void OnActionClicked()
+        {
+            switch (_currentProgress.status)
+            {
+                case QuestStatus.Completed:
+                    OnCollectClicked();
+                    break;
+
+                case QuestStatus.Available:
+                    OnAcceptClicked();
+                    break;
+            }
+        }
 
         private void OnAcceptClicked()
         {

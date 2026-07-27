@@ -33,7 +33,9 @@ namespace NewCss.Quest
             return rewardType switch
             {
                 RewardType.Money => $"{prefix}{amount:F0} Para",
-                RewardType.Prestige => $"{prefix}{amount:F0} Prestij",
+                // Prestij 0-100 skalasına küçültüldükten sonra ödüller ondalıklı (0.4 / 0.8 / 1.4 ...).
+                // F0 bunları "+0" / "+1" diye yuvarlıyordu; 0.# gerçek değeri gösterir, tam sayıda ondalık basmaz.
+                RewardType.Prestige => $"{prefix}{amount:0.#} Prestij",
                 RewardType.MaxStamina => $"{prefix}{amount:F0} Maks. Stamina",
                 RewardType.MoveSpeed => $"{prefix}{amount:F1} Hareket Hızı",
                 RewardType.CustomerWaitTime => $"{prefix}{amount:F0}s Müşteri Bekleme Süresi",
