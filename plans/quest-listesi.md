@@ -1,5 +1,12 @@
 # 📋 Görev (Quest) Listesi — Oyun İçinde Alınabilen Tüm Görevler
 
+> ⛔ **BU LİSTE ARTIK GEÇERSİZ (2026-07-27).** Aşağıdaki 35 asset kullanıcının isteğiyle **silindi**;
+> görevler elle yeniden yazılacak. Ayrıca `QuestData` modeli değişti: ödül/ceza artık **havuzdan
+> rastgele 2 seçim** değil, her görevin kendi `moneyReward` / `prestigeReward` / `moneyPenalty` /
+> `prestigePenalty` alanları + opsiyonel tek buff. Aşağısı **tarihsel referans**: hedef sayıları,
+> tier bantları ve EV'ler yeni görevleri yazarken başlangıç noktası olarak kullanılabilir.
+> Silinen asset'ler git geçmişinde (`3442e62` ve öncesi) duruyor.
+
 > Kaynak: `Assets/Resources/Quests/*.asset` (canlı havuz) + `Assets/Scripts/Quest/`
 > Durum tarihi: **2026-07-26** — dosyadan okunarak üretildi, elle yazılmadı.
 > **Toplam 30 görev** (Easy 11 · Medium 10 · Hard 9) + silinmeyi bekleyen 5 eski asset.

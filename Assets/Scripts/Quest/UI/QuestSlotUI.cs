@@ -182,6 +182,7 @@ namespace NewCss.Quest
         private void Awake()
         {
             SetupButtonListeners();
+            ValidateWiring();
             HideRemovedElements();
             LocalizationHelper.OnLocaleChanged += OnLocaleChanged;
         }
@@ -239,6 +240,32 @@ namespace NewCss.Quest
             {
                 collectButton.onClick.RemoveListener(OnCollectClicked);
             }
+        }
+
+        /// <summary>
+        /// Zorunlu inspector referanslarını başlangıçta denetler ve eksikleri TEK LogError'da bildirir.
+        ///
+        /// Gerekçe: bağlanmamış bir alan bu sınıfta hiçbir hata üretmiyordu - ilgili kart parçası
+        /// sessizce boş kalıyordu (accept butonunun ve açıklamanın hiç görünmemesi tam olarak buydu).
+        /// Opsiyonel alanlar (ikon, ek etki kutusu, *Group kökleri, legacy alanlar) bilerek dışarıda.
+        /// </summary>
+        private void ValidateWiring()
+        {
+            var missing = new List<string>();
+
+            if (titleText == null) missing.Add(nameof(titleText));
+            if (descriptionText == null) missing.Add(nameof(descriptionText));
+            if (progressText == null) missing.Add(nameof(progressText));
+            if (actionButton == null) missing.Add(nameof(actionButton));
+            if (rewardMoneyText == null) missing.Add(nameof(rewardMoneyText));
+            if (rewardPrestigeText == null) missing.Add(nameof(rewardPrestigeText));
+            if (penaltiesText == null) missing.Add(nameof(penaltiesText));
+
+            if (missing.Count == 0) return;
+
+            Debug.LogError($"{LOG_PREFIX} '{gameObject.name}' slotunda BAĞLANMAMIŞ alan(lar): " +
+                           $"{string.Join(", ", missing)} - bu parçalar kartta sessizce boş görünür. " +
+                           $"Inspector'dan bağla.", this);
         }
 
         /// <summary>

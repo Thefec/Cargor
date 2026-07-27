@@ -5,92 +5,109 @@ namespace NewCss.Quest
 {
     /// <summary>
     /// ScriptableObject - Görev tanımı
-    /// Unity Editor'den kolayca görev oluşturma sağlar
+    ///
+    /// Ödül/ceza artık HAVUZDAN RASTGELE seçilmiyor: her görev kendi para/prestij ödülünü,
+    /// para/prestij cezasını ve (varsa) tek bir buff'ını doğrudan Inspector'da taşır.
+    /// Yani kartta ne yazacağı ve oyuncuya ne verileceği birebir buradaki alanlardır.
+    ///
+    /// Çalışma zamanı arayüzü (SelectedRewards / SelectedPenalties) korundu; QuestManager ve
+    /// QuestSlotUI bu listeleri okumaya devam ediyor, listeler yalnızca aşağıdaki alanlardan üretiliyor.
     /// </summary>
     [CreateAssetMenu(fileName = "NewQuest", menuName = "Cargor/Quest Data", order = 1)]
     public class QuestData : ScriptableObject
     {
-        #region Constants
-
-        private const int MAX_SELECTED_REWARDS = 2;
-        private const int MAX_SELECTED_PENALTIES = 2;
-
-        #endregion
-
         #region Serialized Fields
 
         [Header("=== BASIC INFO ===")]
-        [Tooltip("Benzersiz görev ID'si")]
+        [Tooltip("Benzersiz görev ID'si (boş bırakılırsa otomatik üretilir). AYNI ID'DEN İKİ GÖREV OLMAMALI.")]
         public string questId;
 
-        [Tooltip("Görev başlığı")]
+        [Tooltip("Görev başlığı - kartın üstünde yazar")]
         public string questTitle;
 
-        [Tooltip("Görev açıklaması")]
+        [Tooltip("Görev açıklaması - kartta bu yazar. BOŞ bırakılırsa görev tipi ve hedeften otomatik metin üretilir.")]
         [TextArea(2, 4)]
         public string questDescription;
 
-        [Tooltip("Görev kartı ikonu. Boş bırakılırsa quest slot prefab'ındaki varsayılan ikon korunur.")]
+        [Tooltip("Görev kartı ikonu. Boş bırakılırsa quest slot'undaki varsayılan ikon korunur.")]
         public Sprite icon;
 
         [Header("=== TIER & TYPE ===")]
-        [Tooltip("Görev zorluk tier'ı")]
+        [Tooltip("Görev zorluk tier'ı. Oyuncunun 'Görev Kademesi' seviyesi bu tier'a eşit/büyükse havuza girer.")]
         public QuestTier tier = QuestTier.Easy;
 
-        [Tooltip("Görev türü")]
+        [Tooltip("Görev türü - hangi sistem takip edecek")]
         public QuestType questType;
 
         [Header("=== REQUIREMENTS ===")]
-        [Tooltip("Görev gereksinimleri")]
+        [Tooltip("Görev gereksinimleri (hedef sayı, renk/kategori filtresi)")]
         public QuestRequirement requirement;
 
-        [Header("=== REWARDS POOL ===")]
-        [Tooltip("Olası ödüller havuzu (buradan rastgele maks.  2 seçilir)")]
-        public List<QuestReward> rewardPool = new List<QuestReward>();
+        [Header("=== ODUL ===")]
+        [Tooltip("Para ödülü. 0 = para ödülü yok (kartta para kutusu gizlenir).")]
+        public float moneyReward;
 
-        [Header("=== PENALTIES POOL ===")]
-        [Tooltip("Olası cezalar havuzu (buradan rastgele maks. 2 seçilir)")]
-        public List<QuestReward> penaltyPool = new List<QuestReward>();
+        [Tooltip("Prestij ödülü. Ondalık yazılabilir (0.4 / 0.8 / 1.4). 0 = prestij ödülü yok.")]
+        public float prestigeReward;
+
+        [Header("=== CEZA (gorev kabul edilip tamamlanamazsa) ===")]
+        [Tooltip("Para cezası. POZİTİF yaz - oyuncudan düşülür. 0 = para cezası yok.")]
+        public float moneyPenalty;
+
+        [Tooltip("Prestij cezası. POZİTİF yaz - oyuncudan düşülür. 0 = prestij cezası yok.")]
+        public float prestigePenalty;
+
+        [Header("=== BUFF / EK ETKI (opsiyonel) ===")]
+        [Tooltip("Bu görevde para/prestij dışında bir etki var mı? Kapalıysa kartın ek etki kutusu hiç görünmez.")]
+        public bool hasBuff;
+
+        [Tooltip("Etkinin türü. Para/prestij için bunu KULLANMA - yukarıdaki ödül/ceza alanlarını kullan.")]
+        public RewardType buffType = RewardType.TempMoneyBoost;
+
+        [Tooltip("Etki miktarı (ör. TempSpeedBoost için hız artışı, PenaltyReduction için yüzde)")]
+        public float buffAmount;
+
+        [Tooltip("Kaç gün sürecek (yalnızca geçici buff türleri için)")]
+        public int buffDurationDays = 1;
+
+        [Tooltip("Kartta bu etkinin yanında yazacak metin (ör. '2 gün boyunca daha hızlı koş'). Boş bırakılırsa tür+miktardan otomatik üretilir.")]
+        public string buffDescription;
+
+        [Tooltip("İşaretlenirse bu etki ödül değil CEZA tarafında uygulanır (görev tamamlanamazsa).")]
+        public bool buffIsPenalty;
 
         #endregion
 
         #region Private Fields
 
-        // Runtime'da seçilen ödüller ve cezalar
+        // Yukarıdaki alanlardan üretilen çalışma zamanı listeleri (QuestManager + UI bunları okur)
         private List<QuestReward> _selectedRewards;
         private List<QuestReward> _selectedPenalties;
-        private bool _isInitialized = false;
 
         #endregion
 
         #region Public Properties
 
         /// <summary>
-        /// Seçilmiş ödüller (runtime'da rastgele seçilir)
+        /// Bu görevin verdiği ödüller (para / prestij / varsa buff).
         /// </summary>
         public List<QuestReward> SelectedRewards
         {
             get
             {
-                if (!_isInitialized)
-                {
-                    InitializeRandomSelection();
-                }
+                EnsureBuilt();
                 return _selectedRewards;
             }
         }
 
         /// <summary>
-        /// Seçilmiş cezalar (runtime'da rastgele seçilir)
+        /// Bu görevin uyguladığı cezalar (para / prestij / varsa ceza tarafındaki etki).
         /// </summary>
         public List<QuestReward> SelectedPenalties
         {
             get
             {
-                if (!_isInitialized)
-                {
-                    InitializeRandomSelection();
-                }
+                EnsureBuilt();
                 return _selectedPenalties;
             }
         }
@@ -102,6 +119,10 @@ namespace NewCss.Quest
         private void OnValidate()
         {
             ValidateQuestId();
+
+            // Inspector'da değer değişince çalışma zamanı listeleri bayat kalmasın
+            _selectedRewards = null;
+            _selectedPenalties = null;
         }
 
         private void ValidateQuestId()
@@ -114,84 +135,90 @@ namespace NewCss.Quest
 
         #endregion
 
-        #region Random Selection
+        #region Reward / Penalty Building
 
         /// <summary>
-        /// Havuzlardan rastgele ödül ve ceza seçer
+        /// Listeler henüz üretilmediyse Inspector alanlarından üretir.
         /// </summary>
-        public void InitializeRandomSelection()
+        private void EnsureBuilt()
         {
-            _selectedRewards = GetRandomFromPool(rewardPool, MAX_SELECTED_REWARDS);
-            _selectedPenalties = GetRandomFromPool(penaltyPool, MAX_SELECTED_PENALTIES);
-            _isInitialized = true;
+            if (_selectedRewards != null && _selectedPenalties != null) return;
+
+            Build();
+        }
+
+        private void Build()
+        {
+            _selectedRewards = new List<QuestReward>();
+            _selectedPenalties = new List<QuestReward>();
+
+            // --- ÖDÜL ---
+            if (!Mathf.Approximately(moneyReward, 0f))
+            {
+                _selectedRewards.Add(MakeEntry(RewardType.Money, Mathf.Abs(moneyReward), 0, null));
+            }
+
+            if (!Mathf.Approximately(prestigeReward, 0f))
+            {
+                _selectedRewards.Add(MakeEntry(RewardType.Prestige, Mathf.Abs(prestigeReward), 0, null));
+            }
+
+            // --- CEZA (pozitif girilir, negatif uygulanır; yanlışlıkla eksi yazılsa da işaret bozulmaz) ---
+            if (!Mathf.Approximately(moneyPenalty, 0f))
+            {
+                _selectedPenalties.Add(MakeEntry(RewardType.Money, -Mathf.Abs(moneyPenalty), 0, null));
+            }
+
+            if (!Mathf.Approximately(prestigePenalty, 0f))
+            {
+                _selectedPenalties.Add(MakeEntry(RewardType.Prestige, -Mathf.Abs(prestigePenalty), 0, null));
+            }
+
+            // --- BUFF / EK ETKİ ---
+            if (hasBuff && !Mathf.Approximately(buffAmount, 0f))
+            {
+                // Buff'ın işareti serbest: negatif de yazılabilir (ör. -20 hız = debuff).
+                var buff = MakeEntry(buffType, buffAmount, buffDurationDays, buffDescription);
+
+                if (buffIsPenalty)
+                {
+                    _selectedPenalties.Add(buff);
+                }
+                else
+                {
+                    _selectedRewards.Add(buff);
+                }
+            }
+        }
+
+        private static QuestReward MakeEntry(RewardType type, float amount, int durationDays, string customDescription)
+        {
+            return new QuestReward
+            {
+                rewardType = type,
+                amount = amount,
+                durationDays = durationDays,
+                customDescription = customDescription
+            };
         }
 
         /// <summary>
-        /// Seçimleri sıfırlar ve yeniden rastgele seçim yapar (non-deterministik, UnityEngine.Random).
-        /// Networked akışta KULLANILMAZ - bkz. RerollSelection(int seed).
+        /// Listeleri yeniden üretir. Ödüller artık sabit olduğu için bu bir "reroll" değil,
+        /// sadece tazeleme; isim ve imza QuestManager/QuestProgress akışıyla uyumlu kalsın diye korundu.
         /// </summary>
         public void RerollSelection()
         {
-            _isInitialized = false;
-            InitializeRandomSelection();
+            Build();
         }
 
         /// <summary>
-        /// F9 fix: server'ın ürettiği bir seed ile DETERMİNİSTİK reroll yapar (System.Random(seed)).
-        /// Aynı seed = aynı seçim; QuestManager.GetQuestData() bunu her okumada progress.rewardSeed ile
-        /// çağırarak server ve client'ın (late-join dahil) birebir aynı ödül/ceza metnini görmesini sağlar.
-        /// _isInitialized burada da true'ya çekilir ama artık "bayat kalma" riski yok çünkü GetQuestData
-        /// her çağrıda seed'i yeniden uygular (idempotent - aynı seed tekrar verilirse sonuç değişmez).
+        /// Eski rastgele-havuz modelinde server'ın ürettiği seed ile deterministik seçim yapılırdı.
+        /// Ödüller artık asset'te sabit olduğu için seed'in bir etkisi yok; her client aynı değerleri
+        /// zaten aynı asset'ten okuyor. İmza QuestManager.GetQuestData() akışı için korunuyor.
         /// </summary>
         public void RerollSelection(int seed)
         {
-            var rng = new System.Random(seed);
-            _selectedRewards = GetRandomFromPool(rewardPool, MAX_SELECTED_REWARDS, rng);
-            _selectedPenalties = GetRandomFromPool(penaltyPool, MAX_SELECTED_PENALTIES, rng);
-            _isInitialized = true;
-        }
-
-        /// <summary>
-        /// Havuzdan rastgele belirtilen sayıda eleman seçer (non-deterministik, UnityEngine.Random).
-        /// </summary>
-        private List<QuestReward> GetRandomFromPool(List<QuestReward> pool, int maxCount)
-        {
-            return GetRandomFromPool(pool, maxCount, null);
-        }
-
-        /// <summary>
-        /// Havuzdan rastgele belirtilen sayıda eleman seçer. rng verilirse (System.Random) DETERMİNİSTİK
-        /// çalışır (F9 fix); null ise UnityEngine.Random.Range kullanılır (eski/editor davranışı).
-        /// </summary>
-        private List<QuestReward> GetRandomFromPool(List<QuestReward> pool, int maxCount, System.Random rng)
-        {
-            var result = new List<QuestReward>();
-
-            if (pool == null || pool.Count == 0)
-            {
-                return result;
-            }
-
-            // Havuzun bir kopyasını oluştur (shuffle için)
-            var tempPool = new List<QuestReward>(pool);
-
-            // Fisher-Yates shuffle
-            for (int i = tempPool.Count - 1; i > 0; i--)
-            {
-                int randomIndex = rng != null ? rng.Next(0, i + 1) : Random.Range(0, i + 1);
-                var temp = tempPool[i];
-                tempPool[i] = tempPool[randomIndex];
-                tempPool[randomIndex] = temp;
-            }
-
-            // İlk maxCount kadar elemanı al
-            int selectCount = Mathf.Min(maxCount, tempPool.Count);
-            for (int i = 0; i < selectCount; i++)
-            {
-                result.Add(tempPool[i]);
-            }
-
-            return result;
+            EnsureBuilt();
         }
 
         #endregion
@@ -199,54 +226,48 @@ namespace NewCss.Quest
         #region Public Methods
 
         /// <summary>
-        /// Tam görev açıklamasını döndürür
+        /// Kartta gösterilecek açıklama: elle yazılmışsa o, yazılmamışsa gereksinimden üretilen metin.
         /// </summary>
         public string GetFullDescription()
         {
-            if (requirement == null)
+            if (!string.IsNullOrWhiteSpace(questDescription))
             {
                 return questDescription;
             }
 
-            return requirement.GetDescription(questType);
+            return requirement != null ? requirement.GetDescription(questType) : string.Empty;
         }
 
         /// <summary>
-        /// Seçilmiş ödüllerin özet açıklamasını döndürür
+        /// Ödüllerin tek satırlık özeti (log ve eski birleşik UI alanı için)
         /// </summary>
         public string GetRewardsSummary()
         {
-            if (SelectedRewards == null || SelectedRewards.Count == 0)
-            {
-                return "Ödül Yok";
-            }
-
-            var descriptions = new List<string>();
-            foreach (var reward in SelectedRewards)
-            {
-                descriptions.Add(reward.GetDescription());
-            }
-
-            return string.Join(", ", descriptions);
+            return Summarize(SelectedRewards, "Ödül Yok");
         }
 
         /// <summary>
-        /// Seçilmiş cezaların özet açıklamasını döndürür
+        /// Cezaların tek satırlık özeti (log ve eski birleşik UI alanı için)
         /// </summary>
         public string GetPenaltiesSummary()
         {
-            if (SelectedPenalties == null || SelectedPenalties.Count == 0)
+            return Summarize(SelectedPenalties, "Ceza Yok");
+        }
+
+        private static string Summarize(List<QuestReward> entries, string emptyText)
+        {
+            if (entries == null || entries.Count == 0)
             {
-                return "Ceza Yok";
+                return emptyText;
             }
 
             var descriptions = new List<string>();
-            foreach (var penalty in SelectedPenalties)
+            foreach (var entry in entries)
             {
-                descriptions.Add(penalty.GetDescription());
+                if (entry != null) descriptions.Add(entry.GetDescription());
             }
 
-            return string.Join(", ", descriptions);
+            return descriptions.Count > 0 ? string.Join(", ", descriptions) : emptyText;
         }
 
         #endregion
@@ -261,20 +282,11 @@ namespace NewCss.Quest
             UnityEditor.EditorUtility.SetDirty(this);
         }
 
-        [ContextMenu("Test Random Selection")]
-        private void TestRandomSelection()
-        {
-            RerollSelection();
-            Debug.Log($"=== QUEST: {questTitle} - RANDOM TEST ===\n" +
-                      $"Reward Pool: {rewardPool.Count} items\n" +
-                      $"Selected Rewards: {GetRewardsSummary()}\n" +
-                      $"Penalty Pool: {penaltyPool.Count} items\n" +
-                      $"Selected Penalties: {GetPenaltiesSummary()}");
-        }
-
         [ContextMenu("Print Quest Info")]
         private void PrintQuestInfo()
         {
+            Build();
+
             Debug.Log($"=== QUEST: {questTitle} ===\n" +
                       $"ID: {questId}\n" +
                       $"Tier: {tier}\n" +
