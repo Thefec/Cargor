@@ -8,19 +8,20 @@
 
 ## 🎯 Şu an aktif iş
 
-**EKONOMİ DENGE + QUEST TURU.** Branch: `feature/economy-balance-round` (= `main` + 1 commit `c729dbb`; `origin/main` = `57b9be3`).
+**QUEST İÇERİK + KART UI TURU.** Branch: `feature/economy-balance-round` — `origin/main`'den **5 commit önde, PUSH YOK** (`origin/main` = `57b9be3`).
 → Oturum logu (**önce bunu oku**): **[plans/devam.md](plans/devam.md)**
 
 - ✅ **Roguelite draft + RELEASE PUSH FAZ 0/1 kapandı** — main'e merge+push'lu (`5833070`, +73 commit). Arşiv niteliğinde: [plans/roguelite-draft.md](plans/roguelite-draft.md), [plans/release-push.md](plans/release-push.md).
 - ✅ **Ekonomi turları merge'li:** prestij 0–240 → **0–100 rescale** (`1496949`) · hangar bekleme süresi oyuncu-bazlı 1P=90…4P=30 (`6ef9ad6`) · upgrade draft temizliği + Money zararlı-bug + perk fiyat (`57b9be3`).
-- ✅ **Hangar kapısı kök-neden fix'i** (`c729dbb`, commit'li, **push yok**) — kilit `enabled` yerine `isUnlocked` guard'ında, fail-closed.
-- 🚧 **Quest yeniden tasarımı — Seçenek B uygulandı, COMMIT'SİZ.** 3 tier de canlı, 15 yeni asset üretildi, kontrol ONAY, headless derleme 0 CS hata. → **[plans/quest-redesign-2026-07-25.md](plans/quest-redesign-2026-07-25.md)**
+- ✅ **Push bekleyen commit'ler:** `c729dbb` hangar kapısı kök-neden fix'i · `3442e62` ikon slotları + mavi tır · `4ce5fa7` quest kart UI · `4645e4e` QuestData elle-yazım modeli + 35 asset silindi · `d9ef6c5` sahne WIP.
+- 🚧 **Quest içeriği sıfırlandı — havuz BOŞ.** Kullanıcı 30+5 asset'i sildirdi, görevleri elle yazacak. `QuestData` artık görev başına açık `moneyReward`/`prestigeReward`/`moneyPenalty`/`prestigePenalty` + opsiyonel buff taşıyor (havuzdan rastgele seçim yok). Havuz boşken günlük görev atanmaz ve Görev Kademesi draft'a girmez — beklenen.
 
 ### ⏭️ Sıradaki adım (buradan devam)
-1. 🙋 **Kullanıcıda:** Unity'de eski `Assets/Resources/Quests/easy1-5.asset` sil (yoksa havuz 10 Easy + 5 Med + 5 Hard olur) → quest play-test → **commit kararı** (quest turu hâlâ commit'siz).
-2. 📊 **En büyük açık yapısal bulgu: tır penceresi cap** — tır 8:00–17:00 (9s) vs talep 7:00–18:00 (11s) → talebin **%18'i sıfır kapasite**. Para yalnız tırdan geliyor → bu doğrudan gelir tavanı. Kod-doğrulandı, değer seçimi economist+playtest'e bağlı.
-3. 🔧 **Quest ölü tetikleyiciler** (7 tipten 4'ü çağrısız): `AnswerPhone` + `CompleteSpecificColorTruck` bağlanabilir (§7.6) → kullanılabilir tip 3'ten 5'e çıkar. `HandleTruckCompleted` hardcoded `Red` bug'ı da burada.
-4. 🧹 **Temizlik onayı bekliyor:** kök `herhangi` (0 bayt) + `Assets/_Recovery/0 (10..13).unity`.
+1. 🙋 **Kullanıcıda:** 3 quest slotunu Unity'de tam bağla (`descriptionText` + `actionButton` atlanan iki alandı; `ValidateWiring()` eksikleri Console'a yazar) → görevleri elle yaz (Create → Cargor → Quest Data → `Assets/Resources/Quests/`) → play-test.
+2. 💰 **Yeni görev değerleri economist turu** (opsiyonel): sabit ödül/ceza sayılarını tier bandına oturtmak. Eski EV referansı Easy ~20 / Med ~36 / Hard ~60 TL; tarihsel tablolar [plans/quest-listesi.md](plans/quest-listesi.md) (GEÇERSİZ notlu) + [plans/quest-redesign-2026-07-25.md](plans/quest-redesign-2026-07-25.md).
+3. 📊 **En büyük açık yapısal bulgu: tır penceresi cap** — tır 8:00–17:00 (9s) vs talep 7:00–18:00 (11s) → talebin **%18'i sıfır kapasite**. Para yalnız tırdan geliyor → doğrudan gelir tavanı. Kod-doğrulandı, değer seçimi economist+playtest'e bağlı.
+4. 🔧 **Kalan ölü tetikleyiciler:** `CompleteMinigame` + `MakePackagingMistake` (çağrısız). `AnswerPhone` ve `CompleteSpecificColorTruck` 2026-07-25'te bağlandı.
+5. 🧹 **Temizlik onayı bekliyor:** kök `herhangi` (0 bayt) + `Assets/_Recovery/0 (10..13).unity`.
 
 > ⚠️ Batchmode EditMode **yalnız derlemeyi** doğrular; netcode senkron / UI / Play davranışı için gerçek Unity gerekir.
 > ℹ️ Çalışma ağacında kalıcı gürültü: ~52 font/materyal churn + `UpgradeEntry.prefab` UI redesign kolu — commit'lerde dışarıda bırakılıyor ([[unity-batchmode-artifacts]]).
@@ -38,7 +39,8 @@
 | Dosya | İçerik | Durum |
 |---|---|---|
 | **[plans/devam.md](plans/devam.md)** | Oturum logu (en son ne yapıldı + sırada ne) — oturum başında ÖNCE bunu oku | 🚧 **canlı — gerçek kaynak** |
-| **[plans/quest-redesign-2026-07-25.md](plans/quest-redesign-2026-07-25.md)** | Quest derin analizi + 15-asset tasarımı + Seçenek B | 🚧 aktif (commit'siz) |
+| **[plans/quest-redesign-2026-07-25.md](plans/quest-redesign-2026-07-25.md)** | Quest derin analizi + tier/EV tabloları + Seçenek B | 📖 referans (asset'ler silindi, EV bantları geçerli) |
+| [plans/quest-listesi.md](plans/quest-listesi.md) | Silinen 35 görevin dökümü | 🗄️ tarihsel (başında GEÇERSİZ notu) |
 | [plans/economy-audit-2026-07-20.md](plans/economy-audit-2026-07-20.md) | Holistik ekonomi denetimi (7 sistem) — **tır penceresi cap** burada | 📖 açık bulgu kaynağı |
 | [plans/economy-balance-round.md](plans/economy-balance-round.md) | Birleşik ekonomi turu (quest/upgrade/event ortak denge) | ✅ uygulandı |
 | [plans/upgrade-round-2026-07-20.md](plans/upgrade-round-2026-07-20.md) | Upgrade fiyat/ROI turu (disabledInDraft, Money bug, perk fiyat) | ✅ uygulandı |
