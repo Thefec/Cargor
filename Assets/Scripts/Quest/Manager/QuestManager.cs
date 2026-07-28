@@ -78,9 +78,9 @@ namespace NewCss.Quest
 
         /// <summary>
         /// Q6 fix: her günlük görev atamasında (AssignDailyQuests) artan sunucu-yetkili sayaç.
-        /// Client, Accept/Collect isteklerine RPC gönderirken o an bildiği generation değerini de
+        /// Client, Accept isteğine RPC gönderirken o an bildiği generation değerini de
         /// ekler; server kendi değeriyle eşleşmiyorsa isteği reddeder. Böylece gün geçişi ile
-        /// uçuştaki bir Accept/Collect RPC'si arasındaki mikro pencerede, eski günün slotIndex'i
+        /// uçuştaki bir Accept RPC'si arasındaki mikro pencerede, eski günün slotIndex'i
         /// yanlışlıkla yeni günün quest'ine uygulanmaz.
         /// </summary>
         private readonly NetworkVariable<int> _questGeneration = new(0);
@@ -357,12 +357,12 @@ namespace NewCss.Quest
         {
             if (!IsServer) return;
 
-            LogDebug("New day - processing incomplete quests and assigning new ones");
+            LogDebug("New day - settling accepted quests and assigning new ones");
 
             try
             {
-                // Apply penalties for incomplete accepted quests
-                ApplyPenaltiesForIncompleteQuests();
+                // Kabul edilmiş görevleri kapat: tamamlananlar ödülünü, tamamlanamayanlar cezasını burada alır
+                SettleAcceptedQuestsForDayEnd();
 
                 // Assign new daily quests
                 AssignDailyQuests();
@@ -429,7 +429,7 @@ namespace NewCss.Quest
             if (!IsServer) return;
 
             // Q6 fix: yeni atama = yeni generation. Bu satırdan sonra gelen (eski generation'lı)
-            // Accept/Collect istekleri AcceptQuestInternal/CollectQuestRewardInternal tarafından reddedilir.
+            // Accept istekleri AcceptQuestInternal tarafından reddedilir.
             _questGeneration.Value++;
 
             // Clear existing quests
@@ -581,23 +581,6 @@ namespace NewCss.Quest
         }
 
         /// <summary>
-        /// Görev ödülünü toplar
-        /// </summary>
-        public void CollectQuestReward(int slotIndex)
-        {
-            // Q6 fix: RPC gönderilirken o an bilinen (senkronize) generation da eklenir.
-            int knownGeneration = _questGeneration.Value;
-
-            if (!IsServer)
-            {
-                CollectQuestRewardServerRpc(slotIndex, knownGeneration);
-                return;
-            }
-
-            CollectQuestRewardInternal(slotIndex, knownGeneration);
-        }
-
-        /// <summary>
         /// Belirli slot'taki görev bilgisini döndürür
         /// </summary>
         public QuestData GetQuestData(int slotIndex)
@@ -654,12 +637,6 @@ namespace NewCss.Quest
         {
             // SenderClientId ServerRpcParams'tan alınır - client tarafından spoof edilemez
             AcceptQuestInternal(slotIndex, rpcParams.Receive.SenderClientId, clientGeneration);
-        }
-
-        [ServerRpc(RequireOwnership = false)]
-        private void CollectQuestRewardServerRpc(int slotIndex, int clientGeneration)
-        {
-            CollectQuestRewardInternal(slotIndex, clientGeneration);
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -768,56 +745,45 @@ namespace NewCss.Quest
             return false;
         }
 
-        private void CollectQuestRewardInternal(int slotIndex, int clientGeneration)
-        {
-            // Q6 fix: gün geçişi ile yarışan eski generation'lı istek - sessizce değil LOG'lu reddedilir.
-            if (clientGeneration != _questGeneration.Value)
-            {
-                LogDebug($"Collect reddedildi: generation uyuşmuyor (client={clientGeneration}, server={_questGeneration.Value}), slot={slotIndex}");
-                return;
-            }
-
-            if (slotIndex < 0 || slotIndex >= _dailyQuests.Count) return;
-
-            var progress = _dailyQuests[slotIndex];
-
-            if (progress.status != QuestStatus.Completed) return;
-
-            // Get quest data (F9 fix: GetQuestData artık progress.rewardSeed ile deterministik reroll yapıyor)
-            QuestData questData = GetQuestData(slotIndex);
-            if (questData == null) return;
-
-            // Apply rewards - SelectedRewards kullanılıyor
-            ApplyRewards(questData.SelectedRewards);
-
-            // Update status
-            progress.status = QuestStatus.Collected;
-            _dailyQuests[slotIndex] = progress;
-
-            LogDebug($"Quest reward collected: {questData.questTitle}");
-        }
-
-        private void ApplyPenaltiesForIncompleteQuests()
+        /// <summary>
+        /// Gün sonunda kabul edilmiş görevleri kapatır: tamamlananlar ödülünü, tamamlanamayanlar
+        /// cezasını burada alır. Oyuncunun ayrıca "Topla" demesi GEREKMEZ - eskiden toplanmayan
+        /// tamamlanmış görevin ödülü gün dönümünde sessizce kayboluyordu, artık kaybolmuyor.
+        ///
+        /// ÇİFT-TETİKLEME GÜVENLİĞİ: host'ta DayCycleManager.OnNewDay iki kez tetiklenebiliyor
+        /// (bkz. EventEffectManager.cs:18). Burada tetikleyici durumdan (Completed/Active) ÇIKILDIĞI
+        /// için ikinci çağrı hiçbir görevi eşleştiremez, yani ödül/ceza iki kez uygulanmaz.
+        /// </summary>
+        private void SettleAcceptedQuestsForDayEnd()
         {
             for (int i = 0; i < _dailyQuests.Count; i++)
             {
                 var progress = _dailyQuests[i];
 
-                // Only apply penalty to accepted but not completed quests
-                if (progress.status != QuestStatus.Active) continue;
+                bool isCompleted = progress.status == QuestStatus.Completed;
+                bool isUnfinished = progress.status == QuestStatus.Active;
+
+                // Kabul edilmemiş (Available) ya da zaten kapatılmış (Collected/Failed) görevler atlanır
+                if (!isCompleted && !isUnfinished) continue;
 
                 // Get quest data (F9 fix: GetQuestData artık progress.rewardSeed ile deterministik reroll yapıyor)
                 QuestData questData = GetQuestData(i);
                 if (questData == null) continue;
 
-                // Apply penalties - SelectedPenalties kullanılıyor
-                ApplyPenalties(questData.SelectedPenalties);
+                if (isCompleted)
+                {
+                    ApplyRewards(questData.SelectedRewards);
+                    progress.status = QuestStatus.Collected;
+                    LogDebug($"Quest completed, reward applied: {questData.questTitle}");
+                }
+                else
+                {
+                    ApplyPenalties(questData.SelectedPenalties);
+                    progress.status = QuestStatus.Failed;
+                    LogDebug($"Quest failed, penalty applied: {questData.questTitle}");
+                }
 
-                // Update status
-                progress.status = QuestStatus.Failed;
                 _dailyQuests[i] = progress;
-
-                LogDebug($"Quest failed, penalty applied: {questData.questTitle}");
             }
         }
 

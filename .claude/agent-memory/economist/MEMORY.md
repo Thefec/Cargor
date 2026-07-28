@@ -28,3 +28,4 @@
 - [Quest 3-tier yeniden tasarım (Easy/Medium/Hard)](quest_tier_redesign_2026-07-25.md) — YENİ CANLI TABLO: 15 quest (5/tier), EV 20/36/60 TL, targetCount+limit+Görev Tier fiyat önerisi, tüm sim-doğrulandı
 - [CompleteTruck renk kısıtı + ürün-renk eşlemesi](quest_completetruck_color_constraint.md) — YENİ: CompleteTruck ASLA renk-kilitlenemez (soft-lock bug), Toy=Red/Clothing=Yellow/Glass=Blue sabit eşleme
 - [AnswerPhone+CompleteSpecificColorTruck bağlandı](quest_answerphone_colortruck_2026-07-25.md) — 5→7 quest/tier (21 toplam); AnswerPhone P-BAĞIMSIZ (target 2/3/4, tam ödül şablonu OK); ColorTruck target 1/2/3 (renk-bag KOD-DOĞRULANMIŞ tam 1/3); limit/EV bandı bozulmadı
+- [Quest SABİT ödül/ceza tablosu (30 quest)](quest_fixed_reward_table_2026-07-28.md) — YENİ CANLI: QuestData havuz→4-sabit-alan geçişi, base/premium/phone grup çarpanı (×1/×1.5/×1.15), tier EV ±4% içinde eski bantla eşleşti

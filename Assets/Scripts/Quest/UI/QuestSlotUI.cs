@@ -90,7 +90,7 @@ namespace NewCss.Quest
         private string penaltyFormat = "{0}";
 
         [Header("=== BUTON (TEK BUTON) ===")]
-        [SerializeField, Tooltip("Kartın TEK aksiyon butonu. Görev alınabilirken 'Kabul Et', tamamlanınca 'Topla' olur; arada (görev devam ederken) gizlenir.")]
+        [SerializeField, Tooltip("Kartın TEK aksiyon butonu: yalnızca görev alınabilirken 'Kabul Et' olarak görünür. Kabul edildikten sonra gizlenir - ödül/ceza gün sonunda otomatik uygulandığı için toplama butonu YOKTUR.")]
         [FormerlySerializedAs("acceptButton")]
         private Button actionButton;
 
@@ -100,17 +100,8 @@ namespace NewCss.Quest
         [SerializeField, Tooltip("Görev alınabilir durumdayken buton yazısı")]
         private string acceptLabel = "Kabul Et";
 
-        [SerializeField, Tooltip("Görev tamamlandığında buton yazısı")]
-        private string collectLabel = "Topla";
-
         [SerializeField, Tooltip("Opsiyonel çeviri anahtarı (StringTable'da varsa yazının yerine geçer, yoksa yukarıdaki düz metin kullanılır)")]
         private string acceptLabelKey = "Quest_Accept";
-
-        [SerializeField, Tooltip("Opsiyonel çeviri anahtarı (StringTable'da varsa yazının yerine geçer)")]
-        private string collectLabelKey = "Quest_Collect";
-
-        [SerializeField, Tooltip("LEGACY: ayrı bir 'Topla' butonu. ATARSAN eski iki-butonlu davranışa dönülür. Tek buton istiyorsan BOŞ BIRAK.")]
-        private Button collectButton;
 
         [Header("=== PROGRESS BAR (Devre Dışı) ===")]
         [SerializeField, Tooltip("İlerleme çubuğu dolgu - artık kullanılmıyor")]
@@ -222,11 +213,6 @@ namespace NewCss.Quest
                     actionButtonLabel = actionButton.GetComponentInChildren<TMP_Text>(true);
                 }
             }
-
-            if (collectButton != null)
-            {
-                collectButton.onClick.AddListener(OnCollectClicked);
-            }
         }
 
         private void RemoveButtonListeners()
@@ -234,11 +220,6 @@ namespace NewCss.Quest
             if (actionButton != null)
             {
                 actionButton.onClick.RemoveListener(OnActionClicked);
-            }
-
-            if (collectButton != null)
-            {
-                collectButton.onClick.RemoveListener(OnCollectClicked);
             }
         }
 
@@ -613,49 +594,28 @@ namespace NewCss.Quest
             }
         }
 
+        /// <summary>
+        /// Buton yalnızca görev HENÜZ ALINABİLİRKEN görünür. Kabul edildikten sonra kartta
+        /// tıklanacak bir şey kalmaz: ilerleme yazısı durumu (ilerleme / "Tamamlandı" / "Başarısız")
+        /// anlatır, ödül ve ceza gün sonunda QuestManager tarafından otomatik uygulanır.
+        /// </summary>
         private void UpdateButtonStates()
         {
+            if (actionButton == null) return;
+
             bool canAccept = _currentProgress.status == QuestStatus.Available;
-            bool canCollect = _currentProgress.status == QuestStatus.Completed;
 
             // Günlük kabul limiti dolduysa (başka bir slottan görev alındıysa) buton görünür
             // kalır ama tıklanamaz + gri görünür (Selectable.interactable=false -> disabledColor).
             bool hasAcceptedToday = QuestManager.Instance != null && QuestManager.Instance.HasAcceptedQuestTodayClient;
 
-            // collectButton atalıysa eski iki-butonlu düzen; boşsa actionButton tek başına
-            // hem "Kabul Et" hem "Topla" görevini görür.
-            bool unifiedMode = collectButton == null;
+            actionButton.gameObject.SetActive(canAccept);
+            actionButton.interactable = canAccept && !hasAcceptedToday;
 
-            if (actionButton != null)
+            if (canAccept && actionButtonLabel != null)
             {
-                bool visible = unifiedMode ? (canAccept || canCollect) : canAccept;
-
-                actionButton.gameObject.SetActive(visible);
-                actionButton.interactable = canCollect || (canAccept && !hasAcceptedToday);
-
-                if (visible)
-                {
-                    SetActionButtonLabel(canCollect);
-                }
+                actionButtonLabel.text = Localized(acceptLabelKey, acceptLabel);
             }
-
-            if (collectButton != null)
-            {
-                collectButton.gameObject.SetActive(canCollect);
-                collectButton.interactable = canCollect;
-            }
-        }
-
-        /// <summary>
-        /// Tek butonun yazısını duruma göre yazar: tamamlandıysa "Topla", değilse "Kabul Et".
-        /// </summary>
-        private void SetActionButtonLabel(bool isCollectState)
-        {
-            if (actionButtonLabel == null) return;
-
-            actionButtonLabel.text = isCollectState
-                ? Localized(collectLabelKey, collectLabel)
-                : Localized(acceptLabelKey, acceptLabel);
         }
 
         /// <summary>
@@ -705,7 +665,6 @@ namespace NewCss.Quest
             }
 
             if (actionButton != null) actionButton.gameObject.SetActive(false);
-            if (collectButton != null) collectButton.gameObject.SetActive(false);
 
             HideRemovedElements();
         }
@@ -715,38 +674,17 @@ namespace NewCss.Quest
         #region Button Handlers
 
         /// <summary>
-        /// Tek butonun tıklaması: görev tamamlandıysa ödülü toplar, alınabilir durumdaysa kabul eder.
-        /// Aradaki durumlarda buton zaten gizli olduğu için hiçbir şey yapmaz (çift-koruma).
+        /// Butonun tek işi görevi kabul etmek. Buton yalnızca Available durumunda görünür olduğu için
+        /// durum kontrolü burada çift-koruma amaçlı duruyor (gizli bir butona gelen tıklama yutulur).
         /// </summary>
         private void OnActionClicked()
         {
-            switch (_currentProgress.status)
-            {
-                case QuestStatus.Completed:
-                    OnCollectClicked();
-                    break;
+            if (_currentProgress.status != QuestStatus.Available) return;
 
-                case QuestStatus.Available:
-                    OnAcceptClicked();
-                    break;
-            }
-        }
-
-        private void OnAcceptClicked()
-        {
             if (QuestManager.Instance != null)
             {
                 QuestManager.Instance.AcceptQuest(_slotIndex);
                 Debug.Log($"{LOG_PREFIX} Quest accepted at slot {_slotIndex}");
-            }
-        }
-
-        private void OnCollectClicked()
-        {
-            if (QuestManager.Instance != null)
-            {
-                QuestManager.Instance.CollectQuestReward(_slotIndex);
-                Debug.Log($"{LOG_PREFIX} Quest reward collected at slot {_slotIndex}");
             }
         }
 

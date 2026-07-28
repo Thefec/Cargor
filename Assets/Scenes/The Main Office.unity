@@ -7808,8 +7808,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 18
-  m_fontSizeBase: 18
+  m_fontSize: 24
+  m_fontSizeBase: 24
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -7847,7 +7847,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: -11.435177, z: -125.0146, w: -69.78759}
+  m_margin: {x: 0, y: -11.435177, z: -45.26805, w: -62.067078}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -10763,8 +10763,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NewCss.Quest.QuestSlotUI
   titleText: {fileID: 1881171913}
-  descriptionText: {fileID: 0}
-  progressText: {fileID: 2036503324}
+  descriptionText: {fileID: 2036503324}
+  progressText: {fileID: 0}
   iconImage: {fileID: 856172433}
   rewardMoneyText: {fileID: 133104338}
   rewardMoneyGroup: {fileID: 1687005393}
@@ -10783,10 +10783,7 @@ MonoBehaviour:
   actionButton: {fileID: 1814198729}
   actionButtonLabel: {fileID: 568937089}
   acceptLabel: Kabul Et
-  collectLabel: Topla
   acceptLabelKey: Quest_Accept
-  collectLabelKey: Quest_Collect
-  collectButton: {fileID: 1814198729}
   progressFill: {fileID: 0}
   tierIndicator: {fileID: 0}
   easyColor: {r: 0, g: 1, b: 0, a: 1}
@@ -19566,8 +19563,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 18
-  m_fontSizeBase: 18
+  m_fontSize: 24
+  m_fontSizeBase: 24
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -19605,7 +19602,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: -11.435177, z: -125.0146, w: -69.78759}
+  m_margin: {x: 0, y: -11.435177, z: -66.19855, w: -62.43936}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -47706,8 +47703,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NewCss.Quest.QuestSlotUI
   titleText: {fileID: 1491751272}
-  descriptionText: {fileID: 0}
-  progressText: {fileID: 228964706}
+  descriptionText: {fileID: 228964706}
+  progressText: {fileID: 0}
   iconImage: {fileID: 2137282349}
   rewardMoneyText: {fileID: 1923346579}
   rewardMoneyGroup: {fileID: 1388378945}
@@ -47726,10 +47723,7 @@ MonoBehaviour:
   actionButton: {fileID: 720455252}
   actionButtonLabel: {fileID: 1629695975}
   acceptLabel: Kabul Et
-  collectLabel: Topla
   acceptLabelKey: Quest_Accept
-  collectLabelKey: Quest_Collect
-  collectButton: {fileID: 720455252}
   progressFill: {fileID: 0}
   tierIndicator: {fileID: 0}
   easyColor: {r: 0, g: 1, b: 0, a: 1}
@@ -51055,8 +51049,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 32
+  m_fontSizeBase: 32
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -51094,7 +51088,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: -9.439865, z: -45.433258, w: -5.752714}
+  m_margin: {x: 0, y: -9.439865, z: -62.967575, w: -5.752714}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -52827,8 +52821,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NewCss.Quest.QuestSlotUI
   titleText: {fileID: 1546512703}
-  descriptionText: {fileID: 0}
-  progressText: {fileID: 592037476}
+  descriptionText: {fileID: 592037476}
+  progressText: {fileID: 0}
   iconImage: {fileID: 961502605}
   rewardMoneyText: {fileID: 1870656925}
   rewardMoneyGroup: {fileID: 597397526}
@@ -52847,10 +52841,7 @@ MonoBehaviour:
   actionButton: {fileID: 217295939}
   actionButtonLabel: {fileID: 2141123116}
   acceptLabel: Kabul Et
-  collectLabel: Topla
   acceptLabelKey: Quest_Accept
-  collectLabelKey: Quest_Collect
-  collectButton: {fileID: 217295939}
   progressFill: {fileID: 0}
   tierIndicator: {fileID: 0}
   easyColor: {r: 0, g: 1, b: 0, a: 1}
@@ -53277,8 +53268,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 32
+  m_fontSizeBase: 32
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -53316,7 +53307,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: -9.439865, z: -45.433258, w: -5.752714}
+  m_margin: {x: 0, y: -9.439865, z: -65.46196, w: -5.752714}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -64949,8 +64940,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 32
+  m_fontSizeBase: 32
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -64988,7 +64979,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: -9.439865, z: -45.433258, w: -5.752714}
+  m_margin: {x: 0, y: -9.439865, z: -67.598694, w: -5.752714}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -70472,8 +70463,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 18
-  m_fontSizeBase: 18
+  m_fontSize: 24
+  m_fontSizeBase: 24
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -70511,7 +70502,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: -11.435177, z: -125.0146, w: -69.78759}
+  m_margin: {x: 0, y: -11.435177, z: -67.52292, w: -61.374817}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0

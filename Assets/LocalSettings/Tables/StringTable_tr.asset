@@ -542,6 +542,10 @@ MonoBehaviour:
     m_Localized: Bugün zaten bir görev aldın
     m_Metadata:
       m_Items: []
+  - m_Id: 30570000000000108
+    m_Localized: Kabul Et
+    m_Metadata:
+      m_Items: []
   - m_Id: 30570000000000084
     m_Localized: Kapasite 0
     m_Metadata:
