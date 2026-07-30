@@ -85,11 +85,12 @@ namespace NewCss
             ctx.Truck.bonusPerTier = 5f + 0.5f * level;
         }
 
-        // Prestij Ustası: customerServedPrestigeBonus 0.2 → 0.26 → 0.32 (her seviye +0.06). 100-skala rescale (×0.4).
+        // Prestij Ustası: customerServedPrestigeBonus 0.4 → 0.52 → 0.64 (her seviye +0.12). FAZ4: taban ×2
+        // olunca perkin göreli gücü düşmesin diye etki de ×2 (bkz. plans/economy-rebuild-2026-07-30-faz4-final.md §B.3).
         private static void ApplyPrestigeMaster(int level, PerkContext ctx)
         {
             if (ctx.Economy == null) return;
-            ctx.Economy.customerServedPrestigeBonus = 0.2f + 0.06f * level;
+            ctx.Economy.customerServedPrestigeBonus = 0.4f + 0.12f * level;
         }
 
         // Hızlı Hangar (relic): hangarStayDuration taban(Economy P-bazlı GetHangarStayDuration) × 1.30.
@@ -157,12 +158,14 @@ namespace NewCss
 
         // DOKUNUŞ-1: Kaldıraçlı Kira (relic). rentScaledMultiplier scaledRent'e uygulanır
         // (GameEconomySettings.CalculateRent). Bedel: prestij
-        // cezası ×2 (taban -0.6 → -1.2, mutlak değer — idempotent; 100-skala rescale).
+        // cezası ×2 (taban -0.4 → -0.8, mutlak değer — idempotent; FAZ4 taban senkronu,
+        // bkz. plans/economy-rebuild-2026-07-30-faz4-final.md §B.3). Etki değişikliği (kira×0.75 +
+        // gracePaymentPercent=0) §B.7'nin upgrade turuna ertelendi, bu commit yalnız taban senkronu yapar.
         private static void ApplyLeveragedRent(int level, PerkContext ctx)
         {
             if (ctx.Economy == null || level <= 0) return;
             ctx.Economy.rentScaledMultiplier = 0.8f;
-            ctx.Economy.customerLostPrestigePenalty = -1.2f;
+            ctx.Economy.customerLostPrestigePenalty = -0.8f;
         }
 
         // DOKUNUŞ-2: Yüksek Volatilite (relic). Per-delivery ±%35 RNG, ort. +%15 — Truck.

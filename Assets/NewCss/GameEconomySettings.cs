@@ -18,10 +18,10 @@ namespace NewCss
         [Header("=== KİRA AYARLARI ===")]
 
         [Tooltip("Oyuncu sayısına göre temel kira miktarları (1P, 2P, 3P, 4P)")]
-        public int[] baseRentByPlayerCount = { 500, 900, 1200, 1500 };
+        public int[] baseRentByPlayerCount = { 500, 1000, 1450, 1800 };
 
         [Tooltip("Her kira döneminde kira artış çarpanı (örn: 1.3 = %30 artış)")]
-        public float rentGrowthMultiplier = 1.15f;
+        public float rentGrowthMultiplier = 1.35f;
 
         [Tooltip("Kaç günde bir kira alınır")]
         public int rentIntervalDays = 4;
@@ -47,11 +47,11 @@ namespace NewCss
         [Tooltip("Tırın hangarda bekleme süresi (saniye). Süre dolunca boş da olsa kalkar. LEGACY skaler: yalnız hangarStayDurationByPlayerCount boş/null ise fallback olarak kullanılır.")]
         public float hangarStayDuration = 30f;
 
-        [Tooltip("Oyuncu sayısına göre tır hangar bekleme süresi (saniye). index = oyuncuSayısı-1. 1P uzun (yavaş üretim → tır dolsun; 30s'de yarı-boş kalkıyordu), 4P kısa. economist P-bazlı denge 2026-07-20 (bkz. .claude/agent-memory/economist/hangar_stay_duration_per_player.md).")]
-        public int[] hangarStayDurationByPlayerCount = { 90, 60, 40, 30 };
+        [Tooltip("Oyuncu sayısına göre tır hangar bekleme süresi (saniye). index = oyuncuSayısı-1. 1P uzun (yavaş üretim → tır dolsun; 30s'de yarı-boş kalkıyordu), 4P kısa. economist P-bazlı denge 2026-07-20 (bkz. .claude/agent-memory/economist/hangar_stay_duration_per_player.md); 1P 90→120 FAZ4 (fillTime(2)=100 > 90 idi).")]
+        public int[] hangarStayDurationByPlayerCount = { 120, 60, 40, 30 };
 
         [Tooltip("Her prestige bonusu için gereken prestige miktarı")]
-        public float prestigePerBonus = 4f;
+        public float prestigePerBonus = 8f;
 
         [Tooltip("Her prestige katmanında kutu başına eklenen bonus (TL)")]
         public float bonusPerTier = 5f;
@@ -90,7 +90,7 @@ namespace NewCss
         public int callMoneyReward = 20;
 
         [Tooltip("Telefon açıldığında verilen prestij ödülü")]
-        public float callPrestigeReward = 0.2f;
+        public float callPrestigeReward = 0.4f;
 
         // ─────────────────────────────────────────────────────────────
         //  PRESTİJ CEZA / ÖDÜL  (GameStateManager, CustomerAI, BoxFallPenalty)
@@ -99,19 +99,19 @@ namespace NewCss
         [Header("=== PRESTİJ AYARLARI ===")]
 
         [Tooltip("Müşteri kaçtığında (bekleme süresi dolunca) uygulanan prestige cezası (negatif olmalı)")]
-        public float customerLostPrestigePenalty = -0.6f;
+        public float customerLostPrestigePenalty = -0.4f;
 
         [Tooltip("Müşteriye başarılı servis yapıldığında kazanılan prestige bonusu")]
-        public float customerServedPrestigeBonus = 0.2f;
+        public float customerServedPrestigeBonus = 0.4f;
 
         [Tooltip("Müşteriye yanlış ürün gösterildiğinde uygulanan prestige cezası (negatif olmalı)")]
-        public float wrongProductPrestigePenalty = -0.04f;
+        public float wrongProductPrestigePenalty = -0.08f;
 
         [Tooltip("Kutu yere düştüğünde uygulanan prestige cezası (negatif olmalı)")]
-        public float boxDropPrestigePenalty = -0.02f;
+        public float boxDropPrestigePenalty = -0.04f;
 
         [Tooltip("Tıra yanlış renk kutu teslim edildiğinde uygulanan prestige cezası (negatif olmalı). Para cezası (penaltyPerBox) ayrıca uygulanır.")]
-        public float wrongDeliveryPrestigePenalty = -0.08f;
+        public float wrongDeliveryPrestigePenalty = -0.16f;
 
         // ─────────────────────────────────────────────────────────────
         //  ETKİNLİK (Event)

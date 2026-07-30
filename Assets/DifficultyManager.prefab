@@ -78,7 +78,7 @@ MonoBehaviour:
   baseMaxPatience: 14
   baseStaminaRegenRate: 1
   customerCountPerPlayer: 2
-  moneyMultiplierPerPlayer: 1
+  moneyMultiplierPerPlayer: 1.2
   phoneChancePerPlayer: 0.1
   patienceReductionPerPlayer: 2
   staminaDrainMultiplierPerPlayer: 1.1

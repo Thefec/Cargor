@@ -12,17 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c69a8b39d5f4e74468d2206ca814fbc4, type: 3}
   m_Name: EkonomiAyarlari
   m_EditorClassIdentifier: Assembly-CSharp::NewCss.GameEconomySettings
-  baseRentByPlayerCount: f401000084030000b0040000dc050000
-  rentGrowthMultiplier: 1.15
-  wealthTaxRate: 0.1
+  baseRentByPlayerCount: f4010000e8030000aa05000008070000
+  rentGrowthMultiplier: 1.35
   rentIntervalDays: 4
   gracePaymentPercent: 0.8
   rentScaledMultiplier: 1
   rewardPerBox: 50
   penaltyPerBox: 40
   hangarStayDuration: 30
-  hangarStayDurationByPlayerCount: 5a0000003c000000280000001e000000
-  prestigePerBonus: 4
+  hangarStayDurationByPlayerCount: 780000003c000000280000001e000000
+  prestigePerBonus: 8
   bonusPerTier: 5
   rewardVolatility: 0
   rewardVolatilityMean: 1
@@ -31,11 +30,11 @@ MonoBehaviour:
   phoneRingEventMultiplier: 1.5
   phoneRingPerkBonus: 0
   callMoneyReward: 20
-  callPrestigeReward: 0.2
-  customerLostPrestigePenalty: -0.6
-  customerServedPrestigeBonus: 0.2
-  wrongProductPrestigePenalty: -0.04
-  boxDropPrestigePenalty: -0.02
-  wrongDeliveryPrestigePenalty: -0.08
+  callPrestigeReward: 0.4
+  customerLostPrestigePenalty: -0.4
+  customerServedPrestigeBonus: 0.4
+  wrongProductPrestigePenalty: -0.08
+  boxDropPrestigePenalty: -0.04
+  wrongDeliveryPrestigePenalty: -0.16
   festivalBonusMin: 100
   festivalBonusMax: 300

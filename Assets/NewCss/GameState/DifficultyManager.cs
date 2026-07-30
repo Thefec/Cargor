@@ -58,7 +58,7 @@ namespace NewCss
 
         [SerializeField, Tooltip("Money multiplier per player (1 = no change)")]
         [Range(0.5f, 1.5f)]
-        private float moneyMultiplierPerPlayer = 1.0f;
+        private float moneyMultiplierPerPlayer = 1.2f;
 
         [SerializeField, Tooltip("Additional phone chance per player")]
         [Range(0f, 0.3f)]

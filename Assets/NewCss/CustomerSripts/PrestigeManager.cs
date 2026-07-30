@@ -13,7 +13,7 @@ public class PrestigeManager : NetworkBehaviour
 
     [Header("Prestige Settings")]
     [Tooltip("Initial prestige value")]
-    public float startingPrestige = 6f;
+    public float startingPrestige = 12f;
 
     [Tooltip("Maximum prestige (üst tavan / görünür 0-100 skalası). Kutu-başı ödül tier'ının sınırsız şişmesini önler. Tüm prestij ekonomisi 240→100'e küçültüldü (miktarlar ×0.4, eşikler 10→4); pratik tavan ~96, 100 bilinçli güvenlik payı. bkz. .claude/agent-memory/economist/prestige_100_rescale_2026-07-20.md")]
     public float maxPrestige = 100f;
