@@ -314,6 +314,7 @@ namespace NewCss
 
             EnsureDayInitialized();
             TrySpawnScheduledCustomer();
+            AssignFreeServiceStations();
             CheckEndOfDayCustomerExit();
         }
 
@@ -724,7 +725,9 @@ namespace NewCss
             ai.isPrefabMode = false;
             ai.manager = this;
             ai.exitPoint = exitPoint;
-            ai.dropOffTable = dropOffTable;
+            // dropOffTable BURADA atanmıyor: 2 paralel istasyon modelinde hangi masayı
+            // kullanacağı AssignFreeServiceStations()'ta (kuyruğa girdikten sonra, boş bir
+            // istasyon bulununca) belirlenir — bkz. CustomerAI.AssignServiceStation().
 
             SetupCustomerComponents(ai);
         }
@@ -819,6 +822,10 @@ namespace NewCss
         /// </summary>
         public void NotifyCustomerDone(CustomerAI customer)
         {
+            // Servis istasyonunu serbest bırak (atanmamışsa no-op) — müşteri kuyruktan hangi
+            // sebeple ayrılırsa ayrılsın (tamamlandı/timeout/gün sonu) tek funnel burası.
+            ReleaseServiceStation(customer);
+
             if (!_customerQueue.Remove(customer))
             {
                 return;
@@ -868,13 +875,101 @@ namespace NewCss
         }
 
         /// <summary>
-        /// M��teriye masa atar
+        /// Müşteriye masa atar ve servisi başlatır. AssignFreeServiceStations (ve tek-masa
+        /// fallback'i) tarafından çağrılır — server-only.
         /// </summary>
         public void AssignDropOffTable(CustomerAI customer, DisplayTable table)
         {
-            if (customer != null && table != null)
+            if (customer == null || table == null) return;
+
+            customer.AssignServiceStation(table);
+        }
+
+        #endregion
+
+        #region Service Station Management
+
+        /// <summary>
+        /// serviceTables ile paralel dizi: index i'deki masa şu an hangi müşteri tarafından
+        /// kullanılıyor (null = boş). economy-rebuild FAZ4 §B.4 — 2 paralel istasyon: eskiden
+        /// yalnızca kuyruğun başındaki müşteri (IsFirstInQueue) servise girebiliyordu; bu tek
+        /// masa çekişmesi çok-oyunculu prestij/gün'ü ters ölçekliyordu (bkz. plan §A.3).
+        /// </summary>
+        private CustomerAI[] _stationOccupants;
+
+        private void EnsureStationOccupantsInitialized()
+        {
+            int stationCount = serviceTables != null ? serviceTables.Length : 0;
+            if (_stationOccupants == null || _stationOccupants.Length != stationCount)
             {
-                customer.dropOffTable = table;
+                _stationOccupants = new CustomerAI[stationCount];
+            }
+        }
+
+        /// <summary>
+        /// Kuyrukta bekleyen müşterilere, kuyruk sırasına göre boş servis istasyonu atar.
+        /// Server-only; CustomerManager.Update()'ten her frame çağrılır.
+        /// </summary>
+        private void AssignFreeServiceStations()
+        {
+            if (_customerQueue.Count == 0) return;
+
+            EnsureStationOccupantsInitialized();
+
+            if (_stationOccupants.Length == 0)
+            {
+                // Sahne hâlâ eski tek-masa kurulumundaysa (serviceTables boş) eski davranışa düş:
+                // yalnızca kuyruğun başındaki müşteri servise girebilir.
+                var first = _customerQueue[0];
+                if (dropOffTable != null && first != null && first.IsWaitingForService)
+                {
+                    AssignDropOffTable(first, dropOffTable);
+                }
+                return;
+            }
+
+            // Kuyruk sırasına göre (index 0 önce) boş istasyonlara ata — fairness için sıralı kalır.
+            SortQueueByIndex();
+
+            foreach (var customer in _customerQueue)
+            {
+                if (customer == null || !customer.IsWaitingForService) continue;
+
+                int freeIndex = FindFreeStationIndex();
+                if (freeIndex == -1) break; // hiç boş istasyon kalmadı
+
+                _stationOccupants[freeIndex] = customer;
+                AssignDropOffTable(customer, serviceTables[freeIndex]);
+            }
+        }
+
+        private int FindFreeStationIndex()
+        {
+            for (int i = 0; i < _stationOccupants.Length; i++)
+            {
+                if (_stationOccupants[i] == null && serviceTables[i] != null)
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        /// <summary>
+        /// Müşteri kuyruktan ayrıldığında (tamamladı / timeout / gün sonu zorlaması) istasyonunu
+        /// serbest bırakır. Server-only; atanmamış müşteride veya boş dizide no-op (güvenli).
+        /// </summary>
+        private void ReleaseServiceStation(CustomerAI customer)
+        {
+            if (customer == null || _stationOccupants == null) return;
+
+            for (int i = 0; i < _stationOccupants.Length; i++)
+            {
+                if (_stationOccupants[i] == customer)
+                {
+                    _stationOccupants[i] = null;
+                    return;
+                }
             }
         }
 
