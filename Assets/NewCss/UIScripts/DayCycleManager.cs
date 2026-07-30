@@ -46,8 +46,9 @@ namespace NewCss
         #region Serialized Fields
 
         [Header("=== TIME SETTINGS ===")]
-        [Tooltip("Bir günün gerçek süre karşılığı (saniye)")]
-        public float realDurationInSeconds = 160f;
+        [Tooltip("Bir günün gerçek süre karşılığı (saniye). Perk/buff tarafından RecomputeDayDuration() " +
+                 "üzerinden yeniden hesaplanır — doğrudan yazma (bkz. _baseRealDuration).")]
+        public float realDurationInSeconds = 200f;
 
         [SerializeField, Tooltip("3.  günden sonra her gün eklenen ekstra süre (saniye)")]
         private float dailyDurationIncrease = 10f;
@@ -102,6 +103,14 @@ namespace NewCss
         private int _rentPaymentCount;   // Kaçıncı kira ödemesi
         private bool _graceUsed;         // İlk kira affı kullanıldı mı
         private bool _gameOverStopProcessing; // Game-over sonrası Update() işleme döngüsünü durdurur (server-only)
+
+        // ── Gün süresi: taban + katkı yeniden hesaplama (tek yazıcı, overtime perk fix) ──
+        // realDurationInSeconds artık DOĞRUDAN yazılmaz; _baseRealDuration Awake'te (perk/buff
+        // uygulanmadan ÖNCE) bir kez sahne değerinden cache'lenir, sonra tüm değişiklikler
+        // RecomputeDayDuration() üzerinden: taban × perk-çarpanı + buff-toplamı.
+        private float _baseRealDuration;
+        private float _overtimeMultiplier = 1f;      // overtime perki (çarpımsal), level 0 → 1f
+        private float _buffDurationBonusSeconds = 0f; // BuffManager DayDuration buff'ları (toplamsal)
 
         // Periyodik kontrol flag'leri
         private PeriodicCheckState _periodicChecks;
@@ -225,6 +234,10 @@ namespace NewCss
             {
                 economySettings = Resources.Load<GameEconomySettings>("EkonomiAyarlari");
             }
+
+            // Taban süre perk/buff uygulanmadan ÖNCE cache'lenir — aksi halde şişmiş bir değeri
+            // taban sanıp üstüne tekrar tekrar perk/buff eklemiş oluruz (bkz. RecomputeDayDuration).
+            _baseRealDuration = realDurationInSeconds;
         }
 
         private void OnDestroy()
@@ -414,8 +427,38 @@ namespace NewCss
             float skipAmountInSeconds = minutesToSkip * secondsPerGameMinute;
 
             _networkElapsedTime.Value += skipAmountInSeconds;
-            
+
             Debug.Log($"{LOG_PREFIX} Time Skipped: {minutesToSkip} minutes ({skipAmountInSeconds:F2} seconds)");
+        }
+
+        /// <summary>
+        /// Taban süre + perk çarpanı + buff toplamını tek noktadan yeniden hesaplar.
+        /// realDurationInSeconds'a yazan TEK yer burasıdır (overtime perki ve BuffManager
+        /// DayDuration buff'ı dahil — ikisi de bu metodu çağırır, doğrudan alana yazmaz).
+        /// </summary>
+        private void RecomputeDayDuration()
+        {
+            realDurationInSeconds = _baseRealDuration * _overtimeMultiplier + _buffDurationBonusSeconds;
+        }
+
+        /// <summary>
+        /// Mesai Saati (overtime) perki için: level 0'da 1f'e (etkisiz) döner — idempotent,
+        /// perk yeniden uygulansa/kaldırılsa bile süre sürüklenmez.
+        /// </summary>
+        public void SetOvertimeMultiplier(float multiplier)
+        {
+            _overtimeMultiplier = multiplier;
+            RecomputeDayDuration();
+        }
+
+        /// <summary>
+        /// BuffManager DayDuration buff'ları için toplamsal katkı (kaldırılırken negatif amount ile
+        /// çağrılır). Doğrudan realDurationInSeconds'a yazmanın yerini alır.
+        /// </summary>
+        public void AddBuffDurationBonus(float amount)
+        {
+            _buffDurationBonusSeconds += amount;
+            RecomputeDayDuration();
         }
 
         #endregion

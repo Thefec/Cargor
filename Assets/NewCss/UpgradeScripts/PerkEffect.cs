@@ -191,12 +191,14 @@ namespace NewCss
         }
 
         // Mesai Saati (relic, NOT bölümü — soyut büyüklük, economist onayı gerekmez):
-        // günün gerçek süresini hafifçe uzatır. +20sn (~%12.5) gameplay tercihi; sapma sayılmaz
-        // çünkü fiyat (200 TL, T1) sabit ve büyüklük ekonomik bir değer değil.
+        // günün gerçek süresini hafifçe uzatır. Taban × 1.125 (~+%12.5, 200 → 225sn) gameplay
+        // tercihi; sapma sayılmaz çünkü fiyat (300 TL, T1) sabit ve büyüklük ekonomik bir değer
+        // değil. Çarpımsal + idempotent: DayCycleManager.SetOvertimeMultiplier level 0'da 1f'e
+        // döner, bu yüzden HandleUpgradeLevelsChanged tekrar tetiklense bile süre sürüklenmez.
         private static void ApplyOvertime(int level, PerkContext ctx)
         {
-            if (ctx.DayCycle == null || level <= 0) return;
-            ctx.DayCycle.realDurationInSeconds = 160f + 20f;
+            if (ctx.DayCycle == null) return;
+            ctx.DayCycle.SetOvertimeMultiplier(level > 0 ? 1.125f : 1f);
         }
 
         // DOKUNUŞ-4: Toplu Alım (relic). Bir sonraki draft teklifindeki rastgele 1 karta -%50

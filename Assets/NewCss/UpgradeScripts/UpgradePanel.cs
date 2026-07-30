@@ -321,6 +321,23 @@ namespace NewCss
         {
             InitializeNetworkLists();
             LocalizationHelper.OnLocaleChanged += OnLocaleChanged;
+            WarnAboutNegativeCostSteps();
+        }
+
+        /// <summary>
+        /// Negatif costStep, seviye N+1'i seviye N'den ucuz yapar (bkz. prestige_broker'ın eski
+        /// -5 değeri — economy-rebuild FAZ4 §C.3). Kart tasarımı bunu kastetmediği için erken uyarı.
+        /// </summary>
+        private void WarnAboutNegativeCostSteps()
+        {
+            for (int i = 0; i < upgrades.Count; i++)
+            {
+                if (upgrades[i] != null && upgrades[i].costStep < 0)
+                {
+                    Debug.LogWarning($"[UpgradePanel] '{upgrades[i].displayName}' (index {i}) negatif costStep " +
+                                      $"({upgrades[i].costStep}) kullanıyor — üst seviye alt seviyeden ucuz olacak.");
+                }
+            }
         }
 
         private void OnDestroy()

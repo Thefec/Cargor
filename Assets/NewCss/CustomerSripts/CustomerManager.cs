@@ -17,7 +17,7 @@ namespace NewCss
         #region Constants
 
         private const string LOG_PREFIX = "[CustomerManager]";
-        public const int DEFAULT_QUEUE_SIZE = 3;
+        public const int DEFAULT_QUEUE_SIZE = 2;
         private const float DEFAULT_SPAWN_START_HOUR = 8f;
         private const float DEFAULT_SPAWN_END_HOUR = 17f;
         private const float CUSTOMER_EXIT_HOUR = 17.5f; // 17:30 - Müşterilerin çıkışa yönlendirileceği saat

@@ -545,9 +545,11 @@ namespace NewCss.Quest
 
         private void ApplyDayDurationBuff(float amount)
         {
+            // realDurationInSeconds artık doğrudan yazılmıyor (bkz. DayCycleManager.RecomputeDayDuration) —
+            // overtime perki (çarpımsal) ile aynı alanı paylaştığı için tek yazıcı kuralı burada da geçerli.
             if (DayCycleManager.Instance != null)
             {
-                DayCycleManager.Instance.realDurationInSeconds += amount;
+                DayCycleManager.Instance.AddBuffDurationBonus(amount);
             }
         }
 
@@ -580,19 +582,19 @@ namespace NewCss.Quest
 
         #region Catch-up API (F10 fix: late-join / sonradan spawn tüketicileri)
 
-        // GetInstanceID() kullanılıyor, NetworkObjectId DEĞİL: CustomerManager.SpawnCustomer,
+        // GetEntityId() kullanılıyor, NetworkObjectId DEĞİL: CustomerManager.SpawnCustomer,
         // catch-up'ı networkObject.Spawn() ÇAĞRILMADAN ÖNCE tetikler (bkz. CustomerManager.cs) - o anda
         // NetworkObjectId henüz atanmamış olur (0 döner, tüm henüz-spawn-edilmemiş objelerde çakışır).
-        // GetInstanceID() Instantiate anından itibaren her obje için garantili benzersizdir.
-        private readonly HashSet<int> _playerCatchupApplied = new HashSet<int>();
-        private readonly HashSet<int> _customerCatchupApplied = new HashSet<int>();
+        // GetEntityId() (eski GetInstanceID) Instantiate anından itibaren her obje için garantili benzersizdir.
+        private readonly HashSet<EntityId> _playerCatchupApplied = new HashSet<EntityId>();
+        private readonly HashSet<EntityId> _customerCatchupApplied = new HashSet<EntityId>();
 
         /// <summary>
         /// F10 fix: buff verildiği anda sahnede olmayan (late-join oyuncusu ya da BuffManager senkronundan
         /// sonra spawn olan oyuncu) bir PlayerMovement'a, o ana kadar birikmiş TÜM aktif kalıcı buff'ları
         /// (MaxStamina/MoveSpeed/WalkSpeed/StaminaRegenRate/TempSpeedBoost) tek seferde uygular.
         /// PlayerMovement.OnNetworkSpawn içinden çağrılır.
-        /// ÇİFT-UYGULAMA GUARD: aynı obje (GetInstanceID) için ikinci çağrı no-op'tur (HashSet.Add false
+        /// ÇİFT-UYGULAMA GUARD: aynı obje (GetEntityId) için ikinci çağrı no-op'tur (HashSet.Add false
         /// döner). Bu, olası bir NetworkList "geçmişi replay et" senaryosunda (bu NGO sürümünde olmuyor -
         /// bkz. F10 bug raporu: late-join'de OnListChanged pre-existing kayıtlar için hiç tetiklenmiyor,
         /// o yüzden gerçek çift-uygulama riski yok) veya bu metodun yanlışlıkla iki kez çağrılması
@@ -601,7 +603,7 @@ namespace NewCss.Quest
         public void ApplyActiveBuffsTo(PlayerMovement player)
         {
             if (player == null || _activeBuffs == null) return;
-            if (!_playerCatchupApplied.Add(player.GetInstanceID())) return;
+            if (!_playerCatchupApplied.Add(player.GetEntityId())) return;
 
             for (int i = 0; i < _activeBuffs.Count; i++)
             {
@@ -634,12 +636,12 @@ namespace NewCss.Quest
         /// çağrılmalıdır - CustomerAI.InitializeServerState, Spawn() sırasında senkron çalışan
         /// OnNetworkSpawn içinden minWaitTime/maxWaitTime'ı okuyup _actualWaitTime'ı hesaplıyor; buff bu
         /// okumadan önce uygulanmış olmalı, yoksa buff'lu süre geç kalan müşteriye yansımaz.
-        /// ÇİFT-UYGULAMA GUARD: bkz. ApplyActiveBuffsTo(PlayerMovement) - aynı mantık, GetInstanceID bazlı.
+        /// ÇİFT-UYGULAMA GUARD: bkz. ApplyActiveBuffsTo(PlayerMovement) - aynı mantık, GetEntityId bazlı.
         /// </summary>
         public void ApplyActiveBuffsTo(CustomerAI customer)
         {
             if (customer == null || _activeBuffs == null) return;
-            if (!_customerCatchupApplied.Add(customer.GetInstanceID())) return;
+            if (!_customerCatchupApplied.Add(customer.GetEntityId())) return;
 
             for (int i = 0; i < _activeBuffs.Count; i++)
             {

@@ -21384,7 +21384,7 @@ MonoBehaviour:
     WaitTime: 5
     maxLevel: 2
     baseCost: 510
-    costStep: -5
+    costStep: 15
     kind: 1
     tier: 2
     effectId: prestige_broker
