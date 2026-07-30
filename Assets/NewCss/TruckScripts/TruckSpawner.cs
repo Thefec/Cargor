@@ -34,6 +34,7 @@ namespace NewCss
         #region Constants
 
         private const string LOG_PREFIX = "[TruckSpawner]";
+        // Legacy sabit fallback — economySettings.GetTruckCargoRange P-bazlı dizi boş/null ise kullanılır.
         private const int MIN_CARGO_AMOUNT = 2;
         private const int MAX_CARGO_AMOUNT = 6;
         private const int BOX_TYPE_COUNT = 3;
@@ -85,6 +86,8 @@ namespace NewCss
         private readonly Queue<BoxInfo.BoxType> _plannedTruckColors = new();
         private readonly List<BoxInfo.BoxType> _truckColorBag = new();
         private const int TRUCK_COLOR_QUEUE_SIZE = 5;
+
+        private GameEconomySettings economySettings;
 
         #endregion
 
@@ -176,6 +179,11 @@ namespace NewCss
             else if (Instance != this)
             {
                 Destroy(gameObject);
+            }
+
+            if (economySettings == null)
+            {
+                economySettings = Resources.Load<GameEconomySettings>("EkonomiAyarlari");
             }
         }
 
@@ -514,8 +522,31 @@ namespace NewCss
             // Refill the queue if needed
             RefillPlannedTruckColors();
 
-            int cargoAmount = Random.Range(MIN_CARGO_AMOUNT, MAX_CARGO_AMOUNT);
+            int cargoAmount = Random.Range(GetCargoAmountMin(), GetCargoAmountMaxExclusive());
             return (boxType, cargoAmount);
+        }
+
+        /// <summary>
+        /// Oyuncu sayısına göre kargo miktarı alt sınırı (dahil). economySettings yoksa/dizi
+        /// boşsa legacy sabit MIN_CARGO_AMOUNT'a düşer. Gelir-nötr P-bazlı kargo — bkz.
+        /// plans/economy-rebuild-2026-07-30-faz4-final.md §B.5.
+        /// </summary>
+        private int GetCargoAmountMin()
+        {
+            if (economySettings == null) return MIN_CARGO_AMOUNT;
+            int playerCount = DifficultyManager.Instance != null ? DifficultyManager.Instance.PlayerCount : 1;
+            return economySettings.GetTruckCargoRange(playerCount).min;
+        }
+
+        /// <summary>
+        /// Oyuncu sayısına göre kargo miktarı üst sınırı (HARİÇ — Random.Range(int,int) semantiği).
+        /// economySettings yoksa/dizi boşsa legacy sabit MAX_CARGO_AMOUNT'a düşer.
+        /// </summary>
+        private int GetCargoAmountMaxExclusive()
+        {
+            if (economySettings == null) return MAX_CARGO_AMOUNT;
+            int playerCount = DifficultyManager.Instance != null ? DifficultyManager.Instance.PlayerCount : 1;
+            return economySettings.GetTruckCargoRange(playerCount).maxExclusive;
         }
 
         /// <summary>

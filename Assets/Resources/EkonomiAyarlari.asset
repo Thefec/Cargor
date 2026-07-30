@@ -25,6 +25,8 @@ MonoBehaviour:
   bonusPerTier: 5
   rewardVolatility: 0
   rewardVolatilityMean: 1
+  truckCargoMinByPlayerCount: 01000000020000000200000002000000
+  truckCargoMaxExclusiveByPlayerCount: 03000000040000000500000006000000
   boxDropMoneyPenalty: 5
   phoneRingChancePerHour: 0.3
   phoneRingEventMultiplier: 1.5

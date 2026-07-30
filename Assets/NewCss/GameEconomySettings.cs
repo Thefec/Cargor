@@ -62,6 +62,12 @@ namespace NewCss
         [Tooltip("Yüksek Volatilite perki: ortalama ödül çarpanı (RNG merkezi, EV her zaman pozitif olacak şekilde).")]
         public float rewardVolatilityMean = 1f;
 
+        [Tooltip("Oyuncu sayısına göre tır kargo miktarı ALT sınırı (dahil). index = oyuncuSayısı-1. FAZ4: gelir-nötr P-bazlı kargo (bkz. plans/economy-rebuild-2026-07-30-faz4-final.md §B.5).")]
+        public int[] truckCargoMinByPlayerCount = { 1, 2, 2, 2 };
+
+        [Tooltip("Oyuncu sayısına göre tır kargo miktarı ÜST sınırı (HARİÇ — Random.Range(int,int) semantiği). index = oyuncuSayısı-1.")]
+        public int[] truckCargoMaxExclusiveByPlayerCount = { 3, 4, 5, 6 };
+
         // ─────────────────────────────────────────────────────────────
         //  KUTU DÜŞME / ÇARPMA CEZASI  (BoxFallPenalty)
         // ─────────────────────────────────────────────────────────────
@@ -160,6 +166,24 @@ namespace NewCss
             float baseRent = GetBaseRent(playerCount);
             float scaledRent = baseRent * Mathf.Pow(rentGrowthMultiplier, rentCycle) * rentScaledMultiplier;
             return scaledRent;
+        }
+
+        /// <summary>
+        /// Oyuncu sayısına göre tır kargo miktarı aralığını döndürür (min dahil, maxExclusive hariç —
+        /// doğrudan Random.Range(int,int) semantiğiyle uyumlu). playerCount 1-4 arası; dışarıda en
+        /// yakın uç değer. Dizi boş/null ise legacy sabit {2,6} aralığına düşer (güvenli fallback).
+        /// </summary>
+        public (int min, int maxExclusive) GetTruckCargoRange(int playerCount)
+        {
+            if (truckCargoMinByPlayerCount == null || truckCargoMinByPlayerCount.Length == 0 ||
+                truckCargoMaxExclusiveByPlayerCount == null || truckCargoMaxExclusiveByPlayerCount.Length == 0)
+            {
+                return (2, 6);
+            }
+
+            int minIndex = Mathf.Clamp(playerCount - 1, 0, truckCargoMinByPlayerCount.Length - 1);
+            int maxIndex = Mathf.Clamp(playerCount - 1, 0, truckCargoMaxExclusiveByPlayerCount.Length - 1);
+            return (truckCargoMinByPlayerCount[minIndex], truckCargoMaxExclusiveByPlayerCount[maxIndex]);
         }
 
     }
