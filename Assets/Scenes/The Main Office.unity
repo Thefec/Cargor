@@ -10264,6 +10264,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Door (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 1ecaf7df08a8fca478da3f57fbca8e3c, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: 2908275776654265864, guid: 1ecaf7df08a8fca478da3f57fbca8e3c, type: 3}
@@ -26796,6 +26800,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 1ecaf7df08a8fca478da3f57fbca8e3c, type: 3}
       propertyPath: m_Name
       value: Door (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 3603287057603726860, guid: 1ecaf7df08a8fca478da3f57fbca8e3c, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5287336468324116680, guid: 1ecaf7df08a8fca478da3f57fbca8e3c, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -62082,6 +62090,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Door (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 1ecaf7df08a8fca478da3f57fbca8e3c, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: 2908275776654265864, guid: 1ecaf7df08a8fca478da3f57fbca8e3c, type: 3}
@@ -63691,6 +63703,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 1ecaf7df08a8fca478da3f57fbca8e3c, type: 3}
       propertyPath: m_Name
       value: Door
+      objectReference: {fileID: 0}
+    - target: {fileID: 3603287057603726860, guid: 1ecaf7df08a8fca478da3f57fbca8e3c, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5287336468324116680, guid: 1ecaf7df08a8fca478da3f57fbca8e3c, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -163454,43 +163470,42 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  eventSpawnPoints:
-  - {fileID: 1787831412}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  eventTexts:
+  - {fileID: 897452614}
+  - {fileID: 5094454}
+  - {fileID: 936427276}
+  - {fileID: 1496667221}
+  - {fileID: 1041350445}
+  - {fileID: 204618587}
+  - {fileID: 825962206}
+  - {fileID: 199358590}
+  - {fileID: 1472066869}
+  - {fileID: 976594139}
+  - {fileID: 985996718}
+  - {fileID: 1944695825}
+  - {fileID: 1141508880}
+  - {fileID: 1432741392}
+  - {fileID: 1194066566}
+  - {fileID: 630759021}
   dayBackgrounds:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 1480568005}
+  - {fileID: 852978650}
+  - {fileID: 1144316529}
+  - {fileID: 1785610427}
+  - {fileID: 602186565}
+  - {fileID: 1679272399}
+  - {fileID: 891093665}
+  - {fileID: 869105760}
+  - {fileID: 1077514355}
+  - {fileID: 680523344}
+  - {fileID: 70422329}
+  - {fileID: 1731166985}
+  - {fileID: 1042665497}
+  - {fileID: 1920660998}
+  - {fileID: 640067534}
+  - {fileID: 902615654}
   currentDayColor: {r: 0.16278034, g: 0.5849056, b: 0.16278034, a: 1}
   normalDayColor: {r: 1, g: 1, b: 1, a: 1}
-  eventTextPrefab: {fileID: 7344238018876752607, guid: 713b037a1dab3d047993541ab8947f5b, type: 3}
   calendarPanel: {fileID: 591848064}
   exitButton: {fileID: 1936047832}
   panelAnimator: {fileID: 591848068}

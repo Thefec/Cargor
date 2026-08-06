@@ -95,10 +95,10 @@ namespace NewCss
         // `dayNumberTexts` KALDIRILDI: gün numaraları (1-16) artık sahnede duvar takviminin
         // üstüne sabit yazılı, kodun onları runtime'da doldurmasına gerek yok.
 
-        [SerializeField, Tooltip("Her günün event yazısının doğacağı nokta (16 adet, index 0 = gün 1). " +
-                                 "Genelde o güne ait gün-numarası TextMesh'inin Transform'u atanır — " +
-                                 "event yazısı bunun ÇOCUĞU olarak, bunun konumunda doğar.")]
-        public Transform[] eventSpawnPoints = new Transform[CALENDAR_CELL_COUNT];
+        [SerializeField, Tooltip("Her günün event adının YAZILACAĞI TextMesh (16 adet, index 0 = gün 1). " +
+                                 "Sahnedeki hazır TextMesh'ler buraya atanır; kod hiçbir obje ÜRETMEZ, " +
+                                 "yalnız bu alanların .text'ini doldurur. O gün event yoksa alan boşaltılır.")]
+        public TMP_Text[] eventTexts = new TMP_Text[CALENDAR_CELL_COUNT];
 
         [SerializeField, Tooltip("Gün arka plan imajları (16 adet, index 0 = gün 1). " +
                                  "Opsiyonel — atanmayan slotlar bugünü vurgulamaz, başka bir şey bozulmaz.")]
@@ -119,9 +119,8 @@ namespace NewCss
 
         #region Serialized Fields - Prefabs
 
-        [Header("=== EVENT PREFAB ===")]
-        [SerializeField, Tooltip("Event text prefab'ı")]
-        public GameObject eventTextPrefab;
+        // `eventTextPrefab` KALDIRILDI: event yazısı artık prefab'tan üretilmiyor,
+        // sahnedeki hazır TextMesh'e yazılıyor (bkz. eventTexts).
 
         #endregion
 
@@ -182,7 +181,6 @@ namespace NewCss
 
         private readonly List<int> _randomEventDays = new();
         private readonly Dictionary<int, GameEvent> _eventsByDay = new();
-        private readonly List<GameObject> _spawnedEventTexts = new();
 
         #endregion
 
@@ -248,7 +246,7 @@ namespace NewCss
         /// </summary>
         private void OnValidate()
         {
-            ResizePreservingAssignments(ref eventSpawnPoints);
+            ResizePreservingAssignments(ref eventTexts);
             ResizePreservingAssignments(ref dayBackgrounds);
         }
 
@@ -268,26 +266,26 @@ namespace NewCss
 
         /// <summary>
         /// Atanmamış takvim slotlarını TEK bir uyarıda bildirir. Bu hata sınıfı sessizdi:
-        /// eventSpawnPoints'te boş bırakılan gün, o gün event olsa bile ekranda hiçbir şey
+        /// eventTexts'te boş bırakılan gün, o gün event olsa bile ekranda hiçbir şey
         /// göstermiyor ve hiçbir log basmıyordu.
         /// </summary>
         private void ValidateCellWiring()
         {
-            if (eventSpawnPoints == null || eventSpawnPoints.Length == 0)
+            if (eventTexts == null || eventTexts.Length == 0)
             {
-                LogWarning("eventSpawnPoints hiç atanmamış — takvimde hiçbir event yazısı görünmeyecek.");
+                LogWarning("eventTexts hiç atanmamış — takvimde hiçbir event yazısı görünmeyecek.");
                 return;
             }
 
             var missing = new List<int>();
-            for (int i = 0; i < eventSpawnPoints.Length && i < CALENDAR_CELL_COUNT; i++)
+            for (int i = 0; i < eventTexts.Length && i < CALENDAR_CELL_COUNT; i++)
             {
-                if (eventSpawnPoints[i] == null) missing.Add(startDay + i);
+                if (eventTexts[i] == null) missing.Add(startDay + i);
             }
 
             if (missing.Count > 0)
             {
-                LogWarning($"eventSpawnPoints eksik — şu günlerde event yazısı GÖRÜNMEYECEK: " +
+                LogWarning($"eventTexts eksik — şu günlerde event yazısı GÖRÜNMEYECEK: " +
                            $"{string.Join(", ", missing)}. (Inspector: EventCalendarUI > Calendar Cells)");
             }
         }
@@ -796,43 +794,43 @@ namespace NewCss
             HighlightCurrentDay();
         }
 
+        /// <summary>
+        /// Tüm gün hücrelerinin event yazısını boşaltır. Obje YOK EDİLMEZ — TextMesh'ler
+        /// sahnenin kalıcı parçası, yalnız içerikleri temizlenir.
+        /// </summary>
         private void ClearSpawnedEventTexts()
         {
-            foreach (var obj in _spawnedEventTexts)
+            if (eventTexts == null) return;
+
+            for (int i = 0; i < eventTexts.Length; i++)
             {
-                if (obj != null)
-                {
-                    Destroy(obj);
-                }
+                if (eventTexts[i] != null) eventTexts[i].text = string.Empty;
             }
-            _spawnedEventTexts.Clear();
         }
 
         private void PopulateCalendarCells()
         {
-            if (eventSpawnPoints == null) return;
+            if (eventTexts == null) return;
 
-            // Döngüyü YALNIZ eventSpawnPoints sürer. Eskiden
-            // Mathf.Min(dayNumberTexts.Count, eventSpawnPoints.Length) idi; gün numarası
-            // listesi boşalınca cellCount 0 oluyor ve HİÇBİR event yazısı doğmuyordu.
-            int cellCount = Mathf.Min(eventSpawnPoints.Length, CALENDAR_CELL_COUNT);
+            int cellCount = Mathf.Min(eventTexts.Length, CALENDAR_CELL_COUNT);
 
             for (int i = 0; i < cellCount; i++)
             {
-                TrySpawnEventText(i, startDay + i);
+                WriteEventText(i, startDay + i);
             }
         }
 
-        private void TrySpawnEventText(int index, int day)
+        /// <summary>
+        /// O günde event varsa adını hücrenin TextMesh'ine yazar. Event yoksa hiçbir şey
+        /// yapmaz — hücre <see cref="ClearSpawnedEventTexts"/> ile zaten boşaltılmıştır.
+        /// </summary>
+        private void WriteEventText(int index, int day)
         {
             if (!_randomEventDays.Contains(day)) return;
             if (!_eventsByDay.TryGetValue(day, out GameEvent gameEvent)) return;
+            if (eventTexts[index] == null) return;
 
-            var eventObject = SpawnEventText(index, gameEvent.GetLocalizedName(), Color.white);
-            if (eventObject != null)
-            {
-                _spawnedEventTexts.Add(eventObject);
-            }
+            eventTexts[index].text = gameEvent.GetLocalizedName();
         }
 
         /// <summary>
@@ -852,22 +850,8 @@ namespace NewCss
             }
         }
 
-        private GameObject SpawnEventText(int index, string text, Color color)
-        {
-            if (eventTextPrefab == null || eventSpawnPoints[index] == null) return null;
-
-            var spawnPoint = eventSpawnPoints[index];
-            var eventObject = Instantiate(eventTextPrefab, spawnPoint.position, Quaternion.identity, spawnPoint);
-
-            var tmpText = eventObject.GetComponent<TMP_Text>();
-            if (tmpText != null)
-            {
-                tmpText.text = text;
-                tmpText.color = color;
-            }
-
-            return eventObject;
-        }
+        // `SpawnEventText` KALDIRILDI: event yazısı artık prefab'tan üretilmiyor, sahnedeki
+        // hazır TextMesh'e yazılıyor (bkz. WriteEventText).
 
         #endregion
 
@@ -967,7 +951,6 @@ namespace NewCss
             Debug.Log($"Is Animating: {_isAnimating}");
             Debug.Log($"Start Day: {startDay}");
             Debug.Log($"Total Event Days: {_randomEventDays.Count}");
-            Debug.Log($"Spawned Event Texts: {_spawnedEventTexts.Count}");
             Debug.Log($"Has Current Player: {_currentPlayer != null}");
         }
 
