@@ -659,6 +659,15 @@ namespace NewCss
 
         private void TriggerWin()
         {
+            // TriggerLose ile simetrik guard: bitmiş bir oyunun sonucu değişmez.
+            // CheckWinCondition zaten gameEnded'ı kontrol ediyor ama TestWin/ForceCheck gibi
+            // debug yolları buraya doğrudan girebiliyor.
+            if (gameEnded)
+            {
+                Debug.Log("=== Game already ended, ignoring win trigger ===");
+                return;
+            }
+
             Debug.Log("=== GAME WON ===");
 
             // Server-authoritative: karar burada, tüm makineler _gameEndState NetworkVariable'ının
@@ -673,6 +682,18 @@ namespace NewCss
 
         public void TriggerLose()
         {
+            // Oyun BİTTİKTEN sonra gelen kayıp sinyali yok sayılır. Gün 16 settlement'i
+            // (QuestManager.SettleAcceptedQuestsOnGameEnd) zafer İLAN EDİLDİKTEN SONRA çalışıyor;
+            // tamamlanamamış bir görevin prestij cezası prestiji <=0'a düşürürse
+            // PrestigeManager.ModifyPrestige buradan TriggerLose çağırıyordu ve _gameEndState
+            // Won -> Lost olarak değişip zafer ekranının üstüne KAYIP ekranı basıyordu.
+            // Kazanılmış oyun kaybedilemez; prestij yine düşer, sonuç değişmez.
+            if (gameEnded)
+            {
+                Debug.Log("=== Game already ended, ignoring lose trigger ===");
+                return;
+            }
+
             Debug.Log("=== GAME LOST ===");
 
             if (IsSpawned && IsServer)
