@@ -23,8 +23,14 @@
 1. 🔴 **PLAY-TEST — tek gerçek kapı.** Bu turda kira, prestij, upgrade fiyatları, quest ödülleri, event çarpanları ve telefon ekonomisi değişti; **hiçbiri oyun içinde çalışırken görülmedi.** Makine doğrulaması "derleniyor ve sayılar doğru yerde" der, "oyun iyi hissettiriyor" demez. Checklist tabanı: [plans/playtest-2026-07-19.md](plans/playtest-2026-07-19.md) (bayat, ekonomi kısmı yeniden yazılmalı).
    **Ölçülecekler duyarlılık sırasına göre:** `kutu/dk/oyuncu` (1.2→2.0 ile 1P kümülatifi %117 değişiyor) · masa meşgul süresi S · `agile_crew`'in üretime yansıması · telefon yanıtlamanın oyuncu-saniyesi maliyeti. Bir oyun günü yalnız 200–330 gerçek saniye → **mutlak TL değil oranlarla konuş.**
 2. 🙋 **Kullanıcıda bekleyen 3 iş:** (a) 2. servis masasının mesh/collider yerleşimi — headless doğrulayamıyor; (b) sahnede `endIntensity 0.03→0` plansız değişiklik, istenmiyorsa geri al; (c) `StringTable Shared Data`'daki event açıklamaları eski yüzdelerde kalmış olabilir.
-3. 📖 **GDD senkronu (R2, gerçek borç).** GDD §4/§5.2/§6.1 uygulanan değer setinden eski; kontrol bunu 2026-07-30'da flagladı, hâlâ yapılmadı. → **assistant**
-4. 🧹 **Temizlik onayı bekliyor:** kök `herhangi` (0 bayt) + `Assets/_Recovery/0 (1..13).unity` (13 dosya).
+3. 🔴 **PERK MİMARİSİ — karar bekliyor.** `PerkEffect` kalıcı asset'lere (SO + **prefab**) runtime'da yazıyor, geri almıyor. İki ayrı sonuç: (a) 7 ekonomi alanı kalıcı bozuluyor, (b) 5 perk muhtemelen hiç çalışmıyor (`Truck.Awake` her spawn'da SO'dan yeniden okuyor). Detay: [plans/devam.md](plans/devam.md) 2026-08-07, [Assets/Editor/EconomyInvariantCheck.cs](Assets/Editor/EconomyInvariantCheck.cs).
+   **Seçenekler:**
+   - **A — Runtime override katmanı** (doğru ama büyük): perkler asset'e değil bir `RuntimeEconomyState`'e yazar; okuyucular oradan okur. Bozulma yapısal olarak imkânsız hale gelir.
+   - **B — Snapshot + restore** (orta): `UpgradePanel` spawn'da tabanları yedekler, despawn'da geri yazar. Ucuz ama Editor çökerse yedek uygulanmaz.
+   - **C — Canlı instance'a uygula** (perkleri canlandırır): `TruckSpawner` her yeni tıra aktif perkleri uygular. **⚠️ 5 ölü perk canlanır → ekonomi kayar, economist turu şart.**
+   - Önerim: **B + C ayrı ayrı** — B bozulmayı hemen durdurur (denge değişmez), C ayrı bir denge turu olarak sonra.
+4. 📖 ~~GDD senkronu~~ ✅ **BİTTİ** (2026-08-07, `bc43773`) — §4/§5/§6/§7/§8/§13/§14/§16/§19/§21/§31 koda hizalandı; §7 Kota Sistemi tamamen kaldırıldı (kodda yok).
+5. 🧹 **Temizlik onayı bekliyor:** kök `herhangi` (0 bayt) + `Assets/_Recovery/0 (1..13).unity` (13 dosya).
 
 ### 🟢 Latent / düşük öncelik
 - **Ölü quest tetikleyicileri**: `CompleteMinigame` + `MakePackagingMistake` — `QuestTracker.Notify*` metodlarının gerçek çağıranı yok. 30 asset'in hiçbiri bu tipleri kullanmıyor (hepsi tip 1/2/3/4), o yüzden canlı bug değil; yeni görev tipi eklenirse önce bunlar bağlanmalı.
@@ -40,7 +46,7 @@
 ## 📌 Açık Kararlar (kullanıcı onayı gereken)
 - [x] **Q1** Öncelik sırası onaylandı *(2026-07-06)*
 - [x] **Q2** Kod organizasyon ikiliğine şimdilik dokunulmuyor *(2026-07-06)*
-- [ ] **Q3** Otomatik test (Unity Test Framework) yatırımı — EditMode fiilen 9 teste çıktı (roguelite/draft). Kapsam kararı açık: ekonomi formülleri (`CalculateRent`, `GetTruckCargoRange`, `CalculateEffectiveTargetCount`) test edilmeye değer mi?
+- [ ] **Q3** Otomatik test yatırımı — EditMode 9 test (roguelite/draft). Ekonomi formülleri için **gerçek unit test yazılamıyor**: `Assets/Tests/EditMode` yalnız `NewCss.Roguelite` assembly'sini görüyor, `GameEconomySettings` ise Assembly-CSharp'ta → asmdef refaktörü gerekir. Pratik ihtiyaç şimdilik `EconomyInvariantCheck.cs` (165 kontrol) ile karşılandı. **Karar: asmdef refaktörü yapılsın mı, yoksa denetçi yeterli mi?**
 
 ---
 
@@ -57,7 +63,8 @@
 | [plans/manuel-gorevler.md](plans/manuel-gorevler.md) | 🙋 Unity Play/UI/multiplayer teyitleri | 🟡 bayat |
 | [plans/quest-listesi.md](plans/quest-listesi.md) · [quest-redesign-2026-07-25.md](plans/quest-redesign-2026-07-25.md) · [economy-balance-round.md](plans/economy-balance-round.md) · [upgrade-round-2026-07-20.md](plans/upgrade-round-2026-07-20.md) · [upgrade-isim-listesi.md](plans/upgrade-isim-listesi.md) · [release-push.md](plans/release-push.md) · [roguelite-draft.md](plans/roguelite-draft.md) · [economy-audit-2026-07-13.md](plans/economy-audit-2026-07-13.md) · [-17](plans/economy-audit-2026-07-17.md) · [economy-balance.md](plans/economy-balance.md) | Bitmiş turlar ve tarihsel referanslar | 🗄️ arşiv niteliğinde |
 
-**Referans raporlar (kök):** `GDD.md` (tasarım — **§4/§5.2/§6.1 bayat**), `UPGRADE_PRICING_REPORT.md`, `ECONOMY_BALANCE_REPORT.md`.
+**Referans raporlar (kök):** `GDD.md` (tasarım — ✅ **2026-08-07'de koda senkronlandı**), `UPGRADE_PRICING_REPORT.md`, `ECONOMY_BALANCE_REPORT.md`.
+**Denetçi:** `Assets/Editor/EconomyInvariantCheck.cs` — 165 kontrol, menü `Cargor / Ekonomi Değerlerini Doğrula`. Ekonomi değeri değiştiren HER işten sonra ve **her play-test sonrası** çalıştır.
 **Sim:** `tools/economy-sim/sim.js` v3.1 — `node tools/economy-sim/sim.js`. Başlığındaki her değer `dosya:satır` ile belgeli; denetimden önce gerçek koda karşı doğrula.
 
 ---
