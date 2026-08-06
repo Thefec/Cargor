@@ -969,8 +969,8 @@ MonoBehaviour:
   entryPoint: {fileID: 0}
   exitPoint: {fileID: 0}
   exitDelay: 2
-  rewardPerBox: 20
-  penaltyPerBox: 50
+  rewardPerBox: 50
+  penaltyPerBox: 40
   prestigePerBonus: 4
   bonusPerTier: 5
   enterAudioSource: {fileID: -3324958721656954846}
