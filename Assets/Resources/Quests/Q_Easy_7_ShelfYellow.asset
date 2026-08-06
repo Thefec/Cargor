@@ -24,10 +24,10 @@ MonoBehaviour:
     requiredBoxType: 0
     requireSpecificTruckColor: 0
     requiredTruckColor: 0
-  moneyReward: 18
-  prestigeReward: 0.4
-  moneyPenalty: 10
-  prestigePenalty: 0.2
+  moneyReward: 28
+  prestigeReward: 1.4
+  moneyPenalty: 15
+  prestigePenalty: 0.8
   hasBuff: 0
   buffType: 9
   buffAmount: 0

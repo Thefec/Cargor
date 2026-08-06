@@ -14,20 +14,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NewCss.Quest.QuestData
   questId: hard_shelf_yellow
   questTitle: "Sar\u0131 Alarm"
-  questDescription: "Rafa 4 sar\u0131 kutu yerle\u015ftir"
+  questDescription: "Rafa 5 sar\u0131 kutu yerle\u015ftir"
   icon: {fileID: 0}
   tier: 2
   questType: 1
   requirement:
-    targetCount: 4
+    targetCount: 5
     requireSpecificBoxType: 1
     requiredBoxType: 0
     requireSpecificTruckColor: 0
     requiredTruckColor: 0
-  moneyReward: 57
-  prestigeReward: 1.5
-  moneyPenalty: 31
-  prestigePenalty: 0.8
+  moneyReward: 150
+  prestigeReward: 7.5
+  moneyPenalty: 53
+  prestigePenalty: 2.66
   hasBuff: 0
   buffType: 9
   buffAmount: 0

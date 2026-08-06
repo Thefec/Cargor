@@ -447,8 +447,10 @@ namespace NewCss.Quest
                 return;
             }
 
-            // Randomly select 3 quests
-            var selectedQuests = SelectRandomQuests(availableQuests, DAILY_QUEST_COUNT);
+            // D1 (Faz4 §B.9): her teklif FARKLI bir tier'dan gelsin - üst tier açılınca alt
+            // tier'ların havuzu seyrelip Hard ödülü hiç masaya gelmesin diye tier başına en az
+            // bir teklif garantiye alınır.
+            var selectedQuests = SelectDailyQuestsStratified(_currentQuestTier.Value);
 
             foreach (var quest in selectedQuests)
             {
@@ -459,10 +461,12 @@ namespace NewCss.Quest
                 int rewardSeed = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
                 quest.RerollSelection(rewardSeed);
 
-                var progress = new QuestProgress(quest.questId, quest.requirement.targetCount, rewardSeed);
+                int effectiveTarget = CalculateEffectiveTargetCount(quest);
+
+                var progress = new QuestProgress(quest.questId, effectiveTarget, rewardSeed);
                 _dailyQuests.Add(progress);
 
-                LogDebug($"Assigned quest: {quest.questTitle} (Tier: {quest.tier}) - Rewards: {quest.GetRewardsSummary()}, Penalties: {quest.GetPenaltiesSummary()}");
+                LogDebug($"Assigned quest: {quest.questTitle} (Tier: {quest.tier}) - Target: {effectiveTarget} (base {quest.requirement.targetCount}) - Rewards: {quest.GetRewardsSummary()}, Penalties: {quest.GetPenaltiesSummary()}");
             }
 
             NotifyQuestsAssignedClientRpc();
@@ -484,21 +488,98 @@ namespace NewCss.Quest
             return available;
         }
 
-        private List<QuestData> SelectRandomQuests(List<QuestData> available, int count)
+        /// <summary>
+        /// D1 (Faz4 §B.9): 3 günlük teklifin her biri FARKLI tier'dan seçilir (maxTier=Hard iken
+        /// 1 Easy + 1 Medium + 1 Hard). Henüz üst tier'lar kilitliyse (maxTier &lt; Hard) kalan
+        /// slotlar açık tier'ların havuzundan rastgele doldurulur - eski davranışla aynı sonuç.
+        /// </summary>
+        private List<QuestData> SelectDailyQuestsStratified(int maxTier)
         {
             var selected = new List<QuestData>();
-            var pool = new List<QuestData>(available);
+            var usedIds = new HashSet<string>();
 
-            int selectCount = Mathf.Min(count, pool.Count);
+            int highestTier = Mathf.Min(maxTier, (int)QuestTier.Hard);
 
-            for (int i = 0; i < selectCount; i++)
+            for (int t = 0; t <= highestTier; t++)
             {
-                int randomIndex = UnityEngine.Random.Range(0, pool.Count);
-                selected.Add(pool[randomIndex]);
-                pool.RemoveAt(randomIndex);
+                var tierPool = new List<QuestData>();
+                foreach (var quest in allQuests)
+                {
+                    if (quest != null && (int)quest.tier == t && !usedIds.Contains(quest.questId))
+                    {
+                        tierPool.Add(quest);
+                    }
+                }
+
+                if (tierPool.Count == 0) continue;
+
+                var pick = tierPool[UnityEngine.Random.Range(0, tierPool.Count)];
+                selected.Add(pick);
+                usedIds.Add(pick.questId);
+            }
+
+            if (selected.Count < DAILY_QUEST_COUNT)
+            {
+                var remainingPool = new List<QuestData>();
+                foreach (var quest in allQuests)
+                {
+                    if (quest != null && (int)quest.tier <= maxTier && !usedIds.Contains(quest.questId))
+                    {
+                        remainingPool.Add(quest);
+                    }
+                }
+
+                int need = DAILY_QUEST_COUNT - selected.Count;
+                for (int i = 0; i < need && remainingPool.Count > 0; i++)
+                {
+                    int randomIndex = UnityEngine.Random.Range(0, remainingPool.Count);
+                    var pick = remainingPool[randomIndex];
+                    selected.Add(pick);
+                    usedIds.Add(pick.questId);
+                    remainingPool.RemoveAt(randomIndex);
+                }
             }
 
             return selected;
+        }
+
+        /// <summary>
+        /// D2 (Faz4 §B.9): görev hedefini oyuncu sayısına göre ölçekler.
+        ///
+        /// ⚠️ ŞU ANDA HİÇBİR CANLI GÖREV TİPİNDE ETKİLİ DEĞİL — dört fiilin dördü de muaf.
+        /// Bilerek böyle: 2026-08-06 kontrol kapısı ÇİFTE ÖLÇEKLEME buldu. Mevcut 30 asset'in
+        /// targetCount'ları (Hard 12/5, Medium 7/3, Easy 4/2) 2026-07-29 economist turunda ZATEN
+        /// tüm P bantlarında ~%85 tamamlanma hedeflenerek kalibre edilmişti; D2 onların üstüne bir
+        /// kez daha çarpınca sim'de renksiz raf/paket tamamlanma olasılığı 3P 0.76→0.13,
+        /// 4P 0.87→0.13'e düşüyordu (bkz. .claude/agent-memory/economist/quest_d2_double_scaling_bug_2026-08-06.md).
+        ///
+        /// Muafiyet gerekçeleri — hepsinde arz zaten P ile doğal ölçekleniyor, hedefi de
+        /// ölçeklemek çift sayım olur:
+        ///   AnswerPhone       - telefon arzı P-flat.
+        ///   CompleteTruck     - tır kargosu P ile zaten küçülüyor.
+        ///   PlaceBoxOnShelf   - raflama hızı doğrudan oyuncu sayısıyla artıyor.
+        ///   PackToy           - paketleme masası çekişmesi P ile zaten dengeleniyor.
+        ///
+        /// Mekanizma, arzı P ile ölçeklenMEYEN gelecekteki görev tipleri için duruyor. Yeni bir
+        /// tip eklerken önce economist'e sor: arzı P'den bağımsızsa muafiyet listesine EKLEME.
+        ///
+        /// Ölçek vektörü DifficultyManager.UpgradeCostMultiplier ile aynı kaynaktan okunur
+        /// ({1.00, 2.00, 2.95, 3.70}) - aynı sabiti iki yerde tanımlamamak için.
+        /// </summary>
+        private int CalculateEffectiveTargetCount(QuestData quest)
+        {
+            int baseTarget = quest.requirement != null ? quest.requirement.targetCount : 1;
+
+            if (quest.questType == QuestType.AnswerPhone ||
+                quest.questType == QuestType.CompleteTruck ||
+                quest.questType == QuestType.PlaceBoxOnShelf ||
+                quest.questType == QuestType.PackToy)
+            {
+                return baseTarget;
+            }
+
+            float scale = DifficultyManager.Instance != null ? DifficultyManager.Instance.UpgradeCostMultiplier : 1f;
+            return Mathf.Max(1, Mathf.RoundToInt(baseTarget * scale));
         }
 
         [ClientRpc]
@@ -743,6 +824,24 @@ namespace NewCss.Quest
                 }
             }
             return false;
+        }
+
+        /// <summary>
+        /// Gün 16 settlement (Faz4 §B.9): oyun kazanılarak biterken DayCycleManager.NextDay()
+        /// erken çıkış yapıp OnNewDay'i HİÇ tetiklemiyor (bkz. DayCycleManager.cs upcomingDay
+        /// &gt;= MAX_DAYS dalı) - yani normalde HandleNewDay üzerinden çalışan
+        /// SettleAcceptedQuestsForDayEnd() son günün kabul edilmiş görevleri için hiç çalışmıyordu.
+        /// Sonuç: son gün alınan görev cezasız/ödülsüz bedava bir opsiyon oluyordu. DayCycleManager
+        /// win dalından bu wrapper çağrılarak son günün kabul edilmiş görevleri de kapatılır.
+        /// Idempotent'tir: SettleAcceptedQuestsForDayEnd zaten Collected/Failed durumundaki
+        /// görevleri atlar, o yüzden yanlışlıkla iki kez çağrılsa bile ödül/ceza tekrarlanmaz.
+        /// </summary>
+        public void SettleAcceptedQuestsOnGameEnd()
+        {
+            if (!IsServer) return;
+
+            LogDebug("Game ending (day 16 reached) - settling final day's accepted quests");
+            SettleAcceptedQuestsForDayEnd();
         }
 
         /// <summary>

@@ -34,9 +34,6 @@ namespace NewCss.Quest
         [SerializeField, Tooltip("Görev açıklaması")]
         private TMP_Text descriptionText;
 
-        [SerializeField, Tooltip("İlerleme metni")]
-        private TMP_Text progressText;
-
         [Header("=== ICON ===")]
         [SerializeField, Tooltip("Görev ikonu. QuestData.icon boşsa prefab'daki varsayılan sprite korunur.")]
         private Image iconImage;
@@ -126,16 +123,6 @@ namespace NewCss.Quest
 
         [SerializeField, Tooltip("Aktif durum göstergesi - artık kullanılmıyor")]
         private GameObject activeIndicator;
-
-        [Header("=== PROGRESS TEXT COLORS ===")]
-        [SerializeField, Tooltip("Tamamlandı rengi")]
-        private Color completedColor = new Color(0.2f, 0.8f, 0.2f); // Yeşil
-
-        [SerializeField, Tooltip("Tamamlanamadı rengi")]
-        private Color failedColor = new Color(0.9f, 0.2f, 0.2f); // Kırmızı
-
-        [SerializeField, Tooltip("Normal ilerleme rengi")]
-        private Color normalProgressColor = Color.white;
 
         [Header("=== LEGACY (BOS BIRAK) ===")]
         [SerializeField, Tooltip("Eski BİRLEŞİK ödül metni. Yeni ayrı para/prestij alanlarını kullanıyorsan BOŞ BIRAK - atalı kalırsa kartta ödül iki kere yazar.")]
@@ -236,7 +223,6 @@ namespace NewCss.Quest
 
             if (titleText == null) missing.Add(nameof(titleText));
             if (descriptionText == null) missing.Add(nameof(descriptionText));
-            if (progressText == null) missing.Add(nameof(progressText));
             if (actionButton == null) missing.Add(nameof(actionButton));
             if (rewardMoneyText == null) missing.Add(nameof(rewardMoneyText));
             if (rewardPrestigeText == null) missing.Add(nameof(rewardPrestigeText));
@@ -306,7 +292,6 @@ namespace NewCss.Quest
         public void UpdateProgress(QuestProgress progress)
         {
             _currentProgress = progress;
-            UpdateProgressUI();
             UpdateButtonStates();
         }
 
@@ -318,7 +303,6 @@ namespace NewCss.Quest
         {
             UpdateTextElements();
             UpdateIcon();
-            UpdateProgressUI();
             UpdateButtonStates();
             HideRemovedElements(); // Her güncellemede kaldırılan elementleri gizle
         }
@@ -332,7 +316,10 @@ namespace NewCss.Quest
 
             if (descriptionText != null)
             {
-                descriptionText.text = _currentQuestData.GetFullDescription();
+                // _currentProgress.targetProgress = QuestManager.CalculateEffectiveTargetCount ile
+                // ölçeklenmiş GERÇEK hedef (server tarafında QuestProgress oluşturulurken yazılır).
+                // Kart, ham requirement.targetCount değil bu sayıyı göstermeli (kontrol P0 fix).
+                descriptionText.text = _currentQuestData.GetFullDescription(_currentProgress.targetProgress);
             }
 
             // Sıra önemli: ödül ve ceza, para/prestij dışı etkileri _combinedExtras'a biriktirir,
@@ -555,49 +542,11 @@ namespace NewCss.Quest
             iconImage.enabled = iconImage.sprite != null;
         }
 
-        private void UpdateProgressUI()
-        {
-            if (progressText == null) return;
-
-            // Duruma göre progress text'i güncelle
-            switch (_currentProgress.status)
-            {
-                case QuestStatus.Available:
-                    // Available durumunda boş bırak
-                    progressText.text = "";
-                    progressText.color = normalProgressColor;
-                    break;
-
-                case QuestStatus.Active:
-                    // Aktif durumda ilerlemeyi göster (örn: 0/5)
-                    progressText.text = _currentProgress.GetProgressText();
-                    progressText.color = normalProgressColor;
-                    break;
-
-                case QuestStatus.Completed:
-                case QuestStatus.Collected:
-                    // Tamamlandı - yeşil renk
-                    progressText.text = LocalizationHelper.GetLocalizedString("Quest_Completed");
-                    progressText.color = completedColor;
-                    break;
-
-                case QuestStatus.Failed:
-                    // Tamamlanamadı - kırmızı renk
-                    progressText.text = LocalizationHelper.GetLocalizedString("Quest_Failed");
-                    progressText.color = failedColor;
-                    break;
-
-                default:
-                    progressText.text = "";
-                    progressText.color = normalProgressColor;
-                    break;
-            }
-        }
-
         /// <summary>
         /// Buton yalnızca görev HENÜZ ALINABİLİRKEN görünür. Kabul edildikten sonra kartta
-        /// tıklanacak bir şey kalmaz: ilerleme yazısı durumu (ilerleme / "Tamamlandı" / "Başarısız")
-        /// anlatır, ödül ve ceza gün sonunda QuestManager tarafından otomatik uygulanır.
+        /// tıklanacak bir şey kalmaz; ödül ve ceza gün sonunda QuestManager tarafından otomatik
+        /// uygulanır. NOT: ilerleme/durum yazısı (progressText) kaldırıldı — kart artık kabul
+        /// sonrası oyuncuya durum geri bildirimi VERMİYOR.
         /// </summary>
         private void UpdateButtonStates()
         {
@@ -656,12 +605,6 @@ namespace NewCss.Quest
             {
                 penaltiesText.text = "";
                 SetGroupActive(penaltiesText.gameObject, penaltyGroup, false);
-            }
-
-            if (progressText != null)
-            {
-                progressText.text = "";
-                progressText.color = normalProgressColor;
             }
 
             if (actionButton != null) actionButton.gameObject.SetActive(false);

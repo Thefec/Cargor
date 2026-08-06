@@ -226,16 +226,39 @@ namespace NewCss.Quest
         #region Public Methods
 
         /// <summary>
-        /// Kartta gösterilecek açıklama: elle yazılmışsa o, yazılmamışsa gereksinimden üretilen metin.
+        /// Kartta gösterilecek açıklama, ham (ölçeklenmemiş) targetCount ile.
+        /// Editor/debug amaçlı; oyun içi UI için <see cref="GetFullDescription(int)"/> kullan
+        /// (D2/kontrol P0 fix: kart, gerçekte ulaşılması gereken ölçeklenmiş hedefi göstermeli).
         /// </summary>
         public string GetFullDescription()
         {
+            int rawTarget = requirement != null ? requirement.targetCount : 0;
+            return GetFullDescription(rawTarget);
+        }
+
+        /// <summary>
+        /// Kartta gösterilecek açıklama: elle yazılmışsa o, yazılmamışsa gereksinimden üretilen metin.
+        /// `effectiveTargetCount` = QuestManager.CalculateEffectiveTargetCount ile ölçeklenmiş GERÇEK
+        /// hedef (tek doğruluk kaynağı orası). Elle yazılan questDescription içine gömülü ham sayı
+        /// (ör. "Rafa 12 kutu yerleştir") varsa, o sayı burada effectiveTargetCount ile değiştirilir -
+        /// yoksa kart oyuncuya yanlış hedef gösterir (bkz. plans/devam.md kontrol P0 bulgusu).
+        /// </summary>
+        public string GetFullDescription(int effectiveTargetCount)
+        {
             if (!string.IsNullOrWhiteSpace(questDescription))
             {
+                int rawTarget = requirement != null ? requirement.targetCount : 0;
+                if (rawTarget > 0 && rawTarget != effectiveTargetCount)
+                {
+                    string pattern = $@"\b{rawTarget}\b";
+                    return System.Text.RegularExpressions.Regex.Replace(
+                        questDescription, pattern, effectiveTargetCount.ToString(), System.Text.RegularExpressions.RegexOptions.None);
+                }
+
                 return questDescription;
             }
 
-            return requirement != null ? requirement.GetDescription(questType) : string.Empty;
+            return requirement != null ? requirement.GetDescription(questType, effectiveTargetCount) : string.Empty;
         }
 
         /// <summary>

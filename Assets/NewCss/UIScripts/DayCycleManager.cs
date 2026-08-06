@@ -6,6 +6,7 @@ using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 using UnityEngine.SceneManagement;
 using TMPro;
+using NewCss.Quest;
 
 namespace NewCss
 {
@@ -735,6 +736,15 @@ namespace NewCss
                 if (GameStateManager.Instance != null && GameStateManager.Instance.GameEnded)
                 {
                     _gameOverStopProcessing = true;
+
+                    // Gün 16 settlement (Faz4 §B.9): bu dal OnNewDay'i hiç tetiklemediği için
+                    // QuestManager.HandleNewDay üzerinden çalışan gün-sonu settlement de hiç
+                    // çalışmıyordu - son günün kabul edilmiş görevi cezasız/ödülsüz kalıyordu.
+                    // Win yolunda ayrıca çağırıp son günün kabul edilmiş görevlerini kapatıyoruz.
+                    if (QuestManager.Instance != null)
+                    {
+                        QuestManager.Instance.SettleAcceptedQuestsOnGameEnd();
+                    }
 
                     // Gün-sonu paneli normal akışta metodun sonundaki HideDayEndScreenClientRpc
                     // ile kapanır; win erken-çıkışı o satıra ulaşmadığından panel tüm
