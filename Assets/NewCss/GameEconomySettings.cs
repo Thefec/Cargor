@@ -83,11 +83,14 @@ namespace NewCss
 
         [Header("=== TELEFON AYARLARI ===")]
 
-        [Tooltip("Mesai saatleri içinde her oyun-saati değiştiğinde telefonun çalma olasılığı (0-1)")]
-        public float phoneRingChancePerHour = 0.30f;
+        [Tooltip("Mesai saatleri içinde her oyun-saati değiştiğinde telefonun çalma olasılığı (0-1). LEGACY skaler: yalnız phoneRingChanceByPlayerCount boş/null ise fallback olarak kullanılır.")]
+        public float phoneRingChancePerHour = 0.20f;
+
+        [Tooltip("Oyuncu sayısına göre saatlik çalma olasılığı (1P,2P,3P,4P). index = oyuncuSayısı-1. FAZ4 §B.6: telefon gelirinin toplam gelirdeki payını 1P %9.2 → 4P %4.9'a taşır; solo yardımı bilinçli korunur.")]
+        public float[] phoneRingChanceByPlayerCount = { 0.20f, 0.25f, 0.30f, 0.35f };
 
         [Tooltip("CUSTOMER SUPPORT etkinliği günü çalma olasılığına uygulanan çarpan")]
-        public float phoneRingEventMultiplier = 1.5f;
+        public float phoneRingEventMultiplier = 2.0f;
 
         [Tooltip("Telefon Hattı perki aktifken saatlik çalma olasılığına eklenen additive bonus")]
         public float phoneRingPerkBonus = 0f;
@@ -184,6 +187,19 @@ namespace NewCss
             int minIndex = Mathf.Clamp(playerCount - 1, 0, truckCargoMinByPlayerCount.Length - 1);
             int maxIndex = Mathf.Clamp(playerCount - 1, 0, truckCargoMaxExclusiveByPlayerCount.Length - 1);
             return (truckCargoMinByPlayerCount[minIndex], truckCargoMaxExclusiveByPlayerCount[maxIndex]);
+        }
+
+        /// <summary>
+        /// Oyuncu sayısına göre saatlik telefon çalma olasılığını döndürür. playerCount 1-4 arası;
+        /// dışarıda en yakın uç değer. Dizi boş/null ise legacy skaler phoneRingChancePerHour'a
+        /// düşer (güvenli fallback).
+        /// </summary>
+        public float GetPhoneRingChancePerHour(int playerCount)
+        {
+            if (phoneRingChanceByPlayerCount == null || phoneRingChanceByPlayerCount.Length == 0)
+                return phoneRingChancePerHour;
+            int index = Mathf.Clamp(playerCount - 1, 0, phoneRingChanceByPlayerCount.Length - 1);
+            return phoneRingChanceByPlayerCount[index];
         }
 
     }
