@@ -5,7 +5,21 @@ metadata:
   type: project
 ---
 
-**Bağlam**: 2026-07-25, [[quest_tier_redesign_2026-07-25]]'in devamı. Müdür iki ölü tetikleyiciyi bağladı
+## ⚠️ 2026-07-30 DUZELTMESI -- ColorTruck quest'i CANLI ASSET SETINDE YOK
+`Assets/Resources/Quests/` altindaki **30 asset'in hicbirinde** `requireSpecificTruckColor: 1` yok
+(hepsi 0). `QuestType 6 = CompleteSpecificColorTruck` icin **0 asset** var. Ayni sekilde
+`CompleteMinigame(0)` ve `MakePackagingMistake(5)` icin de 0 asset.
+Asagidaki targetCount 1/2/3 onerisi **UYGULANMADI** -- yalniz tetikleyici KODU bagli, quest yok.
+
+**AnswerPhone (type 4) UYGULANDI** ama yalniz 2 asset: Easy hedef 2 (28/0.7 degil, **22 TL /
+0.5 prestij**, ceza 12/0.2) ve Medium hedef 3 (**40 TL / 1.0**, ceza 22/0.5). **Hard tier'da
+telefon quest'i YOK.**
+
+Canli tier dagilimi **Easy 11 / Medium 10 / Hard 9** (7/tier degil).
+Guncel tam tablo: `plans/economy-rebuild-2026-07-30.md` §1.8.
+
+---
+TARIHSEL **Bağlam**: 2026-07-25, [[quest_tier_redesign_2026-07-25]]'in devamı. Müdür iki ölü tetikleyiciyi bağladı
 (`PhoneCallManager.AnswerServerRpc` → `QuestTracker.NotifyPhoneAnswered`; `Truck.cs:588` →
 `NotifySpecificColorTruckCompleted(_networkRequestedBoxType.Value)` gerçek renkle) ve
 `QuestManager.UpdateQuestProgress` renk filtresini artık TİPE GÖRE ayırıyor (CompleteTruck asla

@@ -5,7 +5,26 @@ metadata:
   type: project
 ---
 
-2026-07-12 analizi. `EventCalendarUI._allEvents` (17 event) ile `EventEffectManager.eventNames`/`eventMultipliers` (11 event) arasında isim eşleşmesi yok, 7 event takvimde vaat ediliyor ama uygulanmıyor. Ayrıca `INTENSIVE DAY` (eventMultipliers'da var, dailyCustomerMultiplier=1.5) takvimde hiç yok — ölü kod, gerçek karşılığı `BUSY DAY`.
+## ✅ TAM KAPANDI (2026-07-30 dogrulandi) -- FESTIVAL DAY dahil
+Kalan tek bosluk olan **FESTIVAL DAY artik sabit TL DEGIL**: `EventEffectManager.cs:404-408`
+`Random.Range(currentRent * 0.10f, currentRent * 0.20f)` kullaniyor (kirayla olcekleniyor).
+`festivalBonusMin/Max` (100/300) yalnizca `DayCycleManager.Instance == null` fallback'i
+(`cs:411-415`). Onceki "P2 acik" notu GECERSIZ.
+
+Canli event havuzu **16** (`EventCalendarUI.cs:160-177`) ve `EventEffectManager.eventMultipliers`
+ile TAM eslesiyor -- isim uyusmazligi kalmadi.
+
+**YENI 2026-07-30 tutarsizliklari (FAZ 2 isi):**
+- `RAINY DAY` -> `EventType.Positive` (`EventCalendarUI.cs:174`) ama etkisi musteri x0.8
+  (`EventEffectManager.cs:294`) = prestij geliri -%20. Pozitif DEGIL.
+- `RELAXED DAY` aciklamasi yalniz "sabir +%30" diyor ama kodda ayrica
+  `dailyCustomerMultiplier = 0.7` var (`EventEffectManager.cs:182`) = oyuncuya SOYLENMEYEN
+  %30 musteri kesintisi.
+- Event sikligi: gun 4'ten baslar, aralik `rng.Next(1,4)` (1-3 gun), kira gunleri atlanir
+  (`cs:688`) -> **~5 event / 16 gun**. Ilk 2 garanti pozitif, 3. garanti negatif (`cs:701-714`).
+
+---
+TARIHSEL: 2026-07-12 analizi. `EventCalendarUI._allEvents` (17 event) ile `EventEffectManager.eventNames`/`eventMultipliers` (11 event) arasında isim eşleşmesi yok, 7 event takvimde vaat ediliyor ama uygulanmıyor. Ayrıca `INTENSIVE DAY` (eventMultipliers'da var, dailyCustomerMultiplier=1.5) takvimde hiç yok — ölü kod, gerçek karşılığı `BUSY DAY`.
 
 Ekonomi taban değerleri (doğrulandı): `rewardPerBox=50`, `penaltyPerBox=40`, `baseRentByPlayerCount={500,900,1200,1500}`, `rentGrowthMultiplier=1.15` (zaten [[rent_death_spiral]] önerisiyle düzeltilmiş durumda, uygulanmış). Mevcut 11 event'in çarpan skalası: müşteri 0.7-1.5, ödül 1.0-1.3, hız/bekleme 0.6-1.3 — hiçbiri rewardPerBoxMultiplier'ı 1.0 altına düşürmüyor.
 

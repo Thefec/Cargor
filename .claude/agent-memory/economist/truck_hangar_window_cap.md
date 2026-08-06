@@ -1,8 +1,25 @@
 ---
 name: truck_hangar_window_cap
-description: hangarStayDuration=30s + tir sadece 8-17 calisiyor -> ekonominin en yuklu YENI kaldiraci; hangar sayisi (1 vs 2) OPTIMISTIC modelde onemsiz cikti, asil darbogaz tir-calisma-saati/gun-uzunlugu orani
+description: KAPANDI 2026-07-30 -- tir penceresi tavani (10.9-18 tir/gun) HICBIR senaryoda baglayici degil; fiilen 1.1-7.5 tir/gun, darbogaz insan uretim hizi. Hangar sayisi degersiz (2./3. hangar ~sifir katki)
 metadata:
   type: project
+---
+
+## ✅ KAPANDI (2026-07-30, FAZ1 sifirdan tur) -- sayiyla cevaplandi
+
+**Mekanik tavan (1 hangar) = tirPenceresi / 15s = 10.9 (gun1) / 13.6 (gun8) / 18.0 (gun16) tir/gun.
+Fiilen ulasilan = 1.1-7.5 tir/gun = tavanin YALNIZ %10-42'si.**
+=> Tir/hangar penceresi bir TAVAN degil, BOL BIR TAMPON. Baglayici darbogaz insan uretim hizi
+(OPTIMISTIC) veya tek tirin dolma suresi (STRICT).
+
+**Hangar sayisi (Truck upgrade) neredeyse degersiz** (gun 8, Normal, kutu/gun): OPTIMISTIC'te
+1h = 2h = 3h (uretim tavanina carpiyor, 2. ve 3. hangar SIFIR katki); STRICT'te 2. hangar
++%17-52, 3. hangar SIFIR. => Truck upgrade 2 seviyede bitmeli.
+
+Asagidaki 2026-07-18 analizi TARIHSEL: o turda gun suresi 160s (`.cs` default) varsayilmisti,
+CANLI sahne degeri **200s** (`The Main Office.unity:15995`) -> tum eski verim sayilari %25 dusuk.
+Guncel tablo: [[economy_rebuild_faz1_2026-07-30]].
+
 ---
 
 2026-07-18 bulgusu (`plans/economy-audit-2026-07-17.md` §3, `tools/economy-sim/sim.js`

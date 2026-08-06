@@ -5,7 +5,26 @@ metadata:
   type: project
 ---
 
-**Bağlam**: 2026-07-28, `QuestData.cs` modeli havuzdan-rastgele-2-seçimden 4 sabit alana geçti
+## 2026-07-30 ASSET-DOGRULAMA (30 asset birebir okundu)
+Odul/ceza degerleri tablo ile ESLESIYOR. Duzeltmeler:
+- Tier dagilimi **esit DEGIL**: Easy **11** / Medium **10** / Hard **9** (7/tier degil).
+- **Hard tier'da telefon quest'i YOK** -> tier ilerledikce quest tipi cesitliligi AZALIYOR.
+- 30 asset'in **hepsinde `hasBuff: 0`** -> sistemde hic buff yok (buff politikasi fiilen olu).
+- Dosya adi/ID YANILTICI: `Q_Hard_2_Shelf` id'si `hard_shelf_10` ama `targetCount: 12`;
+  `Q_Hard_4_Pack` id'si `hard_pack_10` ama `targetCount: 12` ([[quest_hard_targetcount_retune_2026-07-29]]
+  uygulanmis, isim guncellenmemis). ID'ye guvenip sayi okuma.
+- **Tier kapisi**: `_currentQuestTier` baslangic 0 (`QuestManager.cs:70`) -> yalniz Easy oynanabilir;
+  Medium+Hard (**19/30 asset = %63**) "Gorev Kademesi" upgrade'i arkasinda (`UpgradePanel.cs:783`).
+- **Odemenin gercek ani**: settlement `DayCycleManager.OnNewDay` -> BIR SONRAKI gunun basinda,
+  o gunun kira kontrolunden SONRA. Gun 4'te kabul edilen quest gun 4 kirasini ODEYEMEZ.
+- **EXPLOIT**: gun 16'da kabul edilen quest ASLA kapanmiyor (gun 17 gecisi yok) -> ne odul ne ceza,
+  son gun quest kabul etmek bedava opsiyon.
+- FAZ1 EV kosusu (gun 8, 2P, optimistic): renk-kilitli **Hard** quest'ler (hedef 5, etkin /3 = 15)
+  para EV'si **NEGATIF (-7.6 TL)**; hedef-12 Hard shelf/pack %40 tamamlanma. Hard tier uretim
+  tavanina gore yeniden fiyatlandirilmali (FAZ 3).
+
+---
+TARIHSEL **Bağlam**: 2026-07-28, `QuestData.cs` modeli havuzdan-rastgele-2-seçimden 4 sabit alana geçti
 (`moneyReward`/`prestigeReward`/`moneyPenalty`/`prestigePenalty`, ceza pozitif yazılır kodda
 `-Mathf.Abs()` uygulanır). [[quest_tier_redesign_2026-07-25]]'teki 5-öğe havuz artık GEÇERSİZ
 (o dosyanın EV'leri bu turun hedef-bandı REFERANSI olarak kullanıldı, kendisi tarihsel). Kaynak

@@ -1,9 +1,19 @@
 # Economist Agent Memory Index
 
+## ⭐ EN GÜNCEL TABAN (buradan başla)
+- [⭐FAZ4 NİHAİ DEĞER SETİ](faz4_final_value_set_2026-07-30.md) — **TEK KAYNAK, FAZ 1/2/3'ün ÜSTÜNE YAZAR**: kira {500,1000,1450,1800}+g1.35, lost −0.4, moneyMult 1.2, maliyet DİZİSİ {1,2,2.95,3.7}
+- [sim.js v3.1 masa çekişmesi](sim_v31_table_contention.md) — interactable 3→5 + masa çekişmesi eklendi; gelir tabanı %7-13 düştü, S=6sn 2. en duyarlı sayı
+- [FAZ2 kararlar: kira+prestij+event+süreler](faz2_prestige_rent_event_2026-07-30.md) — ⚠️KISMEN BAYAT (kira ölçeği/lost cezası/moneyMult FAZ4'te revize); event tablosu ve gerekçeler geçerli
+- [FAZ1 ekonomi yeniden kurulum 2026-07-30](economy_rebuild_faz1_2026-07-30.md) — ⚠️§3 GELİR TABLOSU BAYAT (FAZ4'te revize); §1 envanter + §4 ayrışmalar geçerli
+- [FAZ3 upgrade+perk+quest 2026-07-30](faz3_upgrade_quest_2026-07-30.md) — FİYATLAR GEÇERLİ (bütçe %5 kaydı); revize: Geniş Ambar C3 geri alındı, long_queue P0→P2, costMult dizisi {1,2,2.95,3.7}
+- [Prestijin işlev yüzeyi](prestige_function_surface.md) — prestijin TEK ekonomik işlevi ödül tier'ı; müşteri kapasitesi zinciri ÖLÜ, kazanma koşulu prestije BAKMIYOR
+- [Seri müşteri servisi tavanı](serial_customer_service_ceiling.md) — ~11.4 müşteri/gün P-BAĞIMSIZ tavan; ✅ÇÖZÜM 2 paralel istasyon (kuyruk büyütme GERİ TEPER), serviceTables yarım kablolu
+- [P-ölçekleme ölü kablolar](dead_wiring_p_scaling.md) — müşteri sabri/telefon şansı/ScaledCustomerCount ÖLÜ (log basıyor, iş yapmıyor) + sahnede startingMoney=50000 DEBUG
+
 - [Python/Node ortamı](env_no_python.md) — GÜNCEL 2026-07-25: python3 artık PATH'te ama sim.js entegrasyonu için Node tercih devam ediyor
-- [Kira ölüm sarmalı kök nedeni](rent_death_spiral.md) — ✅ÇÖZÜLDÜ: kök neden rentGrowthMultiplier (startingMoney değil), 1.3→1.15 uygulandı; wealthTax aslında inert'ti (asıl kaldıraç yalnız rentGrowth)
+- [Kira ölüm sarmalı kök nedeni](rent_death_spiral.md) — 🔁FAZ2'de KISMİ GERİ DÖNÜŞ: 1.15→1.35 öneriliyor (eski 1.3 kararı 160s gün + fazla-tahmin prestij tabanına dayanıyordu); wealthTax inert'ti
 - [Başlangıç parası çelişkisi](money_config_conflict.md) — ÇÖZÜLDÜ (2026-07-12 doğrulandı): startingMoney=500, moneyMultiplierPerPlayer=1.0, rentGrowthMultiplier=1.15 artık senkron
-- [Eksik event'ler G9 kalibrasyonu](missing_events_g9.md) — ✅BÜYÜK ÖLÇÜDE UYGULANDI (2026-07-18 doğrulandı): BUSY/RAINY/MARKETING/AUDIT/SUPPORT kod ile eşleşiyor; kalan boşluk FESTIVAL DAY (hâlâ sabit TL, bkz economy-balance-round.md P2)
+- [Eksik event'ler G9 kalibrasyonu](missing_events_g9.md) — ✅TAM KAPANDI (2026-07-30): FESTIVAL DAY artık kira×%10-20; 16 event tam eşleşiyor. YENİ tutarsızlık: RAINY yanlış tip, RELAXED gizli %30 müşteri kesintisi
 - [Prestij kırılganlığı eşikleri](prestige_fragility.md) — startingPrestige=5 ile tek rush dalgasında 3 kayıp = game over; 15+(-1.5 ceza) öneriliyor (uygulanmış)
 - [Upgrade çift sistem çakışması](upgrade_dual_system.md) — ✅ÇÖZÜLDÜ (479dbf0): Yol B (ItemType/UpgradeAssets/UpgradeManager) silindi, tek sistem UpgradePanel kaldı (tarihsel kayıt)
 - [Upgrade fiyatlandırma çerçevesi](upgrade_pricing_framework.md) — 7 upgrade karakterine göre farklı payback hedefi (1.4-3.2 gün); v2'de gerçek maxLevel'e göre revize, bkz. UPGRADE_PRICING_REPORT.md v2
@@ -16,7 +26,7 @@
 - [Kutu düşme cezası merkezileştirme](box_drop_penalty_centralization.md) — boxDropMoneyPenalty=5 (tek değer, kutu/ürün ayrımı yok), wrongDeliveryPrestigePenalty=-0.2 onay, Truck penaltyPerBox default 60→40
 - [Telefon pasif/reaktif yeniden tasarım](phone_passive_redesign.md) — ✅TAM UYGULANDI (2026-07-18 doğrulandı): additive+clamp(0.65) formülü PhoneCallManager.GetEffectiveRingChance()'ta birebir
 - [Prestij tavanı bug + düzeltme](prestige_cap_bug_and_fix.md) — ✅UYGULANDI (doğrulandı 2026-07-18): maxPrestige=150 canlı kodda; 2026-07-18'de tavan-dolma günleri metodoloji düzeltmesiyle değişti (bkz not)
-- [Tır/hangar penceresi tavanı](truck_hangar_window_cap.md) — YENİ (2026-07-18): hangarStayDuration=30s ekonominin en yüklü kaldıracı çıktı; hangar sayısı (1vs2) OPTIMISTIC modelde önemsiz, asıl darboğaz tır-saati/gün-uzunluğu oranı
+- [Tır/hangar penceresi tavanı](truck_hangar_window_cap.md) — ✅KAPANDI (2026-07-30): tavan (10.9-18 tır/gün) HİÇ bağlayıcı değil, fiilen 1.1-7.5; 2./3. hangar ~sıfır katkı → Truck upgrade 2 seviyede bitmeli
 - [Quest ödül dengesi (EV mekaniği + easy3 fix)](quest_reward_balance.md) — ⚠️TARİHSEL (2026-07-25): easy1-5 siliniyor, EV formülü [[quest_tier_redesign_2026-07-25]]'te tekrar kullanıldı
 - [fast_hangar perk kodu bug](fast_hangar_perk_bug.md) — ✅ÇÖZÜLDÜ (2026-07-20): PerkEffect.cs:102 artık GetHangarStayDuration(pc)*1.30f (P-bazlı canlı taban); hardcoded 120f gitti (tarihsel kayıt)
 - [Prestij tavanı yeniden ayar 2026-07-18](prestige_cap_retune_2026-07-18.md) — maxPrestige 150→240 önerisi (2P/3P/4P tavan günü 8-11'den 13-15'e); playtest'e bağlı geç-oyun enflasyon trade-off'u
@@ -27,5 +37,7 @@
 - [hangarStayDuration P-bazlı](hangar_stay_duration_per_player.md) — ✅UYGULANDI (2026-07-20, 6ef9ad6): 90/60/40/30 (1P-4P) canlı; GetHangarStayDuration getter; STRICT day8 kazanç P1+27%/P2+15%/P3+6%/P4 0%, OPTIMISTIC'te etkisiz
 - [Quest 3-tier yeniden tasarım (Easy/Medium/Hard)](quest_tier_redesign_2026-07-25.md) — YENİ CANLI TABLO: 15 quest (5/tier), EV 20/36/60 TL, targetCount+limit+Görev Tier fiyat önerisi, tüm sim-doğrulandı
 - [CompleteTruck renk kısıtı + ürün-renk eşlemesi](quest_completetruck_color_constraint.md) — YENİ: CompleteTruck ASLA renk-kilitlenemez (soft-lock bug), Toy=Red/Clothing=Yellow/Glass=Blue sabit eşleme
-- [AnswerPhone+CompleteSpecificColorTruck bağlandı](quest_answerphone_colortruck_2026-07-25.md) — 5→7 quest/tier (21 toplam); AnswerPhone P-BAĞIMSIZ (target 2/3/4, tam ödül şablonu OK); ColorTruck target 1/2/3 (renk-bag KOD-DOĞRULANMIŞ tam 1/3); limit/EV bandı bozulmadı
-- [Quest SABİT ödül/ceza tablosu (30 quest)](quest_fixed_reward_table_2026-07-28.md) — YENİ CANLI: QuestData havuz→4-sabit-alan geçişi, base/premium/phone grup çarpanı (×1/×1.5/×1.15), tier EV ±4% içinde eski bantla eşleşti
+- [AnswerPhone+CompleteSpecificColorTruck bağlandı](quest_answerphone_colortruck_2026-07-25.md) — ⚠️DÜZELTİLDİ (2026-07-30): ColorTruck quest'i canlı asset setinde YOK (0 asset); AnswerPhone yalnız 2 asset (Easy 22TL/Medium 40TL), Hard'da telefon yok
+- [Quest SABİT ödül/ceza tablosu (30 quest)](quest_fixed_reward_table_2026-07-28.md) — ✅ASSET-DOĞRULANDI (2026-07-30): ödüller eşleşiyor AMA dağılım 11/10/9 (7/tier değil), hepsinde hasBuff=0, tier gate 19/30'u upgrade arkasında, gün-16 exploit'i
+- [Hard tier targetCount retune](quest_hard_targetcount_retune_2026-07-29.md) — ⚠️D2'NİN TABANI: renksiz 10→12, renk-kilitli 4→5 (Truck 3 sabit), FLAT/P-kalibreli — D2 ile TEKRAR çarpılırsa çöküyor, bkz [[quest_d2_double_scaling_bug_2026-08-06]]
+- [⭐D2 çifte ölçekleme bug'ı KARAR](quest_d2_double_scaling_bug_2026-08-06.md) — FAZ4 D2 (targetCount×ECONOMY_SCALE) 07-29'un zaten P-kalibreli flat hedefleriyle ÇAKIŞIYOR, 2P-4P Hard/Med/Easy tamamlanma %60-85 çöküyor; KARAR: D2 hariç listesine Shelf(type1)+Pack(type3) de eklensin, mevcut katalogda D2 NO-OP olmalı
