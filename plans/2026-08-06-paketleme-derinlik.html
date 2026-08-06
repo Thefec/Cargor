@@ -1,0 +1,1300 @@
+<title>Cargor — Paketleme Derinliği Araştırması</title>
+
+<style>
+  :root {
+    --ground:      #EDEFF2;
+    --surface:     #F8F9FB;
+    --surface-2:   #E2E6EC;
+    --ink:         #141A22;
+    --ink-muted:   #5C6774;
+    --ink-faint:   #8B94A0;
+    --rule:        #C9D0D9;
+    --rule-strong: #A8B2BF;
+    --amber:       #B77503;
+    --amber-bg:    #FBF0DA;
+    --blue:        #2F5FB8;
+    --blue-bg:     #E1E9F7;
+    --red:         #B33A31;
+    --red-bg:      #F8E3E1;
+
+    --f-display: -apple-system, "Segoe UI", system-ui, "Helvetica Neue", Arial, sans-serif;
+    --f-body:    -apple-system, "Segoe UI", system-ui, "Helvetica Neue", Arial, sans-serif;
+    --f-mono:    ui-monospace, "Cascadia Mono", "Consolas", "SF Mono", "Menlo", monospace;
+
+    --measure: 68ch;
+    --pad: clamp(1.25rem, 4vw, 3.5rem);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground:      #0E1319;
+      --surface:     #151C25;
+      --surface-2:   #1E2732;
+      --ink:         #E4E9EF;
+      --ink-muted:   #9AA5B2;
+      --ink-faint:   #6B7683;
+      --rule:        #2A3542;
+      --rule-strong: #3C4855;
+      --amber:       #F0B43E;
+      --amber-bg:    #2E2413;
+      --blue:        #6D9BEA;
+      --blue-bg:     #17233A;
+      --red:         #E8756A;
+      --red-bg:      #331D1B;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:      #0E1319;
+    --surface:     #151C25;
+    --surface-2:   #1E2732;
+    --ink:         #E4E9EF;
+    --ink-muted:   #9AA5B2;
+    --ink-faint:   #6B7683;
+    --rule:        #2A3542;
+    --rule-strong: #3C4855;
+    --amber:       #F0B43E;
+    --amber-bg:    #2E2413;
+    --blue:        #6D9BEA;
+    --blue-bg:     #17233A;
+    --red:         #E8756A;
+    --red-bg:      #331D1B;
+  }
+
+  :root[data-theme="light"] {
+    --ground:      #EDEFF2;
+    --surface:     #F8F9FB;
+    --surface-2:   #E2E6EC;
+    --ink:         #141A22;
+    --ink-muted:   #5C6774;
+    --ink-faint:   #8B94A0;
+    --rule:        #C9D0D9;
+    --rule-strong: #A8B2BF;
+    --amber:       #B77503;
+    --amber-bg:    #FBF0DA;
+    --blue:        #2F5FB8;
+    --blue-bg:     #E1E9F7;
+    --red:         #B33A31;
+    --red-bg:      #F8E3E1;
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 var(--pad) 6rem; }
+
+  /* ---------- manifest header ---------- */
+  .manifest {
+    border-bottom: 2px solid var(--ink);
+    padding: 2.5rem 0 1.25rem;
+    margin-bottom: 3rem;
+  }
+  .manifest-meta {
+    font-family: var(--f-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 2rem;
+    margin-bottom: 1.75rem;
+  }
+  .manifest h1 {
+    font-family: var(--f-display);
+    font-size: clamp(2rem, 6vw, 3.9rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 0.98;
+    text-wrap: balance;
+    margin-bottom: 0.9rem;
+  }
+  .manifest h1 em { font-style: normal; color: var(--amber); }
+  .standfirst { max-width: var(--measure); font-size: 1.08rem; color: var(--ink-muted); }
+
+  /* ---------- structure ---------- */
+  section { margin-bottom: 4.5rem; scroll-margin-top: 2rem; }
+
+  .eyebrow {
+    font-family: var(--f-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--amber);
+    display: block;
+    margin-bottom: 0.6rem;
+  }
+  h2 {
+    font-family: var(--f-display);
+    font-size: clamp(1.4rem, 3.4vw, 2.05rem);
+    font-weight: 750;
+    letter-spacing: -0.02em;
+    line-height: 1.12;
+    text-wrap: balance;
+    margin-bottom: 1.1rem;
+    padding-bottom: 0.7rem;
+    border-bottom: 1px solid var(--rule-strong);
+  }
+  h3 {
+    font-family: var(--f-display);
+    font-size: 1.12rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 2.25rem 0 0.7rem;
+    text-wrap: balance;
+  }
+  p, ul, ol { max-width: var(--measure); }
+  p + p { margin-top: 0.9rem; }
+  ul, ol { margin: 0.8rem 0 0.8rem 1.15rem; }
+  li { margin-bottom: 0.42rem; }
+  strong { font-weight: 680; }
+  em.term { font-style: normal; color: var(--amber); font-weight: 640; }
+
+  code {
+    font-family: var(--f-mono);
+    font-size: 0.855em;
+    background: var(--surface-2);
+    padding: 0.09em 0.36em;
+    color: var(--ink);
+  }
+
+  /* ---------- callout ---------- */
+  .callout {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-top: 3px solid var(--amber);
+    padding: 1.3rem 1.5rem;
+    margin: 1.75rem 0;
+    max-width: var(--measure);
+  }
+  .callout-label {
+    font-family: var(--f-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--amber);
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+  .callout p { max-width: none; }
+  .callout.blue { border-top-color: var(--blue); }
+  .callout.blue .callout-label { color: var(--blue); }
+  .callout.red { border-top-color: var(--red); }
+  .callout.red .callout-label { color: var(--red); }
+
+  /* ---------- loop diagram ---------- */
+  .loop-frame {
+    border: 1px solid var(--rule);
+    background: var(--surface);
+    padding: 1.5rem;
+    margin: 1.75rem 0;
+    overflow-x: auto;
+  }
+  .loop-title {
+    font-family: var(--f-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 1rem;
+  }
+  .loop { display: flex; align-items: center; gap: 0.5rem; min-width: max-content; }
+  .node {
+    font-family: var(--f-mono);
+    font-size: 0.78rem;
+    padding: 0.6rem 0.85rem;
+    border: 1px solid var(--rule-strong);
+    background: var(--ground);
+    white-space: nowrap;
+  }
+  .node.hot { border-color: var(--amber); color: var(--amber); background: var(--amber-bg); }
+  .arrow { color: var(--ink-faint); font-family: var(--f-mono); font-size: 0.9rem; }
+
+  /* ---------- catalog ---------- */
+  .cat-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid var(--rule-strong);
+    padding-bottom: 0.55rem;
+    margin: 2.75rem 0 1.25rem;
+    flex-wrap: wrap;
+  }
+  .cat-head h3 { margin: 0; font-size: 1.18rem; }
+  .cat-head .count {
+    font-family: var(--f-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+  }
+  .card {
+    background: var(--surface);
+    padding: 1.05rem 1.15rem 1.15rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+  .card.star { border-top: 3px solid var(--amber); }
+  .card-top { display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem; }
+  .card-id {
+    font-family: var(--f-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+  }
+  .card h4 {
+    font-family: var(--f-display);
+    font-size: 0.99rem;
+    font-weight: 700;
+    letter-spacing: -0.008em;
+    line-height: 1.25;
+    text-wrap: balance;
+  }
+  .card p { font-size: 0.885rem; color: var(--ink-muted); max-width: none; line-height: 1.55; }
+  .card p.gives { color: var(--ink); }
+
+  .meters {
+    display: flex;
+    gap: 1.1rem;
+    font-family: var(--f-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    margin-top: auto;
+    padding-top: 0.7rem;
+    border-top: 1px dotted var(--rule-strong);
+  }
+  .meter b { font-weight: 400; color: var(--amber); letter-spacing: 0; }
+
+  .flag {
+    font-family: var(--f-mono);
+    font-size: 0.7rem;
+    line-height: 1.45;
+    padding: 0.45rem 0.6rem;
+    border-left: 2px solid var(--red);
+    background: var(--red-bg);
+    color: var(--ink);
+  }
+  .flag.link { border-left-color: var(--blue); background: var(--blue-bg); }
+  .flag.src { border-left-color: var(--rule-strong); background: var(--surface-2); color: var(--ink-muted); }
+
+  /* ---------- table ---------- */
+  .table-scroll { overflow-x: auto; margin: 1.5rem 0; border: 1px solid var(--rule); }
+  table { border-collapse: collapse; width: 100%; min-width: 560px; background: var(--surface); }
+  th, td { text-align: left; padding: 0.6rem 0.85rem; border-bottom: 1px solid var(--rule); font-size: 0.88rem; vertical-align: top; }
+  th {
+    font-family: var(--f-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    background: var(--surface-2);
+    white-space: nowrap;
+  }
+  td.day { font-family: var(--f-mono); font-variant-numeric: tabular-nums; color: var(--amber); white-space: nowrap; }
+  td.game { font-weight: 640; white-space: nowrap; }
+  td code { background: none; padding: 0; color: var(--amber); }
+  tbody tr:last-child td { border-bottom: none; }
+
+  /* ---------- verdict ---------- */
+  .verdict { border: 1px solid var(--rule); background: var(--surface); }
+  .verdict-row {
+    display: grid;
+    grid-template-columns: 5.5rem 1fr;
+    gap: 1.1rem;
+    padding: 1.1rem 1.25rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .verdict-row:last-child { border-bottom: none; }
+  .verdict-rank {
+    font-family: var(--f-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--amber);
+    text-transform: uppercase;
+    padding-top: 0.15rem;
+    line-height: 1.35;
+  }
+  .verdict-body h4 { font-family: var(--f-display); font-size: 1rem; font-weight: 700; margin-bottom: 0.35rem; }
+  .verdict-body p { max-width: none; font-size: 0.9rem; color: var(--ink-muted); }
+
+  /* ---------- rules ---------- */
+  .rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin: 1.5rem 0; }
+  .rule-item { background: var(--surface); padding: 1rem 1.15rem; }
+  .rule-item h4 { font-family: var(--f-display); font-size: 0.95rem; font-weight: 700; margin-bottom: 0.35rem; }
+  .rule-item p { max-width: none; font-size: 0.85rem; color: var(--ink-muted); line-height: 1.5; }
+
+  /* ---------- sources ---------- */
+  .sources { border-top: 1px solid var(--rule-strong); padding-top: 1.25rem; }
+  .sources ul { list-style: none; margin-left: 0; max-width: none; columns: 2; column-gap: 2.5rem; }
+  .sources li { font-size: 0.83rem; margin-bottom: 0.45rem; break-inside: avoid; }
+  a { color: var(--amber); text-decoration: none; border-bottom: 1px solid currentColor; }
+  a:hover { color: var(--ink); }
+  a:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+
+  @media (max-width: 620px) {
+    .sources ul { columns: 1; }
+    .verdict-row { grid-template-columns: 1fr; gap: 0.4rem; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="manifest">
+    <div class="manifest-meta">
+      <span>Cargor / Tasarım Araştırması</span>
+      <span>6 Ağustos 2026</span>
+      <span>2. tur — genişletilmiş</span>
+      <span>63 fikir · 14 oyun incelendi</span>
+    </div>
+    <h1>“Düz” kelimesinin<br><em>iki ayrı</em> anlamı var</h1>
+    <p class="standfirst">
+      Birinci tur “içerik az” diye teşhis koydu ve zinciri uzatmayı önerdi. İkinci tur bunun
+      eksik olduğunu gösterdi: <strong>“düz” tasarımda bir kelime</strong> ve genellikle içeriği
+      değil <em>hissi</em> tarif eder. Bu rapor iki teşhisi ayırıyor, 63 fikri listeliyor ve
+      hangisinin önce geldiğini söylüyor.
+    </p>
+  </header>
+
+  <section>
+    <span class="eyebrow">Teşhis 1</span>
+    <h2>Döngü tek şeritli</h2>
+
+    <p>
+      Kodda döngü şöyle: müşteri bir <strong>renk</strong> istiyor, oyuncu raftan ürün alıyor,
+      masada tek etkileşimle kutuluyor, renk eşleşen tıra atıyor. Ürün 3 tip
+      (<code>Toy</code>, <code>Clothing</code>, <code>Glass</code>), kutu 3 renk. Ürün tipinin
+      <strong>hiçbir mekanik sonucu yok</strong> — sadece görev filtresi.
+    </p>
+
+    <div class="loop-frame">
+      <div class="loop-title">Mevcut döngü — dallanma yok, karar yok</div>
+      <div class="loop">
+        <span class="node">Müşteri: renk ister</span>
+        <span class="arrow">→</span>
+        <span class="node">Raftan ürün al</span>
+        <span class="arrow">→</span>
+        <span class="node hot">Masa: tek tuş</span>
+        <span class="arrow">→</span>
+        <span class="node">Tıra fırlat</span>
+        <span class="arrow">↺</span>
+      </div>
+    </div>
+
+    <div class="callout">
+      <span class="callout-label">Supermarket Simulator'ün düştüğü çukur</span>
+      <p>
+        Oyuncular oyunlarının neden bayatladığını kendileri teşhis etmiş: <strong>“erken oyun
+        eğlenceli çünkü zaman farklı işler arasında dengeli bölünüyor”</strong> — ilerledikçe tek
+        bir işe saplanıyorsun. Otomasyon angaryayı azaltıyor ama yerine strateji koymuyor.
+      </p>
+      <p>
+        Sonucu net: eğlence <em class="term">yarışan iş tiplerini dengelemekten</em> geliyor. Zinciri
+        uzatmak (raf → masa → etiket → tart → tır) hâlâ <strong>tek şerit</strong>, sadece daha uzun.
+      </p>
+    </div>
+
+    <div class="callout red">
+      <span class="callout-label">Ve co-op bunu tek başına kurtarmıyor</span>
+      <p>
+        <em>Warehouse Inc</em> incelemesi acımasız ve bizim için uyarıcı: dört kişilik co-op
+        <strong>“sosyal bir katman ekliyor ama işlerin monotonluğunu gidermek için pek bir şey
+        yapmıyor.”</strong> Aynı incelemede teşhis: “anlamlı ilerleme ve stratejik derinliğin
+        yokluğu.”
+      </p>
+      <p>
+        Yani “4 kişi oynayınca eğlenceli olur” bir çözüm değil. Monoton iş, dört kişiyle oynanan
+        monoton iş olur.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">Teşhis 2 — bu turda çıktı</span>
+    <h2>Ama “düz” bir his sorunu da olabilir</h2>
+
+    <p>
+      İkinci tur araştırmada beklemediğim bir karşı-kanıt çıktı ve ilk teşhisi tek başına
+      yetersiz bırakıyor.
+    </p>
+
+    <div class="callout blue">
+      <span class="callout-label">PowerWash Simulator sorusu</span>
+      <p>
+        PowerWash Simulator <strong>tek bir işi</strong> saatlerce yaptırıyor: yıka. Sıfır çeşitlilik,
+        sıfır yarışan görev, sıfır karar. Ve tür tarihinin en çok sevilen oyunlarından biri.
+      </p>
+      <p>
+        Neden işe yarıyor? Çünkü <strong>her anın dokusu var</strong>: temizlik ölçeri, her parça
+        bitince çalan “ding”, kirin gözle görülür şekilde akıp gitmesi. Tasarımcıların ifadesiyle,
+        oyun basınçlı yıkamayı <em>simüle etmeye</em> değil, o videoları izlemenin
+        <em class="term">tatminini</em> yeniden üretmeye çalışmış — araya girecek her şey atılmış.
+      </p>
+    </div>
+
+    <p>
+      Ve “juice” literatürünün cümlesi bizimkiyle birebir örtüşüyor:
+      <strong>“zayıf geri bildirimli karmaşık bir oyun düz ve cansız hissettirebilir.”</strong>
+      Sen de tam olarak “düz oldu” dedin.
+    </p>
+
+    <p>
+      Cargor'da paketleme <strong>tek tuş basımı.</strong> Animasyon yok, ilerleme yok, ses yok,
+      dönüşüm yok. Ürün masaya girer, kutu çıkar. Oyuncunun elinde hiçbir şey <em>olmuş</em>
+      hissi bırakmıyor.
+    </p>
+
+    <div class="callout red">
+      <span class="callout-label">Bunun pratik sonucu</span>
+      <p>
+        Aşağıdaki 63 fikirden 40'ını eklesek ve his katmanına dokunmasak, elimizde
+        <strong>karmaşık ama hâlâ düz</strong> bir oyun olur. Üstelik her yeni mekanik, hissi
+        olmayan bir etkileşimi bir kez daha tekrarlatır — yani kötüyü çoğaltır.
+      </p>
+      <p>
+        Bu yüzden sıralama değişti: <strong>his katmanı, içerik katmanından önce gelir.</strong>
+        Ayrıca en ucuzu — ekonomiyi hiç bozmuyor, denge turu gerektirmiyor, tek başına test
+        edilebiliyor.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">Referanslar</span>
+    <h2>İncelenen oyunlar ve alınan ders</h2>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>Oyun</th><th>Cargor için alınan ders</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="game">PlateUp!</td><td>Derinlik motoru yemekler değil <strong>kart sistemi</strong>. 4. günden itibaren her 3 günde bir iki karttan biri seçilir. Yemek kartlarının üç açık değeri var: zorluk · masa işgal süresi · para.</td></tr>
+          <tr><td class="game">Overcooked</td><td>Mekân <strong>bilerek kötü tasarlanır</strong> — “mutfak çalışma üçgeni” kasten ihlal edilir. Kaymalar, bölünen zeminler, hareketli platformlar seviyeyi altından çeker.</td></tr>
+          <tr><td class="game">Supermarket Simulator</td><td>Otomasyon angaryayı alır ama yerine strateji koymazsa oyun boşalır. Erken oyun, zaman işler arasında bölündüğü için eğlencelidir.</td></tr>
+          <tr><td class="game">Warehouse Inc</td><td>Co-op tek başına monotonluğu çözmez. Doğrudan tür rakibimizin başarısızlık raporu.</td></tr>
+          <tr><td class="game">PowerWash Simulator</td><td>Tek iş de eğlenceli olabilir — <strong>eğer o işin dokusu, ölçeri ve tamamlanma sinyali varsa.</strong></td></tr>
+          <tr><td class="game">Papers, Please</td><td>Zorluk hızdan değil <strong>kural yığılmasından</strong> gelir. Her gün yeni bir kontrol maddesi eklenir; arayüzün kendisi bir engeldir.</td></tr>
+          <tr><td class="game">Death Stranding</td><td>Kargo taşımanın kendisi oyun olabilir: ağırlık, denge, istif yüksekliği, üsttekinin önce kırılması, asimetrik yükün seni devirmesi.</td></tr>
+          <tr><td class="game">Hardspace: Shipbreaker</td><td>Kota baskısı oyuncuyu <strong>bilerek riskli davranmaya</strong> iter. Upgrade'ler seni hızlandırmaz, <em>güvenli</em> kılar — ve bu bir seçimdir.</td></tr>
+          <tr><td class="game">Lethal Company</td><td>Artan kota + telsizle bilgi paylaşımı. İletişim mekanik zorunluluk, sosyal süs değil.</td></tr>
+          <tr><td class="game">Deep Rock Galactic</td><td>Roller yapısal olarak birbirine bağımlı — kimse tek başına her şeyi yapamaz. “Paralel oyun”un panzehri.</td></tr>
+          <tr><td class="game">Dave the Diver</td><td>“Neredeyse her gün formüle yeni bir şey ekleniyor.” Zıt iki mod (dalış/restoran) yorgunluğu engelliyor.</td></tr>
+          <tr><td class="game">Moonlighter</td><td>İki fazlı ritim: <strong>aksiyon patlaması ↔ sakin düzenleme.</strong> Cargor'un günü baştan sona aynı tempoda.</td></tr>
+          <tr><td class="game">Ready, Steady, Ship!</td><td>Doğrudan tür rakibi. Her seviye yeni mekanik açıyor. Uyarı: fizik tabanlı kutular takılıp düşünce eğlence sinire dönüyor.</td></tr>
+          <tr><td class="game">C.H.A.O.S. Logistics<br>&amp; Package Panic</td><td>Kutuya sığdırma bir mekanik olarak var ve çalışıyor — ızgaraya yerleştirme, döndürme, boşluk bırakmama.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout blue">
+      <span class="callout-label">Ve elimizdeki en büyük avantaj</span>
+      <p>
+        <strong>PlateUp'ın motoru Cargor'da zaten kurulu.</strong> <code>DraftPool</code>,
+        <code>UpgradePanel</code>, tier gating, <code>EXCLUSIVE_EFFECT_GROUPS</code>,
+        <code>RerollCurve</code>, <code>disabledInDraft</code> — hepsi çalışıyor, EditMode testleri var.
+      </p>
+      <p>
+        Eksik olan tek şey: <strong>Cargor'un draft'ı yalnızca iyi kartlar sunuyor.</strong> PlateUp'ın
+        derinliği, aynı draft'tan <em class="term">seni zorlaştıran</em> kartların da gelmesinden
+        doğuyor. Yeni sistem değil — mevcut sisteme ikinci bir kart türü.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">Filtre</span>
+    <h2>Bir fikrin geçmesi gereken dört test</h2>
+
+    <p>
+      Araştırmadan çıkan kurallar. Aşağıdaki 63 fikirden herhangi birini uygulamadan önce bunlardan
+      geçmeli — özellikle komplikasyon kartları için.
+    </p>
+
+    <div class="rules">
+      <div class="rule-item">
+        <h4>1 · Karşı hamlesi var mı?</h4>
+        <p>Roguelite literatürünün kuralı: <strong>bir zorluk, oyuncunun elinden karar aldığında haksız; ona yeni karar verdirdiğinde ilginç.</strong> “Sipariş ekranı kapandı” → ezberle, konuş, not al. Karşı hamle var. “Müşteri fikir değiştirdi” → yapacak bir şey yok. Karşı hamle yok.</p>
+      </div>
+      <div class="rule-item">
+        <h4>2 · Tek kişi oynayabiliyor mu?</h4>
+        <p>Rol ve bölge fikirleri co-op'u kurtarır ama soloyu öldürebilir. Her mekaniğin 1 oyuncuda anlamlı bir hâli olmalı — Cargor 1–4 oyuncu, 1 dahil.</p>
+      </div>
+      <div class="rule-item">
+        <h4>3 · Angaryaya mı dönüşüyor?</h4>
+        <p>Supermarket Simulator'ün çukuru. Bir iş <em>karar</em> içermiyorsa ve tekrar ediyorsa, o bir mekanik değil bir vergidir. Sarf malzemesi takibi bu sınırın hemen üstünde.</p>
+      </div>
+      <div class="rule-item">
+        <h4>4 · Kutu/dakikayı ne kadar düşürüyor?</h4>
+        <p>Her fikir oyuncunun zamanını başka işe ayırıyor, yani üretim hızını düşürüyor. FAZ 4 ekonomisi o hızın <strong>ölçülmemiş bir tahmini</strong> üzerine kurulu ve modelin en duyarlı girdisi.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">Katalog · 63 fikir</span>
+    <h2>Ne ekleyebiliriz</h2>
+    <p>
+      Döngüdeki yerine göre gruplandı. <strong>Maliyet</strong> = uygulama eforu,
+      <strong>derinlik</strong> = kattığı karar sayısı. Kodlar (<code>SIP-01</code> gibi) sonra
+      bunlara referansla konuşabilelim diye. Kehribar üst çizgili kartlar öne çıkanlar.
+    </p>
+
+    <!-- HİS -->
+    <div class="cat-head">
+      <h3>K · His katmanı <span style="color:var(--amber)">(yeni)</span></h3>
+      <span class="count">6 fikir — en ucuz, en önce</span>
+    </div>
+    <div class="grid">
+      <div class="card star">
+        <div class="card-top"><h4>Paketlemeye doku ver</h4><span class="card-id">HIS-01</span></div>
+        <p class="gives">Tek tuş yerine: kutu açılır, ürün içine iner, kapaklar kapanır, bant çekilir. 1.5 saniyelik bir animasyon ve ses.</p>
+        <p><strong>Bu raporun en ucuz ve en yüksek getirili maddesi.</strong> Ekonomiyi bozmaz, yeni sistem gerektirmez, tek başına test edilir.</p>
+        <div class="flag link">Süre <code>tableBusySeconds</code>'a denk gelmeli — zaten modelde 6 sn varsayılıyor, animasyon o bütçenin içine girer.</div>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>████░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Tamamlanma sinyali</h4><span class="card-id">HIS-02</span></div>
+        <p class="gives">Her kutu bitince net bir “ding”, küçük bir parçacık, sayaçta artış.</p>
+        <p>PowerWash'un belkemiği. İlerlediğini <em class="term">duymak</em> tekrarı meditasyona çevirir.</p>
+        <div class="meters"><span class="meter">Maliyet <b>█░░░░</b></span><span class="meter">Derinlik <b>███░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Ağırlık hissi</h4><span class="card-id">HIS-03</span></div>
+        <p class="gives">Kutu taşırken hafif kamera sallantısı, yavaşlama, bırakınca gümbürtü.</p>
+        <p>Kargo oyununda kutunun ağırlığı hissedilmiyorsa, oyunun konusu hissedilmiyor demektir.</p>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>██░░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Tır kalkış anı</h4><span class="card-id">HIS-04</span></div>
+        <p class="gives">Kapılar kapanır, korna, egzoz, kısa bir kamera duraklaması, kazanç sayısı havada belirir.</p>
+        <p>Günün ritmindeki tek doğal “sahne”. Şu an sessizce gidiyor.</p>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>██░░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Rafın görsel dönüşümü</h4><span class="card-id">HIS-05</span></div>
+        <p class="gives">Dolu raf ile boş raf bariz farklı görünür; doldurmak gözle görülür bir iyileşme yaratır.</p>
+        <p>Kirli→temiz dönüşümünün depo hâli. <code>TOP-03</code> ile birlikte çok güçlü.</p>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>██░░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Müşteri tepkisi</h4><span class="card-id">HIS-06</span></div>
+        <p class="gives">Doğru teslimatta memnun jest, yanlışta bariz hayal kırıklığı, sabır bitince öfkeli çıkış.</p>
+        <p>Prestij sayısının insani karşılığı. Rakam yerine yüz görürsün.</p>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>██░░░</b></span></div>
+      </div>
+    </div>
+
+    <!-- SİPARİŞ -->
+    <div class="cat-head">
+      <h3>A · Sipariş katmanı</h3>
+      <span class="count">6 fikir — müşteri ne istiyor</span>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-top"><h4>Çok kalemli sipariş</h4><span class="card-id">SIP-01</span></div>
+        <p class="gives">“2 oyuncak + 1 cam, kırmızı kutuda.” Tek renk yerine bir liste.</p>
+        <p>Rota planlama getirir: hangi rafa önce, neyi tek seferde taşırım.</p>
+        <div class="flag link">Tır kargo aralıklarıyla çarpışır — <code>truckCargoMin/Max</code> P-dizileri yeniden hesaplanmalı.</div>
+        <div class="meters"><span class="meter">Maliyet <b>███░░</b></span><span class="meter">Derinlik <b>████░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Sipariş kartı üçlü değeri</h4><span class="card-id">SIP-02</span></div>
+        <p class="gives">Her sipariş tipinin açık üç değeri: hazırlama zorluğu · işgal süresi · para.</p>
+        <p>PlateUp'ın yemek kartı mantığı. Zor siparişi kabul etmek bilinçli bir kumar olur.</p>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>████░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Sıralı teslimat</h4><span class="card-id">SIP-03</span></div>
+        <p class="gives">Müşteri önce küçük paketini alır, sonra büyüğünü. İki dalga.</p>
+        <p>Aynı müşteriye iki kez dönmek, zamanlamayı bir işe çevirir.</p>
+        <div class="meters"><span class="meter">Maliyet <b>███░░</b></span><span class="meter">Derinlik <b>███░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Ekspres sipariş</h4><span class="card-id">SIP-04</span></div>
+        <p class="gives">Kısa süre, yüksek ödeme, kaçırırsan ağır ceza.</p>
+        <p>Ucuz gerilim. Mevcut sabır sistemine tek parametre olarak biner.</p>
+        <div class="meters"><span class="meter">Maliyet <b>█░░░░</b></span><span class="meter">Derinlik <b>██░░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Toptan sipariş</h4><span class="card-id">SIP-05</span></div>
+        <p class="gives">Tek müşteri 6 kutu ister, tırın yarısını doldurur.</p>
+        <p>Kabul etmek diğerlerini feda etmek demek — gerçek bir öncelik kararı.</p>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>███░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Karışık yükleme yasağı</h4><span class="card-id">SIP-06</span></div>
+        <p class="gives">Bir kutuda tek ürün tipi; cam ile oyuncak aynı kutuya girmez.</p>
+        <p>Tek başına sıkıcı — <code>SIP-01</code> ile anlam kazanır.</p>
+        <div class="meters"><span class="meter">Maliyet <b>█░░░░</b></span><span class="meter">Derinlik <b>█░░░░</b></span></div>
+      </div>
+    </div>
+
+    <!-- AĞIRLIK -->
+    <div class="cat-head">
+      <h3>L · Ağırlık ve taşıma <span style="color:var(--amber)">(yeni)</span></h3>
+      <span class="count">5 fikir — konusu kargo olan oyuna yakışanı</span>
+    </div>
+    <div class="grid">
+      <div class="card star">
+        <div class="card-top"><h4>Kutu istifi</h4><span class="card-id">AGR-01</span></div>
+        <p class="gives">Birden çok kutuyu üst üste taşırsın; istif yükseldikçe görüşün kapanır ve denge bozulur.</p>
+        <p>Death Stranding'in çekirdeği. <strong>Taşımanın kendisini oyuna çevirir</strong> — “çok taşı, az yürü” ile “az taşı, güvende ol” arasında gerçek bir takas.</p>
+        <div class="meters"><span class="meter">Maliyet <b>███░░</b></span><span class="meter">Derinlik <b>████░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Denge ve düşürme</h4><span class="card-id">AGR-02</span></div>
+        <p class="gives">Koşarken keskin dönersen istif devrilir; en üstteki kutu ilk zarar görür.</p>
+        <p>Acele etmenin bedelini <em class="term">anında</em> ödetir. Kural değil fizik olduğu için adil hissettirir.</p>
+        <div class="flag">Fizik riski: <em>Ready, Steady, Ship!</em>'in en çok şikayet edilen yanı kutuların kontrolsüz savrulmasıydı. Tolerans cömert olmalı.</div>
+        <div class="meters"><span class="meter">Maliyet <b>███░░</b></span><span class="meter">Derinlik <b>███░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Ağırlık → hız ve stamina</h4><span class="card-id">AGR-03</span></div>
+        <p class="gives">Ağır yük yavaşlatır ve staminayı hızlı tüketir.</p>
+        <p><strong>Cargor'da stamina sistemi zaten var</strong> ama taşıdığın şeyle ilişkisi yok. Bağlamak ucuz.</p>
+        <div class="flag link">Stamina perkleriyle (<code>energetic_crew</code>, <code>agile_crew</code>) doğrudan etkileşir — perk değerleri gözden geçirilmeli.</div>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>███░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Kırılganlık</h4><span class="card-id">AGR-04</span></div>
+        <p class="gives">Cam ürün düşerse kırılır; istif yüksekliği hasar çarpanı olur.</p>
+        <p>Ürün tipine <strong>ilk kez fiziksel anlam</strong> verir — <code>PAK-01</code>'in ucuz kardeşi.</p>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>███░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>İki kişilik yük</h4><span class="card-id">AGR-05</span></div>
+        <p class="gives">Bazı yükler tek başına taşınamaz.</p>
+        <p>Anlık ve okunaklı işbirliği — “buraya gel!” dedirtir. Solo'da el arabası alternatifi olmalı.</p>
+        <div class="meters"><span class="meter">Maliyet <b>███░░</b></span><span class="meter">Derinlik <b>███░░</b></span></div>
+      </div>
+    </div>
+
+    <!-- TOPLAMA -->
+    <div class="cat-head">
+      <h3>B · Toplama katmanı</h3>
+      <span class="count">6 fikir — ürünü bulmak</span>
+    </div>
+    <div class="grid">
+      <div class="card star">
+        <div class="card-top"><h4>Stok tükenmesi</h4><span class="card-id">TOP-03</span></div>
+        <p class="gives">Raf boşalır; depodan yenilenmeden o ürün alınamaz.</p>
+        <p><strong>Yarışan ikinci iş tipi.</strong> Teşhis 1'in doğrudan ilacı — sipariş hazırlarken raf doldurmak da gerekir.</p>
+        <div class="meters"><span class="meter">Maliyet <b>███░░</b></span><span class="meter">Derinlik <b>████░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Bölge toplama</h4><span class="card-id">TOP-02</span></div>
+        <p class="gives">Raflar bölgelere ayrılır, her oyuncu bir bölgeden sorumlu.</p>
+        <p><strong>Co-op'u paralel oyundan çıkarır.</strong> Kimse tek başına bir siparişi tamamlayamaz.</p>
+        <div class="flag">Test 2'yi zorlar: 1 oyuncuda bölge sayısı 1'e düşmeli, yoksa solo oynanamaz.</div>
+        <div class="meters"><span class="meter">Maliyet <b>███░░</b></span><span class="meter">Derinlik <b>█████</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Toplama listesi</h4><span class="card-id">TOP-01</span></div>
+        <p class="gives">Elinde bir liste, rafları gezerek dolduruyorsun.</p>
+        <p>Tek başına derinlik değil ama <code>SIP-01</code>, <code>TOP-02</code> ve <code>BIL-01</code>'in taşıyıcısı.</p>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>██░░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Karışan raflar</h4><span class="card-id">TOP-04</span></div>
+        <p class="gives">Ürünler zamanla yanlış raflara dağılır; aradığını bulmak zaman alır.</p>
+        <p>Düzen tutmayı ödüllendirir. Kaosun bedeli gecikmeli gelir — güzel bir öğretmen.</p>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>███░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>El arabası / palet</h4><span class="card-id">TOP-05</span></div>
+        <p class="gives">Çok taşırsın ama dar koridorda manevra sorunu.</p>
+        <p>Solo oynanabilirliğin anahtarı: <code>AGR-05</code> ve <code>TOP-02</code>'nin tek kişilik telafisi.</p>
+        <div class="meters"><span class="meter">Maliyet <b>███░░</b></span><span class="meter">Derinlik <b>██░░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Toplu toplama</h4><span class="card-id">TOP-06</span></div>
+        <p class="gives">Birden çok siparişi tek turda topla, sonra ayrıştır.</p>
+        <p>Uzman oyuncuya optimizasyon alanı açar. Gerçek depoların “batch picking”i.</p>
+        <div class="meters"><span class="meter">Maliyet <b>███░░</b></span><span class="meter">Derinlik <b>████░</b></span></div>
+      </div>
+    </div>
+
+    <!-- PAKETLEME -->
+    <div class="cat-head">
+      <h3>C · Paketleme katmanı</h3>
+      <span class="count">7 fikir — masayı istasyon yapmak</span>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-top"><h4>Ürüne özel paketleme</h4><span class="card-id">PAK-01</span></div>
+        <p class="gives">Cam → balonlu naylon, kıyafet → katla, oyuncak → düz. Atlarsan teslimde hasar.</p>
+        <p>Ürün tipine mekanik anlam verir. <code>HIS-01</code> ile birlikte yapılırsa animasyon zaten gerekiyor — ikisi aynı iş.</p>
+        <div class="flag">Sahnede 2 masa var, başlangıçta 1'i aktif. Masa meşgul süresi ekonominin <strong>2. en duyarlı girdisi</strong> — 4s↔8s farkı Paketleme İstasyonu'nun değerini 4× değiştiriyor.</div>
+        <div class="meters"><span class="meter">Maliyet <b>███░░</b></span><span class="meter">Derinlik <b>████░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Kutu boyu</h4><span class="card-id">PAK-02</span></div>
+        <p class="gives">S/M/L kutular; ürün sığmalı, büyük kutu tırda daha çok yer kaplar.</p>
+        <p>Ucuz ve net bir karar. <code>SIP-01</code> ile “kaç kutuya bölerim” sorusu doğar.</p>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>███░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Kutu içi yerleşim</h4><span class="card-id">PAK-03</span></div>
+        <p class="gives">Ürünleri kutuya sığdırma bulmacası — Tetris mantığı.</p>
+        <p>Tür örnekleri var ve çalışıyor. Ama <strong>döngüyü durduruyor</strong> — Overcooked temposuyla çelişir.</p>
+        <div class="flag">Oynanacaksa opsiyonel bonus olarak (iyi yerleştirme = ekstra prestij), zorunlu adım olarak değil.</div>
+        <div class="meters"><span class="meter">Maliyet <b>█████</b></span><span class="meter">Derinlik <b>████░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Etiket / adres</h4><span class="card-id">PAK-04</span></div>
+        <p class="gives">Kutu etiketlenmeden tıra atılırsa yanlış yere gider.</p>
+        <p>Ucuz dikkat katmanı. <code>BIL-01</code> ile birleşince ciddi bir hata kaynağı.</p>
+        <div class="meters"><span class="meter">Maliyet <b>█░░░░</b></span><span class="meter">Derinlik <b>██░░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Sarf malzemesi</h4><span class="card-id">PAK-06</span></div>
+        <p class="gives">Naylon, bant, kutu biter — sipariş vermek gerekir.</p>
+        <p>Gün öncesi planlamaya kaldıraç.</p>
+        <div class="flag">Test 3'ün sınırında: Supermarket Simulator'ün tam olarak sıkıcı bulunduğu yer burası.</div>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>██░░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Mühürleme</h4><span class="card-id">PAK-07</span></div>
+        <p class="gives">Kutuyu kapatmak ayrı bir son adım; açık kutu tıra kabul edilmez.</p>
+        <p>Tek başına sadece tuş sayısı artırır. <code>HIS-01</code>'in içinde bir an olarak anlamlı.</p>
+        <div class="meters"><span class="meter">Maliyet <b>█░░░░</b></span><span class="meter">Derinlik <b>█░░░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Paketleme kalitesi</h4><span class="card-id">PAK-08</span></div>
+        <p class="gives">Aceleye getirirsen “özensiz paket” olur; teslim edilir ama prestij getirmez.</p>
+        <p>Hız/kalite takası. Cezalandırmadan yavaşlatır — nazik tasarım.</p>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>███░░</b></span></div>
+      </div>
+    </div>
+
+    <!-- KURAL -->
+    <div class="cat-head">
+      <h3>M · Kural yığılması <span style="color:var(--amber)">(yeni)</span></h3>
+      <span class="count">4 fikir — Papers, Please modeli</span>
+    </div>
+    <div class="grid">
+      <div class="card star">
+        <div class="card-top"><h4>Sevkiyat kuralları birikir</h4><span class="card-id">KUR-01</span></div>
+        <p class="gives">Her birkaç günde bir yeni kural: “cam ürünler mavi kutuya giremez”, “5 kg üstü kutular ekspres tıra yasak”.</p>
+        <p><strong>Papers, Please'in tüm zorluk eğrisi bu.</strong> Hız değil, akılda tutulacak madde sayısı artıyor. Sıfır yeni sistem — sadece doğrulama kuralı.</p>
+        <div class="flag link">Komplikasyon kartı olarak sunulmaya en uygun aile. <code>META-01</code>'in ilk destesi buradan çıkabilir.</div>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>█████</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Çelişen kurallar</h4><span class="card-id">KUR-02</span></div>
+        <p class="gives">İki kural aynı kutuda çakışır; hangisini çiğneyeceğini seçmen gerekir.</p>
+        <p>Papers, Please'in en sevilen anları. Ama az ve dikkatli kullanılmalı.</p>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>███░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Teftiş günü</h4><span class="card-id">KUR-03</span></div>
+        <p class="gives">Belirli günlerde müfettiş gelir; o gün kural ihlalleri katlanarak cezalandırılır.</p>
+        <p>Mevcut event sistemine tek kalem olarak eklenir. Günler arası ritim yaratır.</p>
+        <div class="flag link"><code>EventEffectManager</code>'da hazır bir yuva var — <code>SURPRISE AUDIT</code> event'i zaten mevcut ama sadece ceza çarpanı.</div>
+        <div class="meters"><span class="meter">Maliyet <b>█░░░░</b></span><span class="meter">Derinlik <b>███░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Kural panosu</h4><span class="card-id">KUR-04</span></div>
+        <p class="gives">Kurallar duvarda asılı; okumak için oraya gitmen ve durman gerekir.</p>
+        <p>Bilgiyi mekâna bağlar. Papers, Please'de kural kitabını açmak zaman kaybıdır — ve bu kasıtlıdır.</p>
+        <div class="meters"><span class="meter">Maliyet <b>█░░░░</b></span><span class="meter">Derinlik <b>██░░░</b></span></div>
+      </div>
+    </div>
+
+    <!-- BİLGİ -->
+    <div class="cat-head">
+      <h3>G · Bilgi katmanı</h3>
+      <span class="count">4 fikir — en ucuz derinlik</span>
+    </div>
+    <div class="grid">
+      <div class="card star">
+        <div class="card-top"><h4>Sipariş göstergesini kaldır</h4><span class="card-id">BIL-01</span></div>
+        <p class="gives">Müşterinin ne istediği ekranda yazmaz; resepsiyonda okuyup <strong>ezberlemen</strong> gerekir.</p>
+        <p>PlateUp'ın “Photographic Memory” kartı. <strong>Neredeyse sıfır maliyet, en yüksek co-op etkisi</strong> — takım arkadaşınla konuşmak zorunda kalırsın.</p>
+        <div class="flag link">Dört testin de en temizi: karşı hamlesi var (ezberle/konuş/not al), soloda çalışır, angarya değil, üretim hızını çok düşürmez.</div>
+        <div class="meters"><span class="meter">Maliyet <b>█░░░░</b></span><span class="meter">Derinlik <b>█████</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Envanter terminali</h4><span class="card-id">BIL-03</span></div>
+        <p class="gives">Ofisteki terminalde hangi rafta ne var yazar — ama oraya gitmen gerekir.</p>
+        <p>Bilgiyi <em class="term">mekâna bağlar</em>. Bilmek için yürümek gerekir; bu bir maliyet.</p>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>███░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Barkod okutma</h4><span class="card-id">BIL-02</span></div>
+        <p class="gives">Ürünü kutuya koymadan okutman gerekir.</p>
+        <p>Tek başına angarya; <code>KUR-01</code> ile birlikte kural doğrulama aracı olur.</p>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>██░░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Telsiz</h4><span class="card-id">BIL-05</span></div>
+        <p class="gives">Uzak bölgedeki oyuncuya bilgi ancak telsizle ulaşır; ofisteki oyuncu sipariş okur.</p>
+        <p>Lethal Company'nin sosyal motoru. <code>TOP-02</code> ve <code>BIL-01</code> ile birleşince <strong>iletişim mekanik zorunluluk</strong> olur.</p>
+        <div class="meters"><span class="meter">Maliyet <b>███░░</b></span><span class="meter">Derinlik <b>████░</b></span></div>
+      </div>
+    </div>
+
+    <!-- MÜŞTERİ -->
+    <div class="cat-head">
+      <h3>E · Müşteri katmanı</h3>
+      <span class="count">5 fikir — müşteriyi karaktere çevirmek</span>
+    </div>
+    <div class="grid">
+      <div class="card star">
+        <div class="card-top"><h4>Müşteri arketipleri</h4><span class="card-id">MUS-01</span></div>
+        <p class="gives">Sabırsız (süre yarı), VIP (ödeme ×2, ceza ×2), toptancı, kararsız.</p>
+        <p>PlateUp'ın müşteri kartlarının karşılığı. <strong>Mevcut sabır sistemine parametre olarak biner</strong> — yeni sistem gerekmez.</p>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>████░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Grup müşteri</h4><span class="card-id">MUS-04</span></div>
+        <p class="gives">Üç kişi birlikte gelir, üç sipariş, hep birlikte teslim edilmeli.</p>
+        <p>Ani yük zirvesi yaratır. PlateUp'ta bu kart oyunun belkemiği.</p>
+        <div class="meters"><span class="meter">Maliyet <b>███░░</b></span><span class="meter">Derinlik <b>████░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Sadık müşteri</h4><span class="card-id">MUS-03</span></div>
+        <p class="gives">Memnun ettiğin müşteri geri gelir ve daha çok prestij getirir.</p>
+        <p><strong>Prestije ikinci bir işlev verir.</strong> Şu an prestijin tek işi kutu ödül tier'ı.</p>
+        <div class="flag link"><code>maxPrestige=100</code> hiç ulaşılmıyor — bu fikir o ölü tavanı kullanır.</div>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>███░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Şikayet masası</h4><span class="card-id">MUS-05</span></div>
+        <p class="gives">Hatalı teslimat yapılan müşteri geri gelip şikayet eder.</p>
+        <p>Hataların bedelini <em class="term">sonra</em> ödetir — <code>IAD-01</code> ile aynı aileden.</p>
+        <div class="meters"><span class="meter">Maliyet <b>███░░</b></span><span class="meter">Derinlik <b>███░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Sipariş değişikliği</h4><span class="card-id">MUS-02</span></div>
+        <p class="gives">Müşteri fikir değiştirir; hazırladığın kutu çöp olur.</p>
+        <p><strong>Test 1'den kalıyor</strong> — karşı hamlesi yok, oyuncunun elinden karar alıyor. Uygulanacaksa erken uyarı verilmeli.</p>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>██░░░</b></span></div>
+      </div>
+    </div>
+
+    <!-- GERİ DÖNÜŞ -->
+    <div class="cat-head">
+      <h3>F · Geri dönüş döngüsü</h3>
+      <span class="count">4 fikir — PlateUp'taki kirli tabak</span>
+    </div>
+    <div class="grid">
+      <div class="card star">
+        <div class="card-top"><h4>Boş koli birikimi</h4><span class="card-id">IAD-02</span></div>
+        <p class="gives">Kullanılmış ambalaj birikir; temizlenmezse masa ve koridor tıkanır.</p>
+        <p>Kirli tabağın birebir karşılığı. <strong>Mekânı zamanla düşmana çevirir</strong> — ucuz ve çok etkili.</p>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>███░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>İade kargo</h4><span class="card-id">IAD-01</span></div>
+        <p class="gives">Teslimatların bir kısmı geri gelir; açılıp kontrol edilip yeniden işlenmeli.</p>
+        <p>Döngüyü kapatır, yarışan iş yaratır, hatanı sana geri getirir.</p>
+        <div class="meters"><span class="meter">Maliyet <b>███░░</b></span><span class="meter">Derinlik <b>████░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Hasarlı ürün ayıklama</h4><span class="card-id">IAD-03</span></div>
+        <p class="gives">Bazı ürünler rafta hasarlı; fark etmeden kutularsan teslimatta ceza.</p>
+        <p><strong>Otopilotu cezalandırır.</strong> Bakmayı zorunlu kılan tek fikir.</p>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>███░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Atık / geri dönüşüm</h4><span class="card-id">IAD-04</span></div>
+        <p class="gives">Ambalaj atığı biriktikçe ceza; geri dönüşüme götürmek para getirir.</p>
+        <p><code>IAD-02</code>'nin ekonomik versiyonu. İkisi birden gereksiz — biri seçilmeli.</p>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>█░░░░</b></span></div>
+      </div>
+    </div>
+
+    <!-- RİSK -->
+    <div class="cat-head">
+      <h3>O · Risk ve güvenlik <span style="color:var(--amber)">(yeni)</span></h3>
+      <span class="count">4 fikir — Hardspace modeli</span>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-top"><h4>Hızlı ama riskli yol</h4><span class="card-id">RSK-01</span></div>
+        <p class="gives">Kutuyu tıra fırlatmak hızlı ama hasar riski taşır; taşıyıp yerleştirmek yavaş ve güvenli.</p>
+        <p><strong>Mevcut “fırlat” eylemini bir karara çevirir.</strong> Şu an fırlatmanın hiçbir bedeli yok.</p>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>████░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Güvenlik upgrade'leri</h4><span class="card-id">RSK-02</span></div>
+        <p class="gives">Upgrade'ler seni hızlandırmaz — <em>güvenli</em> kılar. Eldiven, kaymaz ayakkabı, sağlam raf.</p>
+        <p>Hardspace'in en zarif fikri: kota baskısı seni riskli oynamaya iter, upgrade o riski satın alır.</p>
+        <div class="flag link">Mevcut upgrade ağacı tamamen “hızlı/çok” eksenli. Bu ikinci bir eksen açar — draft seçimlerini gerçekten çeşitlendirir.</div>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>████░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Yorgunluk → hata</h4><span class="card-id">RSK-03</span></div>
+        <p class="gives">Stamina düştükçe kutu düşürme ve yanlış paketleme ihtimali artar.</p>
+        <p>Staminaya <strong>ikinci bir anlam</strong> verir. Şu an sadece koşma yakıtı.</p>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>███░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Sigorta</h4><span class="card-id">RSK-04</span></div>
+        <p class="gives">Gün başında prim ödersin; hasar olursa kısmen karşılanır.</p>
+        <p>Gün öncesi planlamaya finansal bir bahis ekler. Kira sistemiyle doğal eşleşir.</p>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>███░░</b></span></div>
+      </div>
+    </div>
+
+    <!-- RİTİM -->
+    <div class="cat-head">
+      <h3>N · Ritim ve fazlar <span style="color:var(--amber)">(yeni)</span></h3>
+      <span class="count">4 fikir — günün şekli</span>
+    </div>
+    <div class="grid">
+      <div class="card star">
+        <div class="card-top"><h4>Gün öncesi hazırlık fazı</h4><span class="card-id">RIT-01</span></div>
+        <p class="gives">Kapılar açılmadan önce sakin bir hazırlık: rafları doldur, malzeme sipariş et, kuralları oku, upgrade al.</p>
+        <p>Moonlighter'ın ritmi: <strong>aksiyon patlaması ↔ sakin düzenleme.</strong> Cargor'un günü baştan sona aynı tempoda — bu en büyük eksiklerden biri.</p>
+        <div class="flag link">Altyapı kısmen var: <code>UpgradePanel</code> ve ofis terminali zaten bir “faz” çekirdeği. Genişletilebilir.</div>
+        <div class="meters"><span class="meter">Maliyet <b>███░░</b></span><span class="meter">Derinlik <b>████░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Yoğun saat</h4><span class="card-id">RIT-02</span></div>
+        <p class="gives">Gün içinde belirli bir aralıkta müşteri akışı iki katına çıkar; öncesinde uyarı gelir.</p>
+        <p>Zirveyi <em class="term">önceden bilmek</em> hazırlık kararı yaratır. Sürpriz değil, planlanabilir baskı.</p>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>███░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Kapanış işleri</h4><span class="card-id">RIT-03</span></div>
+        <p class="gives">Gün bitince depo toparlanmalı; toparlanmazsa ertesi gün dağınık başlar.</p>
+        <p><code>IAD-02</code> ve <code>TOP-04</code>'ün doğal kapanışı. Günler arası süreklilik yaratır.</p>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>███░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Nefes anları</h4><span class="card-id">RIT-04</span></div>
+        <p class="gives">Müşteri akışında bilinçli boşluklar — toparlanma, konuşma, plan yapma zamanı.</p>
+        <p>Sürekli baskı baskıyı öldürür. Boşluk olmadan zirve zirve gibi hissetmez.</p>
+        <div class="meters"><span class="meter">Maliyet <b>█░░░░</b></span><span class="meter">Derinlik <b>██░░░</b></span></div>
+      </div>
+    </div>
+
+    <!-- SEVKİYAT -->
+    <div class="cat-head">
+      <h3>D · Sevkiyat katmanı</h3>
+      <span class="count">5 fikir — tır tarafı</span>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-top"><h4>Tır içi istifleme</h4><span class="card-id">SEV-01</span></div>
+        <p class="gives">Ağır alta, kırılgan üste. Yanlış istif = yolda hasar.</p>
+        <p>“Fırlat gitsin”i bir karara çevirir. <code>AGR-01</code> ve <code>RSK-01</code> ile doğal eşleşir.</p>
+        <div class="meters"><span class="meter">Maliyet <b>███░░</b></span><span class="meter">Derinlik <b>███░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Sevkiyat penceresi</h4><span class="card-id">SEV-03</span></div>
+        <p class="gives">Belirli tır belirli saatte gelir; kaçırırsan kutular ertesi güne kalır.</p>
+        <p>Gün içine ritim ve zirve saatler koyar. <code>RIT-02</code> ile birlikte güçlü.</p>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>████░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Tır tipleri</h4><span class="card-id">SEV-02</span></div>
+        <p class="gives">Küçük-hızlı vs büyük-yavaş; soğutmalı, kırılgan-özel.</p>
+        <p>Mevcut tır sistemine en ucuz çeşitlilik. Hangi tırı beklemek bir karar olur.</p>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>███░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Sevkiyat manifestosu</h4><span class="card-id">SEV-05</span></div>
+        <p class="gives">Tır kalkmadan içeriği onaylaman gerekir; eksik varsa uyarır.</p>
+        <p>Hata yakalama şansı verir — ceza yerine gerilim. <code>KUR-01</code>'in emniyet supabı.</p>
+        <div class="meters"><span class="meter">Maliyet <b>█░░░░</b></span><span class="meter">Derinlik <b>██░░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Rampa kuyruğu</h4><span class="card-id">SEV-04</span></div>
+        <p class="gives">Aynı anda tek tır yüklenebilir; sıra yönetimi gerekir.</p>
+        <p>Darboğaz yaratır — ama ekonomist ölçtü: <strong>tır penceresi zaten darboğaz değil.</strong></p>
+        <div class="flag">Tavanın yalnızca %10-42'si kullanılıyor. Bu fikir mevcut ölçümle çelişiyor.</div>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>█░░░░</b></span></div>
+      </div>
+    </div>
+
+    <!-- MEKÂN & ROL -->
+    <div class="cat-head">
+      <h3>H · Mekân, rol ve co-op</h3>
+      <span class="count">7 fikir — birlikte oynamayı anlamlı kılmak</span>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-top"><h4>Rol kartları</h4><span class="card-id">ROL-01</span></div>
+        <p class="gives">Toplayıcı / paketleyici / sevkiyatçı — her rol kendi işinde hızlı, diğerlerinde yavaş.</p>
+        <p>Deep Rock Galactic mantığı: kimse her şeyi yapamasın. <strong>Paralel oyunu iş bölümüne çevirir.</strong></p>
+        <div class="flag">Test 2 kritik: 1 oyuncuda roller arası geçiş serbest olmalı.</div>
+        <div class="meters"><span class="meter">Maliyet <b>███░░</b></span><span class="meter">Derinlik <b>█████</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Devir teslim noktası</h4><span class="card-id">ROL-03</span></div>
+        <p class="gives">Bölgeler arası aktarma rafı: biri bırakır, diğeri alır.</p>
+        <p><code>TOP-02</code>'nin altyapısı. Zincir kurmayı mümkün kılar.</p>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>███░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Bilerek kötü yerleşim</h4><span class="card-id">MEK-05</span></div>
+        <p class="gives">Depo verimli değil; raf–masa–tır üçgeni kasten kırık.</p>
+        <p>Overcooked'un temel numarası — mutfak çalışma üçgenini <strong>bilerek ihlal ederler.</strong> Yürüme mesafesi bir kaynaktır.</p>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>███░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Kademeli alan açılışı</h4><span class="card-id">MEK-04</span></div>
+        <p class="gives">Deponun bölümleri gün ilerledikçe açılır; alan büyüdükçe yürüme mesafesi artar.</p>
+        <p>Mevcut Ek Hangar / Geniş Ambar upgrade'lerinin doğal devamı.</p>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>██░░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Dar koridor / trafik</h4><span class="card-id">MEK-03</span></div>
+        <p class="gives">Oyuncular birbirini engelleyebilir; yol seçimi önem kazanır.</p>
+        <p>Overcooked'un temel gerilimi. Sinir bozucu olma sınırı ince.</p>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>██░░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Konveyör bant</h4><span class="card-id">MEK-02</span></div>
+        <p class="gives">Kutuyu banda koy, kendisi sevkiyata gitsin. Upgrade ile açılır.</p>
+        <p>Otomasyon ödülü. <strong>Ama Teşhis 1'in tuzağı</strong> — angaryayı alıp yerine bir şey koymazsa oyun boşalır.</p>
+        <div class="flag">Yalnızca yerine yeni iş tipi geldiyse eklenmeli.</div>
+        <div class="meters"><span class="meter">Maliyet <b>████░</b></span><span class="meter">Derinlik <b>██░░░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>İstasyonları oyuncu yerleştirir</h4><span class="card-id">MEK-01</span></div>
+        <p class="gives">Masa, raf, terminal nereye konacağına oyuncu karar verir.</p>
+        <p><strong>PlateUp'ın asıl derinliği burada.</strong> Ama Cargor'un sahnesi elle kurulmuş.</p>
+        <div class="flag">Kapsam: ızgara sistemi, kayıt/yükleme, netcode senkronu, sahne yeniden yapılandırması. Bir faz değil, bir sürüm.</div>
+        <div class="meters"><span class="meter">Maliyet <b>█████</b></span><span class="meter">Derinlik <b>█████</b></span></div>
+      </div>
+    </div>
+
+    <!-- META -->
+    <div class="cat-head">
+      <h3>J · Meta — ilerleme motoru</h3>
+      <span class="count">4 fikir — hepsini birbirine bağlayan</span>
+    </div>
+    <div class="grid">
+      <div class="card star">
+        <div class="card-top"><h4>Komplikasyon kartları</h4><span class="card-id">META-01</span></div>
+        <p class="gives">Mevcut draft'a ikinci kart türü: <strong>seni zorlaştıran</strong> kartlar. Her 3 günde bir iki zorluktan birini seçersin.</p>
+        <p>Yukarıdaki fikirlerin çoğu tek tek özellik olarak değil, birer kart olarak geldiğinde anlam kazanır — ve altyapı zaten hazır.</p>
+        <div class="flag link">Kod hazır: <code>DraftPool.SelectOffer</code>, tier gating, dışlama grupları, reroll. Gereken yeni bir <code>kind</code> ve etki kanalı.</div>
+        <div class="meters"><span class="meter">Maliyet <b>███░░</b></span><span class="meter">Derinlik <b>█████</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Ürün kataloğu genişlemesi</h4><span class="card-id">META-02</span></div>
+        <p class="gives">3 ürün tipi sabit değil; gün ilerledikçe yeni tipler açılır (kırılgan, ağır, soğuk).</p>
+        <p>Dave the Diver'ın “neredeyse her gün formüle yeni bir şey ekleniyor” ilkesi.</p>
+        <div class="meters"><span class="meter">Maliyet <b>███░░</b></span><span class="meter">Derinlik <b>████░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Tema kartları</h4><span class="card-id">META-03</span></div>
+        <p class="gives">Run başına bir uzmanlık: “Kırılgan Uzmanı”, “Toptan Depo”, “Ekspres Servis”.</p>
+        <p>Her run'a kimlik verir. Tekrar oynanabilirliğin asıl kaynağı.</p>
+        <div class="meters"><span class="meter">Maliyet <b>██░░░</b></span><span class="meter">Derinlik <b>████░</b></span></div>
+      </div>
+      <div class="card">
+        <div class="card-top"><h4>Kalıcı ilerleme</h4><span class="card-id">META-04</span></div>
+        <p class="gives">Run bitince kalıcı seviye; yeni kartlar ve başlangıç ekipmanı açılır.</p>
+        <p>PlateUp'ın roguelite iskeleti. 16 gün bitince oyunun bitmemesini sağlar.</p>
+        <div class="flag">Ancak çekirdek döngü eğlenceli olduktan sonra. Sıkıcı bir döngüyü tekrar oynatmaya değmez.</div>
+        <div class="meters"><span class="meter">Maliyet <b>████░</b></span><span class="meter">Derinlik <b>████░</b></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">Öneri</span>
+    <h2>Sıralama — ve neden bu sırayla</h2>
+
+    <p>
+      Birinci turdaki sıralamayı değiştirdim. İki sebeple: his katmanı hem daha ucuz hem
+      diğer her şeyin önkoşulu, ve <code>KUR-01</code> ailesi (kural yığılması) beklediğimden
+      çok daha yüksek getirili çıktı.
+    </p>
+
+    <div class="verdict">
+      <div class="verdict-row">
+        <div class="verdict-rank">0<br>önce bu</div>
+        <div class="verdict-body">
+          <h4>HIS-01 + HIS-02 — paketlemeye doku ver</h4>
+          <p>
+            Kutunun açılması, ürünün inmesi, kapağın kapanması, bandın çekilmesi, bitince çalan ses.
+            <strong>Ekonomiyi hiç bozmaz</strong>, denge turu gerektirmez, tek başına test edilir.
+            Ve eğer sorun gerçekten histeyse — ki olabilir — <strong>tek başına problemi
+            çözebilir.</strong> Diğer 62 fikre girmeden önce bunu öğrenmeye değer.
+          </p>
+        </div>
+      </div>
+      <div class="verdict-row">
+        <div class="verdict-rank">1</div>
+        <div class="verdict-body">
+          <h4>IAD-02 + TOP-03 — yarışan iş tipleri</h4>
+          <p>
+            Boş koli birikmesi ve raf tükenmesi. İkisi de ucuz, ikisi de <strong>dikkatini bölen
+            ikinci bir iş</strong> yaratıyor. Teşhis 1'in doğrudan ilacı ve tek şeritliliği kıran
+            en küçük müdahale.
+          </p>
+        </div>
+      </div>
+      <div class="verdict-row">
+        <div class="verdict-rank">2</div>
+        <div class="verdict-body">
+          <h4>META-01 — komplikasyon kartları</h4>
+          <p>
+            Altyapı hazır olduğu için maliyeti düşük, etkisi en yüksek. Bir kez kurulduğunda
+            <strong>bundan sonraki her fikir “kart” olarak eklenebilir</strong> — her yeni mekanik
+            ayrı bir entegrasyon işi olmaktan çıkar. Bu yüzden erken kurulmalı.
+          </p>
+        </div>
+      </div>
+      <div class="verdict-row">
+        <div class="verdict-rank">3</div>
+        <div class="verdict-body">
+          <h4>BIL-01 + MUS-01 + KUR-01 — ilk kart destesi</h4>
+          <p>
+            Sipariş göstergesini kaldırma, müşteri arketipleri, birikimli sevkiyat kuralları.
+            Üçü de mevcut sistemlere <strong>parametre olarak biniyor</strong>, yeni sistem
+            gerektirmiyor, ama oyunu tanınmayacak kadar değiştiriyor. Kart motorunun ilk gerçek testi.
+          </p>
+        </div>
+      </div>
+      <div class="verdict-row">
+        <div class="verdict-rank">4</div>
+        <div class="verdict-body">
+          <h4>AGR-01…04 + RSK-01/02 — kargonun fiziği</h4>
+          <p>
+            Ağırlık, istif, kırılganlık, hızlı-riskli yol, güvenlik upgrade'leri. Bu blok
+            <strong>oyunun konusunu oynanabilir kılıyor</strong> — bir kargo oyununda kargonun
+            ağırlığı hissedilmeli. Ayrıca upgrade ağacına “hızlı/çok” dışında ikinci bir eksen açıyor.
+          </p>
+        </div>
+      </div>
+      <div class="verdict-row">
+        <div class="verdict-rank">5</div>
+        <div class="verdict-body">
+          <h4>RIT-01 + PAK-01 + SIP-01 — ritim ve ürün kimliği</h4>
+          <p>
+            Hazırlık fazı, ürüne özel paketleme, çok kalemli sipariş. Burada 3 ürün tipi ilk kez
+            mekanik olarak var olmaya başlıyor ve gün bir şekle kavuşuyor.
+            <strong>Masa dengesi yeniden hesaplanmadan girilmemeli.</strong>
+          </p>
+        </div>
+      </div>
+      <div class="verdict-row">
+        <div class="verdict-rank">Sonraya</div>
+        <div class="verdict-body">
+          <h4>ROL-01 / TOP-02 / BIL-05 — co-op iş bölümü</h4>
+          <p>
+            Rol kartları, bölge toplama, telsiz. Co-op'u paralel oyundan çıkarmanın en güçlü yolu
+            ve üçü birlikte çok güçlü. Ama solo oynanabilirliği riske attıkları için
+            <strong>çekirdek eğlenceli olduktan sonra</strong>, ayrı bir tasarım turuyla.
+          </p>
+        </div>
+      </div>
+      <div class="verdict-row">
+        <div class="verdict-rank">Hayır</div>
+        <div class="verdict-body">
+          <h4>MEK-01, MEK-02, PAK-03, META-04, MUS-02</h4>
+          <p>
+            İstasyon yerleştirme bir sürüm işi, konveyör Teşhis 1'in tuzağı, kutu-Tetris tempoyu
+            kırıyor, kalıcı ilerleme çekirdek eğlenceli olmadan anlamsız, sipariş değişikliği
+            Test 1'den kalıyor. Hepsi iyi fikir — <strong>ama hiçbiri şimdi değil.</strong>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <h3>Önerilen açılış takvimi</h3>
+    <p>
+      Ne eklersek ekleyelim, hepsi 1. günde gelirse yine düz olur — sadece daha karmaşık bir
+      düzlük. PlateUp'ın 4. günde ilk kartı vermesi tesadüf değil.
+    </p>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>Gün</th><th>Açılan</th><th>Neden burada</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="day">1–3</td><td>Çekirdek döngü + <code>HIS-*</code></td><td>His katmanı 1. günden itibaren var. Öğretici aşamada bile her kutu tatmin etmeli.</td></tr>
+          <tr><td class="day">4</td><td><code>IAD-02</code> boş koli · <strong>ilk kart</strong></td><td>İlk yarışan iş ve ilk seçim. PlateUp'la aynı gün.</td></tr>
+          <tr><td class="day">6</td><td><code>KUR-01</code> ilk sevkiyat kuralı</td><td>Akılda tutulacak ilk madde. Kural yığılması burada başlar.</td></tr>
+          <tr><td class="day">7</td><td><code>TOP-03</code> stok tükenmesi · 2. kart</td><td>Üçüncü şerit. Artık üç şey aynı anda dikkat istiyor.</td></tr>
+          <tr><td class="day">10</td><td><code>AGR-04</code> kırılgan kargo · 3. kart</td><td>Ürün tipi ilk kez fiziksel olarak var oluyor.</td></tr>
+          <tr><td class="day">13</td><td><code>SIP-01</code> çok kalemli sipariş · 4. kart</td><td>Rota planlama. Oyuncu tüm sistemleri biliyor, birleştirmesi isteniyor.</td></tr>
+          <tr><td class="day">16</td><td>Finale özel yük + teftiş</td><td>Öğrendiği her şeyi aynı anda kullandığı tek gün.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout red">
+      <span class="callout-label">Değişmeyen tek uyarı</span>
+      <p>
+        <code>HIS-*</code> dışındaki her satır <strong>ekonomiyi yeniden dengelemek demek.</strong>
+        FAZ 4 turu, oyuncunun dakikada kaç kutu hazırladığı varsayımı üzerine kurulu ve yukarıdaki
+        fikirlerin hepsi o sayıyı düşürüyor.
+      </p>
+      <p>
+        Yani: <strong>önce oyna, kutu/dakika değerini ölç.</strong> Şu an o sayı tahmin, ölçüm
+        değil. His katmanının bu kadar önde olmasının bir sebebi de bu — ölçüm beklerken
+        güvenle yapılabilecek tek iş.
+      </p>
+    </div>
+  </section>
+
+  <section class="sources">
+    <span class="eyebrow">Kaynaklar</span>
+    <ul>
+      <li><a href="https://store.steampowered.com/app/1599600/PlateUp/">PlateUp! — Steam</a></li>
+      <li><a href="https://wiki.plateupgame.com/Cards">PlateUp! Wiki — Cards</a></li>
+      <li><a href="https://wiki.plateupgame.com/recipes/StartersSidesDesserts">PlateUp! Wiki — Starters, Sides, Desserts</a></li>
+      <li><a href="https://www.thegamer.com/plateup-best-cards/">TheGamer — PlateUp!: The Best Cards To Pick</a></li>
+      <li><a href="https://steamcommunity.com/app/2670630/discussions/0/4304949218856208653">Steam — Supermarket Simulator tartışmaları</a></li>
+      <li><a href="https://steamcommunity.com/groups/UnitedCritics/discussions/0/4353368966472101448/">United Critics — Warehouse Inc incelemesi</a></li>
+      <li><a href="https://www.gamespot.com/reviews/powerwash-simulator-review-filthy-rich/1900-6417923/">GameSpot — PowerWash Simulator incelemesi</a></li>
+      <li><a href="https://www.galaxus.at/en/page/powerwash-simulator-and-many-more-why-we-like-boring-busywork-in-our-games-40050">Galaxus — Neden angarya işleri seviyoruz</a></li>
+      <li><a href="https://80.lv/articles/level-design-of-powerwash-simulator">80.lv — PowerWash Simulator seviye tasarımı</a></li>
+      <li><a href="https://thedesignlab.blog/2025/01/06/making-gameplay-irresistibly-satisfying-using-game-juice/">The Design Lab — Game juice</a></li>
+      <li><a href="https://www.gamedeveloper.com/design/squeezing-more-juice-out-of-your-game-design-">Game Developer — Squeezing more juice</a></li>
+      <li><a href="https://medium.com/@ishikasoni50/the-design-of-oppression-in-papers-please-1b83b16a3079">Medium — Papers, Please tasarım analizi</a></li>
+      <li><a href="https://mycours.es/gamedesign2015/2015/09/23/game-critique-papers-please/">Game Critique — Papers, Please</a></li>
+      <li><a href="https://www.gamespot.com/articles/death-stranding-inventory-tips-how-your-inventory-works-and-how-to-best-manage-your-weight/1100-6471199/">GameSpot — Death Stranding kargo/ağırlık</a></li>
+      <li><a href="https://www.gametruth.com/guides/death-stranding-cargo-management-guide-route-planning-and-weight-balance/">Game Truth — Death Stranding denge sistemi</a></li>
+      <li><a href="https://www.vice.com/en/article/hardspace-shipbreaker-understands-the-joy-and-grace-of-good-work/">Vice — Hardspace: Shipbreaker</a></li>
+      <li><a href="https://uppercutcrit.com/hardspace-shipbreaker-seizing-the-means/">Uppercut — Hardspace kota baskısı</a></li>
+      <li><a href="https://hardspaceshipbreaker.fandom.com/wiki/Hazards">Hardspace Wiki — Tehlikeler</a></li>
+      <li><a href="https://tvtropes.org/pmwiki/pmwiki.php/VideoGame/LethalCompany">TV Tropes — Lethal Company</a></li>
+      <li><a href="https://lethalcompanyreview.com/lethal-company-review-a-masterclass-in-chaotic-co-op-horror/">Lethal Company incelemesi — kota ve iletişim</a></li>
+      <li><a href="https://gamerant.com/best-coop-games-different-varied-unique-roles-gameplay/">GameRant — Rol tabanlı co-op tasarımı</a></li>
+      <li><a href="https://www.gamedeveloper.com/design/dave-the-diver">Game Developer — Dave the Diver</a></li>
+      <li><a href="https://www.linkedin.com/pulse/genius-goal-loops-dave-diver-dan-butchko-g2zwe">Dave the Diver hedef döngüleri</a></li>
+      <li><a href="https://www.pcgamer.com/games/roguelike/moonlighter-2-perfectly-refines-and-streamlines-the-first-games-engrossing-shopkeeper-rpg-formula-and-its-got-a-free-demo-you-can-try-right-now/">PC Gamer — Moonlighter iki fazlı döngü</a></li>
+      <li><a href="https://medium.com/@chunheisiu/what-makes-overcooked-a-challenging-game-the-kitchen-work-triangle-680665931e66">Medium — Overcooked ve mutfak çalışma üçgeni</a></li>
+      <li><a href="https://www.anuflora.com/game/?p=4675">Overcooked! 2 tasarım analizi</a></li>
+      <li><a href="https://www.cgmagonline.com/review/game/ready-steady-ship-ps5-review/">CGMagazine — Ready, Steady, Ship!</a></li>
+      <li><a href="https://www.geekyhobbies.com/ready-steady-ship-indie-video-game-review/">Geeky Hobbies — Ready, Steady, Ship!</a></li>
+      <li><a href="https://thom.ee/blog/what-makes-or-breaks-agency-in-roguelikes/">Tom's Site — Roguelike'larda oyuncu iradesi</a></li>
+      <li><a href="https://medium.com/@JeongHyeonUk/designing-fair-rng-in-roguelikes-balancing-luck-and-skill-7b967230e961">Medium — Adil RNG tasarımı</a></li>
+      <li><a href="https://entaltostudios.com/5-essential-tips-to-make-your-roguelite-game-work/">Entalto — Roguelite tasarım ilkeleri</a></li>
+      <li><a href="https://redstagfulfillment.com/ultimate-guide-pick-and-pack-methods/">Red Stag — Pick &amp; pack yöntemleri</a></li>
+      <li><a href="https://www.inboundlogistics.com/articles/pick-pack-and-ship/">Inbound Logistics — Pick, pack, ship</a></li>
+      <li><a href="https://thatmonstergames.com/2021/11/18/games-about-packing-and-unpacking-boxes/">Kaitlin Tremblay — Paketleme oyunları üzerine</a></li>
+    </ul>
+  </section>
+
+</div>
