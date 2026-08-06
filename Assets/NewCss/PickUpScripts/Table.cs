@@ -170,7 +170,7 @@ namespace NewCss
         {
             if (string.IsNullOrEmpty(tableID))
             {
-                tableID = $"Table_{GetInstanceID()}";
+                tableID = $"Table_{GetEntityId()}";
             }
         }
 

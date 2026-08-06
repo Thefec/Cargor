@@ -16,6 +16,9 @@ namespace NewCss.Quest
         private const string LOG_PREFIX = "[QuestManager]";
         private const int DAILY_QUEST_COUNT = 3;
 
+        /// <summary>Quest asset'lerinin kanonik klasörü (Assets/Resources/&lt;bu&gt;).</summary>
+        private const string QUEST_RESOURCE_FOLDER = "Quests";
+
         #endregion
 
         #region Singleton
@@ -75,9 +78,9 @@ namespace NewCss.Quest
 
         /// <summary>
         /// Q6 fix: her günlük görev atamasında (AssignDailyQuests) artan sunucu-yetkili sayaç.
-        /// Client, Accept/Collect isteklerine RPC gönderirken o an bildiği generation değerini de
+        /// Client, Accept isteğine RPC gönderirken o an bildiği generation değerini de
         /// ekler; server kendi değeriyle eşleşmiyorsa isteği reddeder. Böylece gün geçişi ile
-        /// uçuştaki bir Accept/Collect RPC'si arasındaki mikro pencerede, eski günün slotIndex'i
+        /// uçuştaki bir Accept RPC'si arasındaki mikro pencerede, eski günün slotIndex'i
         /// yanlışlıkla yeni günün quest'ine uygulanmaz.
         /// </summary>
         private readonly NetworkVariable<int> _questGeneration = new(0);
@@ -102,6 +105,13 @@ namespace NewCss.Quest
         /// Günlük görev sayısı
         /// </summary>
         public int DailyQuestCount => _dailyQuests?.Count ?? 0;
+
+        /// <summary>
+        /// Havuzda oynanabilir en az bir quest var mı? <see cref="UpgradePanel"/> bunu
+        /// "Görev Kademesi" upgrade'ini draft'a sokup sokmayacağına karar verirken okur —
+        /// quest'i olmayan bir sistemin kartı teklif havuzunu kirletmesin.
+        /// </summary>
+        public bool HasQuests => _questDatabase != null && _questDatabase.Count > 0;
 
         /// <summary>
         /// Bugün bir görev kabul edilip edilmediği (client-görünür, server-authoritative NV'den okunur).
@@ -186,8 +196,42 @@ namespace NewCss.Quest
             _dailyQuests = new NetworkList<QuestProgress>();
         }
 
+        /// <summary>
+        /// <c>allQuests</c>'i normalize eder: null girişleri atar, ardından
+        /// <c>Resources/Quests</c> altındaki tüm QuestData asset'lerinden listede olmayanları ekler.
+        ///
+        /// Gerekçe: 15 asset'i tek tek inspector'a sürüklemek gereksiz ve unutulmaya açık bir adım —
+        /// klasör zaten quest'lerin tek kaynağı. Inspector'a elle eklenmiş asset'ler korunur ve
+        /// sırada önce gelir; silinmiş asset'lerin geride bıraktığı null referanslar temizlenir
+        /// (bu olmadan liste "boş değil ama hepsi null" durumuna düşebiliyordu).
+        /// </summary>
+        private void CollectQuestAssets()
+        {
+            var merged = new List<QuestData>();
+            var seen = new HashSet<QuestData>();
+
+            foreach (var quest in allQuests)
+            {
+                if (quest != null && seen.Add(quest)) merged.Add(quest);
+            }
+
+            int fromInspector = merged.Count;
+
+            foreach (var quest in Resources.LoadAll<QuestData>(QUEST_RESOURCE_FOLDER))
+            {
+                if (quest != null && seen.Add(quest)) merged.Add(quest);
+            }
+
+            allQuests = merged;
+
+            LogDebug($"Quest asset'leri toplandı: {fromInspector} inspector + " +
+                     $"{merged.Count - fromInspector} Resources/{QUEST_RESOURCE_FOLDER} = {merged.Count}");
+        }
+
         private void BuildQuestDatabase()
         {
+            CollectQuestAssets();
+
             _questDatabase = new Dictionary<string, QuestData>();
 
             foreach (var quest in allQuests)
@@ -313,12 +357,12 @@ namespace NewCss.Quest
         {
             if (!IsServer) return;
 
-            LogDebug("New day - processing incomplete quests and assigning new ones");
+            LogDebug("New day - settling accepted quests and assigning new ones");
 
             try
             {
-                // Apply penalties for incomplete accepted quests
-                ApplyPenaltiesForIncompleteQuests();
+                // Kabul edilmiş görevleri kapat: tamamlananlar ödülünü, tamamlanamayanlar cezasını burada alır
+                SettleAcceptedQuestsForDayEnd();
 
                 // Assign new daily quests
                 AssignDailyQuests();
@@ -385,7 +429,7 @@ namespace NewCss.Quest
             if (!IsServer) return;
 
             // Q6 fix: yeni atama = yeni generation. Bu satırdan sonra gelen (eski generation'lı)
-            // Accept/Collect istekleri AcceptQuestInternal/CollectQuestRewardInternal tarafından reddedilir.
+            // Accept istekleri AcceptQuestInternal tarafından reddedilir.
             _questGeneration.Value++;
 
             // Clear existing quests
@@ -403,8 +447,10 @@ namespace NewCss.Quest
                 return;
             }
 
-            // Randomly select 3 quests
-            var selectedQuests = SelectRandomQuests(availableQuests, DAILY_QUEST_COUNT);
+            // D1 (Faz4 §B.9): her teklif FARKLI bir tier'dan gelsin - üst tier açılınca alt
+            // tier'ların havuzu seyrelip Hard ödülü hiç masaya gelmesin diye tier başına en az
+            // bir teklif garantiye alınır.
+            var selectedQuests = SelectDailyQuestsStratified(_currentQuestTier.Value);
 
             foreach (var quest in selectedQuests)
             {
@@ -415,10 +461,12 @@ namespace NewCss.Quest
                 int rewardSeed = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
                 quest.RerollSelection(rewardSeed);
 
-                var progress = new QuestProgress(quest.questId, quest.requirement.targetCount, rewardSeed);
+                int effectiveTarget = CalculateEffectiveTargetCount(quest);
+
+                var progress = new QuestProgress(quest.questId, effectiveTarget, rewardSeed);
                 _dailyQuests.Add(progress);
 
-                LogDebug($"Assigned quest: {quest.questTitle} (Tier: {quest.tier}) - Rewards: {quest.GetRewardsSummary()}, Penalties: {quest.GetPenaltiesSummary()}");
+                LogDebug($"Assigned quest: {quest.questTitle} (Tier: {quest.tier}) - Target: {effectiveTarget} (base {quest.requirement.targetCount}) - Rewards: {quest.GetRewardsSummary()}, Penalties: {quest.GetPenaltiesSummary()}");
             }
 
             NotifyQuestsAssignedClientRpc();
@@ -440,21 +488,98 @@ namespace NewCss.Quest
             return available;
         }
 
-        private List<QuestData> SelectRandomQuests(List<QuestData> available, int count)
+        /// <summary>
+        /// D1 (Faz4 §B.9): 3 günlük teklifin her biri FARKLI tier'dan seçilir (maxTier=Hard iken
+        /// 1 Easy + 1 Medium + 1 Hard). Henüz üst tier'lar kilitliyse (maxTier &lt; Hard) kalan
+        /// slotlar açık tier'ların havuzundan rastgele doldurulur - eski davranışla aynı sonuç.
+        /// </summary>
+        private List<QuestData> SelectDailyQuestsStratified(int maxTier)
         {
             var selected = new List<QuestData>();
-            var pool = new List<QuestData>(available);
+            var usedIds = new HashSet<string>();
 
-            int selectCount = Mathf.Min(count, pool.Count);
+            int highestTier = Mathf.Min(maxTier, (int)QuestTier.Hard);
 
-            for (int i = 0; i < selectCount; i++)
+            for (int t = 0; t <= highestTier; t++)
             {
-                int randomIndex = UnityEngine.Random.Range(0, pool.Count);
-                selected.Add(pool[randomIndex]);
-                pool.RemoveAt(randomIndex);
+                var tierPool = new List<QuestData>();
+                foreach (var quest in allQuests)
+                {
+                    if (quest != null && (int)quest.tier == t && !usedIds.Contains(quest.questId))
+                    {
+                        tierPool.Add(quest);
+                    }
+                }
+
+                if (tierPool.Count == 0) continue;
+
+                var pick = tierPool[UnityEngine.Random.Range(0, tierPool.Count)];
+                selected.Add(pick);
+                usedIds.Add(pick.questId);
+            }
+
+            if (selected.Count < DAILY_QUEST_COUNT)
+            {
+                var remainingPool = new List<QuestData>();
+                foreach (var quest in allQuests)
+                {
+                    if (quest != null && (int)quest.tier <= maxTier && !usedIds.Contains(quest.questId))
+                    {
+                        remainingPool.Add(quest);
+                    }
+                }
+
+                int need = DAILY_QUEST_COUNT - selected.Count;
+                for (int i = 0; i < need && remainingPool.Count > 0; i++)
+                {
+                    int randomIndex = UnityEngine.Random.Range(0, remainingPool.Count);
+                    var pick = remainingPool[randomIndex];
+                    selected.Add(pick);
+                    usedIds.Add(pick.questId);
+                    remainingPool.RemoveAt(randomIndex);
+                }
             }
 
             return selected;
+        }
+
+        /// <summary>
+        /// D2 (Faz4 §B.9): görev hedefini oyuncu sayısına göre ölçekler.
+        ///
+        /// ⚠️ ŞU ANDA HİÇBİR CANLI GÖREV TİPİNDE ETKİLİ DEĞİL — dört fiilin dördü de muaf.
+        /// Bilerek böyle: 2026-08-06 kontrol kapısı ÇİFTE ÖLÇEKLEME buldu. Mevcut 30 asset'in
+        /// targetCount'ları (Hard 12/5, Medium 7/3, Easy 4/2) 2026-07-29 economist turunda ZATEN
+        /// tüm P bantlarında ~%85 tamamlanma hedeflenerek kalibre edilmişti; D2 onların üstüne bir
+        /// kez daha çarpınca sim'de renksiz raf/paket tamamlanma olasılığı 3P 0.76→0.13,
+        /// 4P 0.87→0.13'e düşüyordu (bkz. .claude/agent-memory/economist/quest_d2_double_scaling_bug_2026-08-06.md).
+        ///
+        /// Muafiyet gerekçeleri — hepsinde arz zaten P ile doğal ölçekleniyor, hedefi de
+        /// ölçeklemek çift sayım olur:
+        ///   AnswerPhone       - telefon arzı P-flat.
+        ///   CompleteTruck     - tır kargosu P ile zaten küçülüyor.
+        ///   PlaceBoxOnShelf   - raflama hızı doğrudan oyuncu sayısıyla artıyor.
+        ///   PackToy           - paketleme masası çekişmesi P ile zaten dengeleniyor.
+        ///
+        /// Mekanizma, arzı P ile ölçeklenMEYEN gelecekteki görev tipleri için duruyor. Yeni bir
+        /// tip eklerken önce economist'e sor: arzı P'den bağımsızsa muafiyet listesine EKLEME.
+        ///
+        /// Ölçek vektörü DifficultyManager.UpgradeCostMultiplier ile aynı kaynaktan okunur
+        /// ({1.00, 2.00, 2.95, 3.70}) - aynı sabiti iki yerde tanımlamamak için.
+        /// </summary>
+        private int CalculateEffectiveTargetCount(QuestData quest)
+        {
+            int baseTarget = quest.requirement != null ? quest.requirement.targetCount : 1;
+
+            if (quest.questType == QuestType.AnswerPhone ||
+                quest.questType == QuestType.CompleteTruck ||
+                quest.questType == QuestType.PlaceBoxOnShelf ||
+                quest.questType == QuestType.PackToy)
+            {
+                return baseTarget;
+            }
+
+            float scale = DifficultyManager.Instance != null ? DifficultyManager.Instance.UpgradeCostMultiplier : 1f;
+            return Mathf.Max(1, Mathf.RoundToInt(baseTarget * scale));
         }
 
         [ClientRpc]
@@ -471,6 +596,14 @@ namespace NewCss.Quest
         {
             if (!IsServer) return;
 
+            // Renk filtreleri YALNIZ o rengi gerçekten taşıyan quest tipleri için anlamlıdır.
+            // Eskiden her iki filtre de tipe bakmadan körlemesine uygulanıyordu; `HandleTruckCompleted`
+            // sabit `Red` gönderdiği için renk-kilitli bir CompleteTruck quest'i SESSİZ SOFT-LOCK
+            // oluyordu: oyuncu kabul eder, kırmızı olmayan her tır ilerlemeyi atlar, gün sonu ceza yer.
+            // (2026-07-25 tespiti, plans/quest-redesign-2026-07-25.md §7.0-1.)
+            bool boxTypeApplies = questType == QuestType.PlaceBoxOnShelf || questType == QuestType.PackToy;
+            bool truckColorApplies = questType == QuestType.CompleteSpecificColorTruck;
+
             for (int i = 0; i < _dailyQuests.Count; i++)
             {
                 var progress = _dailyQuests[i];
@@ -485,10 +618,12 @@ namespace NewCss.Quest
                 if (questData.questType != questType) continue;
 
                 // Check box type if required (PlaceBoxOnShelf, PackToy için)
-                if (questData.requirement.requireSpecificBoxType && questData.requirement.requiredBoxType != boxType) continue;
+                if (boxTypeApplies && questData.requirement.requireSpecificBoxType
+                    && questData.requirement.requiredBoxType != boxType) continue;
 
                 // Check truck color if required (CompleteSpecificColorTruck için)
-                if (questData.requirement.requireSpecificTruckColor && questData.requirement.requiredTruckColor != boxType) continue;
+                if (truckColorApplies && questData.requirement.requireSpecificTruckColor
+                    && questData.requirement.requiredTruckColor != boxType) continue;
 
                 // Update progress
                 progress.currentProgress += amount;
@@ -524,23 +659,6 @@ namespace NewCss.Quest
 
             // Host durumu: server ve client aynı süreçte, istek sahibi host'un kendisi
             AcceptQuestInternal(slotIndex, NetworkManager.LocalClientId, knownGeneration);
-        }
-
-        /// <summary>
-        /// Görev ödülünü toplar
-        /// </summary>
-        public void CollectQuestReward(int slotIndex)
-        {
-            // Q6 fix: RPC gönderilirken o an bilinen (senkronize) generation da eklenir.
-            int knownGeneration = _questGeneration.Value;
-
-            if (!IsServer)
-            {
-                CollectQuestRewardServerRpc(slotIndex, knownGeneration);
-                return;
-            }
-
-            CollectQuestRewardInternal(slotIndex, knownGeneration);
         }
 
         /// <summary>
@@ -600,12 +718,6 @@ namespace NewCss.Quest
         {
             // SenderClientId ServerRpcParams'tan alınır - client tarafından spoof edilemez
             AcceptQuestInternal(slotIndex, rpcParams.Receive.SenderClientId, clientGeneration);
-        }
-
-        [ServerRpc(RequireOwnership = false)]
-        private void CollectQuestRewardServerRpc(int slotIndex, int clientGeneration)
-        {
-            CollectQuestRewardInternal(slotIndex, clientGeneration);
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -714,56 +826,63 @@ namespace NewCss.Quest
             return false;
         }
 
-        private void CollectQuestRewardInternal(int slotIndex, int clientGeneration)
+        /// <summary>
+        /// Gün 16 settlement (Faz4 §B.9): oyun kazanılarak biterken DayCycleManager.NextDay()
+        /// erken çıkış yapıp OnNewDay'i HİÇ tetiklemiyor (bkz. DayCycleManager.cs upcomingDay
+        /// &gt;= MAX_DAYS dalı) - yani normalde HandleNewDay üzerinden çalışan
+        /// SettleAcceptedQuestsForDayEnd() son günün kabul edilmiş görevleri için hiç çalışmıyordu.
+        /// Sonuç: son gün alınan görev cezasız/ödülsüz bedava bir opsiyon oluyordu. DayCycleManager
+        /// win dalından bu wrapper çağrılarak son günün kabul edilmiş görevleri de kapatılır.
+        /// Idempotent'tir: SettleAcceptedQuestsForDayEnd zaten Collected/Failed durumundaki
+        /// görevleri atlar, o yüzden yanlışlıkla iki kez çağrılsa bile ödül/ceza tekrarlanmaz.
+        /// </summary>
+        public void SettleAcceptedQuestsOnGameEnd()
         {
-            // Q6 fix: gün geçişi ile yarışan eski generation'lı istek - sessizce değil LOG'lu reddedilir.
-            if (clientGeneration != _questGeneration.Value)
-            {
-                LogDebug($"Collect reddedildi: generation uyuşmuyor (client={clientGeneration}, server={_questGeneration.Value}), slot={slotIndex}");
-                return;
-            }
+            if (!IsServer) return;
 
-            if (slotIndex < 0 || slotIndex >= _dailyQuests.Count) return;
-
-            var progress = _dailyQuests[slotIndex];
-
-            if (progress.status != QuestStatus.Completed) return;
-
-            // Get quest data (F9 fix: GetQuestData artık progress.rewardSeed ile deterministik reroll yapıyor)
-            QuestData questData = GetQuestData(slotIndex);
-            if (questData == null) return;
-
-            // Apply rewards - SelectedRewards kullanılıyor
-            ApplyRewards(questData.SelectedRewards);
-
-            // Update status
-            progress.status = QuestStatus.Collected;
-            _dailyQuests[slotIndex] = progress;
-
-            LogDebug($"Quest reward collected: {questData.questTitle}");
+            LogDebug("Game ending (day 16 reached) - settling final day's accepted quests");
+            SettleAcceptedQuestsForDayEnd();
         }
 
-        private void ApplyPenaltiesForIncompleteQuests()
+        /// <summary>
+        /// Gün sonunda kabul edilmiş görevleri kapatır: tamamlananlar ödülünü, tamamlanamayanlar
+        /// cezasını burada alır. Oyuncunun ayrıca "Topla" demesi GEREKMEZ - eskiden toplanmayan
+        /// tamamlanmış görevin ödülü gün dönümünde sessizce kayboluyordu, artık kaybolmuyor.
+        ///
+        /// ÇİFT-TETİKLEME GÜVENLİĞİ: host'ta DayCycleManager.OnNewDay iki kez tetiklenebiliyor
+        /// (bkz. EventEffectManager.cs:18). Burada tetikleyici durumdan (Completed/Active) ÇIKILDIĞI
+        /// için ikinci çağrı hiçbir görevi eşleştiremez, yani ödül/ceza iki kez uygulanmaz.
+        /// </summary>
+        private void SettleAcceptedQuestsForDayEnd()
         {
             for (int i = 0; i < _dailyQuests.Count; i++)
             {
                 var progress = _dailyQuests[i];
 
-                // Only apply penalty to accepted but not completed quests
-                if (progress.status != QuestStatus.Active) continue;
+                bool isCompleted = progress.status == QuestStatus.Completed;
+                bool isUnfinished = progress.status == QuestStatus.Active;
+
+                // Kabul edilmemiş (Available) ya da zaten kapatılmış (Collected/Failed) görevler atlanır
+                if (!isCompleted && !isUnfinished) continue;
 
                 // Get quest data (F9 fix: GetQuestData artık progress.rewardSeed ile deterministik reroll yapıyor)
                 QuestData questData = GetQuestData(i);
                 if (questData == null) continue;
 
-                // Apply penalties - SelectedPenalties kullanılıyor
-                ApplyPenalties(questData.SelectedPenalties);
+                if (isCompleted)
+                {
+                    ApplyRewards(questData.SelectedRewards);
+                    progress.status = QuestStatus.Collected;
+                    LogDebug($"Quest completed, reward applied: {questData.questTitle}");
+                }
+                else
+                {
+                    ApplyPenalties(questData.SelectedPenalties);
+                    progress.status = QuestStatus.Failed;
+                    LogDebug($"Quest failed, penalty applied: {questData.questTitle}");
+                }
 
-                // Update status
-                progress.status = QuestStatus.Failed;
                 _dailyQuests[i] = progress;
-
-                LogDebug($"Quest failed, penalty applied: {questData.questTitle}");
             }
         }
 

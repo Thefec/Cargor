@@ -27,9 +27,21 @@ namespace NewCss.Quest
         public BoxInfo.BoxType requiredTruckColor;
 
         /// <summary>
-        /// Gereksinim açıklamasını döndürür
+        /// Gereksinim açıklamasını döndürür (ham targetCount ile - Editor/debug amaçlı).
+        /// UI için <see cref="GetDescription(QuestType, int)"/> kullan; o metot oyuncu sayısına göre
+        /// ölçeklenmiş hedefi yazar (bkz. QuestManager.CalculateEffectiveTargetCount).
         /// </summary>
         public string GetDescription(QuestType questType)
+        {
+            return GetDescription(questType, targetCount);
+        }
+
+        /// <summary>
+        /// Gereksinim açıklamasını döndürür. `effectiveTargetCount`, kartta gösterilecek GERÇEK
+        /// hedeftir (QuestManager.CalculateEffectiveTargetCount ile ölçeklenmiş) - ham targetCount
+        /// değil. Tek doğruluk kaynağı QuestManager'daki hesaplama; burası sadece metne döker.
+        /// </summary>
+        public string GetDescription(QuestType questType, int effectiveTargetCount)
         {
             string boxColor = requireSpecificBoxType
                 ? GetColorName(requiredBoxType)
@@ -39,7 +51,7 @@ namespace NewCss.Quest
                 ? GetColorName(requiredTruckColor)
                 : null;
 
-            return GetLocalizedDescription(questType, boxColor, truckColor);
+            return GetLocalizedDescription(questType, boxColor, truckColor, effectiveTargetCount);
         }
 
         private string GetColorName(BoxInfo.BoxType boxType)
@@ -53,38 +65,38 @@ namespace NewCss.Quest
             };
         }
 
-        private string GetLocalizedDescription(QuestType questType, string boxColor, string truckColor)
+        private string GetLocalizedDescription(QuestType questType, string boxColor, string truckColor, int targetCountToShow)
         {
             return questType switch
             {
                 QuestType.CompleteMinigame =>
-                    $"{targetCount} kez mini oyunu tamamla",
+                    $"{targetCountToShow} kez mini oyunu tamamla",
 
                 QuestType.PlaceBoxOnShelf =>
                     string.IsNullOrEmpty(boxColor)
-                        ? $"Rafa {targetCount} adet kutu koy"
-                        : $"Rafa {targetCount} adet {boxColor} kutu koy",
+                        ? $"Rafa {targetCountToShow} adet kutu koy"
+                        : $"Rafa {targetCountToShow} adet {boxColor} kutu koy",
 
                 QuestType.CompleteTruck =>
-                    $"{targetCount} adet kamyon tamamla",
+                    $"{targetCountToShow} adet kamyon tamamla",
 
                 QuestType.CompleteSpecificColorTruck =>
                     string.IsNullOrEmpty(truckColor)
-                        ? $"{targetCount} adet kamyon tamamla"
-                        : $"{targetCount} adet {truckColor} kamyon tamamla",
+                        ? $"{targetCountToShow} adet kamyon tamamla"
+                        : $"{targetCountToShow} adet {truckColor} kamyon tamamla",
 
                 QuestType.PackToy =>
                     string.IsNullOrEmpty(boxColor)
-                        ? $"{targetCount} adet oyuncak paketle"
-                        : $"{targetCount} adet {boxColor} oyuncak paketle",
+                        ? $"{targetCountToShow} adet oyuncak paketle"
+                        : $"{targetCountToShow} adet {boxColor} oyuncak paketle",
 
                 QuestType.AnswerPhone =>
-                    $"{targetCount} kez telefona cevap ver",
+                    $"{targetCountToShow} kez telefona cevap ver",
 
                 QuestType.MakePackagingMistake =>
-                    $"{targetCount} kez hatalı paketleme yap",
+                    $"{targetCountToShow} kez hatalı paketleme yap",
 
-                _ => $"{targetCount}x"
+                _ => $"{targetCountToShow}x"
             };
         }
     }

@@ -34,6 +34,11 @@ namespace NewCss
 
         private AudioSource motorAudioSource;
 
+        [Header("Kilit (Truck upgrade)")]
+        [Tooltip("Kapalıyken kapı openTime gelse bile AÇILMAZ. Varsayılan KİLİTLİ — kilidi yalnızca " +
+                 "UpgradePanel.UpdateGarageDoorControllers, satın alınan Truck seviyesine göre açar.")]
+        [SerializeField] private bool isUnlocked = false;
+
         [Header("Debug")]
         [SerializeField] private bool isOpen = false;
         [SerializeField] private bool hasOpenedToday = false;
@@ -109,8 +114,10 @@ namespace NewCss
             // Mevcut saati al (DayCycleManager'dan)
             float currentGameTime = GetCurrentGameTime();
 
-            // Açılma zamanını kontrol et
-            if (!hasOpenedToday && currentGameTime >= openTime && currentDoorState == DoorState.Closed)
+            // Açılma zamanını kontrol et.
+            // isUnlocked guard'ı: satın alınmamış hangarın kapısı openTime gelse de açılmaz.
+            // Kilitliyken hasOpenedToday false kalır — kilit gün içinde açılırsa kapı o an açılır.
+            if (isUnlocked && !hasOpenedToday && currentGameTime >= openTime && currentDoorState == DoorState.Closed)
             {
                 StartOpenDoor();
                 hasOpenedToday = true;
@@ -351,8 +358,26 @@ namespace NewCss
             // if (doorAnimationDuration < 0.1f) doorAnimationDuration = 0.1f;
         }
 
+        /// <summary>
+        /// Kapının Truck upgrade kilidini açar/kapatır. Tek çağıran:
+        /// UpgradePanel.UpdateGarageDoorControllers. Kilitlenirken kapı açık/açılıyorsa
+        /// zorla kapatılır — böylece seviye düşen bir hangarın kapısı açık kalmaz.
+        /// </summary>
+        public void SetUnlocked(bool unlocked)
+        {
+            if (isUnlocked == unlocked) return;
+
+            isUnlocked = unlocked;
+
+            if (!unlocked && (currentDoorState == DoorState.Open || currentDoorState == DoorState.Opening))
+            {
+                ForceCloseDoor();
+            }
+        }
+
         // Public property'ler (diğer scriptler için)
         public bool IsOpen => isOpen;
+        public bool IsUnlocked => isUnlocked;
         public DoorState CurrentState => currentDoorState;
     }
 }

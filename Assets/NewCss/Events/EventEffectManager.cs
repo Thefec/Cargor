@@ -133,11 +133,11 @@ namespace NewCss
             {
                 rewardPerBoxMultiplier = 1f,
                 exitDelayMultiplier = 1f,
-                customerWaitTimeMultiplier = 1f,
+                customerWaitTimeMultiplier = 0.85f, // NEW: 15% less patience
                 playerMoveSpeedMultiplier = 1f,
                 playerSprintSpeedMultiplier = 1f,
                 staminaRegenRateMultiplier = 1f,
-                dailyCustomerMultiplier = 1.3f, // 30% more customers per day
+                dailyCustomerMultiplier = 1.35f, // 35% more customers per day
                 isGoldenBoxDay = false,
                 isVIPServiceDay = false,
                 upgradeCostMultiplier = 1f
@@ -161,11 +161,11 @@ namespace NewCss
             {
                 rewardPerBoxMultiplier = 1f,
                 exitDelayMultiplier = 1f,
-                customerWaitTimeMultiplier = 0.7f,
+                customerWaitTimeMultiplier = 0.6f,
                 playerMoveSpeedMultiplier = 1f,
                 playerSprintSpeedMultiplier = 1f,
                 staminaRegenRateMultiplier = 1f,
-                dailyCustomerMultiplier = 1f,
+                dailyCustomerMultiplier = 1.1f,
                 isGoldenBoxDay = false,
                 isVIPServiceDay = false,
                 upgradeCostMultiplier = 1f
@@ -179,7 +179,7 @@ namespace NewCss
                 playerMoveSpeedMultiplier = 1f,
                 playerSprintSpeedMultiplier = 1f,
                 staminaRegenRateMultiplier = 1f,
-                dailyCustomerMultiplier = 0.7f, // 30% fewer customers
+                dailyCustomerMultiplier = 1f, // §B.10: gizli 0.7 cezası KALDIRILDI
                 isGoldenBoxDay = false,
                 isVIPServiceDay = false,
                 upgradeCostMultiplier = 1f
@@ -187,7 +187,7 @@ namespace NewCss
 
             eventMultipliers["SLOW LOGISTICS"] = new EventMultipliers
             {
-                rewardPerBoxMultiplier = 1f,
+                rewardPerBoxMultiplier = 0.92f,
                 exitDelayMultiplier = 1.5f,
                 customerWaitTimeMultiplier = 1f,
                 playerMoveSpeedMultiplier = 1f,
@@ -201,7 +201,7 @@ namespace NewCss
 
             eventMultipliers["EXPRESS CARGO"] = new EventMultipliers
             {
-                rewardPerBoxMultiplier = 1f,
+                rewardPerBoxMultiplier = 1.08f,
                 exitDelayMultiplier = 0.7f,
                 customerWaitTimeMultiplier = 1f,
                 playerMoveSpeedMultiplier = 1f,
@@ -218,7 +218,7 @@ namespace NewCss
                 rewardPerBoxMultiplier = 1f,
                 exitDelayMultiplier = 1f,
                 customerWaitTimeMultiplier = 1f,
-                playerMoveSpeedMultiplier = 0.8f,
+                playerMoveSpeedMultiplier = 0.85f,
                 playerSprintSpeedMultiplier = 0.8f,
                 staminaRegenRateMultiplier = 1f,
                 dailyCustomerMultiplier = 1f,
@@ -229,13 +229,13 @@ namespace NewCss
 
             eventMultipliers["GOLDEN BOX DAY"] = new EventMultipliers
             {
-                rewardPerBoxMultiplier = 1.3f,
+                rewardPerBoxMultiplier = 1.15f,
                 exitDelayMultiplier = 0.8f,
                 customerWaitTimeMultiplier = 1f,
-                playerMoveSpeedMultiplier = 1.2f,
+                playerMoveSpeedMultiplier = 1.08f,
                 playerSprintSpeedMultiplier = 1.2f,
                 staminaRegenRateMultiplier = 0.8f,
-                dailyCustomerMultiplier = 1.2f, // 20% more customers
+                dailyCustomerMultiplier = 1.15f, // 15% more customers
                 isGoldenBoxDay = true,
                 isVIPServiceDay = false,
                 upgradeCostMultiplier = 1f
@@ -260,10 +260,10 @@ namespace NewCss
                 rewardPerBoxMultiplier = 1f,
                 exitDelayMultiplier = 1f,
                 customerWaitTimeMultiplier = 1f,
-                playerMoveSpeedMultiplier = 1f,
+                playerMoveSpeedMultiplier = 0.9f, // NEW
                 playerSprintSpeedMultiplier = 0.7f,
                 staminaRegenRateMultiplier = 0.6f,
-                dailyCustomerMultiplier = 0.8f, // 20% fewer customers
+                dailyCustomerMultiplier = 0.85f, // 15% fewer customers
                 isGoldenBoxDay = false,
                 isVIPServiceDay = false,
                 upgradeCostMultiplier = 1f
@@ -271,7 +271,7 @@ namespace NewCss
 
             eventMultipliers["VIP SERVICE"] = new EventMultipliers
             {
-                rewardPerBoxMultiplier = 1f,
+                rewardPerBoxMultiplier = 1.12f, // §B.10: RNG kaldırıldı, sabit +%12
                 exitDelayMultiplier = 1f,
                 customerWaitTimeMultiplier = 1f,
                 playerMoveSpeedMultiplier = 1f,
@@ -519,11 +519,6 @@ namespace NewCss
 
                 truck.rewardPerBox = (int)(currentValues.rewardPerBox * multipliers.rewardPerBoxMultiplier);
                 truck.exitDelay = currentValues.exitDelay * multipliers.exitDelayMultiplier;
-
-                if (IsServer && multipliers.isVIPServiceDay && Random.Range(0f, 1f) < 0.1f)
-                {
-                    truck.rewardPerBox = (int)(truck.rewardPerBox * 1.1f);
-                }
             }
 
             // Apply customer wait time changes
@@ -609,11 +604,6 @@ namespace NewCss
 
                 truck.rewardPerBox = (int)(currentValues.rewardPerBox * multipliers.rewardPerBoxMultiplier);
                 truck.exitDelay = currentValues.exitDelay * multipliers.exitDelayMultiplier;
-
-                if (IsServer && multipliers.isVIPServiceDay && Random.Range(0f, 1f) < 0.1f)
-                {
-                    truck.rewardPerBox = (int)(truck.rewardPerBox * 1.1f);
-                }
             }
 
             if (newObject.TryGetComponent<CustomerAI>(out CustomerAI customer))

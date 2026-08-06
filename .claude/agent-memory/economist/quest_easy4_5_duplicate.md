@@ -1,9 +1,13 @@
 ---
 name: quest_easy4_5_duplicate
-description: COZULDU 2026-07-20 - easy4/5 artik farkli icerik + farkli questId(4/5). Collision GITTI. Kalan kucuk: EV'leri (21.6/24) hala easy2(17.6) ustunde.
+description: COZULDU 2026-07-20 - easy4/5 artik farkli icerik + farkli questId(4/5). Collision GITTI. Kalan kucuk: EV'leri (21.6/24) hala easy2(17.6) ustunde. 2026-07-25 itibariyle TARIHSEL - easy4/5 tamamen siliniyor, bkz [[quest_tier_redesign_2026-07-25]].
 metadata:
   type: project
 ---
+
+**2026-07-25 not**: easy4/5 dahil TÜM easy1-5 assetleri siliniyor, yeni 3-tier tasarımla
+değiştiriliyor — bkz [[quest_tier_redesign_2026-07-25]]. Bu dosya artık sadece tarihsel/öğretici
+(questId benzersizliği QA riski hâlâ geçerli, yeni 15 asset oluşturulurken tekrar dikkat edilmeli).
 
 **✅ questId ÇAKIŞMASI + DUPLICATE İÇERİK ÇÖZÜLDÜ (2026-07-20 doğrulandı).** Artık:
 `easy4.asset` = "Mavi Raf Düzeni" (questId 4, questType 1 shelf, targetCount 4, mavi kutu),

@@ -601,10 +601,14 @@ namespace NewCss
                 // Yerleştirme animasyonunu tüm clientlarda tetikle
                 PlayPlacementAnimationClientRpc(networkObj.NetworkObjectId);
 
-                // Notify quest system if this is a box
+                // Notify quest system if this is a box.
+                // Her kutu YALNIZCA BİR KEZ sayılır: dedup olmadan "rafa koy → geri al →
+                // tekrar koy" döngüsü tek kutuyla en yüksek quest hedefini bile saniyeler
+                // içinde tamamlıyordu (raf tipi görevler = 30 assetin 13'ü).
                 var boxInfo = item.GetComponent<BoxInfo>();
-                if (boxInfo != null)
+                if (boxInfo != null && !boxInfo.countedForShelfQuest)
                 {
+                    boxInfo.countedForShelfQuest = true;
                     Quest.QuestTracker.NotifyBoxPlacedOnShelf(boxInfo.boxType);
                 }
             }

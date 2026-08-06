@@ -1,12 +1,21 @@
 ---
 name: env-no-python
-description: Bu makinede python3/python/py yok — sayısal hesaplar için Node.js kullan
+description: GUNCELLENDI 2026-07-25 - python3/python ARTIK PATH'te (kurulmus). Yine de bu projede Node.js tercih et, cunku tools/economy-sim/sim.js Node modulu ve cogu ekonomi hesabi ona require() ile entegre olmali.
 metadata:
   type: project
 ---
 
-Bu Windows makinesinde (Git Bash ortamı) `python3`, `python`, `py` komutlarının hiçbiri PATH'te bulunamadı (2026-07-07 tarihinde test edildi). Ancak `node` (v24.15.0) kurulu ve çalışıyor.
+**2026-07-25 güncelleme**: `python3`/`python` artık PATH'te bulundu (`/c/Users/cicek/AppData/Local/Python/bin/`)
+— 2026-07-07'deki "yok" tespiti artık GEÇERSİZ, makineye Python kurulmuş. Yine de bu projede
+**Node.js'i tercih etmeye devam et**: `tools/economy-sim/sim.js` (kaynak-doğrulanmış ekonomi
+sabitleri + `runSim`/`truckCapOptimistic`/`questDailyEV` vb. fonksiyonlar) bir Node modülü —
+`require('.../sim.js')` ile doğrudan import edip gerçek sim fonksiyonlarını kullanmak, aynı
+mantığı Python'da yeniden yazmaktan çok daha az hataya açık ve sim ile senkron kalmayı garantiler.
+Sim'e ihtiyaç duymayan yalın/bağımsız hesaplarda (örn. saf formül/oran hesabı) Python da kullanılabilir
+— CLAUDE.md'nin genel talimatı artık bu ortamda da uygulanabilir, sadece sim-entegreli hesaplarda
+Node zorunlu tercih.
 
-**Why:** CLAUDE.md/sistem talimatı hesaplamaları Python ile yapmamı söylüyor, ama bu ortamda Python interpreter'ı yok.
-
-**How to apply:** Bu projede ekonomi hesaplamaları için Python yerine **Node.js** kullan (`node -e "..."` veya scratchpad'e `.js` dosyası yazıp `node dosya.js` ile çalıştır). Prensip aynı: hesabı asla kafadan yapma, bir interpreter'a yaptır. Eğer ileride python kurulursa bu notu güncelle/sil.
+**Eski not (2026-07-07, artık geçersiz kısım):** O tarihte `python3`/`python`/`py` PATH'te
+bulunamamıştı, sadece `node` (v24.15.0) çalışıyordu — bu yüzden Node'a geçilmişti. Kök neden
+(python eksikliği) artık yok ama Node'da kalma kararı sim.js entegrasyonu nedeniyle geçerliliğini
+koruyor.

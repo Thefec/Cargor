@@ -159,21 +159,21 @@ namespace NewCss
 
         private readonly List<GameEvent> _allEvents = new()
         {
-            new GameEvent("BUSY DAY", "EventBusyDay", EventType.Negative, "CUSTOMER SPAWN RATE INCREASES BY 30%.", "EventBusyDayDesc"),
+            new GameEvent("BUSY DAY", "EventBusyDay", EventType.Negative, "CUSTOMER SPAWN RATE INCREASES BY 35%, PATIENCE DECREASES BY 15%.", "EventBusyDayDesc"),
             new GameEvent("DELIVERY BONUS", "EventDeliveryBonus", EventType.Positive, "EARN 20% MORE MONEY PER DELIVERY.", "EventDeliveryBonusDesc"),
-            new GameEvent("ANGRY CUSTOMERS", "EventAngryCustomers", EventType.Negative, "CUSTOMER PATIENCE DECREASES BY 30%.", "EventAngryCustomersDesc"),
+            new GameEvent("ANGRY CUSTOMERS", "EventAngryCustomers", EventType.Negative, "CUSTOMER PATIENCE DECREASES BY 40%, 10% MORE CUSTOMERS ARRIVE.", "EventAngryCustomersDesc"),
             new GameEvent("RELAXED DAY", "EventRelaxedDay", EventType.Positive, "CUSTOMER PATIENCE INCREASES BY 30%.", "EventRelaxedDayDesc"),
-            new GameEvent("SLOW LOGISTICS", "EventSlowLogistics", EventType.Negative, "TRUCKS LEAVE THE SCENE 50% SLOWER.", "EventSlowLogisticsDesc"),
-            new GameEvent("EXPRESS CARGO", "EventExpressCargo", EventType.Positive, "TRUCKS LEAVE THE SCENE 30% FASTER.", "EventExpressCargoDesc"),
-            new GameEvent("HEAVY BOXES", "EventHeavyBoxes", EventType.Negative, "OVERALL MOVEMENT SPEED SLOWS DOWN BY 20%.", "EventHeavyBoxesDesc"),
-            new GameEvent("GOLDEN BOX DAY", "EventGoldenBoxDay", EventType.Positive, "EACH CORRECT DELIVERED BOX EARNS EXTRA 30%. ALSO BRINGS 20% MORE CUSTOMERS, 20% FASTER TRUCK EXITS AND 20% FASTER MOVEMENT, BUT STAMINA REGENERATES 20% SLOWER.", "EventGoldenBoxDayDesc"),
+            new GameEvent("SLOW LOGISTICS", "EventSlowLogistics", EventType.Negative, "TRUCKS LEAVE THE SCENE 50% SLOWER AND EARN 8% LESS PER BOX.", "EventSlowLogisticsDesc"),
+            new GameEvent("EXPRESS CARGO", "EventExpressCargo", EventType.Positive, "TRUCKS LEAVE THE SCENE 30% FASTER AND EARN 8% MORE PER BOX.", "EventExpressCargoDesc"),
+            new GameEvent("HEAVY BOXES", "EventHeavyBoxes", EventType.Negative, "OVERALL MOVEMENT SPEED SLOWS DOWN BY 15%.", "EventHeavyBoxesDesc"),
+            new GameEvent("GOLDEN BOX DAY", "EventGoldenBoxDay", EventType.Positive, "EACH CORRECT DELIVERED BOX EARNS EXTRA 15%. ALSO BRINGS 15% MORE CUSTOMERS, 20% FASTER TRUCK EXITS AND 8% FASTER MOVEMENT, BUT STAMINA REGENERATES 20% SLOWER.", "EventGoldenBoxDayDesc"),
             new GameEvent("OPPORTUNITY DAY", "EventOpportunityDay", EventType.Positive, "UPGRADE COSTS DECREASE BY 20%.", "EventOpportunityDayDesc"),
             new GameEvent("FATIGUE PROBLEM", "EventFatigueProblem", EventType.Negative, "STAMINA REGENERATES 40% SLOWER AND SPRINT SPEED DECREASES BY 30%.", "EventFatigueProblemDesc"),
-            new GameEvent("VIP SERVICE", "EventVipService", EventType.Positive, "10% CHANCE BOXES ARE PERFECT AND EARN 10% MORE.", "EventVipServiceDesc"),
+            new GameEvent("VIP SERVICE", "EventVipService", EventType.Positive, "ALL BOXES EARN 12% MORE.", "EventVipServiceDesc"),
             new GameEvent("SURPRISE AUDIT", "EventSurpriseAudit", EventType.Negative, "ALL FAULTY OPERATIONS PENALIZE DOUBLE.", "EventSurpriseAuditDesc"),
-            new GameEvent("RAINY DAY", "EventRainyDay", EventType.Positive, "20% FEWER CUSTOMERS ARRIVE.", "EventRainyDayDesc"),
+            new GameEvent("RAINY DAY", "EventRainyDay", EventType.Negative, "20% FEWER CUSTOMERS ARRIVE.", "EventRainyDayDesc"),
             new GameEvent("MARKETING DAY", "EventMarketingDay", EventType.Negative, "20% MORE CUSTOMERS, BUT 30% LESS EARNINGS.", "EventMarketingDayDesc"),
-            new GameEvent("CUSTOMER SUPPORT", "EventCustomerSupport", EventType.Positive, "RECEPTION PHONE RINGS 50% MORE OFTEN.", "EventCustomerSupportDesc"),
+            new GameEvent("CUSTOMER SUPPORT", "EventCustomerSupport", EventType.Positive, "RECEPTION PHONE RINGS 100% MORE OFTEN.", "EventCustomerSupportDesc"),
             new GameEvent("FESTIVAL DAY", "EventFestivalDay", EventType.Positive, "RANDOM BONUS IS EARNED AT DAY START.", "EventFestivalDayDesc")
         };
 

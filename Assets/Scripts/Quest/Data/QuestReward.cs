@@ -18,6 +18,9 @@ namespace NewCss.Quest
         [Tooltip("Geçici buff için gün sayısı (sadece TempMoneyBoost, TempSpeedBoost için)")]
         public int durationDays;
 
+        [Tooltip("Doldurulursa kartta/loglarda otomatik metin yerine BU yazı görünür (QuestData'daki buff açıklaması buraya taşınır)")]
+        public string customDescription;
+
         /// <summary>
         /// Bu bir ceza mı?
         /// </summary>
@@ -28,12 +31,20 @@ namespace NewCss.Quest
         /// </summary>
         public string GetDescription()
         {
+            // Tasarımcının elle yazdığı metin her zaman önceliklidir (buff açıklamaları için)
+            if (!string.IsNullOrWhiteSpace(customDescription))
+            {
+                return customDescription;
+            }
+
             string prefix = amount >= 0 ? "+" : "";
 
             return rewardType switch
             {
                 RewardType.Money => $"{prefix}{amount:F0} Para",
-                RewardType.Prestige => $"{prefix}{amount:F0} Prestij",
+                // Prestij 0-100 skalasına küçültüldükten sonra ödüller ondalıklı (0.4 / 0.8 / 1.4 ...).
+                // F0 bunları "+0" / "+1" diye yuvarlıyordu; 0.# gerçek değeri gösterir, tam sayıda ondalık basmaz.
+                RewardType.Prestige => $"{prefix}{amount:0.#} Prestij",
                 RewardType.MaxStamina => $"{prefix}{amount:F0} Maks. Stamina",
                 RewardType.MoveSpeed => $"{prefix}{amount:F1} Hareket Hızı",
                 RewardType.CustomerWaitTime => $"{prefix}{amount:F0}s Müşteri Bekleme Süresi",

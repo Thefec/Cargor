@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 39e1f32c4d9e44f49962fe088f2a7653, type: 3}
+  m_Name: Q_Easy_5_PackToy
+  m_EditorClassIdentifier: Assembly-CSharp::NewCss.Quest.QuestData
+  questId: easy_pack_toy
+  questTitle: "Oyuncak\xE7\u0131"
+  questDescription: "2 oyuncak paketi haz\u0131rla"
+  icon: {fileID: 21300000, guid: a58673c3cc2efda45be97e906b0c9c3e, type: 3}
+  tier: 0
+  questType: 3
+  requirement:
+    targetCount: 2
+    requireSpecificBoxType: 1
+    requiredBoxType: 2
+    requireSpecificTruckColor: 0
+    requiredTruckColor: 0
+  moneyReward: 28
+  prestigeReward: 1.4
+  moneyPenalty: 15
+  prestigePenalty: 0.8
+  hasBuff: 0
+  buffType: 9
+  buffAmount: 0
+  buffDurationDays: 1
+  buffDescription: 
+  buffIsPenalty: 0

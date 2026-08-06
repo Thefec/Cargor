@@ -61,6 +61,37 @@ public class DraftPoolTests
     }
 
     [Test]
+    public void SelectOffer_OverlappingExclusionGroups_RespectsEveryGroup()
+    {
+        // Bir index BİRDEN FAZLA gruba üye olabilir: index 3 = `all_in`, hem {1,3} (gambler_case/all_in)
+        // hem {2,3} (leveraged_rent/all_in) grubunda. Regresyon: groupOf tek grup tuttuğu sürece ikinci
+        // atama ilkini eziyordu ve {1,3} dışlaması sessizce kayboluyordu.
+        var eligible = new List<bool> { true, true, true, true, true };
+        var groups = new List<IReadOnlyList<int>>
+        {
+            new List<int> { 1, 3 },
+            new List<int> { 2, 3 },
+        };
+
+        bool sawThree = false;
+        for (int seed = 0; seed < 500; seed++)
+        {
+            var offer = DraftPool.SelectOffer(eligible, 3, new Random(seed), groups);
+
+            Assert.IsFalse(offer.Contains(1) && offer.Contains(3),
+                $"seed {seed}: 1. grup ihlal edildi (1 ve 3 birlikte)");
+            Assert.IsFalse(offer.Contains(2) && offer.Contains(3),
+                $"seed {seed}: 2. grup ihlal edildi (2 ve 3 birlikte)");
+
+            CollectionAssert.AllItemsAreUnique(offer);
+            if (offer.Contains(3)) sawThree = true;
+        }
+
+        // Çok gruplu index tamamen elenmemeli — dışlama, yasaklama değil.
+        Assert.IsTrue(sawThree, "index 3 hiçbir teklifte çıkmadı; dışlama fazla agresif.");
+    }
+
+    [Test]
     public void SelectOffer_NullExclusionGroups_MatchesLegacyOverload()
     {
         // 4-parametreli overload, gruplar null iken 3-parametreliyle bit-bit aynı sonucu vermeli (determinizm)

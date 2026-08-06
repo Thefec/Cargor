@@ -1,9 +1,15 @@
 ---
 name: quest_reward_balance
-description: easy1/2/3 quest EV mekanigi (pool pick-2-of-n) + easy3 orantisizlik duzeltmesi (180 TL EV -> 30 TL EV) karari, 2026-07-18 ONAYLANDI ve UYGULANDI
+description: easy1/2/3 quest EV mekanigi (pool pick-2-of-n) + easy3 orantisizlik duzeltmesi (180 TL EV -> 30 TL EV) karari, 2026-07-18 ONAYLANDI ve UYGULANDI. 2026-07-25 itibariyle TARIHSEL - easy1-5 tamamen silinip [[quest_tier_redesign_2026-07-25]] ile degistiriliyor, EV FORMULU (pick-2-of-n) hala gecerli/tekrar kullanildi.
 metadata:
   type: project
 ---
+
+**2026-07-25 güncelleme**: easy1-5 assetleri kullanıcı tarafından silinip 3-tier (Easy/Medium/Hard,
+15 quest) yeni tasarımla değiştiriliyor — bkz [[quest_tier_redesign_2026-07-25]] (güncel/canlı tablo).
+Bu dosyadaki EV FORMÜLÜ (pick-2-of-5, `p=0.4`) ve "rasyonel oyuncu en iyi EV'liyi seçer" modelleme
+prensibi AYNEN yeni tasarımda tekrar kullanıldı — sadece aşağıdaki SAYILAR (easy1/2/3'ün spesifik
+TL değerleri) artık tarihsel referans, canlı değil.
 
 2026-07-18 kararı (`plans/economy-audit-2026-07-17.md` §4-5, dal `feature/economy-quest-balance`).
 `Assets/Resources/Quests/easy3.asset` DÜZENLENDİ (bu turda bizzat uygulandı, gameplay'e devredilmedi

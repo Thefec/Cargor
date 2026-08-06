@@ -10,7 +10,7 @@ namespace AtomicConsole.engine.editor
 public class AtomicSkinEditor : Editor
 {
     // Static dictionary to keep track of which skins are dirty
-    private static Dictionary<int, bool> dirtyStates = new Dictionary<int, bool>();
+    private static Dictionary<EntityId, bool> dirtyStates = new Dictionary<EntityId, bool>();
 
     //bool isDirty = false;
     bool showLogStyle;
@@ -31,7 +31,7 @@ public class AtomicSkinEditor : Editor
 
          // Determine if the current skin is dirty
         bool isDirty;
-        int instanceID = AtomicSkin.GetInstanceID();
+        EntityId instanceID = AtomicSkin.GetEntityId();
         if (!dirtyStates.TryGetValue(instanceID, out isDirty))
         {
             isDirty = false;  // Default state

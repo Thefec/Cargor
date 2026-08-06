@@ -184,6 +184,12 @@ namespace NewCss
         /// </summary>
         public int CurrentState => (int)_state;
 
+        /// <summary>
+        /// Kuyrukta bekliyor ve henüz bir servis istasyonuna atanmamış mı? (CustomerManager
+        /// AssignFreeServiceStations() bu bayrağı okuyarak boş istasyon ataması yapar.)
+        /// </summary>
+        public bool IsWaitingForService => _state == CustomerState.WaitingInQueue;
+
         #endregion
 
         #region Network Lifecycle
@@ -579,10 +585,10 @@ namespace NewCss
 
         private void ProcessWaitingInQueue()
         {
-            if (manager != null && manager.IsFirstInQueue(this))
-            {
-                BeginService();
-            }
+            // İstasyon ataması artık CustomerManager.Update() → AssignFreeServiceStations()
+            // tarafından merkezi ve kuyruk-sıralı olarak yapılıyor (2 paralel istasyon deseni,
+            // economy-rebuild FAZ4 §D#2). Bu metot yalnızca state dispatch'i için var; müşteri
+            // AssignServiceStation() çağrılana kadar bu state'te bekler.
         }
 
         private bool HasReachedDestination()
@@ -700,6 +706,20 @@ namespace NewCss
             SetState(CustomerState.Service);
         }
 
+        /// <summary>
+        /// CustomerManager (server-only, AssignFreeServiceStations) tarafından bu müşteriye boş
+        /// bir servis istasyonu bulunduğunda çağrılır: masayı atar ve servisi başlatır. 2 paralel
+        /// istasyon deseninin giriş noktası — dropOffTable sadece server-side kullanıldığından
+        /// (interaction akışı ServerRpc içinden yürür) client'a ayrıca senkron edilmesi gerekmez.
+        /// </summary>
+        public void AssignServiceStation(DisplayTable table)
+        {
+            if (!IsServer || table == null) return;
+
+            dropOffTable = table;
+            BeginService();
+        }
+
         [ServerRpc(RequireOwnership = false)]
         private void RequestInteractionServerRpc(ulong requestingPlayerId, ServerRpcParams rpcParams = default)
         {
@@ -782,12 +802,12 @@ namespace NewCss
 
             // Network sync
             _networkIsInInteraction.Value = true;
-            _networkWaitBarTime.Value = interactionTime;
+            _networkWaitBarTime.Value = EffectiveInteractionTime;
 
             // UI
             if (waitBar != null)
             {
-                waitBar.StartWaitBar(interactionTime);
+                waitBar.StartWaitBar(EffectiveInteractionTime);
             }
 
             // Ses
@@ -805,9 +825,14 @@ namespace NewCss
 
         private IEnumerator InteractionTimerCoroutine()
         {
-            yield return new WaitForSeconds(interactionTime);
+            yield return new WaitForSeconds(EffectiveInteractionTime);
             CompleteInteraction();
         }
+
+        // Sabirli Musteriler perki (patient_customers) FAZ4 tercih: CustomerManager.interactionTimeMultiplier
+        // ile olceklenir (default 1f). bkz. plans/economy-rebuild-2026-07-30-faz4-final.md SS B.7.
+        private float EffectiveInteractionTime =>
+            interactionTime * (manager != null ? manager.interactionTimeMultiplier : 1f);
 
         private void CompleteInteraction()
         {

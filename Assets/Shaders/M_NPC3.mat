@@ -102,20 +102,26 @@ Material:
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _BumpScale: 1
+    - _CelSmoothness: 1
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
     - _Cull: 2
     - _Cutoff: 0.5
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
+    - _DetailStrength: 0.3
     - _DstBlend: 0
     - _DstBlendAlpha: 0
+    - _EdgeSensitivity: 0.05
+    - _EdgeWidth: 0.002
     - _EnvironmentReflections: 1
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
+    - _LightSteps: 3
     - _Metallic: 0
     - _MidToneRange: 0.55
+    - _NormalInfluence: 0.6
     - _OcclusionStrength: 1
     - _OutlineWidth: 0.003
     - _Parallax: 0.005
@@ -125,6 +131,7 @@ Material:
     - _RimPower: 4
     - _RimStrength: 1
     - _RimThreshold: 0.65
+    - _ShadowSharpness: 0.5
     - _ShadowSmooth: 0.02
     - _ShadowThreshold: 0.35
     - _Smoothness: 0.5
@@ -136,12 +143,14 @@ Material:
     - _SrcBlendAlpha: 1
     - _StepCount: 2
     - _Surface: 0
+    - _UseEdgeLines: 0
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 0.5450981, g: 0.2705882, b: 0.07450981, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _EdgeColor: {r: 0, g: 0, b: 0, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _MidToneColor: {r: 0.9490196, g: 0.7490196, b: 0.54901963, a: 1}
     - _OutlineColor: {r: 0.050980393, g: 0.019607844, b: 0.019607844, a: 1}

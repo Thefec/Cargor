@@ -85,11 +85,12 @@ namespace NewCss
             ctx.Truck.bonusPerTier = 5f + 0.5f * level;
         }
 
-        // Prestij Ustası: customerServedPrestigeBonus 0.2 → 0.26 → 0.32 (her seviye +0.06). 100-skala rescale (×0.4).
+        // Prestij Ustası: customerServedPrestigeBonus 0.4 → 0.52 → 0.64 (her seviye +0.12). FAZ4: taban ×2
+        // olunca perkin göreli gücü düşmesin diye etki de ×2 (bkz. plans/economy-rebuild-2026-07-30-faz4-final.md §B.3).
         private static void ApplyPrestigeMaster(int level, PerkContext ctx)
         {
             if (ctx.Economy == null) return;
-            ctx.Economy.customerServedPrestigeBonus = 0.2f + 0.06f * level;
+            ctx.Economy.customerServedPrestigeBonus = 0.4f + 0.12f * level;
         }
 
         // Hızlı Hangar (relic): hangarStayDuration taban(Economy P-bazlı GetHangarStayDuration) × 1.30.
@@ -116,12 +117,15 @@ namespace NewCss
             ctx.PlayerMovement.moveSpeed = 5f * 1.15f;
         }
 
-        // Sabırlı Müşteriler (relic, DOKUNUŞ-5): CustomerManager.patienceMultiplier ile
-        // CustomerAI.InitializeServerState()'te min/maxWaitTime ölçeklenir (+%25).
+        // Sabırlı Müşteriler (relic, DOKUNUŞ-5, FAZ4 §B.7 tercih): sabır bağlayıcı kısıt değil,
+        // servis döngüsü süresini kısaltmak prestij darboğazına doğrudan dokunuyor. Eski
+        // patienceMultiplier (+%25 bekleme) yerine CustomerAI.interactionTime × 0.6 (2sn → 1.2sn),
+        // CustomerManager.interactionTimeMultiplier üzerinden (bkz.
+        // plans/economy-rebuild-2026-07-30-faz4-final.md §B.7).
         private static void ApplyPatientCustomers(int level, PerkContext ctx)
         {
             if (ctx.CustomerManager == null || level <= 0) return;
-            ctx.CustomerManager.patienceMultiplier = 1.25f;
+            ctx.CustomerManager.interactionTimeMultiplier = 0.6f;
         }
 
         // Uzun Kuyruk (relic): maxQueueSize 3(=DEFAULT_QUEUE_SIZE) → 5 (+2)
@@ -156,13 +160,16 @@ namespace NewCss
         // ─────────────────────────────────────────────────────────────
 
         // DOKUNUŞ-1: Kaldıraçlı Kira (relic). rentScaledMultiplier scaledRent'e uygulanır
-        // (GameEconomySettings.CalculateRent). Bedel: prestij
-        // cezası ×2 (taban -0.6 → -1.2, mutlak değer — idempotent; 100-skala rescale).
+        // (GameEconomySettings.CalculateRent). FAZ4 §B.7 upgrade turu — tercih edilen etki
+        // değişikliği uygulandı: bedel artık prestij cezası ×2 DEĞİL, gracePaymentPercent=0
+        // (grace period iptali, all_in ile aynı mekanik — ikisi EXCLUSIVE_EFFECT_GROUPS'ta
+        // aynı grupta). Kira indirimi 0.8 → 0.75 (kira %25 düşer). Eski
+        // customerLostPrestigePenalty = -0.8f satırı (FAZ4 §B.3 fallback) bu satırla kalkar.
         private static void ApplyLeveragedRent(int level, PerkContext ctx)
         {
             if (ctx.Economy == null || level <= 0) return;
-            ctx.Economy.rentScaledMultiplier = 0.8f;
-            ctx.Economy.customerLostPrestigePenalty = -1.2f;
+            ctx.Economy.rentScaledMultiplier = 0.75f;
+            ctx.Economy.gracePaymentPercent = 0f;
         }
 
         // DOKUNUŞ-2: Yüksek Volatilite (relic). Per-delivery ±%35 RNG, ort. +%15 — Truck.
@@ -191,12 +198,14 @@ namespace NewCss
         }
 
         // Mesai Saati (relic, NOT bölümü — soyut büyüklük, economist onayı gerekmez):
-        // günün gerçek süresini hafifçe uzatır. +20sn (~%12.5) gameplay tercihi; sapma sayılmaz
-        // çünkü fiyat (200 TL, T1) sabit ve büyüklük ekonomik bir değer değil.
+        // günün gerçek süresini hafifçe uzatır. Taban × 1.125 (~+%12.5, 200 → 225sn) gameplay
+        // tercihi; sapma sayılmaz çünkü fiyat (300 TL, T1) sabit ve büyüklük ekonomik bir değer
+        // değil. Çarpımsal + idempotent: DayCycleManager.SetOvertimeMultiplier level 0'da 1f'e
+        // döner, bu yüzden HandleUpgradeLevelsChanged tekrar tetiklense bile süre sürüklenmez.
         private static void ApplyOvertime(int level, PerkContext ctx)
         {
-            if (ctx.DayCycle == null || level <= 0) return;
-            ctx.DayCycle.realDurationInSeconds = 160f + 20f;
+            if (ctx.DayCycle == null) return;
+            ctx.DayCycle.SetOvertimeMultiplier(level > 0 ? 1.125f : 1f);
         }
 
         // DOKUNUŞ-4: Toplu Alım (relic). Bir sonraki draft teklifindeki rastgele 1 karta -%50

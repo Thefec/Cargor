@@ -37,14 +37,25 @@ namespace NewCss
 
         [Header("=== RING SETTINGS ===")]
         [SerializeField, Tooltip("Acilmayan cagrinin kendiliginden susmasine kadar gecen sure (saniye). Ceza yok.")]
-        private float ringDuration = 25f;
+        private float ringDuration = 15f;
 
         [Header("=== ECONOMY SETTINGS ===")]
         [SerializeField, Tooltip("Tüm ekonomi sabitlerini içeren ScriptableObject")]
         private GameEconomySettings economySettings;
 
         // Backward-compat fallback'ler — SO atanmamissa hard-coded degerler kullanilir
-        private float PhoneRingChancePerHour => economySettings != null ? economySettings.phoneRingChancePerHour : 0.30f;
+        // FAZ4 §B.6: çalma şansı artık P-bazlı. Oyuncu sayısı DifficultyManager'dan okunur; o yoksa
+        // 1P varsayılır (tek kişilik oturum en yaygın fallback, ayrıca en yüksek telefon gelir payı
+        // orada olduğu için güvenli tarafta kalır).
+        private float PhoneRingChancePerHour
+        {
+            get
+            {
+                if (economySettings == null) return 0.20f;
+                int playerCount = DifficultyManager.Instance != null ? DifficultyManager.Instance.PlayerCount : 1;
+                return economySettings.GetPhoneRingChancePerHour(playerCount);
+            }
+        }
         private float PhoneRingEventMultiplier => economySettings != null ? economySettings.phoneRingEventMultiplier : 1.5f;
         private float PhoneRingPerkBonus => economySettings != null ? economySettings.phoneRingPerkBonus : 0f;
         private int   CallMoneyReward => economySettings != null ? economySettings.callMoneyReward : 20;
@@ -338,6 +349,11 @@ namespace NewCss
 
             CallAnsweredClientRpc(clientId, moneyReward);
 
+            // Quest sistemi: AnswerPhone tetikleyicisi tanımlıydı ama hiçbir yerden çağrılmıyordu.
+            // Burası doğru tek nokta — ServerRpc (server-only) ve yukarıdaki `!_isRinging` guard'ı
+            // rakip oyuncuların aynı çağrıyı ikinci kez saymasını engelliyor.
+            Quest.QuestTracker.NotifyPhoneAnswered();
+
             LogDebug("Call answered by Client " + clientId + "! +" + moneyReward + " TL, +" + prestigeReward + " prestij");
         }
 
@@ -411,13 +427,10 @@ namespace NewCss
 
         #region Legacy Compatibility
 
-        /// <summary>
-        /// Legacy stub — DifficultyManager (oyuncu-sayisi-olcekli cagri sansi) hala bunu cagiriyor.
-        /// Reaktif V3'te calma sansi dogrudan GameEconomySettings.phoneRingChancePerHour +
-        /// EventEffectManager.IsEventActive("CUSTOMER SUPPORT") ile okunuyor; DifficultyManager'in
-        /// oyuncu-sayisi-olcekli degeri artik kullanilmiyor. Imza kirilmasin diye no-op birakildi.
-        /// </summary>
-        public void SetCallChance(float newChance) { }
+        // FAZ4 §B.6: `SetCallChance(float)` SILINDI. Bos govdeli stub'di ve DifficultyManager onu
+        // cagirip "Phone call chance set to: %X" diye sahte-yesil log basiyordu. P-olcekleme artik
+        // GameEconomySettings.phoneRingChanceByPlayerCount'ta ve PhoneRingChancePerHour uzerinden
+        // GERCEKTEN okunuyor; DifficultyManager tarafindaki cagri da kaldirildi.
 
         /// <summary>Legacy stub — cagiran yok, imza uyumlulugu icin korunuyor.</summary>
         public void SetCustomerSupportActive(bool active) { }
