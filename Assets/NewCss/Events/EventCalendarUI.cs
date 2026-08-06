@@ -92,13 +92,16 @@ namespace NewCss
         #region Serialized Fields - Calendar Cells
 
         [Header("=== CALENDAR CELLS ===")]
-        [SerializeField, Tooltip("Gün numarası text'leri (16 adet)")]
-        public List<TMP_Text> dayNumberTexts = new();
+        // `dayNumberTexts` KALDIRILDI: gün numaraları (1-16) artık sahnede duvar takviminin
+        // üstüne sabit yazılı, kodun onları runtime'da doldurmasına gerek yok.
 
-        [SerializeField, Tooltip("Event spawn noktaları (16 adet)")]
+        [SerializeField, Tooltip("Her günün event yazısının doğacağı nokta (16 adet, index 0 = gün 1). " +
+                                 "Genelde o güne ait gün-numarası TextMesh'inin Transform'u atanır — " +
+                                 "event yazısı bunun ÇOCUĞU olarak, bunun konumunda doğar.")]
         public Transform[] eventSpawnPoints = new Transform[CALENDAR_CELL_COUNT];
 
-        [SerializeField, Tooltip("Gün arka plan imajları (16 adet)")]
+        [SerializeField, Tooltip("Gün arka plan imajları (16 adet, index 0 = gün 1). " +
+                                 "Opsiyonel — atanmayan slotlar bugünü vurgulamaz, başka bir şey bozulmaz.")]
         public Image[] dayBackgrounds = new Image[CALENDAR_CELL_COUNT];
 
         #endregion
@@ -235,6 +238,58 @@ namespace NewCss
             InitializeAnimator();
             InitializeExitButton();
             CacheAnimationDurations();
+            ValidateCellWiring();
+        }
+
+#if UNITY_EDITOR
+        /// <summary>
+        /// Dizileri Inspector'da her zaman tam 16 slot olarak tutar (index 0 = gün 1).
+        /// Elle boyut değiştirilirse mevcut atamalar korunarak 16'ya geri çekilir.
+        /// </summary>
+        private void OnValidate()
+        {
+            ResizePreservingAssignments(ref eventSpawnPoints);
+            ResizePreservingAssignments(ref dayBackgrounds);
+        }
+
+        private static void ResizePreservingAssignments<T>(ref T[] array) where T : class
+        {
+            if (array != null && array.Length == CALENDAR_CELL_COUNT) return;
+
+            var resized = new T[CALENDAR_CELL_COUNT];
+            if (array != null)
+            {
+                int copyCount = Mathf.Min(array.Length, CALENDAR_CELL_COUNT);
+                for (int i = 0; i < copyCount; i++) resized[i] = array[i];
+            }
+            array = resized;
+        }
+#endif
+
+        /// <summary>
+        /// Atanmamış takvim slotlarını TEK bir uyarıda bildirir. Bu hata sınıfı sessizdi:
+        /// eventSpawnPoints'te boş bırakılan gün, o gün event olsa bile ekranda hiçbir şey
+        /// göstermiyor ve hiçbir log basmıyordu.
+        /// </summary>
+        private void ValidateCellWiring()
+        {
+            if (eventSpawnPoints == null || eventSpawnPoints.Length == 0)
+            {
+                LogWarning("eventSpawnPoints hiç atanmamış — takvimde hiçbir event yazısı görünmeyecek.");
+                return;
+            }
+
+            var missing = new List<int>();
+            for (int i = 0; i < eventSpawnPoints.Length && i < CALENDAR_CELL_COUNT; i++)
+            {
+                if (eventSpawnPoints[i] == null) missing.Add(startDay + i);
+            }
+
+            if (missing.Count > 0)
+            {
+                LogWarning($"eventSpawnPoints eksik — şu günlerde event yazısı GÖRÜNMEYECEK: " +
+                           $"{string.Join(", ", missing)}. (Inspector: EventCalendarUI > Calendar Cells)");
+            }
         }
 
         private void Start()
@@ -755,22 +810,16 @@ namespace NewCss
 
         private void PopulateCalendarCells()
         {
-            int cellCount = Mathf.Min(dayNumberTexts.Count, eventSpawnPoints.Length);
+            if (eventSpawnPoints == null) return;
+
+            // Döngüyü YALNIZ eventSpawnPoints sürer. Eskiden
+            // Mathf.Min(dayNumberTexts.Count, eventSpawnPoints.Length) idi; gün numarası
+            // listesi boşalınca cellCount 0 oluyor ve HİÇBİR event yazısı doğmuyordu.
+            int cellCount = Mathf.Min(eventSpawnPoints.Length, CALENDAR_CELL_COUNT);
 
             for (int i = 0; i < cellCount; i++)
             {
-                int day = startDay + i;
-
-                UpdateDayNumberText(i, day);
-                TrySpawnEventText(i, day);
-            }
-        }
-
-        private void UpdateDayNumberText(int index, int day)
-        {
-            if (dayNumberTexts[index] != null)
-            {
-                dayNumberTexts[index].text = day.ToString();
+                TrySpawnEventText(i, startDay + i);
             }
         }
 
