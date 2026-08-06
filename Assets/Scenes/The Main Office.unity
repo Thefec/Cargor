@@ -4726,7 +4726,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  startingMoney: 50000
+  startingMoney: 500
 --- !u!114 &146927893
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10795,7 +10795,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NewCss.Quest.QuestSlotUI
   titleText: {fileID: 1881171913}
   descriptionText: {fileID: 2036503324}
-  progressText: {fileID: 0}
   iconImage: {fileID: 856172433}
   rewardMoneyText: {fileID: 133104338}
   rewardMoneyGroup: {fileID: 1687005393}
@@ -10822,9 +10821,6 @@ MonoBehaviour:
   hardColor: {r: 1, g: 0, b: 0, a: 1}
   completedIndicator: {fileID: 0}
   activeIndicator: {fileID: 0}
-  completedColor: {r: 0.13777146, g: 0.6792453, b: 0.13777149, a: 1}
-  failedColor: {r: 0.7735849, g: 0.15690638, b: 0.15690638, a: 1}
-  normalProgressColor: {r: 1, g: 1, b: 1, a: 1}
   rewardsText: {fileID: 0}
 --- !u!114 &310987045
 MonoBehaviour:
@@ -14172,8 +14168,8 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   phoneStartHour: 8
   phoneEndHour: 18
-  ringDuration: 25
-  economySettings: {fileID: 0}
+  ringDuration: 15
+  economySettings: {fileID: 11400000, guid: 415dc128c56df644f9af98009bf37743, type: 2}
   ringingSound: {fileID: 0}
   successCallSound: {fileID: 0}
   phoneWaitBar: {fileID: 424799593}
@@ -21188,12 +21184,12 @@ MonoBehaviour:
     StaminaValue: 1
     TruckValue: 10
     WaitTime: 5
-    maxLevel: 9
-    baseCost: 50
-    costStep: 10
+    maxLevel: 2
+    baseCost: 60
+    costStep: 30
     kind: 0
     tier: 0
-    effectId: 
+    effectId:
     requiresQuestSystem: 0
     disabledInDraft: 0
     icon: {fileID: 21300000, guid: 620914d8c370cc241a7374161d5821b8, type: 3}
@@ -21218,12 +21214,12 @@ MonoBehaviour:
     StaminaValue: 1
     TruckValue: 10
     WaitTime: 5
-    maxLevel: 3
-    baseCost: 100
+    maxLevel: 1
+    baseCost: 150
     costStep: 150
     kind: 0
     tier: 0
-    effectId: 
+    effectId:
     requiresQuestSystem: 0
     disabledInDraft: 0
     icon: {fileID: 21300000, guid: c45ee5b495c91d6469e46a76c2208cc0, type: 3}
@@ -21306,12 +21302,12 @@ MonoBehaviour:
     StaminaValue: 1
     TruckValue: 10
     WaitTime: 5
-    maxLevel: 2
+    maxLevel: 1
     baseCost: 200
     costStep: 100
     kind: 0
     tier: 0
-    effectId: 
+    effectId:
     requiresQuestSystem: 0
     disabledInDraft: 0
     icon: {fileID: 21300000, guid: 48677efeb202c34428ff90f154e99b98, type: 3}
@@ -21414,7 +21410,7 @@ MonoBehaviour:
     TruckValue: 10
     WaitTime: 5
     maxLevel: 2
-    baseCost: 510
+    baseCost: 130
     costStep: 15
     kind: 1
     tier: 2
@@ -21434,8 +21430,8 @@ MonoBehaviour:
     TruckValue: 10
     WaitTime: 5
     maxLevel: 2
-    baseCost: 280
-    costStep: 100
+    baseCost: 175
+    costStep: 25
     kind: 1
     tier: 1
     effectId: prestige_master
@@ -21454,7 +21450,7 @@ MonoBehaviour:
     TruckValue: 10
     WaitTime: 5
     maxLevel: 1
-    baseCost: 280
+    baseCost: 120
     costStep: 0
     kind: 1
     tier: 1
@@ -21473,7 +21469,7 @@ MonoBehaviour:
     TruckValue: 10
     WaitTime: 5
     maxLevel: 1
-    baseCost: 160
+    baseCost: 100
     costStep: 0
     kind: 1
     tier: 0
@@ -21511,7 +21507,7 @@ MonoBehaviour:
     TruckValue: 10
     WaitTime: 5
     maxLevel: 1
-    baseCost: 220
+    baseCost: 120
     costStep: 0
     kind: 1
     tier: 0
@@ -21536,7 +21532,7 @@ MonoBehaviour:
     tier: 0
     effectId: long_queue
     requiresQuestSystem: 0
-    disabledInDraft: 0
+    disabledInDraft: 1
     icon: {fileID: 21300000, guid: aaab73675ed6b78448ba0e40b25e0ebf, type: 3}
     levelObjects: []
     garageDoorControllers: []
@@ -21550,7 +21546,7 @@ MonoBehaviour:
     TruckValue: 10
     WaitTime: 5
     maxLevel: 1
-    baseCost: 400
+    baseCost: 350
     costStep: 0
     kind: 1
     tier: 1
@@ -21610,7 +21606,7 @@ MonoBehaviour:
     TruckValue: 10
     WaitTime: 5
     maxLevel: 1
-    baseCost: 350
+    baseCost: 300
     costStep: 0
     kind: 1
     tier: 2
@@ -21630,7 +21626,7 @@ MonoBehaviour:
     TruckValue: 10
     WaitTime: 5
     maxLevel: 1
-    baseCost: 450
+    baseCost: 320
     costStep: 0
     kind: 1
     tier: 1
@@ -21653,7 +21649,7 @@ MonoBehaviour:
     baseCost: 250
     costStep: 0
     kind: 1
-    tier: 1
+    tier: 0
     effectId: emergency_brake
     requiresQuestSystem: 0
     disabledInDraft: 0
@@ -21670,7 +21666,7 @@ MonoBehaviour:
     TruckValue: 10
     WaitTime: 5
     maxLevel: 1
-    baseCost: 800
+    baseCost: 320
     costStep: 0
     kind: 1
     tier: 2
@@ -21689,7 +21685,7 @@ MonoBehaviour:
     TruckValue: 10
     WaitTime: 5
     maxLevel: 1
-    baseCost: 150
+    baseCost: 80
     costStep: 0
     kind: 1
     tier: 0
@@ -25233,7 +25229,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  startingPrestige: 6
+  startingPrestige: 12
   maxPrestige: 100
   prestigeText: {fileID: 731110736}
   prestigePerCustomer: 4
@@ -42918,7 +42914,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   directionalLight: {fileID: 1265627420}
   startIntensity: 0.3
-  endIntensity: 0.03
+  endIntensity: 0
   sunriseRotationX: 20
   noonRotationX: 80
   sunsetRotationX: 180
@@ -47981,7 +47977,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NewCss.Quest.QuestSlotUI
   titleText: {fileID: 1491751272}
   descriptionText: {fileID: 228964706}
-  progressText: {fileID: 0}
   iconImage: {fileID: 2137282349}
   rewardMoneyText: {fileID: 1923346579}
   rewardMoneyGroup: {fileID: 1388378945}
@@ -48008,9 +48003,6 @@ MonoBehaviour:
   hardColor: {r: 1, g: 0, b: 0, a: 1}
   completedIndicator: {fileID: 0}
   activeIndicator: {fileID: 0}
-  completedColor: {r: 0.13777146, g: 0.6792453, b: 0.13777149, a: 1}
-  failedColor: {r: 0.7735849, g: 0.15690638, b: 0.15690638, a: 1}
-  normalProgressColor: {r: 1, g: 1, b: 1, a: 1}
   rewardsText: {fileID: 0}
 --- !u!114 &1383299263
 MonoBehaviour:
@@ -53099,7 +53091,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NewCss.Quest.QuestSlotUI
   titleText: {fileID: 1546512703}
   descriptionText: {fileID: 592037476}
-  progressText: {fileID: 0}
   iconImage: {fileID: 961502605}
   rewardMoneyText: {fileID: 1870656925}
   rewardMoneyGroup: {fileID: 597397526}
@@ -53126,9 +53117,6 @@ MonoBehaviour:
   hardColor: {r: 1, g: 0, b: 0, a: 1}
   completedIndicator: {fileID: 0}
   activeIndicator: {fileID: 0}
-  completedColor: {r: 0.13777146, g: 0.6792453, b: 0.13777149, a: 1}
-  failedColor: {r: 0.7735849, g: 0.15690638, b: 0.15690638, a: 1}
-  normalProgressColor: {r: 1, g: 1, b: 1, a: 1}
   rewardsText: {fileID: 0}
 --- !u!114 &1532142340
 MonoBehaviour:
