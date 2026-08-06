@@ -35,9 +35,8 @@ namespace NewCss
         [SerializeField, Tooltip("Starting money for single player")]
         private int baseStartingMoney = 500;
 
-        [SerializeField, Tooltip("Phone call chance for single player")]
-        [Range(0f, 1f)]
-        private float basePhoneCallChance = 0.3f;
+        // `basePhoneCallChance` KALDIRILDI (FAZ4 §B.6) — telefon şansının P-ölçeklemesi
+        // GameEconomySettings.phoneRingChanceByPlayerCount'a taşındı, bu alan hiçbir şeyi beslemiyordu.
 
         [SerializeField, Tooltip("Customer minimum patience time for single player (seconds)")]
         private float baseMinPatience = 35f;
@@ -60,9 +59,7 @@ namespace NewCss
         [Range(0.5f, 1.5f)]
         private float moneyMultiplierPerPlayer = 1.2f;
 
-        [SerializeField, Tooltip("Additional phone chance per player")]
-        [Range(0f, 0.3f)]
-        private float phoneChancePerPlayer = 0.1f;
+        // `phoneChancePerPlayer` KALDIRILDI (FAZ4 §B.6) — bkz. basePhoneCallChance notu.
 
         [SerializeField, Tooltip("Patience reduction per player (seconds)")]
         private float patienceReductionPerPlayer = 5f;
@@ -71,9 +68,8 @@ namespace NewCss
         [Range(1f, 2f)]
         private float staminaDrainMultiplierPerPlayer = 1.1f;
 
-        [SerializeField, Tooltip("Upgrade cost multiplier per player")]
-        [Range(1f, 2f)]
-        private float upgradeCostMultiplierPerPlayer = 1.15f;
+        [SerializeField, Tooltip("Oyuncu sayısına göre upgrade/perk/reroll maliyet çarpanı (1P,2P,3P,4P). index = oyuncuSayısı-1. FAZ4: gelir ölçeğine kalibre dizi (bkz. plans/economy-rebuild-2026-07-30-faz4-final.md §B.8) — geometrik tek skaler 2P/3P'de %19-25 sapıyordu, bu yüzden dizi seçildi.")]
+        private float[] upgradeCostMultiplierByPlayerCount = { 1.00f, 2.00f, 2.95f, 3.70f };
 
         #endregion
 
@@ -129,10 +125,8 @@ namespace NewCss
         /// </summary>
         public int ScaledStartingMoney => CalculateScaledStartingMoney();
 
-        /// <summary>
-        /// Ölçeklenmiş telefon çalma olasılığı
-        /// </summary>
-        public float ScaledPhoneCallChance => CalculateScaledPhoneCallChance();
+        // `ScaledPhoneCallChance` KALDIRILDI (FAZ4 §B.6) — tüketicisi yoktu.
+        // Gerçek kaynak: GameEconomySettings.GetPhoneRingChancePerHour(playerCount).
 
         /// <summary>
         /// Ölçeklenmiş müşteri minimum bekleme süresi
@@ -313,13 +307,6 @@ namespace NewCss
             return Mathf.RoundToInt(baseStartingMoney * multiplier);
         }
 
-        private float CalculateScaledPhoneCallChance()
-        {
-            int additionalPlayers = _cachedPlayerCount - 1;
-            float scaledChance = basePhoneCallChance + (additionalPlayers * phoneChancePerPlayer);
-            return Mathf.Clamp01(scaledChance);
-        }
-
         private float CalculateScaledMinPatience()
         {
             int additionalPlayers = _cachedPlayerCount - 1;
@@ -345,12 +332,22 @@ namespace NewCss
             return baseStaminaRegenRate / drainMultiplier;
         }
 
+        /// <summary>Dizi boş/null olursa (kırık config) eski compounding davranışına düşen legacy fallback.</summary>
+        private const float LEGACY_UPGRADE_COST_MULTIPLIER_PER_PLAYER = 1.15f;
+
         private float CalculateUpgradeCostMultiplier()
         {
+            if (upgradeCostMultiplierByPlayerCount != null && upgradeCostMultiplierByPlayerCount.Length > 0)
+            {
+                int index = Mathf.Clamp(_cachedPlayerCount - 1, 0, upgradeCostMultiplierByPlayerCount.Length - 1);
+                return upgradeCostMultiplierByPlayerCount[index];
+            }
+
+            // Legacy fallback: dizi tanımlanmamışsa eski per-additional-player compounding davranışı.
             float multiplier = 1f;
             for (int i = 1; i < _cachedPlayerCount; i++)
             {
-                multiplier *= upgradeCostMultiplierPerPlayer;
+                multiplier *= LEGACY_UPGRADE_COST_MULTIPLIER_PER_PLAYER;
             }
             return multiplier;
         }
@@ -414,7 +411,9 @@ namespace NewCss
             // Apply settings even if not all systems are ready (timeout)
             ApplyCustomerSettings();
             ApplyMoneySettings();
-            ApplyPhoneSettings();
+            // ApplyPhoneSettings() KALDIRILDI (FAZ4 §B.6): PhoneCallManager.SetCallChance boş gövdeli
+            // stub'dı, yani bu çağrı hiçbir şey yapmadan "chance set to %X" logu basıyordu.
+            // Telefonun P-ölçeklemesi artık GameEconomySettings.phoneRingChanceByPlayerCount'ta.
             ApplyStaminaSettings();
 
             LogDebug($"Applied difficulty settings for {_cachedPlayerCount} players (waited {elapsedTime:F2}s)");
@@ -468,16 +467,6 @@ namespace NewCss
                 {
                     LogDebug($"Game already started - skipped SetMoney, updated startingMoney field to: {ScaledStartingMoney}");
                 }
-            }
-        }
-
-        private void ApplyPhoneSettings()
-        {
-            var phoneManager = PhoneCallManager.Instance;
-            if (phoneManager != null)
-            {
-                phoneManager.SetCallChance(ScaledPhoneCallChance);
-                LogDebug($"Phone call chance set to: {ScaledPhoneCallChance:P0}");
             }
         }
 
@@ -557,7 +546,8 @@ namespace NewCss
                    $"Difficulty: {DifficultyName}\n" +
                    $"Customers/Day: {ScaledCustomerCount}\n" +
                    $"Starting Money: {ScaledStartingMoney}\n" +
-                   $"Phone Chance: {ScaledPhoneCallChance:P0}\n" +
+                   // "Phone Chance" satırı KALDIRILDI (FAZ4 §B.6): gösterdiği değer hiçbir sisteme
+                   // bağlı değildi. Gerçek kaynak: GameEconomySettings.phoneRingChanceByPlayerCount.
                    $"Patience: {ScaledMinPatience:F1}s - {ScaledMaxPatience:F1}s\n" +
                    $"Upgrade Cost: x{UpgradeCostMultiplier:F2}";
         }

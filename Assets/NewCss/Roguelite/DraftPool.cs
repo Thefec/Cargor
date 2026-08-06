@@ -49,19 +49,31 @@ namespace NewCss
             for (int i = 0; i < eligibility.Count; i++)
                 if (eligibility[i]) pool.Add(i);
 
-            Dictionary<int, int> groupOf = null;
+            // Bir index BİRDEN FAZLA dışlama grubuna üye olabilir (örn. `all_in` hem
+            // gambler_case/all_in hem leveraged_rent/all_in grubunda). Tek grup tutan
+            // Dictionary<int,int> ikinci atamada ilkini sessizce eziyordu ve o dışlama
+            // tamamen kayboluyordu — bu yüzden index başına grup LİSTESİ tutulur.
+            Dictionary<int, List<int>> groupsOf = null;
             if (exclusionGroups != null)
             {
                 for (int g = 0; g < exclusionGroups.Count; g++)
                 {
                     var group = exclusionGroups[g];
                     if (group == null || group.Count < 2) continue;
-                    groupOf ??= new Dictionary<int, int>();
-                    foreach (var idx in group) groupOf[idx] = g;
+                    groupsOf ??= new Dictionary<int, List<int>>();
+                    foreach (var idx in group)
+                    {
+                        if (!groupsOf.TryGetValue(idx, out var list))
+                        {
+                            list = new List<int>();
+                            groupsOf[idx] = list;
+                        }
+                        list.Add(g);
+                    }
                 }
             }
 
-            var usedGroups = groupOf != null ? new HashSet<int>() : null;
+            var usedGroups = groupsOf != null ? new HashSet<int>() : null;
             var result = new List<int>();
 
             for (int i = 0; i < pool.Count && result.Count < count; i++)
@@ -70,8 +82,19 @@ namespace NewCss
                 (pool[i], pool[j]) = (pool[j], pool[i]);
 
                 int candidate = pool[i];
-                if (groupOf != null && groupOf.TryGetValue(candidate, out int gid) && !usedGroups.Add(gid))
-                    continue; // grubun bir üyesi zaten seçildi, bu adayı atla
+                if (groupsOf != null && groupsOf.TryGetValue(candidate, out var gids))
+                {
+                    // Üye olduğu gruplardan HERHANGİ biri kullanılmışsa aday elenir.
+                    bool blocked = false;
+                    for (int k = 0; k < gids.Count; k++)
+                    {
+                        if (usedGroups.Contains(gids[k])) { blocked = true; break; }
+                    }
+                    if (blocked) continue;
+
+                    // Seçildi → üye olduğu TÜM grupları kapat.
+                    for (int k = 0; k < gids.Count; k++) usedGroups.Add(gids[k]);
+                }
 
                 result.Add(candidate);
             }

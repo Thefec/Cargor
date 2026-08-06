@@ -802,12 +802,12 @@ namespace NewCss
 
             // Network sync
             _networkIsInInteraction.Value = true;
-            _networkWaitBarTime.Value = interactionTime;
+            _networkWaitBarTime.Value = EffectiveInteractionTime;
 
             // UI
             if (waitBar != null)
             {
-                waitBar.StartWaitBar(interactionTime);
+                waitBar.StartWaitBar(EffectiveInteractionTime);
             }
 
             // Ses
@@ -825,9 +825,14 @@ namespace NewCss
 
         private IEnumerator InteractionTimerCoroutine()
         {
-            yield return new WaitForSeconds(interactionTime);
+            yield return new WaitForSeconds(EffectiveInteractionTime);
             CompleteInteraction();
         }
+
+        // Sabirli Musteriler perki (patient_customers) FAZ4 tercih: CustomerManager.interactionTimeMultiplier
+        // ile olceklenir (default 1f). bkz. plans/economy-rebuild-2026-07-30-faz4-final.md SS B.7.
+        private float EffectiveInteractionTime =>
+            interactionTime * (manager != null ? manager.interactionTimeMultiplier : 1f);
 
         private void CompleteInteraction()
         {

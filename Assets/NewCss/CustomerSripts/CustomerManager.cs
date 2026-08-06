@@ -59,6 +59,9 @@ namespace NewCss
         [Tooltip("Sabirli Musteriler perki: min/maxWaitTime carpani (CustomerAI.InitializeServerState'te okunur). Perk yoksa 1f.")]
         public float patienceMultiplier = 1f;
 
+        [Tooltip("Sabirli Musteriler perki FAZ4 tercih: CustomerAI.interactionTime carpani (2sn -> 1.2sn). Perk yoksa 1f.")]
+        public float interactionTimeMultiplier = 1f;
+
         #endregion
 
         #region Serialized Fields - Capacity-Based Spawn Settings

@@ -214,6 +214,9 @@ namespace NewCss
         private static readonly string[][] EXCLUSIVE_EFFECT_GROUPS =
         {
             new[] { "gambler_case", "all_in" },
+            // leveraged_rent ve all_in ikisi de grace period'u siliyor (gracePaymentPercent = 0) -
+            // plan economy-rebuild-2026-07-30-faz4-final.md §B.7'de istenen dışlama (PerkEffect.cs:164-166 yorumu).
+            new[] { "leveraged_rent", "all_in" },
         };
 
         #endregion
@@ -1071,7 +1074,7 @@ namespace NewCss
         /// </summary>
         public void OnReroll()
         {
-            int cost = RerollCurve.CostForReroll(_rerollCountToday.Value);
+            int cost = GetRerollCost(_rerollCountToday.Value);
             if (MoneySystem.Instance == null || MoneySystem.Instance.CurrentMoney < cost) return;
             RerollServerRpc();
         }
@@ -1085,7 +1088,7 @@ namespace NewCss
             // ona bağlanmak reroll'u daima öldürüyordu. Saat gate'i de yanlıştı: panel PANEL_OPEN_HOUR'dan
             // önce (ör. saat 7) açılabiliyor ama satın alma o saatte çalışırken reroll ölüyordu.
             // Gerçek server-authoritative panel-open state'i ayrı bir iş (OfficeTerminal↔UpgradePanel birleştirme).
-            int cost = RerollCurve.CostForReroll(_rerollCountToday.Value);
+            int cost = GetRerollCost(_rerollCountToday.Value);
             if (MoneySystem.Instance == null || MoneySystem.Instance.CurrentMoney < cost) return;
 
             MoneySystem.Instance.SpendMoney(cost);
@@ -1114,7 +1117,7 @@ namespace NewCss
         {
             if (rerollButton == null && rerollCostText == null) return;
 
-            int cost = RerollCurve.CostForReroll(_rerollCountToday.Value);
+            int cost = GetRerollCost(_rerollCountToday.Value);
             bool canAfford = MoneySystem.Instance != null && MoneySystem.Instance.CurrentMoney >= cost;
 
             if (rerollCostText != null)
@@ -1126,6 +1129,20 @@ namespace NewCss
             {
                 rerollButton.interactable = canAfford;
             }
+        }
+
+        /// <summary>
+        /// Reroll maliyeti: sabit tablo (<see cref="RerollCurve"/>, DEĞİŞMEDİ) × oyuncu-sayısı
+        /// maliyet çarpanı. FAZ4 §B.7/§B.8: 4P'de reroll aksi hâlde 3.7× ucuz kalıyordu çünkü
+        /// yalnızca upgrade satın alımları <see cref="DifficultyManager.UpgradeCostMultiplier"/>
+        /// kullanıyordu. Event çarpanı (<see cref="GetCostMultiplier"/>) BİLEREK uygulanmaz —
+        /// yalnız P ölçeklemesi istendi.
+        /// </summary>
+        private int GetRerollCost(int rerollIndexThisDay)
+        {
+            int baseCost = RerollCurve.CostForReroll(rerollIndexThisDay);
+            float pMultiplier = (DifficultyManager.Instance != null) ? DifficultyManager.Instance.UpgradeCostMultiplier : 1f;
+            return Mathf.RoundToInt(baseCost * pMultiplier);
         }
 
         #endregion

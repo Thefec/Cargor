@@ -117,12 +117,15 @@ namespace NewCss
             ctx.PlayerMovement.moveSpeed = 5f * 1.15f;
         }
 
-        // Sabırlı Müşteriler (relic, DOKUNUŞ-5): CustomerManager.patienceMultiplier ile
-        // CustomerAI.InitializeServerState()'te min/maxWaitTime ölçeklenir (+%25).
+        // Sabırlı Müşteriler (relic, DOKUNUŞ-5, FAZ4 §B.7 tercih): sabır bağlayıcı kısıt değil,
+        // servis döngüsü süresini kısaltmak prestij darboğazına doğrudan dokunuyor. Eski
+        // patienceMultiplier (+%25 bekleme) yerine CustomerAI.interactionTime × 0.6 (2sn → 1.2sn),
+        // CustomerManager.interactionTimeMultiplier üzerinden (bkz.
+        // plans/economy-rebuild-2026-07-30-faz4-final.md §B.7).
         private static void ApplyPatientCustomers(int level, PerkContext ctx)
         {
             if (ctx.CustomerManager == null || level <= 0) return;
-            ctx.CustomerManager.patienceMultiplier = 1.25f;
+            ctx.CustomerManager.interactionTimeMultiplier = 0.6f;
         }
 
         // Uzun Kuyruk (relic): maxQueueSize 3(=DEFAULT_QUEUE_SIZE) → 5 (+2)
@@ -157,15 +160,16 @@ namespace NewCss
         // ─────────────────────────────────────────────────────────────
 
         // DOKUNUŞ-1: Kaldıraçlı Kira (relic). rentScaledMultiplier scaledRent'e uygulanır
-        // (GameEconomySettings.CalculateRent). Bedel: prestij
-        // cezası ×2 (taban -0.4 → -0.8, mutlak değer — idempotent; FAZ4 taban senkronu,
-        // bkz. plans/economy-rebuild-2026-07-30-faz4-final.md §B.3). Etki değişikliği (kira×0.75 +
-        // gracePaymentPercent=0) §B.7'nin upgrade turuna ertelendi, bu commit yalnız taban senkronu yapar.
+        // (GameEconomySettings.CalculateRent). FAZ4 §B.7 upgrade turu — tercih edilen etki
+        // değişikliği uygulandı: bedel artık prestij cezası ×2 DEĞİL, gracePaymentPercent=0
+        // (grace period iptali, all_in ile aynı mekanik — ikisi EXCLUSIVE_EFFECT_GROUPS'ta
+        // aynı grupta). Kira indirimi 0.8 → 0.75 (kira %25 düşer). Eski
+        // customerLostPrestigePenalty = -0.8f satırı (FAZ4 §B.3 fallback) bu satırla kalkar.
         private static void ApplyLeveragedRent(int level, PerkContext ctx)
         {
             if (ctx.Economy == null || level <= 0) return;
-            ctx.Economy.rentScaledMultiplier = 0.8f;
-            ctx.Economy.customerLostPrestigePenalty = -0.8f;
+            ctx.Economy.rentScaledMultiplier = 0.75f;
+            ctx.Economy.gracePaymentPercent = 0f;
         }
 
         // DOKUNUŞ-2: Yüksek Volatilite (relic). Per-delivery ±%35 RNG, ort. +%15 — Truck.
