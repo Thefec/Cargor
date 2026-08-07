@@ -22,7 +22,8 @@ public static class InputBindingManager
         MoveUp,     // Yukarı Git (default: W)
         MoveDown,   // Aşağı Git (default: S)
         MoveLeft,   // Sola Git (default: A)
-        MoveRight   // Sağa Git (default: D)
+        MoveRight,  // Sağa Git (default: D)
+        PushToTalk  // Telsiz Bas-Konuş (default: V) — enum sonuna eklendi, persistence "KeyBind_{action}" string anahtarı kullanıyor, sıra kalıcılığı etkilemiyor
     }
 
     #endregion
@@ -67,7 +68,8 @@ public static class InputBindingManager
         { GameAction.MoveUp, new Binding(KeyCode.W) },              // W
         { GameAction.MoveDown, new Binding(KeyCode.S) },            // S
         { GameAction.MoveLeft, new Binding(KeyCode.A) },            // A
-        { GameAction.MoveRight, new Binding(KeyCode.D) }            // D
+        { GameAction.MoveRight, new Binding(KeyCode.D) },           // D
+        { GameAction.PushToTalk, new Binding(KeyCode.V) }           // V (boş tuş, telsiz Bas-Konuş default'u)
     };
 
     #endregion
@@ -81,6 +83,10 @@ public static class InputBindingManager
 
     #region Initialization
 
+    // NOT: PushToTalk için ayrıca persistence kodu YAZILMADI — bu döngü Defaults
+    // sözlüğü üzerinde generic dönüyor, yeni eklenen her GameAction (PushToTalk dahil)
+    // otomatik olarak PlayerPrefs'e "KeyBind_PushToTalk_*" anahtarıyla kaydedilip okunuyor.
+    // Aynı otomatiklik SaveBinding (aşağıda, Persistence bölgesi) için de geçerli.
     public static void Initialize()
     {
         if (_initialized) return;
@@ -280,8 +286,23 @@ public static class InputBindingManager
             GameAction.MoveDown => "Aşağı Git",
             GameAction.MoveLeft => "Sola Git",
             GameAction.MoveRight => "Sağa Git",
+            // Diğer 12 aksiyon hardcoded Türkçe döner (kapsam dışı, dokunulmadı).
+            // PushToTalk yeni: LocalizationHelper üzerinden çözülür, tablo/anahtar
+            // henüz yoksa GetLocalizedString anahtarın kendisini döndürür (fallback,
+            // exception atmaz) — bu durumda sabit Türkçe metne düşülür.
+            GameAction.PushToTalk => ResolvePushToTalkDisplayName(),
             _ => action.ToString()
         };
+    }
+
+    private static string ResolvePushToTalkDisplayName()
+    {
+        const string key = "ControlPushToTalk";
+        const string fallback = "Bas-Konuş";
+        string resolved = NewCss.LocalizationHelper.GetLocalizedString(key);
+        // GetLocalizedString çözülemediğinde anahtarın kendisini döndürür (bkz.
+        // Assets/NewCss/Localization/LocalizationHelper.cs:79-105) — çöz(ül)emedi sayılır.
+        return resolved == key ? fallback : resolved;
     }
 
     private static string FormatKeyName(KeyCode key)
