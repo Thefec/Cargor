@@ -10,10 +10,12 @@
 
 **YOK — kod yazılmıyor.** İki iş kuyrukta: **play-test** (kullanıcıda) ve **telsiz** (plan onaylı, uygulama komutu bekliyor).
 
-> 🎙️ **TELSİZ (oyun içi bas-konuş sesli iletişim) — PLAN ONAYLI, UYGULAMA BEKLİYOR.**
-> Tam plan: **[plans/telsiz-voice-chat.md](plans/telsiz-voice-chat.md)** (10 adımlık commit sırası, doğrulama katmanları, riskler).
-> Kullanıcı kararı: *"detaylıca planlama yapalım, uygulama komutunu ben vereceğim."* **Komut gelmeden kod yazma.**
-> Ardından gelecek 2. aşama: **oda-bazlı görünürlük** (oda sayısı SABİT DEĞİL, haritaya göre değişecek → veri-güdümlü olmalı). Telsiz tasarımı bunu engellemiyor; gerekçe planın "Sonraki iş" bölümünde.
+> 🎙️ **TELSİZ — UYGULAMA YARIDA: Dalga 1+2 BİTTİ, Dalga 3+4 KALDI.** Dal **`feature/voice-chat`** (3 feat commit, **PUSH YOK**). Kullanıcı "dalga 2 bitince dur, limit dolmuş" dedi.
+> Tam plan: **[plans/telsiz-voice-chat.md](plans/telsiz-voice-chat.md)** · Editor işleri: **[plans/telsiz-editor-isleri.md](plans/telsiz-editor-isleri.md)** · Durum detayı: [plans/devam.md](plans/devam.md) 2026-08-07
+> ✅ **Biten (Adım 1,2,3,4,4b,5):** `NewCss.Voice.Core` + 30 test · PTT tuşu (`V`) + prefs · yakalama (30 Hz + tail) · loopback çalma (streaming `AudioClip` + `PCMReaderCallback`) · paket kaydet/oynat. **0 CS + EditMode 39/39 teyitli.**
+> 🔴 **Kalan:** **Adım 6** ağ taşıması (named message + host relay + iki dışlama + 800 B kapak) · **7** HUD + mute · **8** ayarlar UI wiring · **9** ağ simülatörü + istatistik · **10** hata durumları denetimi.
+> 🔴 **kontrol kapısı BORÇ** — dal-sonu tek toplu kapı, Dalga 4 sonunda. **Hiçbir şey oyun içinde çalışırken görülmedi** (loopback gerçek Steam + mikrofon ister).
+> Ardından gelecek 2. aşama: **oda-bazlı görünürlük** (oda sayısı SABİT DEĞİL → veri-güdümlü). Telsiz tasarımı bunu engellemiyor; gerekçe planın "Sonraki iş" bölümünde.
 
 `main` = `6e945bb`, **origin/main'in 1 önünde (PUSH YOK)**. Ekonomi denge turu 2026-08-06'da merge edildi (`238fd92`, `--no-ff`, 21 commit) — sorun çıkarsa tek noktadan revert edilebilir.
 
