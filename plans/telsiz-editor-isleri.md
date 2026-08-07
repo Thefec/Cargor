@@ -58,7 +58,35 @@ Bu yüzden 10 anahtar da **Window ▸ Asset Management ▸ Localization Tables**
 
 ---
 
-## 2. Sonraki dalgalarda buraya eklenecek bölümler (henüz boş)
+## 3. Klik SFX asset'leri (Dalga 2 — kod null-guard'lı bekliyor)
 
-- **Dalga 2/3 sonrası:** `RadioSpeakerSlot.prefab`, `RadioHUD.prefab`, `RadioSpeakerRow.prefab` authoring adımları (filtre komponent değerleri, Canvas ayarları).
+Kod (`RadioVoiceSpeakerSlot.cs`, `RadioVoiceRuntime.cs`) bu klipleri `Resources.Load<AudioClip>(...)` ile arıyor; **asset yoksa sessizce atlar** (oturum başına bir kez uyarı loglar, log spam yapmaz) — yani sistem SFX'siz de tam çalışır, aşağıdakiler kozmetik bir sonraki-adım.
+
+Beklenen 4 dosya, **tam bu isim ve yol** ile `Assets/Resources/Voice/Clicks/` altına:
+
+| Dosya | Kullanım yeri | Önerilen süre | Karakter |
+|---|---|---|---|
+| `PttOn.wav` | Yerel: PTT'ye basınca (kendi mikrofonun) | ~60-80 ms | Kısa, net "tık" — telsiz açılış sesi |
+| `PttOff.wav` | Yerel: PTT bırakınca (200ms tail sonrası) | ~60-80 ms | `PttOn`'dan hafif farklı (ör. biraz daha pes) — kulakla ayırt edilsin |
+| `BurstStart.wav` | Uzak: bir konuşmacı slot'u ilk paketini alınca | ~60-80 ms | `PttOn` ile aynı aile, ama telsiz filtresinden geçmemiş (Clicks child filtresiz) |
+| `BurstEnd.wav` | Uzak: bir konuşmacının burst'ü bitince (BurstEnd bayrağı VEYA 400ms zaman aşımı) | ~60-80 ms | `PttOff` ile aynı aile |
+
+Not: `PttOn/PttOff` yerel geri bildirim için `RadioVoiceRuntime`'ın kendi filtresiz `AudioSource`'undan çalar; `BurstStart/BurstEnd` her slot'un `Clicks` child'ındaki filtresiz `AudioSource`'undan çalar — dördü de aynı ses karakterinde olabilir, kod tarafında zaten ayrı kaynaklardan çalınıyor.
+
+Import ayarı: Force To Mono açık, Load Type = Decompress On Load (çok kısa klip), Compression = PCM veya ADPCM.
+
+## 4. Opsiyonel `RadioSpeakerSlot.prefab` authoring (Dalga 2 — şu an kodda kurulu, prefab yok)
+
+**Şu an gerekmiyor** — `RadioVoiceSpeakerSlot.CreateSlot()` (`Assets/NewCss/Voice/RadioVoiceSpeakerSlot.cs`) prefab yoksa AudioSource + AudioHighPassFilter(300Hz) + AudioLowPassFilter(3400Hz) + AudioDistortionFilter(0.18) + "Clicks" child'ı **koddan** kurup çalışır durumda bırakıyor. Bu bölüm, sanatçı/tasarımcı filtre değerlerini **sanatsal olarak** ayarlamak isterse:
+
+1. Boş bir GameObject oluştur, `RadioVoiceSpeakerSlot` komponentini ekle (script Inspector'da `burstStartClip`/`burstEndClip` alanlarını gösterir — istersen buradan da atayabilirsin, `Resources/Voice/Clicks/*` yerine).
+2. Aynı GameObject'e sırasıyla (SIRA ÖNEMLİ — DSP zinciri component-ekleme sırasına göre kuruluyor): `AudioSource`, `AudioHighPassFilter`, `AudioLowPassFilter`, `AudioDistortionFilter`.
+3. Filtre değerlerini `RadioVoiceSpeakerSlot.cs` içindeki sabitlerle aynı başlat (300 / 3400 / 0.18) — kod, prefab'tan gelen bir instance'ta bu değerleri **override etmiyor** (kod sadece component yoksa ekliyor), yani prefab'a yazdığın değer kalıcı kalır.
+4. Child olarak "Clicks" adında boş bir GameObject + üzerine **filtresiz** `AudioSource` ekle (isim harfiyen `Clicks` olmalı, kod `transform.Find("Clicks")` ile arıyor).
+5. Prefab'ı `Assets/Resources/Voice/RadioSpeakerSlot.prefab` yoluna kaydet (isim ve yol harfiyen böyle — kod `Resources.Load<GameObject>("Voice/RadioSpeakerSlot")` ile arıyor).
+6. Play'e bas, PTT ile test et — kod artık bu prefab'tan 3 kopya Instantiate edecek (koddan kurulum devre dışı kalır).
+
+## 5. Sonraki dalgalarda buraya eklenecek bölümler (henüz boş)
+
+- **Dalga 3 sonrası:** `RadioHUD.prefab`, `RadioSpeakerRow.prefab` authoring adımları (Canvas ayarları, ekran-uzayı liste yerleşimi).
 - **Dalga 4:** Ayarlar prefabına `keyBindingRows`'a Bas-Konuş satırı ekleme + slider/toggle wiring (`UnifiedSettingsManager.cs:559-580`).
