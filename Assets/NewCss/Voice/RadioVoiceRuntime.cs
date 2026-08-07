@@ -1,4 +1,5 @@
 using Steamworks;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -15,9 +16,16 @@ using UnityEngine.SceneManagement;
 /// replay etmiyor" bug sınıfını baştan devre dışı bırakıyor: ses akışında senkronize edilecek kalıcı
 /// durum yok, sadece geçici veri var.
 ///
-/// BU DALGADA (Adım 3+4+4b+5) AĞ YOK: RadioVoiceCapture'ın ürettiği paket sadece SelfMonitor açıksa
-/// yerel bir playback slot'una (loopback) beslenir. Dalga 3, aynı <see cref="OnCapturedPacket"/>
-/// noktasına bir ağ tüketicisi ekleyecek — capture/playback'in kendisi hiç değişmeyecek.
+/// DALGA 3 (Adım 6): RadioVoiceCapture'ın ürettiği paket artık SelfMonitor loopback'e EK olarak
+/// <see cref="RadioVoiceTransport"/> üzerinden ağa da çıkıyor (bkz. OnCapturedPacket) — capture/
+/// playback'in kendisi HİÇ değişmedi, sadece OnCapturedPacket'e ikinci bir tüketici eklendi.
+///
+/// NetworkManager.Singleton Awake sırasında yoktur/sonradan gelir (Tutorial'da hiç yok, diğer
+/// sahnelerde asenkron kurulur) — bu yüzden Transport'un ağ handler kaydı NetworkManager'ın kendi
+/// OnClientStarted/OnServerStarted event'lerine bağlanıyor, Awake'te DEĞİL (CustomMessagingManager
+/// NetworkManager başlamadan null). Update() her frame NetworkManager.Singleton'ın DEĞİŞİP
+/// DEĞİŞMEDİĞİNİ kontrol eder (SyncNetworkLifecycleHook) — sahneler arası yeniden host/join
+/// senaryosunda yeni bir NetworkManager örneği gelirse eski event aboneliği söküp yeniye geçilir.
 /// </summary>
 public sealed class RadioVoiceRuntime : MonoBehaviour
 {
@@ -35,6 +43,9 @@ public sealed class RadioVoiceRuntime : MonoBehaviour
 
     public RadioVoiceCapture Capture { get; private set; }
     public RadioVoicePlayback Playback { get; private set; }
+    public RadioVoiceTransport Transport { get; private set; }
+
+    private NetworkManager _hookedNetworkManager; // Update()'te NetworkManager.Singleton'ın değişip değişmediğini tespit etmek için
 
     private AudioSource _localClickSource;
     private AudioClip _pttOnClip;
@@ -78,6 +89,7 @@ public sealed class RadioVoiceRuntime : MonoBehaviour
             slots[i] = RadioVoiceSpeakerSlot.CreateSlot(transform, i, initialSampleRate);
         }
         Playback = new RadioVoicePlayback(slots);
+        Transport = new RadioVoiceTransport(Playback);
 
         _localClickSource = gameObject.AddComponent<AudioSource>();
         _localClickSource.spatialBlend = 0f;
@@ -100,6 +112,8 @@ public sealed class RadioVoiceRuntime : MonoBehaviour
         // sağ çıkar. Bayrak burada her frame otomatik sıfırlanır — yalnızca "aynı frame içinde birden
         // fazla teardown kancasının üst üste binmesini" bastırır, kalıcı bir kilit DEĞİLDİR.
         _teardownDone = false;
+
+        SyncNetworkLifecycleHook();
 
         bool steamValid = SteamClient.IsValid;
         if (steamValid && !_lastSteamValid)
@@ -172,6 +186,65 @@ public sealed class RadioVoiceRuntime : MonoBehaviour
         {
             Playback.HandleIncomingPacket(SelfMonitorClientId, packet);
         }
+
+        // Loopback'e EK — yerine geçmiyor. Transport ağ yoksa/tek oyuncuysa kendi içinde sessizce
+        // düşürür (bkz. RadioVoiceTransport.SendCapturedPacket), burası hiçbir koşul kontrol etmez.
+        Transport.SendCapturedPacket(packet);
+    }
+
+    /// <summary>
+    /// NetworkManager.Singleton Awake sırasında yoktur/sonradan asenkron kurulur (Tutorial'da hiç
+    /// yok) — bu yüzden Transport'un ağ handler kaydı buradan, her frame Singleton'ın değişip
+    /// değişmediğine bakılarak, NetworkManager'ın KENDİ Started/Stopped event'lerine bağlanır.
+    /// Farklı bir NetworkManager örneği gelirse (sahneler arası yeniden host/join) eski abonelik
+    /// söküp yeniye geçilir — aksi hâlde eski (yok olmuş) örneğe asılı kalınır ve yeni oturumda
+    /// telsiz hiç ağa çıkmaz.
+    /// </summary>
+    private void SyncNetworkLifecycleHook()
+    {
+        var nm = NetworkManager.Singleton;
+        if (nm == _hookedNetworkManager) return;
+
+        UnhookNetworkLifecycle();
+
+        _hookedNetworkManager = nm;
+        if (_hookedNetworkManager != null)
+        {
+            _hookedNetworkManager.OnClientStarted += HandleNetClientStarted;
+            _hookedNetworkManager.OnServerStarted += HandleNetServerStarted;
+            _hookedNetworkManager.OnClientStopped += HandleNetClientStopped;
+            _hookedNetworkManager.OnServerStopped += HandleNetServerStopped;
+        }
+    }
+
+    private void UnhookNetworkLifecycle()
+    {
+        if (_hookedNetworkManager == null) return;
+
+        _hookedNetworkManager.OnClientStarted -= HandleNetClientStarted;
+        _hookedNetworkManager.OnServerStarted -= HandleNetServerStarted;
+        _hookedNetworkManager.OnClientStopped -= HandleNetClientStopped;
+        _hookedNetworkManager.OnServerStopped -= HandleNetServerStopped;
+        _hookedNetworkManager = null;
+    }
+
+    private void HandleNetClientStarted() => Transport.OnNetworkClientStarted();
+    private void HandleNetServerStarted() => Transport.OnNetworkServerStarted();
+
+    /// <summary>
+    /// SteamUser.VoiceRecord süreç-global — ağ koparsa/durursa mikrofonun açık kalmaması için
+    /// TeardownVoice buradan da çağrılıyor (Dalga 2 bunu bilerek dışarıda bırakmıştı, bu dalganın işi).
+    /// </summary>
+    private void HandleNetClientStopped(bool wasHost)
+    {
+        Transport.OnNetworkClientStopped();
+        TeardownVoice();
+    }
+
+    private void HandleNetServerStopped(bool wasClient)
+    {
+        Transport.OnNetworkServerStopped();
+        TeardownVoice();
     }
 
     private static int ResolveTargetSampleRate()
@@ -237,7 +310,11 @@ public sealed class RadioVoiceRuntime : MonoBehaviour
 
         Capture?.ForceStopImmediate(); // VoiceRecord=false — içinde de SteamClient.IsValid guard var
 
-        // Not: OnClientStopped/OnServerStopped kancaları Dalga 3'te eklenecek (ağ katmanı henüz yok).
+        // Transport'un AĞ HANDLER KAYDINA (Register/Unregister) buradan DOKUNULMUYOR — o kayıt
+        // SADECE HandleNetClientStopped/HandleNetServerStopped ile 1:1 eşleşir (bkz. Transport.
+        // OnNetworkClientStopped yorumu). Burada sadece ağdan bağımsız, her zaman güvenli bir
+        // bellek hijyeni: yarım kalmış reassembly durumu temizlenir.
+        Transport?.ClearReassemblyState();
     }
 
     /// <summary>
@@ -255,6 +332,7 @@ public sealed class RadioVoiceRuntime : MonoBehaviour
         if (Capture != null) Capture.PacketProduced -= OnCapturedPacket;
         AudioSettings.OnAudioConfigurationChanged -= OnAudioConfigurationChanged;
         SceneManager.activeSceneChanged -= OnActiveSceneChanged;
+        UnhookNetworkLifecycle();
 
         if (Instance == this) Instance = null;
     }
