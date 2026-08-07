@@ -20,7 +20,7 @@ using System.Linq;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
-using NewCss;
+using NewCss;   // PerkTier de bu namespace'te (asmdef adı NewCss.Roguelite ama rootNamespace NewCss)
 
 public static class EconomyInvariantCheck
 {
@@ -118,7 +118,129 @@ public static class EconomyInvariantCheck
         CheckDifficultyManager(r);
         CheckTruckPrefab(r);
         CheckQuestAssets(r);
+        CheckScene(r);
         return r;
+    }
+
+    // ── Sahne (The Main Office) ───────────────────────────────────────────────
+    // FAZ4 §D#5'in çoğu değeri SAHNEDE yaşıyor (25 upgrade'in fiyatları, maxLevel'leri,
+    // tier'ları). SO ve prefab'ları denetleyip sahneyi atlamak en büyük yüzeyi açıkta bırakırdı.
+    private const string MAIN_SCENE = "Assets/Scenes/The Main Office.unity";
+
+    private static void CheckScene(Report r)
+    {
+        var previouslyOpen = UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene().path;
+        UnityEngine.SceneManagement.Scene scene;
+
+        try
+        {
+            scene = UnityEditor.SceneManagement.EditorSceneManager.OpenScene(
+                MAIN_SCENE, UnityEditor.SceneManagement.OpenSceneMode.Single);
+        }
+        catch (Exception e)
+        {
+            r.Failures.Add($"Sahne açılamadı ({MAIN_SCENE}): {e.Message}");
+            return;
+        }
+
+        if (!scene.IsValid()) { r.Failures.Add($"Sahne geçersiz: {MAIN_SCENE}"); return; }
+
+        var roots = scene.GetRootGameObjects();
+
+        // --- Prestij ---
+        var prestige = FindInScene<PrestigeManager>(roots);
+        if (prestige == null) r.Failures.Add("Sahnede PrestigeManager yok");
+        else
+        {
+            r.ExpectFloat("sahne PrestigeManager.startingPrestige", prestige.startingPrestige, 12f);
+            r.ExpectFloat("sahne PrestigeManager.maxPrestige", prestige.maxPrestige, 100f);
+        }
+
+        // --- Gün süresi ---
+        var dayCycle = FindInScene<DayCycleManager>(roots);
+        if (dayCycle == null) r.Failures.Add("Sahnede DayCycleManager yok");
+        else
+            r.ExpectFloat("sahne DayCycleManager.realDurationInSeconds", dayCycle.realDurationInSeconds, 200f);
+
+        // --- Telefon ---
+        var phone = FindInScene<PhoneCallManager>(roots);
+        if (phone == null) r.Failures.Add("Sahnede PhoneCallManager yok");
+        else
+        {
+            r.ExpectFloat("sahne PhoneCallManager.ringDuration",
+                          ReadPrivate<float>(phone, "ringDuration"), 15f);
+
+            // SO bağlanmazsa §B.6'nın tamamı inert kalıyor (hard-coded fallback'ler devreye girer).
+            var so = ReadPrivate<GameEconomySettings>(phone, "economySettings");
+            if (so == null)
+                r.Failures.Add("sahne PhoneCallManager.economySettings BAĞLANMAMIŞ — " +
+                               "P-bazlı çalma şansı, callPrestigeReward ve event çarpanı devre dışı kalır");
+        }
+
+        // --- Upgrade listesi (FAZ4 §B.7'de kısılan omurgalar + perk bayrakları) ---
+        var panel = FindInScene<UpgradePanel>(roots);
+        if (panel == null) { r.Failures.Add("Sahnede UpgradePanel yok"); return; }
+
+        var upgrades = ReadPrivate<List<UpgradeDefinition>>(panel, "upgrades");
+        if (upgrades == null || upgrades.Count == 0)
+        {
+            r.Failures.Add("sahne UpgradePanel.upgrades listesi BOŞ");
+            return;
+        }
+
+        r.Checked++;
+
+        CheckUpgrade(r, upgrades, "Geniş Ambar",          maxLevel: 2, baseCost: 60,  costStep: 30);
+        CheckUpgrade(r, upgrades, "Paketleme İstasyonu",  maxLevel: 1, baseCost: 150);
+        CheckUpgrade(r, upgrades, "Ek Hangar",            maxLevel: 1, baseCost: 200);
+
+        CheckPerkFlag(r, upgrades, "emergency_brake", expectTier: PerkTier.T1, expectDisabled: null);
+        CheckPerkFlag(r, upgrades, "long_queue",     expectTier: null,          expectDisabled: true);
+
+        if (!string.IsNullOrEmpty(previouslyOpen) && previouslyOpen != MAIN_SCENE)
+        {
+            try { UnityEditor.SceneManagement.EditorSceneManager.OpenScene(previouslyOpen); }
+            catch { /* açılış sahnesini geri yükleyemedik — denetim sonucunu etkilemez */ }
+        }
+    }
+
+    private static void CheckUpgrade(Report r, List<UpgradeDefinition> list, string displayName,
+                                     int maxLevel, int baseCost, int? costStep = null)
+    {
+        var u = list.FirstOrDefault(x => x != null && x.displayName == displayName);
+        if (u == null)
+        {
+            r.Failures.Add($"sahne upgrade bulunamadı: \"{displayName}\" " +
+                           "(displayName eşleşmesi — sahnede yeniden adlandırıldıysa burayı güncelle)");
+            return;
+        }
+
+        r.Expect($"upgrade \"{displayName}\".maxLevel", u.maxLevel, maxLevel);
+        r.Expect($"upgrade \"{displayName}\".baseCost", u.baseCost, baseCost);
+        if (costStep.HasValue)
+            r.Expect($"upgrade \"{displayName}\".costStep", u.costStep, costStep.Value);
+    }
+
+    private static void CheckPerkFlag(Report r, List<UpgradeDefinition> list, string effectId,
+                                      PerkTier? expectTier, bool? expectDisabled)
+    {
+        var u = list.FirstOrDefault(x => x != null && x.effectId == effectId);
+        if (u == null) { r.Failures.Add($"sahne perk bulunamadı: effectId \"{effectId}\""); return; }
+
+        if (expectTier.HasValue)
+            r.Expect($"perk \"{effectId}\".tier", u.tier, expectTier.Value);
+        if (expectDisabled.HasValue)
+            r.Expect($"perk \"{effectId}\".disabledInDraft", u.disabledInDraft, expectDisabled.Value);
+    }
+
+    private static T FindInScene<T>(GameObject[] roots) where T : Component
+    {
+        foreach (var root in roots)
+        {
+            var found = root.GetComponentInChildren<T>(true);
+            if (found != null) return found;
+        }
+        return null;
     }
 
     // ── GameEconomySettings (Assets/Resources/EkonomiAyarlari.asset) ──────────
