@@ -315,6 +315,13 @@ public sealed class RadioVoiceRuntime : MonoBehaviour
         // OnNetworkClientStopped yorumu). Burada sadece ağdan bağımsız, her zaman güvenli bir
         // bellek hijyeni: yarım kalmış reassembly durumu temizlenir.
         Transport?.ClearReassemblyState();
+
+        // Adım 10 denetimi bulgusu: bu satır ÖNCEDEN YOKTU — sahne değişiminde mikrofon kapanıyordu
+        // ama çalmakta olan uzak konuşmacı slotları (ring buffer + AssignedSpeakerId) hayatta
+        // kalıyordu, yani önceki sahnenin sesi yeni sahnede birkaç yüz ms daha çalmaya devam
+        // edebilirdi (plan §Yaşam döngüsü: "Sahne geçişi → tüm slotlar temizlenir, yayın zorla
+        // durur"). Mute seti KASITLI olarak buradan temizlenmiyor (bkz. RadioVoicePlayback.ClearAllSlots).
+        Playback?.ClearAllSlots();
     }
 
     /// <summary>

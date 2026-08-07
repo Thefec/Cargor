@@ -26,6 +26,11 @@ public sealed class RadioVoiceSpeakerSlot : MonoBehaviour
     private const float LowPassCutoffHz = 3400f;
     private const float DistortionLevel = 0.18f;
 
+    /// <summary>HUD seviye çubuğu için RMS'e uygulanan kaba kazanç — normal konuşma 16-bit PCM'de
+    /// RMS'i genelde 0.05-0.2 bandında bırakır, çarpımsız çubuk hep "boş" görünürdü. Ekonomik bir
+    /// değer DEĞİL (kozmetik UI ayarı) — playtest'te göze göre ayarlanabilir.</summary>
+    private const float LevelMeterGain = 4f;
+
     private const double FadeMilliseconds = 2.0;
     private const double TargetBufferSeconds = 1.0; // her slot 1.0s kapasiteli ring buffer — bir kez ayrılır
 
@@ -55,6 +60,17 @@ public sealed class RadioVoiceSpeakerSlot : MonoBehaviour
 
     /// <summary>null = havuzda boşta. RadioVoicePlayback bunu Assign/FreeSlot üzerinden değiştirir.</summary>
     public ulong? AssignedSpeakerId { get; set; }
+
+    /// <summary>
+    /// Adım 7 (HUD): en son <see cref="DecodeAndWrite"/> çağrısının ürettiği örneklerin RMS seviyesi
+    /// (0..1 kaba kırpma). ANA THREAD'de (SubmitPacket → DecodeAndWrite) hesaplanır — audio thread'e
+    /// (OnAudioRead) HİÇ dokunmaz, PCMReaderCallback yasak listesini ihlal etmez.
+    /// "Bedava" çünkü DecompressVoice zaten her paket için çalışıyor (playback'in kendisi için) —
+    /// plan §UI ve ayarlar: "RMS ölçer yalnızca Kendini Dinle açıkken (o modda decompress zaten
+    /// yapılıyor)" — burada TÜM slotlar için hesaplanıyor çünkü decode zaten TÜM slotlarda oluyor,
+    /// HUD'un uzak konuşmacı satırlarındaki "nabız atan seviye göstergesi" de bunu okur.
+    /// </summary>
+    public float LastPcmLevel01 { get; private set; }
 
     public VoiceSequenceTracker Tracker { get; } = new VoiceSequenceTracker();
 
@@ -187,11 +203,27 @@ public sealed class RadioVoiceSpeakerSlot : MonoBehaviour
         _ring.Read(data, 0, data.Length);
     }
 
-    /// <summary>Ana thread: gelen bir paketi bu slota işler (dup/reorder/gap kararı + decode + ring buffer'a yaz).</summary>
-    public void SubmitPacket(VoicePacketFlags flags, ushort sequence, ArraySegment<byte> compressedPayload, double now)
+    /// <summary>
+    /// Ana thread: gelen bir paketi bu slota işler (dup/reorder/gap kararı + decode + ring buffer'a yaz).
+    /// <paramref name="muted"/>=true (Adım 7 — HUD oturum-içi mute): Tracker burst zamanlamasını
+    /// NORMAL işler (HUD'un hold/fade + 400ms burst-timeout mantığı bundan bağımsız çalışsın —
+    /// mute edilen biri hâlâ "konuşuyor" sayılır, sadece SESSİZE alınmıştır) ama DecodeAndWrite/klik
+    /// ÇAĞRILMAZ: boşuna DecompressVoice çalıştırıp ring buffer'a yazmayalım (plan: "paketi
+    /// RadioVoicePlayback tarafında düşür, boşuna decompress etmeyelim").
+    /// </summary>
+    public void SubmitPacket(VoicePacketFlags flags, ushort sequence, ArraySegment<byte> compressedPayload, double now, bool muted = false)
     {
         var decision = Tracker.Evaluate(sequence, flags, now);
         if (decision == VoicePacketDecision.Dropped || decision == VoicePacketDecision.Duplicate) return;
+
+        if (muted)
+        {
+            // Sessize alınmışken burst-end görülürse click bayrağını da sıfırla (unmute sonrası
+            // sıradaki burst yeniden BurstStart click'i çalabilsin) — ama click'in KENDİSİ çalınmaz.
+            if ((flags & VoicePacketFlags.BurstEnd) != 0) _burstStartClickFired = false;
+            LastPcmLevel01 = 0f; // HUD sessize alınmış satırda seviye çubuğunu boş göstersin
+            return;
+        }
 
         if ((flags & VoicePacketFlags.BurstStart) != 0 && !_burstStartClickFired)
         {
@@ -218,6 +250,7 @@ public sealed class RadioVoiceSpeakerSlot : MonoBehaviour
         }
         AssignedSpeakerId = null;
         _burstStartClickFired = false;
+        LastPcmLevel01 = 0f; // HUD satırı havuza dönerken eski konuşmacının seviyesini miras almasın
         // Ring buffer/clip'e KASITLI dokunulmuyor: AudioSource kalıcı çalıyor, veri akışı kesilince
         // kendi underrun fade-out'uyla (~2ms kosinüs) doğal olarak sessizliğe dönüyor — ekstra bir
         // "durdur" adımı audio thread'e gereksiz senkronizasyon yükü bindirirdi.
@@ -239,12 +272,19 @@ public sealed class RadioVoiceSpeakerSlot : MonoBehaviour
         int sampleCount = pcmBytesWritten / 2; // tek kanal 16-bit PCM
         if (sampleCount > _floatScratch.Length) sampleCount = _floatScratch.Length; // savunma: scratch kapasitesi aşılmasın
 
+        double sumSquares = 0.0;
         for (int i = 0; i < sampleCount; i++)
         {
             int b = i * 2;
             short s = (short)(_pcmRaw[b] | (_pcmRaw[b + 1] << 8)); // little-endian 16-bit mono PCM
-            _floatScratch[i] = s / 32768f;
+            float f = s / 32768f;
+            _floatScratch[i] = f;
+            sumSquares += (double)f * f;
         }
+
+        // RMS — bkz. LastPcmLevel01 sınıf yorumu ("bedava", decode zaten yapılıyor). Ana thread'de
+        // hesaplanır, audio thread'e (OnAudioRead) hiç dokunmaz.
+        LastPcmLevel01 = sampleCount > 0 ? Mathf.Clamp01((float)Math.Sqrt(sumSquares / sampleCount) * LevelMeterGain) : 0f;
 
         _ring.Write(_floatScratch, 0, sampleCount);
     }

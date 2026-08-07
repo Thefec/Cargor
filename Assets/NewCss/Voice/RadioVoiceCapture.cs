@@ -38,13 +38,25 @@ public sealed class RadioVoiceCapture
     private const double MaxCatchupBehindSeconds = 3.0 * SampleIntervalSeconds; // >3 aralık geç kalınırsa sürükleneni telafi etmeye çalışma, resetle
     private const double TailSeconds = 0.2; // PTT bırakılınca son heceyi kesmemek için 200ms devam
 
-    public enum CaptureState { Disabled, Idle, Transmitting, Tail }
+    /// <summary>Degraded = Adım 10: PTT ~1.5s basılı tutulmuşken Steam'den HİÇ ses verisi gelmediği
+    /// bir kez doğrulandı (mikrofon yok/izinsiz). Donanım sorunu genelde kendiliğinden düzelmediği
+    /// için bu, Disabled/Idle/Transmitting/Tail'den AYRI ve KALICI bir durumdur — bkz. IsMicDegraded.</summary>
+    public enum CaptureState { Disabled, Idle, Transmitting, Tail, Degraded }
 
     /// <summary>Üretilen her paket (4B VoicePacket başlığı + sıkıştırılmış ses). Ağdan bağımsız —
     /// loopback/disk-replay/ağ (Dalga 3) hepsi bu tek çıkışa takılır.</summary>
     public event Action<ArraySegment<byte>> PacketProduced;
 
     public CaptureState State { get; private set; } = CaptureState.Disabled;
+
+    /// <summary>
+    /// Oturum başına bir kez, kalıcı olarak set edilir (bkz. CaptureAndEmit). True olduğunda Tick()
+    /// PTT'yi tamamen YOK SAYAR — plan §Yaşam döngüsü: "bir kez, oturum sonuna kadar tekrar denemez".
+    /// Mikrofon donanım/izin sorunu her PTT basışında SteamUser.VoiceRecord'u boşuna açıp 1.5s
+    /// bekleyip tekrar aynı sonuca ulaşmak hem gereksiz mikrofon-açma (VoiceRecord süreç-global)
+    /// hem de israf olurdu. HUD (RadioHudController) bunu okuyup VoiceErrorNoMic gösterebilir.
+    /// </summary>
+    public bool IsMicDegraded { get; private set; }
 
     // TEK ayırma (kurulumda) — runtime'da (Tick içinde) asla yeniden ayırma. Kabul kriteri:
     // PTT basılıyken frame başına 0 B GC alloc.
@@ -59,7 +71,6 @@ public sealed class RadioVoiceCapture
     private ushort _sequence;
 
     private bool _warnedTruncatedThisSession;
-    private bool _warnedNoMicDataThisSession;
 
     public RadioVoiceCapture()
     {
@@ -74,6 +85,16 @@ public sealed class RadioVoiceCapture
     /// </summary>
     public void Tick(double nowUnscaled, bool preconditionsOk, bool pttHeld)
     {
+        if (IsMicDegraded)
+        {
+            // Kalıcı kısa devre — bkz. IsMicDegraded yorumu. State=Degraded her frame yeniden
+            // set edilir ki ForceStopImmediate (teardown) sonrasında bile (o State'i Idle'a çeker)
+            // bir sonraki Tick bunu geri Degraded'a döndürsün — StartRecordingSafely'ye bir daha ASLA
+            // ulaşılmaz.
+            State = CaptureState.Degraded;
+            return;
+        }
+
         if (!preconditionsOk)
         {
             if (State != CaptureState.Disabled)
@@ -198,10 +219,13 @@ public sealed class RadioVoiceCapture
 
         if (written > 0) _everProducedDataThisBurst = true;
 
-        if (!_everProducedDataThisBurst && !_warnedNoMicDataThisSession && (now - _transmittingStartTime) >= 1.5)
+        if (!_everProducedDataThisBurst && !IsMicDegraded && (now - _transmittingStartTime) >= 1.5)
         {
-            Debug.LogWarning("[RadioVoiceCapture] PTT 1.5s+ basılı ama Steam'den hiç ses verisi gelmedi — mikrofon yok/izinsiz olabilir. (oturum başına bir kez loglanır)");
-            _warnedNoMicDataThisSession = true;
+            // Kalıcı: bir kez tespit edilince bu oturumda bir daha denenmez (bkz. IsMicDegraded).
+            // _warnedNoMicDataThisSession ayrı bir bayrak DEĞİL artık — IsMicDegraded zaten kalıcı
+            // olduğu için log de doğal olarak tek seferle sınırlanıyor, ikinci bir bayrağa gerek yok.
+            IsMicDegraded = true;
+            Debug.LogWarning("[RadioVoiceCapture] PTT 1.5s+ basılı ama Steam'den hiç ses verisi gelmedi — mikrofon yok/izinsiz olabilir. Bu oturumda telsiz yakalaması durduruldu, tekrar denenmeyecek. (bir kez loglanır)");
         }
 
         var flags = VoicePacketFlags.None;

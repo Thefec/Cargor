@@ -86,7 +86,26 @@ Import ayarı: Force To Mono açık, Load Type = Decompress On Load (çok kısa 
 5. Prefab'ı `Assets/Resources/Voice/RadioSpeakerSlot.prefab` yoluna kaydet (isim ve yol harfiyen böyle — kod `Resources.Load<GameObject>("Voice/RadioSpeakerSlot")` ile arıyor).
 6. Play'e bas, PTT ile test et — kod artık bu prefab'tan 3 kopya Instantiate edecek (koddan kurulum devre dışı kalır).
 
-## 5. Sonraki dalgalarda buraya eklenecek bölümler (henüz boş)
+## 5. Sonraki dalgalarda buraya eklenecek bölümler
 
-- **Dalga 3 sonrası:** `RadioHUD.prefab`, `RadioSpeakerRow.prefab` authoring adımları (Canvas ayarları, ekran-uzayı liste yerleşimi).
-- **Dalga 4:** Ayarlar prefabına `keyBindingRows`'a Bas-Konuş satırı ekleme + slider/toggle wiring (`UnifiedSettingsManager.cs:559-580`).
+### 5.1 Opsiyonel `RadioHUD.prefab` / satır prefab'ı authoring'i (Dalga 3 — şu an kodda kurulu, prefab yok)
+
+**Şu an gerekmiyor** — `RadioHudController.Bootstrap()` (`Assets/NewCss/Voice/UI/RadioHudController.cs`) `Resources/Voice/RadioHUD` prefab'ı yoksa Canvas (Screen Space Overlay, sortingOrder 500) + `VerticalLayoutGroup`'lu bir satır container'ı + 4 satır (1 kendi mikrofon + 3 uzak konuşmacı havuzu) **koddan** kurup çalışır durumda bırakıyor. `RadioSpeakerRow.EnsureBuilt()` de aynı şekilde: bulamadığı her child'ı (`Label`, `LevelBar/LevelFill`) koddan ekliyor. Bu bölüm, sanatçı/tasarımcı görünümü **sanatsal olarak** ayarlamak isterse:
+
+1. Boş bir GameObject oluştur (`Canvas` + `CanvasScaler` + `GraphicRaycaster` ekle), `RadioHudController` komponentini ekle.
+2. Inspector'da `rowContainer` alanına, `VerticalLayoutGroup` + `ContentSizeFitter` (Vertical: Preferred Size) taşıyan bir child RectTransform ata — kod bu alan doluysa kendi container'ını KURMAZ.
+3. `rowPrefab` alanına, `RadioSpeakerRow` komponentli bir prefab ata (adım 4'e bak). Doluysa kod `CreateRow()` içinde bu prefab'tan Instantiate eder (koddan satır kurulumu devre dışı kalır) — hem kendi mikrofon satırı hem 3 havuz satırı AYNI prefab'tan çoğaltılır.
+4. `RadioSpeakerRow` prefab'ı üzerinde SIRA/İSİM ÖNEMLİ (kod `transform.Find` ile arıyor):
+   - Kök objede `Image` (arka plan), `CanvasGroup` (fade için), `Button` (mute tıklaması için — kendi mikrofon satırında kod bunu `interactable=false` yapıyor, prefab'ta ayrıca bir şey yapmana gerek yok) bulunmalı/eklenmeli.
+   - Child adı harfiyen `Label` → üzerinde `TextMeshProUGUI` (durum metni: "{isim} konuşuyor" / "{isim} (Sessize Alındı)" / çıplak isim).
+   - Child adı harfiyen `LevelBar`, onun child'ı harfiyen `LevelFill` → üzerinde `Image` (`Image Type = Filled`, `Fill Method = Horizontal`) — nabız atan seviye çubuğu.
+5. Prefab'ı `Assets/Resources/Voice/RadioHUD.prefab` yoluna kaydet (isim ve yol harfiyen böyle — kod `Resources.Load<GameObject>("Voice/RadioHUD")` ile arıyor).
+6. Play'e bas, PTT ile test et (2 instance ile mute'u da dene — bir satıra tıkla).
+
+### 5.2 HUD ikonları / SFX (henüz istek yok)
+
+Şu an HUD SADECE metin + doluluk çubuğu kullanıyor (bilerek — emoji/ikon glyph'i TMP fallback fontunda kutu gösterme riski taşıyor, bkz. RadioSpeakerRow sınıf yorumu). İkon eklemek istenirse (örn. mikrofon/mute simgesi) `RadioSpeakerRow`'a `Image` tabanlı bir ikon child'ı eklenip kod küçük bir değişiklikle buna bağlanabilir — şu an kapsam dışı, istek gelirse buraya yeni bir alt bölüm eklenecek.
+
+### 5.3 Dalga 4: Ayarlar UI wiring (henüz yapılmadı)
+
+Ayarlar prefabına `keyBindingRows`'a Bas-Konuş satırı ekleme + slider/toggle wiring (`UnifiedSettingsManager.cs:559-580`).

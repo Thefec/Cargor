@@ -245,6 +245,26 @@ namespace NewCss
 
         public int RosterPlayerCount => _playerRoster.Count;
 
+        /// <summary>
+        /// Telsiz HUD'u (Adım 7) için: tek bir clientId'nin roster adını arar. GetRosterPlayerNames
+        /// ClientId'yi düşürüyor (yalnızca isim listesi döner) — bu yüzden Break Room/End Game
+        /// dışındaki tüketiciler (HUD gibi, "hangi clientId'nin adı ne") için AYRI bir metod gerekti.
+        /// Davranış değişikliği YOK — sadece mevcut _playerRoster üzerinde salt-okunur bir arama.
+        /// </summary>
+        public bool TryGetRosterName(ulong clientId, out string name)
+        {
+            for (int i = 0; i < _playerRoster.Count; i++)
+            {
+                if (_playerRoster[i].ClientId == clientId)
+                {
+                    name = _playerRoster[i].Name.ToString();
+                    return true;
+                }
+            }
+            name = null;
+            return false;
+        }
+
         #endregion
 
         [Header("Economy Settings")]
