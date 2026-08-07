@@ -1,5 +1,17 @@
 # Telsiz — Unity Editor'de Elle Yapılacak İşler
 
+> ## 🟢 HİÇBİRİ TEST İÇİN ZORUNLU DEĞİL — bugün Play'e basıp test edebilirsin
+> Kod, bu dosyadaki hiçbir authoring yapılmadan da **tam çalışır**: HUD ve konuşmacı slotları koddan kuruluyor, PTT `V`'ye bağlı, ayarlar varsayılan değerlerle çalışıyor, klik SFX'leri null-guard'lı, lokalizasyon anahtarları Türkçe fallback'e düşüyor. Aşağıdakiler **kozmetik/UX cilası** — sistemi çalıştırmak için değil, oyuncuya ayar/tuş değiştirme imkânı vermek ve görünümü güzelleştirmek için.
+>
+> ### İlk test için tek yapman gereken (30 saniye)
+> 1. `Tools ▸ Cargor ▸ Voice ▸ Kendini Dinle (loopback)` — **aç**
+> 2. `Tools ▸ Cargor ▸ Voice ▸ İstatistik Overlay` — aç (Play'den ÖNCE)
+> 3. Play'e bas, **`V`** tuşuna basılı tutup konuş → kendi sesini ~120 ms gecikmeyle telsiz filtresinden duymalısın.
+>
+> Overlay'de bakılacak iki şey: **tepe paket boyutu** (700 B'yi geçerse 800 B kapağı yeniden değerlendirilmeli — planın en önemli ölçülmemiş varsayımı) ve **ring buffer doluluğu** 120 ms hedefi etrafında salınıyor mu, `under=` sayacı sürekli artıyor mu.
+>
+> ⚠️ Ses gelmiyorsa sırayla: Steam açık mı (`FacepunchTransport` zaten Steam'i şart koşuyor) · Windows mikrofon izni · Console'da `VoiceErrorNoSteam`/`VoiceErrorNoMic` uyarısı var mı (ikisi de oturum başına bir kez basılır).
+
 > **NOT:** Bu dosya `plans/telsiz-voice-chat.md` planının kod-dışı (Unity Editor authoring) adımlarını topluyor. Kod tarafı subagent'larla ilerlerken bazı işler (lokalizasyon tabloları, prefab authoring, StringTable elle düzenlenemez) yalnızca Editor'de elle yapılabiliyor. **Sonraki dalgalar (prefab/SFX/ayarlar UI wiring) bu dosyaya yeni bölüm olarak ekleme yapacak** — şu an yalnızca Dalga 1 kapsamı olan **lokalizasyon** bölümü dolu.
 
 ---

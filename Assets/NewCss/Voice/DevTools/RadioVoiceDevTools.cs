@@ -102,6 +102,31 @@ namespace NewCss.DevTools
 
         private static bool IsStatsEnabled() => EditorPrefs.GetBool(PREF_STATS_ENABLED, false);
 
+        // ─── Kendini Dinle (loopback) — diğer üçünden FARKLI, dikkat ───────────────────────────
+        // NEDEN BU MENÜ VAR: "Kendini Dinle" loopback'i, telsizin tek-makinede doğrulanabilen
+        // yolu (plan Katman B, özelliğin ~%70'i). Ama onu açan tek arayüz ayarlar panelindeki
+        // `voiceSelfMonitorToggle` ve o toggle Inspector'da HENÜZ authoring edilmedi
+        // (bkz. plans/telsiz-editor-isleri.md §5.3) → prefab işi yapılmadan hiç test edilemezdi.
+        // Bu menü o kilidi açıyor: prefab authoring'i beklemeden PTT'ye basıp kendini duyabilirsin.
+        //
+        // Diğer üç toggle'dan İKİ farkı var:
+        //   1) EditorPrefs DEĞİL, RadioVoicePrefs (PlayerPrefs) yazıyor — yani ayarlar paneli
+        //      authoring edilince AYNI değeri paylaşırlar, ikinci bir gerçek kaynak doğmaz.
+        //   2) Play ORTASINDA açılıp kapanabilir: RadioVoiceRuntime bunu her pakette canlı okuyor
+        //      (RadioVoiceRuntime.cs:185), GameObject kurulumuna bağlı değil.
+        private const string MENU_SELFMON = "Tools/Cargor/Voice/Kendini Dinle (loopback)";
+
+        [MenuItem(MENU_SELFMON)]
+        private static void ToggleSelfMonitor()
+            => RadioVoicePrefs.SetSelfMonitorEnabled(!RadioVoicePrefs.IsSelfMonitorEnabled());
+
+        [MenuItem(MENU_SELFMON, true)]
+        private static bool ToggleSelfMonitorValidate()
+        {
+            UnityEditor.Menu.SetChecked(MENU_SELFMON, RadioVoicePrefs.IsSelfMonitorEnabled());
+            return true;
+        }
+
         private static readonly string RecordingPath =
             Path.Combine(Application.persistentDataPath, "CargorVoiceRecordings", "capture.bin");
 
