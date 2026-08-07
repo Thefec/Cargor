@@ -113,6 +113,20 @@ namespace NewCss.Voice.Core
                 }
 
                 Interlocked.Increment(ref _overrunCount);
+
+                // BİLİNÇLİ SIRA — sonucu güvenli tarafta, dokunmayın.
+                // `_read` burada, yeni örnekler `_buffer`'a yazılmadan ve `_write` ilerlemeden ÖNCE
+                // yayınlanıyor. Yani aşağıdaki döngü boyunca tüketici (audio thread) `_read`'i yeni,
+                // `_write`'ı hâlâ eski görebilir → `AvailableSamples` bir an için küçülür/negatife
+                // düşer. Bunun tek sonucu O callback'te fazladan sessizlik dönmesidir: `Read`
+                // yetersiz veride ASLA kısa dönmez, sıfırla doldurur ve playout kapısını yeniden
+                // kurar. Veri bozulması veya çökme YOK.
+                // Sırayı ters çevirmek (önce veri+`_write`, sonra `_read`) bu pencereyi kapatmıyor,
+                // yerine BAŞKA bir pencere açıyor: tüketici o anda hâlâ [oldRead, newRead) bölgesini
+                // okuyor olabilir ve biz tam oraya yeni örnek yazarız → yarı-üzerine-yazılmış bölge
+                // duyulur. İkisi de yalnızca overrun anında (ağır jitter fırtınası) mümkün; fazladan
+                // sessizlik, bozuk örnekten iyidir. Gerçek çözüm iki indeksi tek atomik adımda
+                // yayınlamak olurdu (tek `long`'a paketlemek) — bu dosyanın kapsamı dışı.
                 Volatile.Write(ref _read, newRead);
             }
 
@@ -120,7 +134,6 @@ namespace NewCss.Voice.Core
                 _buffer[Wrap(writeLocal + i)] = source[sourceOffset + i];
 
             writeLocal += count;
-            _write = writeLocal;
             Volatile.Write(ref _write, writeLocal); // yayınlama bariyeri: veri YAZILDIKTAN SONRA işaretle
         }
 
