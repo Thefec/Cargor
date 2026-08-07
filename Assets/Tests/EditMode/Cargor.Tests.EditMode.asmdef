@@ -1,6 +1,6 @@
 {
   "name": "Cargor.Tests.EditMode",
-  "references": ["NewCss.Roguelite", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
+  "references": ["NewCss.Roguelite", "NewCss.Voice.Core", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
   "includePlatforms": ["Editor"],
   "overrideReferences": true,
   "precompiledReferences": ["nunit.framework.dll"],
