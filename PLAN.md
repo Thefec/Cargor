@@ -10,7 +10,7 @@
 
 **YOK — kod tarafında açık iş kalmadı.** Bir sonraki adım kod değil, **play-test**.
 
-`main` = `c8e3217`, **origin/main ile senkron (push'lu)**. Ekonomi denge turu 2026-08-06'da merge edildi (`238fd92`, `--no-ff`, 21 commit) — sorun çıkarsa tek noktadan revert edilebilir.
+`main` = `6e945bb`, **origin/main'in 1 önünde (PUSH YOK)**. Ekonomi denge turu 2026-08-06'da merge edildi (`238fd92`, `--no-ff`, 21 commit) — sorun çıkarsa tek noktadan revert edilebilir.
 
 - ✅ **Roguelite draft + RELEASE PUSH FAZ 0/1** — arşiv: [plans/roguelite-draft.md](plans/roguelite-draft.md), [plans/release-push.md](plans/release-push.md)
 - ✅ **Ekonomi sıfırdan yeniden hesaplandı + uygulandı** — 4 faz analiz ([plans/economy-rebuild-2026-07-30*.md](plans/economy-rebuild-2026-07-30-faz4-final.md)), §D#1–#8 tamamı kodda; kalite kapısı 3 turda ONAY
@@ -24,12 +24,9 @@
 1. 🔴 **PLAY-TEST — tek gerçek kapı.** Bu turda kira, prestij, upgrade fiyatları, quest ödülleri, event çarpanları ve telefon ekonomisi değişti; **hiçbiri oyun içinde çalışırken görülmedi.** Makine doğrulaması "derleniyor ve sayılar doğru yerde" der, "oyun iyi hissettiriyor" demez. Checklist tabanı: [plans/playtest-2026-07-19.md](plans/playtest-2026-07-19.md) (bayat, ekonomi kısmı yeniden yazılmalı).
    **Ölçülecekler duyarlılık sırasına göre:** `kutu/dk/oyuncu` (1.2→2.0 ile 1P kümülatifi %117 değişiyor) · masa meşgul süresi S · `agile_crew`'in üretime yansıması · telefon yanıtlamanın oyuncu-saniyesi maliyeti. Bir oyun günü yalnız 200–330 gerçek saniye → **mutlak TL değil oranlarla konuş.**
 2. 🙋 **Kullanıcıda bekleyen 3 iş:** (a) 2. servis masasının mesh/collider yerleşimi — headless doğrulayamıyor; (b) sahnede `endIntensity 0.03→0` plansız değişiklik, istenmiyorsa geri al; (c) `StringTable Shared Data`'daki event açıklamaları eski yüzdelerde kalmış olabilir.
-3. 🔴 **PERK MİMARİSİ — karar bekliyor.** `PerkEffect` kalıcı asset'lere (SO + **prefab**) runtime'da yazıyor, geri almıyor. İki ayrı sonuç: (a) 7 ekonomi alanı kalıcı bozuluyor, (b) 5 perk muhtemelen hiç çalışmıyor (`Truck.Awake` her spawn'da SO'dan yeniden okuyor). Detay: [plans/devam.md](plans/devam.md) 2026-08-07, [Assets/Editor/EconomyInvariantCheck.cs](Assets/Editor/EconomyInvariantCheck.cs).
-   **Seçenekler:**
-   - **A — Runtime override katmanı** (doğru ama büyük): perkler asset'e değil bir `RuntimeEconomyState`'e yazar; okuyucular oradan okur. Bozulma yapısal olarak imkânsız hale gelir.
-   - **B — Snapshot + restore** (orta): `UpgradePanel` spawn'da tabanları yedekler, despawn'da geri yazar. Ucuz ama Editor çökerse yedek uygulanmaz.
-   - **C — Canlı instance'a uygula** (perkleri canlandırır): `TruckSpawner` her yeni tıra aktif perkleri uygular. **⚠️ 5 ölü perk canlanır → ekonomi kayar, economist turu şart.**
-   - Önerim: **B + C ayrı ayrı** — B bozulmayı hemen durdurur (denge değişmez), C ayrı bir denge turu olarak sonra.
+3. **PERK MİMARİSİ — (a) ✅ KAPANDI / (b) 🟡 AÇIK.**
+   - ✅ **Asset bozulması durdu** — seçenek **B (snapshot + restore)** uygulandı (2026-08-07, `6e945bb`, kontrol ONAY). 13 alan (SO×7 + `Truck` prefab×4 + `PlayerMovement` prefab×2) `UpgradePanel`'de static snapshot'a alınıp `OnNetworkDespawn`+`OnDestroy`'da geri yazılıyor. Denge değişmedi; denetçi 179/179.
+   - 🟡 **AÇIK — seçenek C: 5 ölü perk.** `gambler_case` · `all_in` (ödül kısmı) · `prestige_broker` · `fast_hangar` · `agile_crew` hâlâ etkisiz: perk prefab'a yazıyor ama `Truck.Awake` her spawn'da değerleri SO'dan yeniden okuyor (`Truck.cs:211-218`); `PlayerMovement` de prefab olduğu için mevcut oyunculara ulaşmıyor. Fix = `TruckSpawner`/spawn yolunun aktif perkleri canlı instance'a uygulaması. **⚠️ 5 perk canlanınca ekonomi kayar → economist turu ŞART, ayrı denge turu.** Play-test'ten SONRA yapılmalı (ölçüm tabanı kirlenmesin).
 4. 📖 ~~GDD senkronu~~ ✅ **BİTTİ** (2026-08-07, `bc43773`) — §4/§5/§6/§7/§8/§13/§14/§16/§19/§21/§31 koda hizalandı; §7 Kota Sistemi tamamen kaldırıldı (kodda yok).
 5. 🧹 **Temizlik onayı bekliyor:** kök `herhangi` (0 bayt) + `Assets/_Recovery/0 (1..13).unity` (13 dosya).
 
