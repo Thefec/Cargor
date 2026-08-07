@@ -150,6 +150,19 @@ public class UnifiedSettingsManager : MonoBehaviour
     [SerializeField, Tooltip("SFX ses text'i")]
     public TextMeshProUGUI sfxVolumeText;
 
+    [Header("=== VOICE (TELSİZ) SETTINGS ===")]
+    [SerializeField, Tooltip("Telsiz ses seviyesi slider'ı — RadioVoicePrefs (Assets/NewCss/Voice/RadioVoicePrefs.cs) tek gerçek kaynak, burada PREF_VOICE_* gibi paralel bir anahtar YOK")]
+    public Slider voiceVolumeSlider;
+
+    [SerializeField, Tooltip("Telsiz ses seviyesi text'i")]
+    public TextMeshProUGUI voiceVolumeText;
+
+    [SerializeField, Tooltip("Telsiz açık/kapalı toggle'ı")]
+    public Toggle voiceEnabledToggle;
+
+    [SerializeField, Tooltip("\"Kendini Dinle\" (self-monitor / loopback) toggle'ı — varsayılan kapalı")]
+    public Toggle voiceSelfMonitorToggle;
+
     [Header("=== KEY BINDING UI ===")]
     [SerializeField, Tooltip("Tuş atama satırları (Controls sekmesi)")]
     public KeyBindingRow[] keyBindingRows;
@@ -241,6 +254,12 @@ public class UnifiedSettingsManager : MonoBehaviour
         public float MusicVolume;
         public float SFXVolume;
 
+        // Telsiz (Bas-Konuş) — gerçek kaynak RadioVoicePrefs (Assets/NewCss/Voice/RadioVoicePrefs.cs),
+        // buradaki alanlar sadece UI-bağlama + "kaydedilmemiş değişiklik var mı" takibi içindir.
+        public float VoiceVolume;
+        public bool VoiceEnabled;
+        public bool VoiceSelfMonitor;
+
         // Controls
         public float Sensitivity;
         public bool InvertYAxis;
@@ -256,6 +275,9 @@ public class UnifiedSettingsManager : MonoBehaviour
                 MasterVolume = MasterVolume,
                 MusicVolume = MusicVolume,
                 SFXVolume = SFXVolume,
+                VoiceVolume = VoiceVolume,
+                VoiceEnabled = VoiceEnabled,
+                VoiceSelfMonitor = VoiceSelfMonitor,
                 Sensitivity = Sensitivity,
                 InvertYAxis = InvertYAxis
             };
@@ -272,6 +294,9 @@ public class UnifiedSettingsManager : MonoBehaviour
                    Mathf.Approximately(MasterVolume, other.MasterVolume) &&
                    Mathf.Approximately(MusicVolume, other.MusicVolume) &&
                    Mathf.Approximately(SFXVolume, other.SFXVolume) &&
+                   Mathf.Approximately(VoiceVolume, other.VoiceVolume) &&
+                   VoiceEnabled == other.VoiceEnabled &&
+                   VoiceSelfMonitor == other.VoiceSelfMonitor &&
                    Mathf.Approximately(Sensitivity, other.Sensitivity) &&
                    InvertYAxis == other.InvertYAxis;
         }
@@ -350,6 +375,7 @@ public class UnifiedSettingsManager : MonoBehaviour
         SetupScreenModeDropdown();
         SetupVSyncToggle();
         SetupAudioSliders();
+        SetupVoiceControls();
         SetupLanguageDropdown();
         SetupControlsUI();
         SetupKeyBindingUI();
@@ -459,6 +485,34 @@ public class UnifiedSettingsManager : MonoBehaviour
             PlaySliderSound();
             callback?.Invoke(value);
         });
+    }
+
+    /// <summary>
+    /// Telsiz (Bas-Konuş) ayarları — diğer 3 audio slider'ıyla AYNI SetupVolumeSlider deseni kullanılır.
+    /// Prefab authoring henüz yapılmadıysa (bkz. plans/telsiz-editor-isleri.md) alanlar null kalır —
+    /// SetupVolumeSlider ve aşağıdaki null-guard'lar bu durumda hatasız no-op olur.
+    /// </summary>
+    private void SetupVoiceControls()
+    {
+        SetupVolumeSlider(voiceVolumeSlider, HandleVoiceVolumeChanged);
+
+        if (voiceEnabledToggle != null)
+        {
+            voiceEnabledToggle.onValueChanged.AddListener(value =>
+            {
+                PlayButtonSound();
+                HandleVoiceEnabledChanged(value);
+            });
+        }
+
+        if (voiceSelfMonitorToggle != null)
+        {
+            voiceSelfMonitorToggle.onValueChanged.AddListener(value =>
+            {
+                PlayButtonSound();
+                HandleVoiceSelfMonitorChanged(value);
+            });
+        }
     }
 
     private void SetupButtons()
@@ -897,6 +951,12 @@ public class UnifiedSettingsManager : MonoBehaviour
         _savedSettings.MasterVolume = PlayerPrefs.GetFloat(PREF_MASTER_VOLUME, DEFAULT_VOLUME);
         _savedSettings.MusicVolume = PlayerPrefs.GetFloat(PREF_MUSIC_VOLUME, DEFAULT_VOLUME);
         _savedSettings.SFXVolume = PlayerPrefs.GetFloat(PREF_SFX_VOLUME, DEFAULT_VOLUME);
+
+        // Telsiz — PREF_VOICE_* gibi paralel bir anahtar YOK, RadioVoicePrefs (Assets/NewCss/Voice/
+        // RadioVoicePrefs.cs) tek gerçek kaynak; burada sadece o değerler UI'ya okunuyor.
+        _savedSettings.VoiceVolume = RadioVoicePrefs.GetVolume();
+        _savedSettings.VoiceEnabled = RadioVoicePrefs.IsEnabled();
+        _savedSettings.VoiceSelfMonitor = RadioVoicePrefs.IsSelfMonitorEnabled();
     }
     private void LoadControlsSettings()
     {
@@ -982,6 +1042,44 @@ public class UnifiedSettingsManager : MonoBehaviour
         _selectedSettings.SFXVolume = newValue;
         ApplyAudioSettings();
         UpdateAudioTexts();
+        CheckForChanges();
+    }
+
+    /// <summary>
+    /// DİKKAT: Master/Music/SFX'in tersine ApplyAudioSettings() ÇAĞRILMAZ — telsiz sesi master ile
+    /// ÇARPILMAZ (bkz. RadioVoicePrefs.cs sınıf yorumu). ApplyAudioSettings() zaten
+    /// AudioListener.volume = master yapıyor; telsiz slot'ları o mixer/listener zincirine hiç girmiyor,
+    /// doğrudan RadioVoiceSpeakerSlot.AudioSource üzerinden çalıyor. RadioVoicePrefs tek gerçek kaynak
+    /// olduğu için SetVolume burada HEMEN PlayerPrefs'e yazar (Master/Music/SFX'te olduğu gibi
+    /// "Kaydet" tuşuna kadar beklemez) — ApplyPrefsNow() bu yeni değeri aktif konuşan slot'lara da
+    /// anında uygular. Cancel/Geri tuşu (bkz. ApplyAllSettingsFromSaved) bu anlık yazımı son kaydedilen
+    /// değere geri sarar, böylece "kaydedilmemiş değişiklik" UX'i diğer 3 slider'la tutarlı kalır.
+    /// </summary>
+    private void HandleVoiceVolumeChanged(float newValue)
+    {
+        _selectedSettings.VoiceVolume = newValue;
+        RadioVoicePrefs.SetVolume(newValue);
+        RadioVoiceRuntime.Instance?.ApplyPrefsNow();
+        UpdateAudioTexts();
+        CheckForChanges();
+    }
+
+    /// <summary>Yakalama tarafı zaten her frame RadioVoicePrefs.IsEnabled() okuyor (RadioVoiceRuntime.
+    /// Update → preconditionsOk), yani SetEnabled çağrısı tek başına anında etkili olur — ek bir
+    /// ApplyPrefsNow çağrısına gerek yok.</summary>
+    private void HandleVoiceEnabledChanged(bool newValue)
+    {
+        _selectedSettings.VoiceEnabled = newValue;
+        RadioVoicePrefs.SetEnabled(newValue);
+        CheckForChanges();
+    }
+
+    /// <summary>Self-monitor da her yakalanan paketle canlı okunuyor (RadioVoiceRuntime.OnCapturedPacket
+    /// → RadioVoicePrefs.IsSelfMonitorEnabled()) — burada da ek bir anlık-uygulama adımı gerekmiyor.</summary>
+    private void HandleVoiceSelfMonitorChanged(bool newValue)
+    {
+        _selectedSettings.VoiceSelfMonitor = newValue;
+        RadioVoicePrefs.SetSelfMonitorEnabled(newValue);
         CheckForChanges();
     }
 
@@ -1129,6 +1227,8 @@ public class UnifiedSettingsManager : MonoBehaviour
     {
         vSyncToggle?.SetIsOnWithoutNotify(_savedSettings.VSyncEnabled);
         invertYAxisToggle?.SetIsOnWithoutNotify(_savedSettings.InvertYAxis);
+        voiceEnabledToggle?.SetIsOnWithoutNotify(_savedSettings.VoiceEnabled);
+        voiceSelfMonitorToggle?.SetIsOnWithoutNotify(_savedSettings.VoiceSelfMonitor);
     }
 
     private void UpdateSlidersWithoutNotify()
@@ -1136,6 +1236,7 @@ public class UnifiedSettingsManager : MonoBehaviour
         masterVolumeSlider?.SetValueWithoutNotify(_savedSettings.MasterVolume);
         musicVolumeSlider?.SetValueWithoutNotify(_savedSettings.MusicVolume);
         sfxVolumeSlider?.SetValueWithoutNotify(_savedSettings.SFXVolume);
+        voiceVolumeSlider?.SetValueWithoutNotify(_savedSettings.VoiceVolume);
         graphicsQualitySlider?.SetValueWithoutNotify(_savedSettings.QualityLevel);
         sensitivitySlider?.SetValueWithoutNotify(_savedSettings.Sensitivity);
     }
@@ -1150,6 +1251,9 @@ public class UnifiedSettingsManager : MonoBehaviour
 
         if (sfxVolumeText != null)
             sfxVolumeText.text = Mathf.RoundToInt(_selectedSettings.SFXVolume * 100).ToString();
+
+        if (voiceVolumeText != null)
+            voiceVolumeText.text = Mathf.RoundToInt(_selectedSettings.VoiceVolume * 100).ToString();
     }
 
     private void UpdateQualityText(int qualityLevel)
@@ -1248,11 +1352,21 @@ public class UnifiedSettingsManager : MonoBehaviour
         _savedSettings.MasterVolume = _selectedSettings.MasterVolume;
         _savedSettings.MusicVolume = _selectedSettings.MusicVolume;
         _savedSettings.SFXVolume = _selectedSettings.SFXVolume;
+        _savedSettings.VoiceVolume = _selectedSettings.VoiceVolume;
+        _savedSettings.VoiceEnabled = _selectedSettings.VoiceEnabled;
+        _savedSettings.VoiceSelfMonitor = _selectedSettings.VoiceSelfMonitor;
 
         PlayerPrefs.SetFloat(PREF_MASTER_VOLUME, _savedSettings.MasterVolume);
         PlayerPrefs.SetFloat(PREF_MUSIC_VOLUME, _savedSettings.MusicVolume);
         PlayerPrefs.SetFloat(PREF_SFX_VOLUME, _savedSettings.SFXVolume);
         PlayerPrefs.Save();
+
+        // RadioVoicePrefs zaten Handle* içinde anında yazmıştı — burada TEKRAR çağırmak zararsız
+        // no-op'tur (RadioVoicePrefs.Set* değişmeyen değeri sessizce atlar), ama diğer 3 alanla
+        // SEMANTİK simetriyi korur: "Kaydet" tuşu her alanın gerçek kaynağına bir kez daha yazar.
+        RadioVoicePrefs.SetVolume(_savedSettings.VoiceVolume);
+        RadioVoicePrefs.SetEnabled(_savedSettings.VoiceEnabled);
+        RadioVoicePrefs.SetSelfMonitorEnabled(_savedSettings.VoiceSelfMonitor);
 
         CheckForChanges();
         Debug.Log($"{LOG_PREFIX} ✅ Audio ayarları kaydedildi!");
@@ -1305,6 +1419,13 @@ public class UnifiedSettingsManager : MonoBehaviour
         PlayerPrefs.SetFloat(PREF_MUSIC_VOLUME, _savedSettings.MusicVolume);
         PlayerPrefs.SetFloat(PREF_SFX_VOLUME, _savedSettings.SFXVolume);
 
+        // Telsiz — PREF_VOICE_* YOK, RadioVoicePrefs kendi anahtarlarına (Voice_Volume/Voice_Enabled/
+        // Voice_SelfMonitor) kendi setter'ları üzerinden yazar. Handle* içinde zaten anında yazılmıştı,
+        // burada tekrar çağırmak diğer alanlarla simetriyi korur ve zararsızdır (değişmeyen değer no-op).
+        RadioVoicePrefs.SetVolume(_savedSettings.VoiceVolume);
+        RadioVoicePrefs.SetEnabled(_savedSettings.VoiceEnabled);
+        RadioVoicePrefs.SetSelfMonitorEnabled(_savedSettings.VoiceSelfMonitor);
+
         // Controls
         PlayerPrefs.SetFloat(PREF_SENSITIVITY, _savedSettings.Sensitivity);
         PlayerPrefs.SetInt(PREF_INVERT_Y, _savedSettings.InvertYAxis ? 1 : 0);
@@ -1338,6 +1459,9 @@ public class UnifiedSettingsManager : MonoBehaviour
         masterVolumeSlider?.SetValueWithoutNotify(_selectedSettings.MasterVolume);
         musicVolumeSlider?.SetValueWithoutNotify(_selectedSettings.MusicVolume);
         sfxVolumeSlider?.SetValueWithoutNotify(_selectedSettings.SFXVolume);
+        voiceVolumeSlider?.SetValueWithoutNotify(_selectedSettings.VoiceVolume);
+        voiceEnabledToggle?.SetIsOnWithoutNotify(_selectedSettings.VoiceEnabled);
+        voiceSelfMonitorToggle?.SetIsOnWithoutNotify(_selectedSettings.VoiceSelfMonitor);
         sensitivitySlider?.SetValueWithoutNotify(_selectedSettings.Sensitivity);
         invertYAxisToggle?.SetIsOnWithoutNotify(_selectedSettings.InvertYAxis);
         UpdateSensitivityText();
@@ -1351,10 +1475,25 @@ public class UnifiedSettingsManager : MonoBehaviour
         ApplyScreenMode(_savedSettings.ScreenMode);
         ApplyVSyncSettings(_savedSettings.VSyncEnabled);
         ApplyAudioSettings();
+        ApplyVoiceSettingsFromSaved();
         UpdateAudioTexts();
         UpdateQualityText(_savedSettings.QualityLevel);
         UpdateSensitivityText();
         UpdateInvertYAxisText();
+    }
+
+    /// <summary>
+    /// Geri/İptal (ResetToSavedSettings → ApplyAllSettingsFromSaved) yolunda çağrılır. HandleVoice*
+    /// değişiklik oldukça RadioVoicePrefs'e HEMEN yazmıştı (Master/Music/SFX'in tersine, o üçü "Kaydet"e
+    /// kadar sadece _selectedSettings'te canlı önizleme olarak kalır) — kullanıcı kaydetmeden panelden
+    /// çıkarsa bu, o anlık yazımı son KAYDEDİLEN değere geri sarar (hem PlayerPrefs hem canlı slot'lar).
+    /// </summary>
+    private void ApplyVoiceSettingsFromSaved()
+    {
+        RadioVoicePrefs.SetVolume(_savedSettings.VoiceVolume);
+        RadioVoicePrefs.SetEnabled(_savedSettings.VoiceEnabled);
+        RadioVoicePrefs.SetSelfMonitorEnabled(_savedSettings.VoiceSelfMonitor);
+        RadioVoiceRuntime.Instance?.ApplyPrefsNow();
     }
 
     #endregion
@@ -1365,7 +1504,10 @@ public class UnifiedSettingsManager : MonoBehaviour
     {
         _hasUnsavedAudioChanges = !Mathf.Approximately(_selectedSettings.MasterVolume, _savedSettings.MasterVolume) ||
                                   !Mathf.Approximately(_selectedSettings.MusicVolume, _savedSettings.MusicVolume) ||
-                                  !Mathf.Approximately(_selectedSettings.SFXVolume, _savedSettings.SFXVolume);
+                                  !Mathf.Approximately(_selectedSettings.SFXVolume, _savedSettings.SFXVolume) ||
+                                  !Mathf.Approximately(_selectedSettings.VoiceVolume, _savedSettings.VoiceVolume) ||
+                                  _selectedSettings.VoiceEnabled != _savedSettings.VoiceEnabled ||
+                                  _selectedSettings.VoiceSelfMonitor != _savedSettings.VoiceSelfMonitor;
 
         _hasUnsavedVideoChanges = _selectedSettings.QualityLevel != _savedSettings.QualityLevel ||
                                   _selectedSettings.LocaleID != _savedSettings.LocaleID ||
@@ -1397,6 +1539,9 @@ public class UnifiedSettingsManager : MonoBehaviour
         masterVolumeSlider?.onValueChanged.RemoveAllListeners();
         musicVolumeSlider?.onValueChanged.RemoveAllListeners();
         sfxVolumeSlider?.onValueChanged.RemoveAllListeners();
+        voiceVolumeSlider?.onValueChanged.RemoveAllListeners();
+        voiceEnabledToggle?.onValueChanged.RemoveAllListeners();
+        voiceSelfMonitorToggle?.onValueChanged.RemoveAllListeners();
         sensitivitySlider?.onValueChanged.RemoveAllListeners();
         invertYAxisToggle?.onValueChanged.RemoveAllListeners();
         resetBindingsButton?.onClick.RemoveAllListeners();

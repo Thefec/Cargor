@@ -74,6 +74,17 @@ public sealed class RadioVoiceSpeakerSlot : MonoBehaviour
 
     public VoiceSequenceTracker Tracker { get; } = new VoiceSequenceTracker();
 
+#if UNITY_EDITOR
+    /// <summary>Adım 9 (İstatistik overlay) — SADECE EDİTÖR'DE VAR. Ring buffer'a salt-okunur
+    /// erişim; overlay UnderrunCount/OverrunCount/DroppedSamples/AvailableSamples'ı BUNUN üzerinden
+    /// okur — VoiceRingBuffer'a yeni bir kilit/API EKLENMİYOR, mevcut public sayaçlar kullanılıyor.</summary>
+    public VoiceRingBuffer DevRing => _ring;
+
+    /// <summary>Adım 9 — overlay'in AvailableSamples'ı (örnek) ms'e çevirmesi için (VoiceBufferPolicy
+    /// sample-rate ister, 48000 hardcode edilemez — bkz. sınıf yorumu).</summary>
+    public int DevSampleRate => _sampleRate;
+#endif
+
     /// <summary>
     /// Havuz elemanı üretir. Opsiyonel prefab override: Resources/Voice/RadioSpeakerSlot varsa ondan
     /// Instantiate edilir (sanatçı filtreleri elle sanatsal ayarlamış olabilir — bkz.
@@ -166,6 +177,18 @@ public sealed class RadioVoiceSpeakerSlot : MonoBehaviour
     {
         if (sampleRate == _sampleRate && _streamClip != null) return;
         BuildRingAndClip(sampleRate);
+    }
+
+    /// <summary>
+    /// Ayarlar menüsünden ses seviyesi değiştirildiğinde (bkz. RadioVoicePlayback.ApplyVolumeToAllSlots
+    /// / RadioVoiceRuntime.ApplyPrefsNow) canlı <see cref="_voiceSource"/>'un volume'unu güncel
+    /// RadioVoicePrefs.GetVolume() değerine eşitler. BuildAudioGraphIfNeeded() içindeki ilk atamayla
+    /// AYNI değeri okur — farkı, init dışında (oturum ortasında) da çağrılabilmesi: o atama sadece
+    /// havuz kurulurken bir kez çalışıyordu, ayar sonradan değişince slot güncellenmiyordu.
+    /// </summary>
+    public void ApplyVolumeNow()
+    {
+        if (_voiceSource != null) _voiceSource.volume = RadioVoicePrefs.GetVolume();
     }
 
     private void BuildRingAndClip(int sampleRate)

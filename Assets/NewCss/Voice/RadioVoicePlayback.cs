@@ -44,6 +44,17 @@ public sealed class RadioVoicePlayback
         foreach (var slot in _pool) slot.Reconfigure(sampleRate);
     }
 
+    /// <summary>
+    /// Ayarlar menüsünden telsiz ses seviyesi değiştirildiğinde (bkz. RadioVoiceRuntime.ApplyPrefsNow)
+    /// havuzdaki TÜM slotların (atanmış olsun olmasın, sonraki bir konuşmacıya atanacak boştaki
+    /// slotlar da dahil) canlı AudioSource.volume'unu güncel RadioVoicePrefs.GetVolume() değerine
+    /// hemen eşitler.
+    /// </summary>
+    public void ApplyVolumeToAllSlots()
+    {
+        foreach (var slot in _pool) slot.ApplyVolumeNow();
+    }
+
     /// <summary>Her frame: burst'ü zaman aşımına uğramış (400ms sessizlik — bkz. VoiceSequenceTracker.IsBurstStale)
     /// slotları serbest bırakır. BurstEnd bayrağı unreliable'da kaybolabileceği için bu, tek güvenilir yol.</summary>
     public void Tick(double now)
@@ -57,6 +68,34 @@ public sealed class RadioVoicePlayback
         }
     }
 
+#if UNITY_EDITOR
+    /// <summary>
+    /// Adım 9 (Dev araçları — RadioVoiceDevTools ağ simülatörü). SADECE EDİTÖR'DE VAR. Doluyken
+    /// <see cref="HandleIncomingPacket"/> paketi ANINDA işlemek yerine buraya yönlendirir; simülatör
+    /// kendi gecikme/jitter/kayıp/dup/sıra-bozma kararını verip (kopyaladığı veriyle) bir süre sonra
+    /// <see cref="HandleIncomingPacketImmediate"/>'i KENDİSİ çağırır. null ise (varsayılan, kapalı)
+    /// PLAYER BUILD'İNDE bu blok #if UNITY_EDITOR ile TAMAMEN DERLEME DIŞI kalır — davranış hiç
+    /// değişmez, ekstra dallanma maliyeti sıfır. Editor'de simülatör kapalıyken de tek bir
+    /// null-check'ten ibaret. Transport/Capture'ın üretim davranışına HİÇ dokunulmuyor — bu, her
+    /// çağıranın (loopback/disk-replay/gerçek ağ) zaten aynı tek giriş noktasından geçmesinden
+    /// yararlanan tek bir kanca (bkz. sınıf yorumu: "kim çağırırsa çağırsın aynı HandleIncomingPacket'ten geçer").
+    /// </summary>
+    public Action<ulong, ArraySegment<byte>> DevIncomingInterceptor;
+
+    /// <summary>
+    /// Adım 9 (İstatistik overlay). SADECE EDİTÖR'DE VAR. <see cref="HandleIncomingPacketImmediate"/>
+    /// geçerli bir başlık okuduğunda (bozuk paket sayılmaz) tetiklenir — overlay bunu "alınan"
+    /// bitrate/paket-boyutu ölçümü için dinler. Aynı sebeple PLAYER BUILD'de yok, null-check dışında maliyeti yok.
+    /// </summary>
+    public event Action<ulong, int> DevPacketReceived;
+
+    /// <summary>
+    /// Adım 9 (İstatistik overlay) — slot havuzuna salt-okunur erişim (overlay her slotun ring
+    /// buffer doluluğunu/sayaçlarını okuyabilsin diye). Havuzu DEĞİŞTİRMEZ, sadece referans verir.
+    /// </summary>
+    public RadioVoiceSpeakerSlot[] DevPool => _pool;
+#endif
+
     /// <summary>
     /// Ağdan bağımsız tek giriş noktası. <paramref name="fullPacket"/> = 4B VoicePacket başlığı +
     /// sıkıştırılmış ses (RadioVoiceCapture'ın ürettiği format, aynen). Bozuk/bilinmeyen versiyon
@@ -64,8 +103,30 @@ public sealed class RadioVoicePlayback
     /// </summary>
     public void HandleIncomingPacket(ulong speakerId, ArraySegment<byte> fullPacket)
     {
+#if UNITY_EDITOR
+        if (DevIncomingInterceptor != null)
+        {
+            DevIncomingInterceptor(speakerId, fullPacket);
+            return;
+        }
+#endif
+        HandleIncomingPacketImmediate(speakerId, fullPacket);
+    }
+
+    /// <summary>
+    /// Gerçek işleme mantığı (eskiden HandleIncomingPacket'in tamamıydı — Adım 9 için ikiye
+    /// bölündü). Ağ simülatörü enjekte ettiği gecikimden SONRA, kopyaladığı veriyle burayı
+    /// ÇAĞIRIR; normal akışta (simülatör kapalı/yok) HandleIncomingPacket bunu aynı frame'de
+    /// doğrudan çağırır — davranış farksız.
+    /// </summary>
+    public void HandleIncomingPacketImmediate(ulong speakerId, ArraySegment<byte> fullPacket)
+    {
         if (!VoicePacket.TryReadHeader(fullPacket.Array, fullPacket.Offset, fullPacket.Count, out var flags, out var sequence))
             return;
+
+#if UNITY_EDITOR
+        DevPacketReceived?.Invoke(speakerId, fullPacket.Count);
+#endif
 
         var slot = GetOrAssignSlot(speakerId);
         if (slot == null) return; // havuz dolu, log-once GetOrAssignSlot içinde

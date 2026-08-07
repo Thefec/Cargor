@@ -276,6 +276,22 @@ public sealed class RadioVoiceRuntime : MonoBehaviour
         Playback.Reconfigure(sampleRate);
     }
 
+    /// <summary>
+    /// Adım 8 (Ayarlar UI wiring) — UnifiedSettingsManager, RadioVoicePrefs'in setter'larını
+    /// (SetVolume/SetEnabled/SetSelfMonitorEnabled) çağırdıktan HEMEN SONRA bunu çağırır ki ayar
+    /// oturum ortasında anında etkili olsun. RadioVoicePrefs zaten PlayerPrefs'e anında yazıyor
+    /// ama RadioVoiceSpeakerSlot.BuildAudioGraphIfNeeded() içindeki _voiceSource.volume ataması
+    /// SADECE havuz kurulurken (init'te) bir kez okunuyor — bu metod olmadan ayar değişikliği
+    /// slot'lar zaten var olduğu için görünmezdi, ancak bir sonraki sahne yeniden başlatmasında
+    /// fark edilirdi. IsEnabled() için ek bir şey GEREKMİYOR: Update() preconditionsOk'u zaten her
+    /// frame RadioVoicePrefs.IsEnabled() üzerinden canlı okuyor (yukarıda), yakalama tarafı bu
+    /// metod çağrılmasa da bir sonraki frame'de anında tepki verir.
+    /// </summary>
+    public void ApplyPrefsNow()
+    {
+        Playback?.ApplyVolumeToAllSlots();
+    }
+
     private void OnActiveSceneChanged(Scene previous, Scene next) => TeardownVoice();
     private void OnDisable() => TeardownVoice();
 
