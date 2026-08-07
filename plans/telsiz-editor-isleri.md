@@ -4,9 +4,25 @@
 > Kod, bu dosyadaki hiçbir authoring yapılmadan da **tam çalışır**: HUD ve konuşmacı slotları koddan kuruluyor, PTT `V`'ye bağlı, ayarlar varsayılan değerlerle çalışıyor, klik SFX'leri null-guard'lı, lokalizasyon anahtarları Türkçe fallback'e düşüyor. Aşağıdakiler **kozmetik/UX cilası** — sistemi çalıştırmak için değil, oyuncuya ayar/tuş değiştirme imkânı vermek ve görünümü güzelleştirmek için.
 >
 > ### İlk test için tek yapman gereken (30 saniye)
-> 1. `Tools ▸ Cargor ▸ Voice ▸ Kendini Dinle (loopback)` — **aç**
-> 2. `Tools ▸ Cargor ▸ Voice ▸ İstatistik Overlay` — aç (Play'den ÖNCE)
-> 3. Play'e bas, **`V`** tuşuna basılı tutup konuş → kendi sesini ~120 ms gecikmeyle telsiz filtresinden duymalısın.
+> 1. **`Assets/Scenes/The Main Office.unity` sahnesini aç** — ⚠️ zorunlu, aşağıdaki sahne kapısına bak. Ana menüden/Tutorial'dan Play'e basarsan mikrofon BİLEREK açılmaz.
+> 2. `Tools ▸ Cargor ▸ Voice ▸ Kendini Dinle (loopback)` — **aç**
+> 3. `Tools ▸ Cargor ▸ Voice ▸ İstatistik Overlay` — aç (Play'den ÖNCE)
+> 4. Play'e bas, **`V`** tuşuna basılı tutup konuş → kendi sesini ~120 ms gecikmeyle telsiz filtresinden duymalısın.
+>
+> Loopback testi için **ağ/host başlatmaya gerek yok** — Kendini Dinle ağı tamamen baypas ediyor, sadece sahnede olman yeterli. Console'da şu satırı görmelisin:
+> `[RadioVoiceRuntime] Telsiz AKTİF — sahne: 'The Main Office' ...`
+>
+> ### 🎙️ Sahne kapısı — mikrofon yalnızca oyun haritalarında
+> Kullanıcı kararı: mikrofon **sadece oyun haritalarında** çalışır. Ana menü, lobi (OnlineRoom), IntroScene ve **Tutorial** dahil hiçbir yerde açılmaz.
+>
+> **İsim listesi kullanılmadı** — yeni haritalar eklenecek ve listeyi güncellemeyi unutmak "mikrofon sessizce çalışmıyor" olarak tezahür ederdi. Bunun yerine işaretçi: sahnede **`GameStateManager` var mı?** Grep ile teyitli — `The Main Office`'te VAR; Tutorial/MainMenu/OnlineRoom/IntroScene'de YOK. **Yeni haritalar bu rig'i taşıyacağı için kendiliğinden kapsama girer, kod değişikliği gerekmez.**
+>
+> Tutorial bilerek dışarıda: tek oyunculu, konuşulacak kimse yok — mikrofonu açmak anlamsız ve gizlilik açısından kötü (Windows'un "mikrofon kullanılıyor" göstergesi yanar).
+>
+> Kapı kapalıyken mikrofon **fiilen kapanır** (`StopRecordingSafely()` → `VoiceRecord = false`), sadece paket gönderimi durmakla kalmaz.
+>
+> ### `V` tuşu
+> Proje genelinde tarandı: **tek `KeyCode.V` kullanımı telsizin kendisi**, Input System'de de `v` bağlaması yok. Çakışma yok. Bağlı diğer tuşlar: sol/sağ/orta tık, `E`, `LShift`, `Z`, `X`, `C`, `WASD`. Oyuncu isterse `V`'yi Controls sekmesinden değiştirebilir (o satırın authoring'i §5.3-B'de).
 >
 > Overlay'de bakılacak iki şey: **tepe paket boyutu** (700 B'yi geçerse 800 B kapağı yeniden değerlendirilmeli — planın en önemli ölçülmemiş varsayımı) ve **ring buffer doluluğu** 120 ms hedefi etrafında salınıyor mu, `under=` sayacı sürekli artıyor mu.
 >

@@ -131,7 +131,9 @@ public sealed class RadioVoiceRuntime : MonoBehaviour
         }
         _lastSteamValid = steamValid;
 
-        bool preconditionsOk = steamValid && RadioVoicePrefs.IsEnabled();
+        EvaluateGameplaySceneGate(Time.unscaledTimeAsDouble, force: false);
+
+        bool preconditionsOk = steamValid && RadioVoicePrefs.IsEnabled() && _gameplaySceneAllowed;
         bool pttHeld = preconditionsOk && InputBindingManager.GetAction(InputBindingManager.GameAction.PushToTalk);
 
         double now = Time.unscaledTimeAsDouble; // Time.time/deltaTime YASAK — duraklatma/oyun-sonu timeScale=0 yapıyor
@@ -292,8 +294,58 @@ public sealed class RadioVoiceRuntime : MonoBehaviour
         Playback?.ApplyVolumeToAllSlots();
     }
 
-    private void OnActiveSceneChanged(Scene previous, Scene next) => TeardownVoice();
+    private void OnActiveSceneChanged(Scene previous, Scene next)
+    {
+        TeardownVoice();
+        // Sahne değişti → kapıyı ZORLA yeniden değerlendir (aşağıdaki "true ise atla" kısayolu
+        // aksi hâlde önceki sahnenin kararını taşırdı).
+        EvaluateGameplaySceneGate(Time.unscaledTimeAsDouble, force: true);
+    }
+
     private void OnDisable() => TeardownVoice();
+
+    #region Sahne kapısı — mikrofon YALNIZCA oyun haritalarında
+
+    /// <summary>
+    /// Kullanıcı kararı: mikrofon yalnızca oyun haritalarında çalışsın — ana menüde, lobide,
+    /// intro'da ve Tutorial'da ASLA açılmasın.
+    ///
+    /// NEDEN isim listesi DEĞİL: yeni haritalar eklenecek. Sahne adı listesi her yeni harita için
+    /// kod değişikliği isterdi ve listeyi güncellemeyi unutmak "mikrofon sessizce çalışmıyor"
+    /// şeklinde tezahür ederdi. Bunun yerine işaretçi: <c>GameStateManager</c> sahnede var mı?
+    /// Grep ile teyitli (2026-08-08): The Main Office'te VAR; Tutorial, MainMenu, OnlineRoom,
+    /// IntroScene'de YOK. Her gerçek oyun haritası bu rig'i taşıyacağı için yeni haritalar
+    /// KENDİLİĞİNDEN kapsama girer.
+    ///
+    /// Tutorial bilinçli olarak DIŞARIDA: tek oyunculu, konuşulacak kimse yok — orada mikrofonu
+    /// açmak hem anlamsız hem gizlilik açısından kötü (Windows "mikrofon kullanılıyor" göstergesi).
+    ///
+    /// Kapı <see cref="Update"/>'te <c>preconditionsOk</c>'a giriyor; false olduğunda
+    /// <c>RadioVoiceCapture.Tick</c> <c>StopRecordingSafely()</c> çağırıp <c>State=Disabled</c>'a
+    /// çekiyor — yani mikrofon fiilen KAPANIR, sadece paket gönderimi durmakla kalmaz.
+    /// </summary>
+    private bool _gameplaySceneAllowed;
+    private double _nextSceneGateRecheck;
+    private const double SceneGateRecheckIntervalSeconds = 1.0;
+
+    private void EvaluateGameplaySceneGate(double now, bool force)
+    {
+        // Kapı bir kez açıldıysa sahne boyunca açık kalır — her frame FindFirstObjectByType
+        // çağırmamak için. Kapalıyken saniyede bir yeniden dener: işaretçi geç belirebilir
+        // (additive sahne yüklemesi, spawn sırası), o durumda kilitli kalmasın.
+        if (!force && (_gameplaySceneAllowed || now < _nextSceneGateRecheck)) return;
+        _nextSceneGateRecheck = now + SceneGateRecheckIntervalSeconds;
+
+        bool allowed = FindFirstObjectByType<NewCss.GameStateManager>() != null;
+        if (allowed == _gameplaySceneAllowed && !force) return;
+
+        _gameplaySceneAllowed = allowed;
+        Debug.Log($"[RadioVoiceRuntime] Telsiz {(allowed ? "AKTİF" : "kapalı")} — sahne: " +
+                  $"'{SceneManager.GetActiveScene().name}' (oyun haritası işaretçisi: GameStateManager " +
+                  $"{(allowed ? "bulundu" : "YOK")})");
+    }
+
+    #endregion
 
     private void OnDestroy()
     {
