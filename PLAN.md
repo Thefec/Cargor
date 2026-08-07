@@ -8,7 +8,12 @@
 
 ## 🎯 Şu an aktif iş
 
-**YOK — kod tarafında açık iş kalmadı.** Bir sonraki adım kod değil, **play-test**.
+**YOK — kod yazılmıyor.** İki iş kuyrukta: **play-test** (kullanıcıda) ve **telsiz** (plan onaylı, uygulama komutu bekliyor).
+
+> 🎙️ **TELSİZ (oyun içi bas-konuş sesli iletişim) — PLAN ONAYLI, UYGULAMA BEKLİYOR.**
+> Tam plan: **[plans/telsiz-voice-chat.md](plans/telsiz-voice-chat.md)** (10 adımlık commit sırası, doğrulama katmanları, riskler).
+> Kullanıcı kararı: *"detaylıca planlama yapalım, uygulama komutunu ben vereceğim."* **Komut gelmeden kod yazma.**
+> Ardından gelecek 2. aşama: **oda-bazlı görünürlük** (oda sayısı SABİT DEĞİL, haritaya göre değişecek → veri-güdümlü olmalı). Telsiz tasarımı bunu engellemiyor; gerekçe planın "Sonraki iş" bölümünde.
 
 `main` = `6e945bb`, **origin/main'in 1 önünde (PUSH YOK)**. Ekonomi denge turu 2026-08-06'da merge edildi (`238fd92`, `--no-ff`, 21 commit) — sorun çıkarsa tek noktadan revert edilebilir.
 
@@ -55,6 +60,7 @@
 | **[plans/economy-rebuild-2026-07-30-faz4-final.md](plans/economy-rebuild-2026-07-30-faz4-final.md)** | Uygulanan nihai değer seti (§A gelir · §B değerler · §D sıra · §E ölçülecekler) | ✅ **uygulandı — play-test referansı** |
 | [plans/economy-rebuild-2026-07-30.md](plans/economy-rebuild-2026-07-30.md) · [-faz2](plans/economy-rebuild-2026-07-30-faz2.md) · [-faz3](plans/economy-rebuild-2026-07-30-faz3.md) | 4 fazlık analiz (envanter, verim modeli, kira/prestij/event, upgrade/quest) | 📖 gerekçe kaynağı |
 | **[plans/playtest-olcum-protokolu.md](plans/playtest-olcum-protokolu.md)** | 🙋 **Oynamadan önce aç** — ölçüm protokolü; tek zorunlu çıktı kutu/dk/oyuncu | 🔴 **bekliyor** |
+| **[plans/telsiz-voice-chat.md](plans/telsiz-voice-chat.md)** | 🎙️ Telsiz (bas-konuş) tam implementasyon planı — mimari, 5 kritik karar, 10 adım, doğrulama A-D, riskler | 🟢 **onaylı — uygulama komutu bekliyor** |
 | [plans/playtest-2026-07-19.md](plans/playtest-2026-07-19.md) | Regresyon checklist'i (27 madde) | 🟡 bayat — ekonomi kısmı FAZ4 öncesi (`maxPrestige 240` yazıyor) |
 | [plans/quest-ekleme-rehberi.md](plans/quest-ekleme-rehberi.md) | 30 görevin Inspector doldurma rehberi + değer tablosu | 📖 referans |
 | [plans/economy-audit-2026-07-20.md](plans/economy-audit-2026-07-20.md) | Holistik ekonomi denetimi (7 sistem) | 📖 tarihsel *(tır penceresi cap bulgusu FAZ4'te ÇÜRÜDÜ — darboğaz tır değil insan üretim hızı)* |
