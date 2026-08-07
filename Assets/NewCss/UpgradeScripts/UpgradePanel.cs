@@ -345,6 +345,10 @@ namespace NewCss
 
         private void OnDestroy()
         {
+            // OnNetworkDespawn normal Play-çıkışında/NGO shutdown'da tetiklenir; ama onu tetiklemeyen
+            // yollarda (erken sahne kapanışı vb.) authored SO/prefab değerleri kirli kalmasın diye
+            // burada da çağrılıyor. RestorePerkAssetSnapshot idempotent — iki kez çalışması zararsız.
+            RestorePerkAssetSnapshot();
             LocalizationHelper.OnLocaleChanged -= OnLocaleChanged;
         }
         
@@ -439,6 +443,10 @@ namespace NewCss
 
             if (rerollButton != null) rerollButton.onClick.RemoveListener(OnReroll);
 
+            // PerkEffect (ve InitializeStaminaBaseValue) oturum boyunca kirlettiği SO/prefab alanlarını
+            // authored haline döndür — bkz. RestorePerkAssetSnapshot / CapturePerkAssetSnapshotIfNeeded.
+            RestorePerkAssetSnapshot();
+
             base.OnNetworkDespawn();
         }
 
@@ -485,6 +493,9 @@ namespace NewCss
 
         private void InitializeBaseValues()
         {
+            // EN BAŞTA: aşağıdaki adımlar (InitializeStaminaBaseValue dahil) SO/prefab alanlarına
+            // doğrudan yazmaya başlamadan ÖNCE authored değeri yakala — bkz. CapturePerkAssetSnapshotIfNeeded.
+            CapturePerkAssetSnapshotIfNeeded();
             WarnMissingBackbones();
             InitializeStaminaBaseValue();
             InitializeMoneyBaseValue();
@@ -533,6 +544,147 @@ namespace NewCss
             // Seviye 0: yalnız ilk hangar aktif, diğerleri kapalı.
             UpdateLevelObjects(truckEntry, 0);
             UpdateGarageDoorControllers(truckEntry, 0);
+        }
+
+        #endregion
+
+        #region Perk Asset Snapshot (SO/Prefab restore)
+
+        /// <summary>
+        /// PerkEffect (ve InitializeStaminaBaseValue) runtime'da GameEconomySettings SO'suna
+        /// (<see cref="economySettings"/>) ve Truck/PlayerMovement PREFAB referanslarına doğrudan
+        /// yazıyor — bunlar sahne objesi DEĞİL, disk asset'i. Editor'de Play'den çıkınca Unity sahneyi
+        /// yeniden yükler ama asset'ler bellekte authored (diskteki) değerlerine KENDİLİĞİNDEN dönmez;
+        /// sonraki Play'de (veya build'de aynı process'teki 2. oyunda) kirli değerlerle başlanır ve
+        /// hatta diske yazılıp yanlışlıkla commit'lenebilir. Bu snapshot/restore çifti authored değeri
+        /// yakalar ve her oturum sonunda geri yazar. Yalnız SO/prefab alanları — CustomerManager/
+        /// DayCycleManager/Panel gibi SAHNE objeleri sahne yeniden yüklemesiyle kendiliğinden
+        /// resetlendiği için kapsam dışı (gereksiz yüzey).
+        /// </summary>
+        private class PerkAssetSnapshot
+        {
+            // Yakalama anında ilgili referans (economySettings/Truck/PlayerMovement) null idiyse
+            // false — o grubun restore'u da atlanır (default değerleri authored sanıp yazmasın).
+            public bool HasEconomy = true;
+            public bool HasTruck = true;
+            public bool HasPlayerMovement = true;
+
+            // GameEconomySettings (7 alan) — PerkEffect.cs: ApplyCheapRent, ApplyPrestigeMaster,
+            // ApplyPhoneLine, ApplyLeveragedRent, ApplyAllIn, ApplyHighVolatility
+            public float RentGrowthMultiplier;
+            public float CustomerServedPrestigeBonus;
+            public float PhoneRingPerkBonus;
+            public float RentScaledMultiplier;
+            public float GracePaymentPercent;
+            public float RewardVolatility;
+            public float RewardVolatilityMean;
+
+            // Truck prefab (4 alan) — PerkEffect.cs: ApplyPrestigeBroker, ApplyFastHangar,
+            // ApplyGamblerCase, ApplyAllIn
+            public float BonusPerTier;
+            public float HangarStayDuration;
+            public int RewardPerBox;
+            public int PenaltyPerBox;
+
+            // PlayerMovement prefab (2 alan) — PerkEffect.cs: ApplyEnergeticCrew, ApplyAgileCrew;
+            // ayrıca InitializeStaminaBaseValue (yukarıda) staminaRegenRate'e yazıyor.
+            public float StaminaRegenRate;
+            public float MoveSpeed;
+        }
+
+        // static: SO/prefab bellekte sahne yüklemeleri arası yaşar; bu yüzden authored değer
+        // process ömrü boyunca yalnız BİR KEZ yakalanır (instance alanı olsaydı her yeni spawn'da
+        // — hâlihazırda kirli olan — "o anki" değeri authored sanıp yakalardı). Bir oturumda restore
+        // kaçırılırsa (çökme/erken kapanma), bir sonraki spawn ilk yakalanan authored değere hâlâ
+        // sahip olduğu için buna karşı bağışıktır.
+        private static PerkAssetSnapshot _perkAssetSnapshot;
+
+        /// <summary>
+        /// InitializeBaseValues'ın EN BAŞINDA — herhangi bir Apply*/InitializeStaminaBaseValue
+        /// alanlara yazmadan ÖNCE — çağrılmalı. Zaten yakalanmışsa no-op. Null referanslı gruplar
+        /// (economySettings/Truck/PlayerMovement) sessizce atlanır; o grubun restore'u da atlanır.
+        /// </summary>
+        private void CapturePerkAssetSnapshotIfNeeded()
+        {
+            if (_perkAssetSnapshot != null) return;
+
+            var snap = new PerkAssetSnapshot();
+
+            if (economySettings != null)
+            {
+                snap.RentGrowthMultiplier = economySettings.rentGrowthMultiplier;
+                snap.CustomerServedPrestigeBonus = economySettings.customerServedPrestigeBonus;
+                snap.PhoneRingPerkBonus = economySettings.phoneRingPerkBonus;
+                snap.RentScaledMultiplier = economySettings.rentScaledMultiplier;
+                snap.GracePaymentPercent = economySettings.gracePaymentPercent;
+                snap.RewardVolatility = economySettings.rewardVolatility;
+                snap.RewardVolatilityMean = economySettings.rewardVolatilityMean;
+            }
+            else
+            {
+                snap.HasEconomy = false;
+            }
+
+            if (Truck != null)
+            {
+                snap.BonusPerTier = Truck.bonusPerTier;
+                snap.HangarStayDuration = Truck.hangarStayDuration;
+                snap.RewardPerBox = Truck.rewardPerBox;
+                snap.PenaltyPerBox = Truck.penaltyPerBox;
+            }
+            else
+            {
+                snap.HasTruck = false;
+            }
+
+            if (PlayerMovement != null)
+            {
+                snap.StaminaRegenRate = PlayerMovement.staminaRegenRate;
+                snap.MoveSpeed = PlayerMovement.moveSpeed;
+            }
+            else
+            {
+                snap.HasPlayerMovement = false;
+            }
+
+            _perkAssetSnapshot = snap;
+        }
+
+        /// <summary>
+        /// Yakalanan authored değerleri SO/prefab'a geri yazar. <see cref="OnNetworkDespawn"/> VE
+        /// <see cref="OnDestroy"/>'dan çağrılır (normal Play-çıkışında despawn tetiklenir; onu
+        /// tetiklemeyen yollarda OnDestroy yakalar) — bu yüzden İDEMPOTENT olmalı: iki kez çalışması
+        /// zararsız, aynı authored değeri tekrar yazar. Snapshot hiç alınmadıysa (spawn hiç olmadı) no-op.
+        /// </summary>
+        private void RestorePerkAssetSnapshot()
+        {
+            var snap = _perkAssetSnapshot;
+            if (snap == null) return;
+
+            if (snap.HasEconomy && economySettings != null)
+            {
+                economySettings.rentGrowthMultiplier = snap.RentGrowthMultiplier;
+                economySettings.customerServedPrestigeBonus = snap.CustomerServedPrestigeBonus;
+                economySettings.phoneRingPerkBonus = snap.PhoneRingPerkBonus;
+                economySettings.rentScaledMultiplier = snap.RentScaledMultiplier;
+                economySettings.gracePaymentPercent = snap.GracePaymentPercent;
+                economySettings.rewardVolatility = snap.RewardVolatility;
+                economySettings.rewardVolatilityMean = snap.RewardVolatilityMean;
+            }
+
+            if (snap.HasTruck && Truck != null)
+            {
+                Truck.bonusPerTier = snap.BonusPerTier;
+                Truck.hangarStayDuration = snap.HangarStayDuration;
+                Truck.rewardPerBox = snap.RewardPerBox;
+                Truck.penaltyPerBox = snap.PenaltyPerBox;
+            }
+
+            if (snap.HasPlayerMovement && PlayerMovement != null)
+            {
+                PlayerMovement.staminaRegenRate = snap.StaminaRegenRate;
+                PlayerMovement.moveSpeed = snap.MoveSpeed;
+            }
         }
 
         #endregion
