@@ -38,8 +38,25 @@ namespace NewCss.Voice.Core
         private int _read;
 
         // Tüketici-yerel durum: kilit gerektirmez, sadece audio thread okur/yazar.
+        private readonly int _resumeDelaySamples;
+
         private bool _gateOpen;
         private bool _pendingFadeIn;
+
+        /// <summary>
+        /// TÜKETİCİ-YEREL (yalnız audio thread okur/yazar, kilit gerekmez): burst ortasında bir
+        /// underrun yaşandı mı? true ise kapı <see cref="_resumeDelaySamples"/> ile açılır,
+        /// false ise <see cref="_targetDelaySamples"/> ile. Bkz. VoiceBufferPolicy.ResumeDelayMs.
+        /// </summary>
+        private bool _resumeMode;
+
+        /// <summary>
+        /// ANA THREAD → audio thread tek yönlü bayrak: konuşmacının burst'ü bitti, sonraki playout
+        /// yeniden TAM hedefi beklesin. `Volatile` ile yayınlanıyor; tüketici Read()'in başında
+        /// tüketip sıfırlıyor — böylece <see cref="_resumeMode"/> tüketici-yerel kalıyor ve
+        /// audio thread'e hiçbir kilit girmiyor.
+        /// </summary>
+        private int _burstEndFlag;
 
         private int _underrunCount;
         private int _overrunCount;
@@ -49,7 +66,13 @@ namespace NewCss.Voice.Core
         /// <param name="targetDelaySamples">Playout kapısının açılması için gereken minimum doluluk.</param>
         /// <param name="overrunCeilingSamples">Bu doluluğun üstünde en eski örnekler atılır; capacitySamples'ı aşamaz.</param>
         /// <param name="fadeSamples">Underrun/overrun geçişlerinde uygulanan kosinüs fade'in örnek sayısı (~2 ms).</param>
-        public VoiceRingBuffer(int capacitySamples, int targetDelaySamples, int overrunCeilingSamples, int fadeSamples)
+        /// <param name="resumeDelaySamples">
+        /// Burst ORTASINDA underrun sonrası yeniden açılma eşiği (asimetrik kapı — bkz.
+        /// VoiceBufferPolicy.ResumeDelayMs). -1 (varsayılan) = <paramref name="targetDelaySamples"/>
+        /// ile aynı, yani eski simetrik davranış.
+        /// </param>
+        public VoiceRingBuffer(int capacitySamples, int targetDelaySamples, int overrunCeilingSamples, int fadeSamples,
+                               int resumeDelaySamples = -1)
         {
             if (capacitySamples <= 0) throw new ArgumentOutOfRangeException(nameof(capacitySamples));
             if (targetDelaySamples < 0) throw new ArgumentOutOfRangeException(nameof(targetDelaySamples));
@@ -57,6 +80,9 @@ namespace NewCss.Voice.Core
 
             _capacity = capacitySamples;
             _targetDelaySamples = Math.Min(targetDelaySamples, capacitySamples);
+            _resumeDelaySamples = resumeDelaySamples < 0
+                ? _targetDelaySamples
+                : Math.Min(resumeDelaySamples, _targetDelaySamples);
             _overrunCeilingSamples = Math.Min(Math.Max(overrunCeilingSamples, _targetDelaySamples), capacitySamples);
             _fadeSamples = fadeSamples;
 
@@ -74,6 +100,17 @@ namespace NewCss.Voice.Core
 
         /// <summary>Şu an buffer'da bekleyen (henüz okunmamış) örnek sayısı.</summary>
         public int AvailableSamples => Volatile.Read(ref _write) - Volatile.Read(ref _read);
+
+        /// <summary>
+        /// ANA THREAD'den çağrılır (konuşmacının burst'ü bitti — BurstEnd bayrağı veya zaman aşımı).
+        /// Asimetrik kapıyı sıfırlar: sonraki konuşma yeniden TAM hedef gecikmeyi bekler, çünkü yeni
+        /// bir burst'ün başında gerçek ağ jitter'ına karşı dolu tampon gerekiyor.
+        /// Kilit YOK — tek yönlü Volatile bayrak, tüketici Read()'te tüketiyor.
+        /// </summary>
+        public void NotifyBurstEnded() => Volatile.Write(ref _burstEndFlag, 1);
+
+        /// <summary>Teşhis/test: kapı şu an küçük "devam" eşiğini mi kullanıyor?</summary>
+        public bool IsInResumeMode => _resumeMode;
 
         public int UnderrunCount => Volatile.Read(ref _underrunCount);
         public int OverrunCount => Volatile.Read(ref _overrunCount);
@@ -147,13 +184,23 @@ namespace NewCss.Voice.Core
         {
             if (count <= 0) return true;
 
+            // Burst bitti bildirimi geldiyse tüket: sonraki playout yeniden TAM hedefi bekleyecek.
+            if (Volatile.Read(ref _burstEndFlag) != 0)
+            {
+                Volatile.Write(ref _burstEndFlag, 0);
+                _resumeMode = false;
+            }
+
             int readLocal = Volatile.Read(ref _read); // üretici overrun'da bunu ilerletmiş olabilir, taze oku
             int writeSnapshot = Volatile.Read(ref _write);
             int available = writeSnapshot - readLocal;
 
             if (!_gateOpen)
             {
-                if (available >= _targetDelaySamples)
+                // ASİMETRİK KAPI: burst başında tam hedef, burst ortasındaki duraklamadan sonra
+                // küçük "devam" eşiği. Gerekçe VoiceBufferPolicy.ResumeDelayMs'te.
+                int requiredToOpen = _resumeMode ? _resumeDelaySamples : _targetDelaySamples;
+                if (available >= requiredToOpen)
                 {
                     // PLAYOUT KAPISI: hedef gecikme dolmadan çalmaya BAŞLANMAZ. Cızırtı/robot ses
                     // şikayetlerinin çoğu bu kapı yokken ilk paketin hemen çalınıp arkasının
@@ -182,8 +229,9 @@ namespace NewCss.Voice.Core
                 Volatile.Write(ref _read, readLocal);
 
                 Interlocked.Increment(ref _underrunCount);
-                _gateOpen = false; // kapı YENİDEN KURULUR: hedef tekrar dolana kadar bir sonraki Read sessiz kalır
+                _gateOpen = false; // kapı yeniden kurulur: eşik dolana kadar bir sonraki Read sessiz kalır
                 _pendingFadeIn = false;
+                _resumeMode = true; // ...ama artık TAM hedef değil, küçük "devam" eşiği yeterli (asimetrik kapı)
                 return false;
             }
 

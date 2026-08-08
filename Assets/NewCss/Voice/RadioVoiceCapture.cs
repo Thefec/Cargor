@@ -58,6 +58,18 @@ public sealed class RadioVoiceCapture
     /// </summary>
     public bool IsMicDegraded { get; private set; }
 
+#if UNITY_EDITOR
+    /// <summary>
+    /// SADECE EDİTÖR — teşhis sayaçları (Tools ▸ Cargor ▸ Voice ▸ Teşhis).
+    /// "Ses gelmiyor" şikayetinde ilk sorulması gereken soru "Steam bize HİÇ byte verdi mi?" —
+    /// bu sayaçlar onu doğrudan cevaplıyor. Player build'de tamamen derleme dışı.
+    /// </summary>
+    public int DevPacketsProduced { get; private set; }
+    public long DevTotalCompressedBytes { get; private set; }
+    public int DevLastReadBytes { get; private set; }
+    public int DevTicksWithPtt { get; private set; }
+#endif
+
     // TEK ayırma (kurulumda) — runtime'da (Tick içinde) asla yeniden ayırma. Kabul kriteri:
     // PTT basılıyken frame başına 0 B GC alloc.
     private readonly byte[] _rawBuffer;
@@ -85,6 +97,9 @@ public sealed class RadioVoiceCapture
     /// </summary>
     public void Tick(double nowUnscaled, bool preconditionsOk, bool pttHeld)
     {
+#if UNITY_EDITOR
+        if (pttHeld) DevTicksWithPtt++;
+#endif
         if (IsMicDegraded)
         {
             // Kalıcı kısa devre — bkz. IsMicDegraded yorumu. State=Degraded her frame yeniden
@@ -204,6 +219,9 @@ public sealed class RadioVoiceCapture
         _voiceStream.Position = VoicePacket.HeaderSize; // başlık alanını atla, Steam veriyi bundan sonraya yazacak
 
         int written = SteamUser.ReadVoiceData(_voiceStream);
+#if UNITY_EDITOR
+        DevLastReadBytes = written;
+#endif
 
         if (_voiceStream.Truncated)
         {
@@ -243,6 +261,10 @@ public sealed class RadioVoiceCapture
         VoicePacket.TryWriteHeader(_rawBuffer, 0, _rawBuffer.Length, flags, _sequence);
         unchecked { _sequence++; }
 
+#if UNITY_EDITOR
+        DevPacketsProduced++;
+        DevTotalCompressedBytes += written;
+#endif
         PacketProduced?.Invoke(new ArraySegment<byte>(_rawBuffer, 0, VoicePacket.HeaderSize + written));
     }
 

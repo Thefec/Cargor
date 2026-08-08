@@ -26,6 +26,23 @@ namespace NewCss.Voice.Core
         public const double TargetDelayMs = 120.0;
 
         /// <summary>Bu doluluğun üstünde en eski örnekler atılır (overrun).</summary>
+        /// <summary>
+        /// Burst ORTASINDA underrun'dan sonra playout'un yeniden başlaması için gereken doluluk.
+        ///
+        /// NEDEN <see cref="TargetDelayMs"/>'den küçük (asimetrik kapı / histerezis): playout kapısı
+        /// AĞ JITTER'ı için tasarlandı, ama Steam'in kendi ses-aktivitesi tespiti var — konuşurken
+        /// duraklayınca Steam hiç veri vermiyor, paket üretilmiyor ve buffer doğal olarak kuruyor.
+        /// Bu "kaynak boşluğu"nu bir ağ tıkanıklığı gibi ele alıp kapıyı TAM 120 ms'e yeniden kurmak,
+        /// her kelime arasında sonraki kelimenin ilk 120 ms'ini yutuyordu → duyulan belirti:
+        /// "ses kesik kesik geliyor" (2026-08-08 teşhisi: under=14, over=6).
+        ///
+        /// Çözüm: burst BAŞINDA tam <see cref="TargetDelayMs"/> beklenir (gerçek jitter koruması orada
+        /// gerekli), burst ORTASINDAKİ duraklamadan sonra tek paket yetmesi için bu küçük eşik kullanılır.
+        /// 40 ms, yakalama aralığından (33.3 ms @ 30 Hz) biraz büyük — yani "bir paket + pay".
+        /// Burst bittiğinde eşik tam hedefe geri döner (VoiceRingBuffer.NotifyBurstEnded).
+        /// </summary>
+        public const double ResumeDelayMs = 40.0;
+
         public const double OverrunCeilingMs = TargetDelayMs + 250.0;
 
         /// <summary>Sürekli bu doluluğun üstünde kalınırsa (1 s) küçük parçalar düşürülerek gecikme geri çekilir.</summary>
@@ -53,6 +70,8 @@ namespace NewCss.Voice.Core
         }
 
         public static int TargetDelaySamples(int sampleRate) => MillisecondsToSamples(TargetDelayMs, sampleRate);
+
+        public static int ResumeDelaySamples(int sampleRate) => MillisecondsToSamples(ResumeDelayMs, sampleRate);
 
         public static int OverrunCeilingSamples(int sampleRate) => MillisecondsToSamples(OverrunCeilingMs, sampleRate);
 

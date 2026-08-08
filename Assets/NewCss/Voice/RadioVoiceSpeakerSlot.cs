@@ -78,6 +78,12 @@ public sealed class RadioVoiceSpeakerSlot : MonoBehaviour
     /// <summary>Adım 9 (İstatistik overlay) — SADECE EDİTÖR'DE VAR. Ring buffer'a salt-okunur
     /// erişim; overlay UnderrunCount/OverrunCount/DroppedSamples/AvailableSamples'ı BUNUN üzerinden
     /// okur — VoiceRingBuffer'a yeni bir kilit/API EKLENMİYOR, mevcut public sayaçlar kullanılıyor.</summary>
+    public long DevTotalSamplesWritten { get; private set; }
+    public int DevPacketsDecoded { get; private set; }
+    public int DevLastSampleCount { get; private set; }
+    public int DevPeakSampleCount { get; private set; }
+    public int DevPeakCompressedBytes { get; private set; }
+
     public VoiceRingBuffer DevRing => _ring;
 
     /// <summary>Adım 9 — overlay'in AvailableSamples'ı (örnek) ms'e çevirmesi için (VoiceBufferPolicy
@@ -201,7 +207,8 @@ public sealed class RadioVoiceSpeakerSlot : MonoBehaviour
         int targetDelay = VoiceBufferPolicy.TargetDelaySamples(sampleRate);
         int overrunCeiling = VoiceBufferPolicy.OverrunCeilingSamples(sampleRate);
         int fadeSamples = VoiceBufferPolicy.MillisecondsToSamples(FadeMilliseconds, sampleRate);
-        _ring = new VoiceRingBuffer(capacitySamples, targetDelay, overrunCeiling, fadeSamples);
+        int resumeDelay = VoiceBufferPolicy.ResumeDelaySamples(sampleRate);
+        _ring = new VoiceRingBuffer(capacitySamples, targetDelay, overrunCeiling, fadeSamples, resumeDelay);
 
         _pcmRaw = new byte[sampleRate * 2]; // 1s'lik 16-bit mono PCM tavanı (DecompressVoice çıktısı için, tek çağrı bunun ~%3'ünü kullanır)
         _pcmStream = new PooledByteStream(_pcmRaw);
@@ -274,6 +281,10 @@ public sealed class RadioVoiceSpeakerSlot : MonoBehaviour
         AssignedSpeakerId = null;
         _burstStartClickFired = false;
         LastPcmLevel01 = 0f; // HUD satırı havuza dönerken eski konuşmacının seviyesini miras almasın
+
+        // Asimetrik kapıyı sıfırla: yeni burst tam hedef gecikmeyi beklesin (burst ORTASINDAKİ
+        // duraklamalar küçük eşikle geçilir, ama yeni bir konuşmanın başında dolu tampon gerekiyor).
+        _ring.NotifyBurstEnded();
         // Ring buffer/clip'e KASITLI dokunulmuyor: AudioSource kalıcı çalıyor, veri akışı kesilince
         // kendi underrun fade-out'uyla (~2ms kosinüs) doğal olarak sessizliğe dönüyor — ekstra bir
         // "durdur" adımı audio thread'e gereksiz senkronizasyon yükü bindirirdi.
@@ -309,6 +320,17 @@ public sealed class RadioVoiceSpeakerSlot : MonoBehaviour
         // hesaplanır, audio thread'e (OnAudioRead) hiç dokunmaz.
         LastPcmLevel01 = sampleCount > 0 ? Mathf.Clamp01((float)Math.Sqrt(sumSquares / sampleCount) * LevelMeterGain) : 0f;
 
+#if UNITY_EDITOR
+        // TEŞHİS: üretim/tüketim dengesinin TEK karar verici ölçümü. Beklenen ~1600 örnek/paket
+        // (33.3 ms @ 48 kHz). ~800 çıkarsa Steam bizim istediğimiz hızda DEĞİL kendi native
+        // hızında (Optimal=24000) decompress ediyor demektir → tükettiğimizin yarısını üretiyoruz,
+        // buffer kaçınılmaz olarak açlıktan kuruyor ve hiçbir kapı ayarı bunu düzeltemez.
+        DevTotalSamplesWritten += sampleCount;
+        DevPacketsDecoded++;
+        DevLastSampleCount = sampleCount;
+        if (sampleCount > DevPeakSampleCount) DevPeakSampleCount = sampleCount;
+        if (compressed.Count > DevPeakCompressedBytes) DevPeakCompressedBytes = compressed.Count;
+#endif
         _ring.Write(_floatScratch, 0, sampleCount);
     }
 

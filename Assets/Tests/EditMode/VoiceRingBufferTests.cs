@@ -18,6 +18,76 @@ public class VoiceRingBufferTests
         CollectionAssert.AreEqual(source, dest);
     }
 
+    // ─── Asimetrik kapı (histerezis) — 2026-08-08 "ses kesik kesik geliyor" bug'ının regresyonu ───
+    // Kök neden: playout kapısı HER underrun'da tam hedefe yeniden kuruluyordu. Steam'in ses-aktivitesi
+    // tespiti yüzünden konuşma duraklamalarında paket üretilmiyor, buffer doğal olarak kuruyor —
+    // yani her kelime arası bir underrun. Sonuç: sonraki kelimenin ilk 120 ms'i yutuluyordu.
+
+    [Test]
+    public void Read_MidBurstUnderrun_ReopensAtResumeThresholdNotFullTarget()
+    {
+        // target 20, resume 5. Kapıyı aç, kurut, sonra SADECE 5 örnek yaz → çalmaya devam etmeli.
+        var ring = new VoiceRingBuffer(capacitySamples: 100, targetDelaySamples: 20,
+                                       overrunCeilingSamples: 60, fadeSamples: 0, resumeDelaySamples: 5);
+        var dest = new float[30]; // en büyük Read(count)=20'den büyük olmalı
+
+        ring.Write(new float[20], 0, 20);
+        Assert.IsTrue(ring.Read(dest, 0, 10), "kapı tam hedefte açılmalıydı");
+        Assert.IsFalse(ring.IsInResumeMode, "henüz underrun yok");
+
+        // Kalan 10 örneği 20 isteyerek tüket → underrun
+        Assert.IsFalse(ring.Read(dest, 0, 20), "underrun sessizlik döndürmeli");
+        Assert.AreEqual(1, ring.UnderrunCount);
+        Assert.IsTrue(ring.IsInResumeMode, "burst ortası underrun sonrası devam moduna geçmeliydi");
+
+        // Tam hedefin (20) ALTINDA, devam eşiğinin (5) üstünde veri gelsin
+        ring.Write(new float[6], 0, 6);
+        Assert.IsTrue(ring.Read(dest, 0, 6),
+            "devam eşiği kadar veri varken playout yeniden başlamalıydı — eski davranışta 20 beklenip ses yutuluyordu");
+    }
+
+    [Test]
+    public void Read_AfterBurstEnded_RequiresFullTargetAgain()
+    {
+        var ring = new VoiceRingBuffer(capacitySamples: 100, targetDelaySamples: 20,
+                                       overrunCeilingSamples: 60, fadeSamples: 0, resumeDelaySamples: 5);
+        var dest = new float[30];
+
+        ring.Write(new float[20], 0, 20);
+        ring.Read(dest, 0, 20);                 // kapı açıldı ve tam kurudu
+        Assert.IsFalse(ring.Read(dest, 0, 10)); // underrun → devam modu
+        Assert.IsTrue(ring.IsInResumeMode);
+
+        ring.NotifyBurstEnded();                // konuşmacı sustu
+
+        // NotifyBurstEnded bayrağı bir sonraki Read'de tüketilir; devam eşiği kadar veri YETMEMELİ
+        ring.Write(new float[6], 0, 6);
+        Assert.IsFalse(ring.Read(dest, 0, 6),
+            "yeni burst tam hedefi beklemeli — jitter koruması burst başında gerekli");
+        Assert.IsFalse(ring.IsInResumeMode, "burst sonu devam modunu sıfırlamalıydı");
+
+        ring.Write(new float[14], 0, 14);       // toplam 20 = tam hedef
+        Assert.IsTrue(ring.Read(dest, 0, 20), "tam hedef dolunca açılmalı");
+    }
+
+    [Test]
+    public void Constructor_ResumeDelayDefaultsToTarget_PreservesLegacySymmetricBehaviour()
+    {
+        // resumeDelaySamples verilmezse eski (simetrik) davranış korunur — mevcut testler bu yüzden
+        // 4 argümanla kurulmaya devam ediyor ve değişmedi.
+        var ring = new VoiceRingBuffer(capacitySamples: 100, targetDelaySamples: 20,
+                                       overrunCeilingSamples: 60, fadeSamples: 0);
+        var dest = new float[30];
+
+        ring.Write(new float[20], 0, 20);
+        ring.Read(dest, 0, 20);
+        Assert.IsFalse(ring.Read(dest, 0, 10)); // underrun
+        Assert.IsTrue(ring.IsInResumeMode);
+
+        ring.Write(new float[6], 0, 6);
+        Assert.IsFalse(ring.Read(dest, 0, 6), "resume eşiği = target olduğu için 6 örnek yetmemeli");
+    }
+
     [Test]
     public void Write_Read_WrapAroundPreservesData()
     {

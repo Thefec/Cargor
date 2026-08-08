@@ -127,6 +127,109 @@ namespace NewCss.DevTools
             return true;
         }
 
+        // ─── Teşhis dökümü ────────────────────────────────────────────────────────────────────
+        // NEDEN VAR: "V'ye bastım, ses gelmedi" tek bir belirti ama zincirde 9 ayrı sınır var
+        // (bootstrap → sahne kapısı → Steam → prefs → PTT okuma → mikrofon verisi → paket →
+        // decompress → AudioSource). Her birini tek tek sormak tur tur gidip gelmek demek.
+        // Bu menü HEPSİNİ tek Console dökümünde veriyor, yani hangi sınırda kırıldığı bir bakışta
+        // görülüyor. Play SIRASINDA çalıştırılmalı (durum ancak o zaman var).
+        private const string MENU_DIAG = "Tools/Cargor/Voice/Teşhis (durumu Console'a dök)";
+
+        [MenuItem(MENU_DIAG)]
+        private static void DumpDiagnostics()
+        {
+            var sb = new StringBuilder(1024);
+            sb.AppendLine("═══ TELSİZ TEŞHİS ═══");
+            sb.AppendLine($"Play modu: {Application.isPlaying}  (Play DEĞİLKEN çoğu alan boş görünür — Play sırasında çalıştır)");
+
+            // 1) Bootstrap
+            var rt = RadioVoiceRuntime.Instance;
+            sb.AppendLine($"1) RadioVoiceRuntime.Instance: {(rt == null ? "❌ NULL — bootstrap hiç çalışmadı" : "✅ var")}");
+            if (rt == null) { Debug.Log(sb.ToString()); return; }
+
+            // 2) Sahne kapısı
+            // Tam nitelikli: bu dosyada `using System;` var, o yüzden çıplak `Object` ambiguous olur
+            // (System.Object ↔ UnityEngine.Object, CS0104); `using UnityEngine.SceneManagement;` de yok.
+            var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+            bool marker = UnityEngine.Object.FindFirstObjectByType<NewCss.GameStateManager>() != null;
+            sb.AppendLine($"2) Sahne kapısı: sahne='{scene.name}' · GameStateManager={(marker ? "✅ bulundu" : "❌ YOK")}");
+            if (!marker) sb.AppendLine("   → Mikrofon BİLEREK kapalı. 'The Main Office' sahnesinde Play'e bas.");
+
+            // 3) Steam
+            // Tam nitelikli: bu dosyada `using Steamworks;` YOK (Steam'e yalnızca bu teşhis dokunuyor).
+            bool steamValid = Steamworks.SteamClient.IsValid;
+            sb.AppendLine($"3) Steam: IsValid={(steamValid ? "✅" : "❌")}" +
+                          (steamValid ? $" · ad='{Steamworks.SteamClient.Name}' · SampleRate={Steamworks.SteamUser.SampleRate} · Optimal={Steamworks.SteamUser.OptimalSampleRate}" : " → Steam açık mı? steam_appid.txt=480"));
+
+            // 4) Ayarlar
+            sb.AppendLine($"4) Prefs: Enabled={RadioVoicePrefs.IsEnabled()} · Volume={RadioVoicePrefs.GetVolume():F2} · " +
+                          $"SelfMonitor={(RadioVoicePrefs.IsSelfMonitorEnabled() ? "✅ AÇIK" : "❌ KAPALI — loopback'te ses duymazsın")}");
+
+            // 5) PTT tuşu
+            var binding = InputBindingManager.GetBindingDisplayName(InputBindingManager.GameAction.PushToTalk);
+            bool held = InputBindingManager.GetAction(InputBindingManager.GameAction.PushToTalk);
+            sb.AppendLine($"5) PTT: tuş='{binding}' · şu an basılı={held} (menüden çalıştırdığın için normalde false)");
+
+            // 6) Yakalama — "Steam bize HİÇ byte verdi mi?"
+            var cap = rt.Capture;
+            sb.AppendLine($"6) Capture: State={cap.State} · MicDegraded={cap.IsMicDegraded} · " +
+                          $"PTT'li tick={cap.DevTicksWithPtt} · üretilen paket={cap.DevPacketsProduced} · " +
+                          $"toplam sıkıştırılmış bayt={cap.DevTotalCompressedBytes} · son okuma={cap.DevLastReadBytes} B");
+            if (cap.DevTicksWithPtt == 0) sb.AppendLine("   → PTT hiç okunmadı: tuş çakışması veya Update koşmuyor.");
+            else if (cap.DevPacketsProduced == 0) sb.AppendLine("   → PTT okundu ama Steam hiç ses vermedi: mikrofon izni/cihazı VEYA önkoşul (Steam/sahne/Enabled) false.");
+
+            // 7) Ses çıkışı
+            var listener = UnityEngine.Object.FindFirstObjectByType<AudioListener>();
+            sb.AppendLine($"7) Audio: outputSampleRate={AudioSettings.outputSampleRate} · " +
+                          $"AudioListener={(listener == null ? "❌ YOK — hiçbir ses duyulmaz" : (listener.enabled ? "✅ aktif" : "❌ DEVRE DIŞI"))} · " +
+                          $"AudioListener.volume={AudioListener.volume:F2}{(AudioListener.volume <= 0.01f ? "  ⚠️ SIFIR" : "")}");
+
+            // 8) Slotlar
+            var pool = rt.Playback?.DevPool;
+            sb.AppendLine($"8) Slotlar ({(pool == null ? 0 : pool.Length)}):");
+            if (pool != null)
+            {
+                for (int i = 0; i < pool.Length; i++)
+                {
+                    var s = pool[i];
+                    var src = s.GetComponent<AudioSource>();
+                    var ring = s.DevRing;
+                    sb.AppendLine($"   [{i}] speaker={(s.AssignedSpeakerId?.ToString() ?? "-")} · " +
+                                  $"AudioSource.isPlaying={(src != null && src.isPlaying)} · vol={(src != null ? src.volume : 0f):F2} · " +
+                                  $"rate={s.DevSampleRate} · doluluk={(ring != null ? ring.AvailableSamples : 0)} örnek · " +
+                                  $"under={(ring != null ? ring.UnderrunCount : 0)} over={(ring != null ? ring.OverrunCount : 0)} · " +
+                                  $"seviye={s.LastPcmLevel01:F2}");
+
+                    if (s.DevPacketsDecoded > 0)
+                    {
+                        double perPacket = (double)s.DevTotalSamplesWritten / s.DevPacketsDecoded;
+                        double expected = s.DevSampleRate / 30.0; // 30 Hz yakalama → paket başına beklenen örnek
+                        double ratio = perPacket / expected;
+                        sb.AppendLine($"        ⟶ ÜRETİM/TÜKETİM: {perPacket:F0} örnek/paket " +
+                                      $"(beklenen ~{expected:F0}) · oran={ratio:F2}× · " +
+                                      $"toplam={s.DevTotalSamplesWritten} örnek = {(double)s.DevTotalSamplesWritten / s.DevSampleRate:F2} sn ses · " +
+                                      $"son={s.DevLastSampleCount} tepe={s.DevPeakSampleCount}");
+                        if (ratio < 0.75)
+                            sb.AppendLine($"        ⚠️ ORAN < 0.75 — tükettiğimizin altında üretiyoruz. Steam istediğimiz " +
+                                          $"hızda decompress ETMİYOR olabilir (Optimal={Steamworks.SteamUser.OptimalSampleRate}). " +
+                                          $"Kapı ayarı bunu DÜZELTEMEZ, örnekleme hızı hizalanmalı.");
+                        sb.AppendLine($"        ⟶ tepe sıkıştırılmış paket={s.DevPeakCompressedBytes} B " +
+                                      $"({(s.DevPeakCompressedBytes >= 700 ? "⚠️ 800B kapağına yakın" : "kapak güvenli")})");
+                    }
+
+                    if (ring != null)
+                    {
+                        sb.AppendLine($"        ⟶ KAPI: hedef={ring.TargetDelaySamples} örnek · " +
+                                      $"devamModu={ring.IsInResumeMode} · açık={ring.IsGateOpen} " +
+                                      $"(devamModu alanı GÖRÜNÜYORSA asimetrik kapı fix'i derlenmiş demektir)");
+                    }
+                }
+            }
+
+            sb.AppendLine("═════════════════════");
+            Debug.Log(sb.ToString());
+        }
+
         private static readonly string RecordingPath =
             Path.Combine(Application.persistentDataPath, "CargorVoiceRecordings", "capture.bin");
 
