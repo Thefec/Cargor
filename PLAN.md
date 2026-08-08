@@ -10,12 +10,15 @@
 
 **YOK — kod yazılmıyor.** İki iş kuyrukta: **play-test** (kullanıcıda) ve **telsiz** (plan onaylı, uygulama komutu bekliyor).
 
-> 🎙️✅ **TELSİZ — KOD TAMAMLANDI, `kontrol` ONAY (1. tur, bulgu yok).** Dal **`feature/voice-chat`**, 7 commit, 55 dosya, +4816/−8. **PUSH YOK, MERGE YOK — kararınız bekliyor.**
-> Tam plan: **[plans/telsiz-voice-chat.md](plans/telsiz-voice-chat.md)** · 🙋 **Editor işleri: [plans/telsiz-editor-isleri.md](plans/telsiz-editor-isleri.md)** · Detay: [plans/devam.md](plans/devam.md) 2026-08-07
-> **Doğrulama:** 0 CS · EditMode **48/48** · `EconomyInvariantCheck` **179/179** ("asset bozulması yok") · editör 6000.5.6f1 headless.
-> 🔴 **AMA HİÇBİR ŞEY OYUN İÇİNDE GÖRÜLMEDİ.** Loopback gerçek Steam + mikrofon ister; gerçek relay gecikmesi/jitter'ı ve 20+ dk saat drift'i **2 makine + 2 Steam hesabı** gerektiriyor (plan Katman D — alternatifi yok, Steam Voice tek Steam client'ına bağlı).
-> **3 bilinçli kapsam kesintisi:** slotlar+HUD kodda kuruluyor (prefab opsiyonel override) · klik SFX yok (null-guard) · per-player mute oturum-içi (`SteamIdHolder` replike değil).
-> Sıradaki 2. aşama: **oda-bazlı görünürlük** (oda sayısı SABİT DEĞİL → veri-güdümlü). Telsiz tasarımı bunu engellemiyor; gerekçe planın "Sonraki iş" bölümünde.
+> 🎙️ **TELSİZ — kod tamam + `kontrol` ONAY, ama SES KALİTESİ turu bitmedi.** Dal **`feature/voice-chat`**, **15 commit**, **MERGE/PUSH YOK**.
+> Tam plan: **[plans/telsiz-voice-chat.md](plans/telsiz-voice-chat.md)** · 🙋 **Editor işleri: [plans/telsiz-editor-isleri.md](plans/telsiz-editor-isleri.md)** · Hata ayıklama detayı: **[plans/devam.md](plans/devam.md) 2026-08-08**
+> **Doğrulama:** 0 CS · EditMode **60/60** · `EconomyInvariantCheck` **179/179** · editör 6000.5.6f1 headless.
+> **Ses durumu:** loopback'te çalışıyor, "net geliyor". 3 tur hata ayıklama sonucu **`over` 19→0, `under` 24→13**; son tur (drift düzeltmesi) **kullanıcı testini bekliyor**.
+> **Ölçülenler:** ~237 B/paket · ~6.5 KB/s · tepe paket 160 ms → **800 B kapağı güvenli, değişmeyecek** (plan riski #1 kapandı).
+> 🔴 **KALAN EKSİKLER (sabit ayarla çözülmez):** **PLC (paket kaybı gizleme)** + **adaptif buffer**. Ölçülen varyansın tamamı YEREL; gerçek ağda relay jitter'ı üstüne binecek.
+> 🔴🔴 **AÇIK KARAR — [Dissonance](https://assetstore.unity.com/packages/tools/audio/dissonance-voice-chat-70078) ($100, NGO entegrasyonu ücretsiz).** Lethal Company'nin kullandığı middleware; adaptif buffer + PLC + Opus + **oda/kanal sistemi** (2. aşamaya birebir) hazır veriyor, `FacepunchTransport` ile şeffaf çalışır. Geçilirse `V` binding/sahne kapısı/ayarlar/HUD taşınır, ~2500 satır bırakılır.
+> **3 bilinçli kapsam kesintisi:** slotlar+HUD kodda kuruluyor (prefab opsiyonel) · klik SFX yok (null-guard) · per-player mute oturum-içi (`SteamIdHolder` replike değil).
+> Sıradaki 2. aşama: **oda-bazlı görünürlük** (oda sayısı SABİT DEĞİL → veri-güdümlü). Dissonance seçilirse oda kanalları bedava gelir.
 
 `main` = `6e945bb`, **origin/main'in 1 önünde (PUSH YOK)**. Ekonomi denge turu 2026-08-06'da merge edildi (`238fd92`, `--no-ff`, 21 commit) — sorun çıkarsa tek noktadan revert edilebilir.
 
