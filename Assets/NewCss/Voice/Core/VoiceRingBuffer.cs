@@ -109,6 +109,55 @@ namespace NewCss.Voice.Core
         /// </summary>
         public void NotifyBurstEnded() => Volatile.Write(ref _burstEndFlag, 1);
 
+        /// <summary>
+        /// ÜRETİCİ (ana thread) tarafı drift düzeltmesi: gecikmeyi AZALTMAK için en eski
+        /// <paramref name="samples"/> örneği atar. Overrun yolundaki mekanizmanın aynısı, ama tavan
+        /// aşılmadan, yavaş sürüklenmeyi toparlamak için (bkz. VoiceDriftTracker).
+        /// Mevcut veriden fazlasını atmaz; kapıyı kapatmaz.
+        /// </summary>
+        /// <returns>Fiilen atılan örnek sayısı.</returns>
+        public int DriftDropOldest(int samples)
+        {
+            if (samples <= 0) return 0;
+
+            int readSnapshot = Volatile.Read(ref _read);
+            int available = Volatile.Read(ref _write) - readSnapshot;
+            if (available <= 0) return 0;
+
+            // Tamamen boşaltmayız: en az bir "devam eşiği" kadar bırak, yoksa düzeltmenin kendisi
+            // underrun tetikler (tedavi hastalıktan kötü olur).
+            int droppable = Math.Max(0, available - _resumeDelaySamples);
+            int toDrop = Math.Min(samples, droppable);
+            if (toDrop <= 0) return 0;
+
+            Volatile.Write(ref _read, readSnapshot + toDrop);
+            Interlocked.Add(ref _droppedSamples, toDrop);
+            return toDrop;
+        }
+
+        /// <summary>
+        /// ÜRETİCİ (ana thread) tarafı drift düzeltmesi: gecikmeyi ARTIRMAK için
+        /// <paramref name="samples"/> kadar sessizlik yazar. Kaynak dizi gerektirmez (çağrı yerinde
+        /// sıfır allocation). Tavanı aşmaz.
+        /// </summary>
+        /// <returns>Fiilen yazılan örnek sayısı.</returns>
+        public int DriftInsertSilence(int samples)
+        {
+            if (samples <= 0) return 0;
+
+            int writeLocal = _write;
+            int available = writeLocal - Volatile.Read(ref _read);
+            int room = Math.Max(0, _overrunCeilingSamples - available);
+            int toWrite = Math.Min(samples, room);
+            if (toWrite <= 0) return 0;
+
+            for (int i = 0; i < toWrite; i++)
+                _buffer[Wrap(writeLocal + i)] = 0f;
+
+            Volatile.Write(ref _write, writeLocal + toWrite); // veri YAZILDIKTAN SONRA yayınla
+            return toWrite;
+        }
+
         /// <summary>Teşhis/test: kapı şu an küçük "devam" eşiğini mi kullanıyor?</summary>
         public bool IsInResumeMode => _resumeMode;
 

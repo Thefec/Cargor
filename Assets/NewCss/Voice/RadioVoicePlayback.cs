@@ -65,6 +65,10 @@ public sealed class RadioVoicePlayback
             {
                 FreeSlot(slot);
             }
+
+            // Yavaş sürüklenme düzeltmesi — FreeSlot'tan SONRA çağrılıyor ki serbest bırakılan slot
+            // aynı frame'de "boşta" olarak görülüp takipçisini sıfırlasın.
+            slot.TickDrift(now);
         }
     }
 

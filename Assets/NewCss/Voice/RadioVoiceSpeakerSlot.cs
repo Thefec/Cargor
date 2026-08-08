@@ -74,6 +74,9 @@ public sealed class RadioVoiceSpeakerSlot : MonoBehaviour
 
     public VoiceSequenceTracker Tracker { get; } = new VoiceSequenceTracker();
 
+    private readonly VoiceDriftTracker _driftTracker = new VoiceDriftTracker();
+    private double _lastDriftTickTime;
+
 #if UNITY_EDITOR
     /// <summary>Adım 9 (İstatistik overlay) — SADECE EDİTÖR'DE VAR. Ring buffer'a salt-okunur
     /// erişim; overlay UnderrunCount/OverrunCount/DroppedSamples/AvailableSamples'ı BUNUN üzerinden
@@ -210,6 +213,11 @@ public sealed class RadioVoiceSpeakerSlot : MonoBehaviour
         int resumeDelay = VoiceBufferPolicy.ResumeDelaySamples(sampleRate);
         _ring = new VoiceRingBuffer(capacitySamples, targetDelay, overrunCeiling, fadeSamples, resumeDelay);
 
+        // Yeni ring = yeni doluluk ölçeği; eski ortalamayı taşımak ilk saniyede yanlış bir drift
+        // kararı üretir (özellikle örnekleme hızı değiştiyse, ms↔örnek dönüşümü de değişti).
+        _driftTracker.Reset();
+        _lastDriftTickTime = 0.0;
+
         _pcmRaw = new byte[sampleRate * 2]; // 1s'lik 16-bit mono PCM tavanı (DecompressVoice çıktısı için, tek çağrı bunun ~%3'ünü kullanır)
         _pcmStream = new PooledByteStream(_pcmRaw);
         _floatScratch = new float[sampleRate];
@@ -272,8 +280,39 @@ public sealed class RadioVoiceSpeakerSlot : MonoBehaviour
 
     /// <summary>RadioVoicePlayback tarafından burst zaman aşımına uğradığında (400ms sessizlik) veya
     /// zorla serbest bırakılınca çağrılır.</summary>
+    /// <summary>
+    /// ANA THREAD, her frame (RadioVoicePlayback.Tick'ten). Yavaş sürüklenmeyi düzeltir.
+    ///
+    /// NEDEN VAR: VoiceBufferPolicy.EvaluateDrift yazılmış+test edilmişti ama hiçbir yerden
+    /// ÇAĞRILMIYORDU (2026-08-08 teşhisi) — yani sıfır drift düzeltmesi çalışıyordu. Belirti:
+    /// kısa konuşma temiz, UZUN konuşmada bozulma; çünkü asimetrik kapı ilk underrun'dan sonra
+    /// slotu 120 ms marja düşürüyor ve marjı geri toplayacak bir mekanizma yoktu.
+    ///
+    /// Yalnızca playout kapısı AÇIKKEN çalışır: kapı kapalıyken (tampon yeniden doluyor) doluluk
+    /// zaten hedefin altındadır ve düzeltmeye çalışmak kalıcı gecikme eklemekten başka bir şey yapmaz.
+    /// </summary>
+    public void TickDrift(double now)
+    {
+        double dt = _lastDriftTickTime > 0.0 ? now - _lastDriftTickTime : 0.0;
+        _lastDriftTickTime = now;
+
+        bool active = AssignedSpeakerId.HasValue && _ring != null && _ring.IsGateOpen;
+        double occupancyMs = _ring != null && _sampleRate > 0
+            ? VoiceBufferPolicy.SamplesToMilliseconds(_ring.AvailableSamples, _sampleRate)
+            : 0.0;
+
+        var action = _driftTracker.Update(occupancyMs, dt, active);
+        if (action == VoiceDriftAction.None) return;
+
+        int chunk = VoiceBufferPolicy.ChunkSamples(_sampleRate);
+        if (action == VoiceDriftAction.DropChunk) _ring.DriftDropOldest(chunk);
+        else _ring.DriftInsertSilence(chunk);
+    }
+
     public void NotifySpeakerEnded()
     {
+        _driftTracker.Reset();
+
         if (AssignedSpeakerId.HasValue && _burstStartClickFired)
         {
             PlayClick(burstEndClip); // zaman aşımı BurstEnd bayrağının kaybolduğu durumu da kapsar
