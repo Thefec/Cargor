@@ -31,7 +31,23 @@ namespace NewCss.Voice.Core
         /// bir sonraki PTT basışı mikrofonu normal şekilde yeniden dener.</summary>
         public const double RetryCooldownSeconds = 30.0;
 
+        /// <summary>
+        /// Baskıya girmeden önce kaç ARDIŞIK burst'ün tamamen sessiz geçmesi gerektiği.
+        /// 1 olsaydı: oyuncu V'ye basıp konuşmadan önce düşünürse tek burst yeter ve yanlış
+        /// pozitif olurdu (2026-08-09 çift-makine testinde tam olarak bu yaşandı).
+        /// </summary>
+        public const int SilentBurstsBeforeSuppress = 2;
+
         private double _retryAtTime;
+        private int _consecutiveSilentBursts;
+        private bool _currentBurstCounted;
+
+        /// <summary>
+        /// Bu oturumda Steam bize BİR KEZ olsun bayt verdi mi. Verdiyse "mikrofon yok" fiziksel
+        /// olarak imkânsızdır — mikrofon oradadır, sadece o an sessizdir (gürültü kapısı, nefes,
+        /// düşünme molası). Bu bayrak tespiti kalıcı olarak devre dışı bırakır.
+        /// </summary>
+        public bool EverReceivedDataThisSession { get; private set; }
 
         /// <summary>Şu an yakalama kısa devre mi? HUD bunu okuyup "Ses algılanmıyor" gösterir.</summary>
         public bool IsSuppressed { get; private set; }
@@ -39,10 +55,20 @@ namespace NewCss.Voice.Core
         /// <summary>Uyarı bu oturumda loglandı mı — ikinci kez loglanmaz.</summary>
         public bool HasWarnedThisSession { get; private set; }
 
-        /// <summary>Steam bayt verdi: sorun (varsa) çözülmüş, cooldown'un bitmesini bekleme.</summary>
+        /// <summary>Yeni bir burst başladı (PTT'ye yeniden basıldı). Ardışıklık sayacı bu sinyale dayanıyor.</summary>
+        public void NoteBurstStarted()
+        {
+            _currentBurstCounted = false;
+        }
+
+        /// <summary>Steam bayt verdi: mikrofon kanıtlanmış durumda, baskı (varsa) anında kalkar
+        /// ve tespit bu oturumda bir daha devreye girmez.</summary>
         public void NoteDataReceived()
         {
+            EverReceivedDataThisSession = true;
             IsSuppressed = false;
+            _consecutiveSilentBursts = 0;
+            _currentBurstCounted = false;
         }
 
         /// <summary>
@@ -52,7 +78,17 @@ namespace NewCss.Voice.Core
         /// <returns>TRUE ise çağıran uyarıyı LOGLAMALI — oturumda yalnızca ilk tespitte true döner.</returns>
         public bool NoteSilentSample(double now, double burstElapsedSeconds)
         {
+            // Mikrofon bu oturumda bir kez calistiysa bir daha "yok" diyemeyiz — bkz. alan yorumu.
+            if (EverReceivedDataThisSession) return false;
             if (burstElapsedSeconds < SilenceThresholdSeconds) return false;
+
+            if (!_currentBurstCounted)
+            {
+                _currentBurstCounted = true;
+                _consecutiveSilentBursts++;
+            }
+
+            if (_consecutiveSilentBursts < SilentBurstsBeforeSuppress) return false;
 
             IsSuppressed = true;
             _retryAtTime = now + RetryCooldownSeconds;
@@ -80,7 +116,10 @@ namespace NewCss.Voice.Core
         {
             IsSuppressed = false;
             HasWarnedThisSession = false;
+            EverReceivedDataThisSession = false;
             _retryAtTime = 0.0;
+            _consecutiveSilentBursts = 0;
+            _currentBurstCounted = false;
         }
     }
 }

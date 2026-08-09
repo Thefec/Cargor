@@ -196,6 +196,7 @@ public sealed class RadioVoiceCapture
         {
             _pendingBurstStart = true;
             _everProducedDataThisBurst = false;
+            _micSilence.NoteBurstStarted(); // ardışık-sessiz-burst sayacı bu sinyale dayanıyor
             _transmittingStartTime = now;
             _nextSampleTime = now; // Idle'da biriken zamanı taşımadan hemen örnekle (BurstStart gecikmesin)
             StartRecordingSafely();

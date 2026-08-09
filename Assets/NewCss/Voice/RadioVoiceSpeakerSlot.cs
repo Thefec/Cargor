@@ -31,6 +31,22 @@ public sealed class RadioVoiceSpeakerSlot : MonoBehaviour
     /// değer DEĞİL (kozmetik UI ayarı) — playtest'te göze göre ayarlanabilir.</summary>
     private const float LevelMeterGain = 4f;
 
+    /// <summary>
+    /// Çözülmüş PCM'e uygulanan çalma kazancı. 2026-08-09 çift-makine testi: "ses çok azdı,
+    /// %50-60 kadar artır."
+    ///
+    /// NEDEN BURADA, AudioSource.volume'da DEĞİL: <see cref="RadioVoicePrefs.GetVolume"/> zaten
+    /// varsayılan 1.0 ve Unity <c>AudioSource.volume</c>'u [0,1] aralığına kırpıyor — yani o yoldan
+    /// yükseltilemiyordu. Ayrıca telsiz sesi <c>AudioListener.volume</c> (master) ile de çarpılıyor;
+    /// master düşük olan oyuncuda telsiz orantılı olarak kısılıyor ve mixer olmadığı için (projede
+    /// 0 .mixer) o çarpımdan kaçış yok. Kazancı örnek düzeyinde uygulamak tek gerçek kol.
+    ///
+    /// KIRPMA: yüksek konuşmada 1.6× tavanı aşabilir, [-1,1]'e sert kırpılıyor. Telsiz zincirinde
+    /// zaten Distortion(0.18) var, hafif kırpma estetiğe uyuyor. Tavanı büyütmek istenirse önce
+    /// yumuşak limiter gerekir.
+    /// </summary>
+    private const float PlaybackGain = 1.6f;
+
     private const double FadeMilliseconds = 2.0;
     private const double TargetBufferSeconds = 1.0; // her slot 1.0s kapasiteli ring buffer — bir kez ayrılır
 
@@ -350,9 +366,10 @@ public sealed class RadioVoiceSpeakerSlot : MonoBehaviour
         {
             int b = i * 2;
             short s = (short)(_pcmRaw[b] | (_pcmRaw[b + 1] << 8)); // little-endian 16-bit mono PCM
-            float f = s / 32768f;
+            float f = s / 32768f * PlaybackGain;
+            if (f > 1f) f = 1f; else if (f < -1f) f = -1f; // bkz. PlaybackGain "KIRPMA" notu
             _floatScratch[i] = f;
-            sumSquares += (double)f * f;
+            sumSquares += (double)f * f; // RMS kazançtan SONRA: HUD çubuğu duyulanla aynı şeyi göstersin
         }
 
         // RMS — bkz. LastPcmLevel01 sınıf yorumu ("bedava", decode zaten yapılıyor). Ana thread'de
