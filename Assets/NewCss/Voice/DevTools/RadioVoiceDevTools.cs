@@ -176,7 +176,15 @@ namespace NewCss.DevTools
                           $"PTT'li tick={cap.DevTicksWithPtt} · üretilen paket={cap.DevPacketsProduced} · " +
                           $"toplam sıkıştırılmış bayt={cap.DevTotalCompressedBytes} · son okuma={cap.DevLastReadBytes} B");
             if (cap.DevTicksWithPtt == 0) sb.AppendLine("   → PTT hiç okunmadı: tuş çakışması veya Update koşmuyor.");
-            else if (cap.DevPacketsProduced == 0) sb.AppendLine("   → PTT okundu ama Steam hiç ses vermedi: mikrofon izni/cihazı VEYA önkoşul (Steam/sahne/Enabled) false.");
+            else if (cap.DevTotalCompressedBytes == 0) sb.AppendLine("   → PTT okundu ama Steam TEK BAYT vermedi. 'Steam Mikrofon HAM Testi' menüsünü çalıştır: bizim capture katmanımız mı Steam mi ayıracak.");
+
+            // Steam'in kendi kayıt durumu — bizim durum makinemizden BAĞIMSIZ gerçek. Yukarıdaki
+            // "üretilen paket" bizim sayacımız; bu ikisi Steam tarafının ne dediğini söylüyor.
+            if (steamValid)
+            {
+                sb.AppendLine($"   ⟶ Steam tarafı: VoiceRecord={Steamworks.SteamUser.VoiceRecord} · HasVoiceData={Steamworks.SteamUser.HasVoiceData}" +
+                              "  (PTT basılı DEĞİLKEN VoiceRecord=false NORMALDİR — mikrofon yalnız konuşurken açılıyor)");
+            }
 
             // 7) Ses çıkışı
             var listener = UnityEngine.Object.FindFirstObjectByType<AudioListener>();
@@ -228,6 +236,130 @@ namespace NewCss.DevTools
 
             sb.AppendLine("═════════════════════");
             Debug.Log(sb.ToString());
+        }
+
+        // ─── Steam mikrofon HAM testi ─────────────────────────────────────────────────────────
+        // NEDEN VAR: Teşhis dökümü "Steam hiç bayt vermedi" diyebiliyor ama bunun İKİ tamamen
+        // farklı sebebi var ve döküm ikisini AYIRAMIYOR:
+        //   (a) bizim capture durum makinemiz SteamUser.VoiceRecord'u hiç açmadı (bizim bug'ımız),
+        //   (b) açtı ama Steam gerçekten ses üretmedi (mikrofon kapalı/yanlış cihaz/noise gate).
+        // Bu test capture pipeline'ının TAMAMINI atlar (durum makinesi, PTT, sahne kapısı, prefs,
+        // paketleme — hiçbiri yok) ve doğrudan Steam'e sorar. Böylece sınır tek turda belirlenir.
+        // Ayrıca IsMicDegraded'a TAKILMAZ: o bayrak yalnızca RadioVoiceCapture'ı kısa devre yapar,
+        // Steam API'sını değil.
+        private const string MENU_RAWMIC = "Tools/Cargor/Voice/Steam Mikrofon HAM Testi (5 sn)";
+
+        private static double _rawMicEndTime;
+        private static int _rawMicTicks, _rawMicHasDataTrue, _rawMicReadsWithBytes, _rawMicPeakRead;
+        private static long _rawMicTotalBytes;
+        private static bool _rawMicPrevVoiceRecord;
+        private static MemoryStream _rawMicStream;
+
+        [MenuItem(MENU_RAWMIC)]
+        private static void RawMicTest()
+        {
+            if (!Steamworks.SteamClient.IsValid)
+            {
+                Debug.LogError("[HAM MİKROFON TESTİ] Steam geçersiz (SteamClient.IsValid=false). Steam açık mı? Play modunda mısın?");
+                return;
+            }
+
+            if (_rawMicStream != null)
+            {
+                Debug.LogWarning("[HAM MİKROFON TESTİ] Zaten koşuyor, bitmesini bekle.");
+                return;
+            }
+
+            _rawMicPrevVoiceRecord = Steamworks.SteamUser.VoiceRecord;
+            _rawMicStream = new MemoryStream(8192);
+            _rawMicTicks = _rawMicHasDataTrue = _rawMicReadsWithBytes = _rawMicPeakRead = 0;
+            _rawMicTotalBytes = 0;
+            _rawMicEndTime = EditorApplication.timeSinceStartup + 5.0;
+
+            Steamworks.SteamUser.VoiceRecord = true;
+            EditorApplication.update += RawMicTick;
+
+            Debug.Log($"[HAM MİKROFON TESTİ] BAŞLADI — 5 saniye boyunca ŞİMDİ NORMAL SES TONUNDA KONUŞ.\n" +
+                      $"  VoiceRecord testten önce={_rawMicPrevVoiceRecord} → true yapıldı · " +
+                      $"cihaz Steam ayarından geliyor (Steam ▸ Ayarlar ▸ Ses).");
+        }
+
+        private static void RawMicTick()
+        {
+            if (!Steamworks.SteamClient.IsValid) { FinishRawMicTest("Steam test ortasında geçersizleşti"); return; }
+
+            _rawMicTicks++;
+            if (Steamworks.SteamUser.HasVoiceData) _rawMicHasDataTrue++;
+
+            _rawMicStream.SetLength(0);
+            int read = Steamworks.SteamUser.ReadVoiceData(_rawMicStream);
+            if (read > 0)
+            {
+                _rawMicReadsWithBytes++;
+                _rawMicTotalBytes += read;
+                if (read > _rawMicPeakRead) _rawMicPeakRead = read;
+            }
+
+            if (EditorApplication.timeSinceStartup >= _rawMicEndTime) FinishRawMicTest(null);
+        }
+
+        private static void FinishRawMicTest(string abortReason)
+        {
+            EditorApplication.update -= RawMicTick;
+            _rawMicStream = null;
+
+            // VoiceRecord'u testten ÖNCEKİ değerine geri koy — testin mikrofonu açık bırakması
+            // tam olarak planın "en tehlikeli nokta" dediği sızıntı olurdu.
+            if (Steamworks.SteamClient.IsValid) Steamworks.SteamUser.VoiceRecord = _rawMicPrevVoiceRecord;
+
+            if (abortReason != null) { Debug.LogError($"[HAM MİKROFON TESTİ] İPTAL: {abortReason}"); return; }
+
+            var sb = new StringBuilder(512);
+            sb.AppendLine("═══ HAM MİKROFON TESTİ SONUCU (capture pipeline ATLANDI) ═══");
+            sb.AppendLine($"örnekleme={_rawMicTicks} tick · HasVoiceData true={_rawMicHasDataTrue} · " +
+                          $"bayt getiren okuma={_rawMicReadsWithBytes} · toplam={_rawMicTotalBytes} B · tepe tek okuma={_rawMicPeakRead} B");
+
+            if (_rawMicTotalBytes > 0)
+            {
+                sb.AppendLine("✅ STEAM SES VERİYOR. Mikrofon/izin/cihaz SAĞLAM.");
+                sb.AppendLine("   → Sorun bizim capture katmanımızda (durum makinesi / IsMicDegraded / PTT yolu).");
+            }
+            else if (_rawMicHasDataTrue > 0)
+            {
+                sb.AppendLine("⚠️ HasVoiceData true oldu ama ReadVoiceData 0 bayt döndürdü — okuma yolunda bir tuhaflık var.");
+            }
+            else
+            {
+                sb.AppendLine("❌ STEAM HİÇ SES VERMEDİ (VoiceRecord=true iken bile).");
+                sb.AppendLine("   → Sorun bizim kodumuzda DEĞİL. Sırayla kontrol et:");
+                sb.AppendLine("     1. Kulaklık/mikrofon fiziksel olarak AÇIK mı (kablosuzsa şarjı/gücü)?");
+                sb.AppendLine("     2. Steam ▸ Ayarlar ▸ Ses ▸ 'Mikrofon Testi' — çubuk oynuyor mu?");
+                sb.AppendLine("     3. Aynı ekranda gürültü kapısı (noise gate) seviyesini KAPAT/düşür.");
+                sb.AppendLine("     4. Steam'de doğru giriş cihazı seçili mi?");
+            }
+            sb.AppendLine("═════════════════════");
+            Debug.Log(sb.ToString());
+        }
+
+        // ─── Degraded sıfırlama ───────────────────────────────────────────────────────────────
+        // IsMicDegraded bilerek KALICI (donanım sorunu kendiliğinden düzelmez varsayımı), ama bu
+        // hata ayıklama sırasında her denemede Play'i yeniden başlatmayı zorunlu kılıyor. Bu menü
+        // yalnızca editörde o bayrağı temizler — üretim davranışı değişmez.
+        private const string MENU_RESET_DEGRADED = "Tools/Cargor/Voice/Mikrofon 'Degraded' Durumunu Sıfırla";
+
+        [MenuItem(MENU_RESET_DEGRADED)]
+        private static void ResetMicDegraded()
+        {
+            var rt = RadioVoiceRuntime.Instance;
+            if (rt == null || rt.Capture == null)
+            {
+                Debug.LogWarning("[Degraded sıfırla] RadioVoiceRuntime yok — Play modunda mısın?");
+                return;
+            }
+
+            rt.Capture.DevResetMicDegraded();
+            Debug.Log("[Degraded sıfırla] ✅ IsMicDegraded temizlendi. V'ye basıp tekrar deneyebilirsin " +
+                      "(1.5 sn+ basılı tutup ses gelmezse yeniden Degraded'a düşer).");
         }
 
         private static readonly string RecordingPath =

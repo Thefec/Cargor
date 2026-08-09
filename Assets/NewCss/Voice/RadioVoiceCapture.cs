@@ -268,6 +268,20 @@ public sealed class RadioVoiceCapture
         PacketProduced?.Invoke(new ArraySegment<byte>(_rawBuffer, 0, VoicePacket.HeaderSize + written));
     }
 
+#if UNITY_EDITOR
+    /// <summary>SADECE EDİTÖR — hata ayıklama için Degraded kısa devresini temizler. IsMicDegraded
+    /// bilerek KALICI (donanım sorunu kendiliğinden düzelmez varsayımı), ama o yüzden her deneme
+    /// Play'i yeniden başlatmayı gerektiriyordu. State de Idle'a çekilmek ZORUNDA: Tick'teki switch
+    /// Degraded case'i taşımıyor, bayrak temizlense bile State=Degraded kalırsa hiçbir dala girmez.</summary>
+    public void DevResetMicDegraded()
+    {
+        IsMicDegraded = false;
+        State = CaptureState.Idle;
+        _everProducedDataThisBurst = false;
+        _pendingBurstStart = false;
+    }
+#endif
+
     private void StartRecordingSafely()
     {
         if (!SteamClient.IsValid) return;
