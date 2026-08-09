@@ -193,6 +193,10 @@ namespace NewCss
 
         private void Update()
         {
+            // GEÇİCİ TEŞHİS — kök neden bulunur bulunmaz SİL (bkz. MovementDiagnostics yorumu).
+            // IsOwner kontrolünden ÖNCE: "hiç log yok" da bir bilgi (Update hiç koşmuyor demek).
+            if (MovementDiagnostics) LogMovementDiagnostics();
+
             if (!IsOwner) return;
 
             if (_isMovementLocked)
@@ -395,7 +399,10 @@ namespace NewCss
             if (direction.magnitude >= MOVEMENT_THRESHOLD)
             {
                 RotateTowardsDirection(direction);
-                _controller.Move(direction * targetSpeed * Time.deltaTime);
+                // Move()'un dönüşü normalde atılıyor; teşhis için saklanıyor. Her yönde "Sides" dönüp
+                // pozisyon değişmiyorsa oyuncu geometriye/başka bir kapsüle SIKIŞMIŞ demektir —
+                // "girdi ölü" ile "fiziksel engel" ayrımını yapan tek ölçüm bu.
+                _lastMoveFlags = _controller.Move(direction * targetSpeed * Time.deltaTime);
             }
 
             ApplyGravity();
@@ -729,6 +736,44 @@ namespace NewCss
         {
             SetCarrying(!_isCarrying);
         }
+
+        #region GEÇİCİ TEŞHİS (2026-08-09) — kök neden bulununca BU BÖLÜMÜ SİL
+
+        /// <summary>
+        /// Çift makine testi: client'ta WASD hiç çalışmadı, host'ta sorun yoktu. Statik inceleme
+        /// yedi hipotezi eledi (sahiplik, tuş atamaları, server-authority, timeScale, NextDayUI kilidi,
+        /// aynı noktada spawn, Awake istisnası) — geriye çalışma anı ölçümü kaldı.
+        /// Sahibin makinesinde saniyede BİR satır basar; Player.log'da hangi kapının kapalı olduğunu
+        /// tek turda gösterir. Üretimde kalmamalı: bulgudan sonra bu bölge ve Update'teki çağrı silinir.
+        /// </summary>
+        private const bool MovementDiagnostics = true;
+
+        private double _nextDiagTime;
+        private Vector3 _diagLastPos;
+        private CollisionFlags _lastMoveFlags;
+
+        private void LogMovementDiagnostics()
+        {
+            if (!IsLocalPlayer) return; // sahiplik bozuksa bile kendi karakterimizi yakalar
+            if (Time.unscaledTimeAsDouble < _nextDiagTime) return;
+            _nextDiagTime = Time.unscaledTimeAsDouble + 1.0;
+
+            Vector3 pos = transform.position;
+            Vector2 input = GetMovementInput();
+            string ctrl = _controller == null
+                ? "NULL"
+                : (_controller.enabled ? "enabled" : "DISABLED");
+
+            Debug.Log($"{LOG_PREFIX} [TESHIS] owner={IsOwner} locked={_isMovementLocked} controller={ctrl} " +
+                      $"input=({input.x:0.##},{input.y:0.##}) speed={GetCurrentSpeed():0.##} " +
+                      $"cooldown={_isInCooldown} stamina={_currentStamina:0.##} timeScale={Time.timeScale:0.##} " +
+                      $"pos={pos.x:0.##},{pos.y:0.##},{pos.z:0.##} delta1s={(pos - _diagLastPos).magnitude:0.###} " +
+                      $"moveFlags={_lastMoveFlags}");
+
+            _diagLastPos = pos;
+        }
+
+        #endregion
 
         [ContextMenu("Debug: Print State")]
         private void DebugPrintState()

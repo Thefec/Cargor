@@ -222,7 +222,15 @@ public class UnifiedSettingsManager : MonoBehaviour
 
     #region Private Fields - Saved Settings
 
-    private SettingsData _savedSettings;
+    // 2026-08-09: alan bildiriminde kuruluyor, Awake'i BEKLEMİYOR. Sebep: GetMasterVolume/GetSFXVolume/
+    // GetSensitivity gibi getter'lar expression-bodied (`=> _savedSettings.X`) ve inline oluyorlar —
+    // _savedSettings null iken çağrıldıklarında NullReferenceException ÇAĞIRANIN stack'inde görünüyor,
+    // sanki hata orada gibi. Çift makine testinde client'ta 81 istisna bu yüzden çıktı:
+    // PlayerMovement.Awake() → UpdateAudioVolume() → CalculateFinalVolume(), henüz ayarlar yüklenmemişken
+    // (client'ta sahne yükleme sırası host'tan farklı; host'ta 0 istisna vardı).
+    // Aşağıdaki (satır ~367) `_savedSettings = new SettingsData()` yine çalışıyor, init sonrası davranış
+    // DEĞİŞMİYOR — bu yalnızca "init'ten önce çağrılırsa" penceresini kapatıyor.
+    private SettingsData _savedSettings = new SettingsData();
     private SettingsData _selectedSettings;
 
     #endregion
