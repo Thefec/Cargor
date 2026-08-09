@@ -79,7 +79,7 @@ Bu yüzden 10 anahtar da **Window ▸ Asset Management ▸ Localization Tables**
 | `VoiceHudMuted` | {0} (Sessize Alındı) | {0} (Muted) | HUD satırı, mute edilmiş konuşmacı için |
 | `VoiceHudUnknownPlayer` | Bilinmeyen Oyuncu | Unknown Player | Roster'da isim bulunamazsa HUD fallback'i |
 | `VoiceErrorNoSteam` | Steam bağlantısı yok — telsiz kullanılamıyor | No Steam connection — radio unavailable | Steam geçersizken oturum başına bir kez gösterilecek uyarı |
-| `VoiceErrorNoMic` | Mikrofon bulunamadı | No microphone detected | PTT basılı ama 1.5s veri gelmezse gösterilecek uyarı |
+| `VoiceErrorNoMic` | Ses algılanmıyor | No voice detected | PTT 1.5s+ basılı ama Steam hiç bayt vermezse; ~30s sonra kendiliğinden kalkar. **Anahtar adı tarihsel** — metin bilerek "mikrofon bulunamadı" DEĞİL, çünkü Steam'in gürültü kapısı da aynı sonucu veriyor (2026-08-09) |
 | `VoiceHintPushToTalk` | Konuşmak için {0}'a basılı tutun | Hold {0} to talk | İpucu metni, `{0}` = güncel PTT tuşu (`GetBindingDisplayName`) |
 
 > Bu metinler taslak — oyunun genel ton/üslup rehberine göre kullanıcı serbestçe değiştirebilir. Değer/ekonomi içermiyorlar (economist onayı gerekmez), sadece UI stringleri.

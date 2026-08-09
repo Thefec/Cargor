@@ -342,9 +342,9 @@ namespace NewCss.DevTools
         }
 
         // ─── Degraded sıfırlama ───────────────────────────────────────────────────────────────
-        // IsMicDegraded bilerek KALICI (donanım sorunu kendiliğinden düzelmez varsayımı), ama bu
-        // hata ayıklama sırasında her denemede Play'i yeniden başlatmayı zorunlu kılıyor. Bu menü
-        // yalnızca editörde o bayrağı temizler — üretim davranışı değişmez.
+        // Baskı 2026-08-09'dan beri GEÇİCİ (VoiceMicSilencePolicy.RetryCooldownSeconds sonra kendiliğinden
+        // kalkar), ama hata ayıklarken 30 sn beklemek yine de yavaş. Bu menü cooldown'u ve "uyarı
+        // loglandı" bayrağını anında temizler — üretim davranışı değişmez.
         private const string MENU_RESET_DEGRADED = "Tools/Cargor/Voice/Mikrofon 'Degraded' Durumunu Sıfırla";
 
         [MenuItem(MENU_RESET_DEGRADED)]
@@ -358,8 +358,9 @@ namespace NewCss.DevTools
             }
 
             rt.Capture.DevResetMicDegraded();
-            Debug.Log("[Degraded sıfırla] ✅ IsMicDegraded temizlendi. V'ye basıp tekrar deneyebilirsin " +
-                      "(1.5 sn+ basılı tutup ses gelmezse yeniden Degraded'a düşer).");
+            Debug.Log($"[Degraded sıfırla] ✅ Baskı ve uyarı bayrağı temizlendi. V'ye basıp tekrar deneyebilirsin " +
+                      $"({VoiceMicSilencePolicy.SilenceThresholdSeconds:0.#} sn+ basılı tutup ses gelmezse yeniden " +
+                      $"{VoiceMicSilencePolicy.RetryCooldownSeconds:0} sn'lik baskıya düşer).");
         }
 
         private static readonly string RecordingPath =
@@ -890,7 +891,7 @@ namespace NewCss.DevTools
             if (runtime != null)
             {
                 _statsSb.Append("Yakalama: ").Append(runtime.Capture.State);
-                if (runtime.Capture.IsMicDegraded) _statsSb.Append(" (MİKROFON YOK)");
+                if (runtime.Capture.IsMicDegraded) _statsSb.Append(" (SES ALGILANMIYOR — geçici)");
                 _statsSb.Append("\n");
 
                 var pool = runtime.Playback.DevPool;

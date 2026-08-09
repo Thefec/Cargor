@@ -151,7 +151,11 @@ public sealed class RadioHudController : MonoBehaviour
 
         if (runtime != null && runtime.Capture.IsMicDegraded)
         {
-            _ownRow.SetLabel(ResolveLocalizedOrFallback("VoiceErrorNoMic", "Mikrofon bulunamadı"), dimmed: true);
+            // 2026-08-09: metin "Mikrofon bulunamadı" değil "Ses algılanmıyor" — tespit mikrofonun
+            // VARLIĞINI değil, Steam'den bayt gelip gelmediğini ölçüyor ve gürültü kapısı sessizliği
+            // de aynı sonucu veriyor. Anahtar ADI (VoiceErrorNoMic) bilerek KORUNDU: kullanıcının
+            // Localization Tables'ta yazacağı 10 anahtarlık liste bozulmasın.
+            _ownRow.SetLabel(ResolveLocalizedOrFallback("VoiceErrorNoMic", "Ses algılanmıyor"), dimmed: true);
             _ownRow.SetLevel01(0f);
             return;
         }
