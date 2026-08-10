@@ -55,6 +55,42 @@ namespace NewCss
             return RoomResolver.Resolve(current, x, y, z, _cache);
         }
 
+        /// <summary>
+        /// Verilen roomId'ye ait tüm RoomVolume kutularının BİRLEŞİM (union) AABB'sini döner.
+        /// Karartma shader'ı §H5 gereği tek kutu bilir; L-şekilli/çok-kutulu odalarda (aynı
+        /// roomId'yi paylaşan birden çok RoomVolume) v1'de tam kapsam yerine bu union kullanılır
+        /// (plan §5, §H5 — "shader tek kutu, union gerekirse v1'de YAPMA" notunun izin verdiği
+        /// en basit yaklaşım). Eşleşme yoksa false döner, box dokunulmamış/varsayılan kalır.
+        /// </summary>
+        public static bool TryGetBounds(int roomId, out RoomBox box)
+        {
+            RebuildCacheIfNeeded();
+
+            bool found = false;
+            RoomBox union = default;
+
+            for (int i = 0; i < _cache.Length; i++)
+            {
+                if (_cache[i].RoomId != roomId)
+                {
+                    continue;
+                }
+
+                union = found ? UnionOf(union, _cache[i].Box) : _cache[i].Box;
+                found = true;
+            }
+
+            box = union;
+            return found;
+        }
+
+        private static RoomBox UnionOf(RoomBox a, RoomBox b)
+        {
+            return new RoomBox(
+                Mathf.Min(a.MinX, b.MinX), Mathf.Min(a.MinY, b.MinY), Mathf.Min(a.MinZ, b.MinZ),
+                Mathf.Max(a.MaxX, b.MaxX), Mathf.Max(a.MaxY, b.MaxY), Mathf.Max(a.MaxZ, b.MaxZ));
+        }
+
         private static void RebuildCacheIfNeeded()
         {
             if (!_cacheDirty)
