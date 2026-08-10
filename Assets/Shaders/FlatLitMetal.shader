@@ -74,6 +74,13 @@ Shader "Custom/FlatLitMetal"
             float  _CargoRoomDesat;
             float  _CargoRoomDim;
 
+            // İki kutulu çapraz geçiş (oda değişince ani sıçrama yerine yumuşak aydınlanma).
+            // _CargoRoomBlend tanımsızken 0 -> roomInside = insidePrev; prev de tanımsız/sıfırsa
+            // her şey dışarıda, ama _CargoRoomFade de 0 olduğundan roomK=0 ve shader KİMLİK kalır.
+            float4 _CargoRoomPrevMin;
+            float4 _CargoRoomPrevMax;
+            float  _CargoRoomBlend;   // 0 = tamamen eski kutu, 1 = tamamen yeni kutu
+
             // Luminance hesapla (bu dosyada yoktu, karartma icin eklendi)
             float Luminance3(float3 color) {
                 return dot(color, float3(0.299, 0.587, 0.114));
@@ -191,10 +198,11 @@ Shader "Custom/FlatLitMetal"
                     LIGHT_LOOP_END
                 #endif
 
-                // ── Oda karartma (plan §3.3, S5) ──
+                // ── Oda karartma (plan §3.3, S5) — iki kutulu çapraz geçiş ──
                 // k dışta çarpılır: _CargoRoomFade tanımsız/0 (oda sistemi kurulmamış sahne) ise shader kimliktir.
-                float roomInside = (all(IN.positionWS >= _CargoRoomMin.xyz) &&
-                                     all(IN.positionWS <= _CargoRoomMax.xyz)) ? 1.0 : 0.0;
+                float insideNew  = (all(IN.positionWS >= _CargoRoomMin.xyz)     && all(IN.positionWS <= _CargoRoomMax.xyz))     ? 1.0 : 0.0;
+                float insidePrev = (all(IN.positionWS >= _CargoRoomPrevMin.xyz) && all(IN.positionWS <= _CargoRoomPrevMax.xyz)) ? 1.0 : 0.0;
+                float roomInside = lerp(insidePrev, insideNew, _CargoRoomBlend);
                 float roomK = _CargoRoomFade * (1.0 - roomInside);
                 final = lerp(final, Luminance3(final).xxx, roomK * _CargoRoomDesat);
                 final *= lerp(1.0, _CargoRoomDim, roomK);

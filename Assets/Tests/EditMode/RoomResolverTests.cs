@@ -112,4 +112,52 @@ public class RoomResolverTests
         Assert.AreEqual(0f, cur, "fade sonlu adımda tam 0f'a kilitlenmeli, asimptotik kalmamalı");
         Assert.Less(steps, maxSteps, "hedefe tavan sayıya çarpmadan, sonlu adımda ulaşmalı");
     }
+
+    // ── Oda geçişinde iki-kutulu çapraz-geçiş (RoomBlend) — kullanıcı şikâyeti: harita
+    // görünümü basılıyken oda değişince griden renge ANİ sıçrama yerine yumuşak aydınlanma. ──
+
+    [Test]
+    public void RoomBlend_Advance_ReachesExactOne_FromZero()
+    {
+        const float dt = 1f / 60f;
+        const float duration = 1.2f; // RoomViewController.roomBlendDuration varsayılanıyla aynı büyüklük mertebesi
+        const int maxSteps = 1000;
+
+        float progress = 0f;
+        int steps = 0;
+        while (progress != 1f && steps < maxSteps)
+        {
+            progress = RoomBlend.Advance(progress, dt, duration);
+            steps++;
+        }
+
+        // H7 ilkesiyle aynı: lineer ilerleme hedefi asla geçmez, sonlu adımda TAM 1f'e kilitlenir.
+        Assert.AreEqual(1f, progress, "blend sonlu adımda tam 1f'e kilitlenmeli, asimptotik kalmamalı");
+        Assert.Less(steps, maxSteps, "hedefe tavan sayıya çarpmadan, sonlu adımda ulaşmalı");
+    }
+
+    [Test]
+    public void RoomBlend_Smoothstep01_IsExactAtBoundaries()
+    {
+        // Sözleşme: t=0/t=1'de TAM 0f/1f — shader'a giden değer iki-kutulu karışımda
+        // asimptotik takılı kalırsa (H7'nin bu turdaki karşılığı) geçiş hiç bitmezmiş gibi görünür.
+        Assert.AreEqual(0f, RoomBlend.Smoothstep01(0f), "t=0'da tam 0 dönmeli");
+        Assert.AreEqual(1f, RoomBlend.Smoothstep01(1f), "t=1'de tam 1 dönmeli");
+
+        // Domain dışı girdiler (savunma amaçlı) clamp'lenmeli, exception atmamalı.
+        Assert.AreEqual(0f, RoomBlend.Smoothstep01(-0.5f), "negatif girdi 0'a clamp'lenmeli");
+        Assert.AreEqual(1f, RoomBlend.Smoothstep01(1.5f), "1'i aşan girdi 1'e clamp'lenmeli");
+    }
+
+    [Test]
+    public void RoomBlend_Smoothstep01_IsMonotonicNonDecreasing()
+    {
+        float previous = RoomBlend.Smoothstep01(0f);
+        for (float t = 0.1f; t <= 1.0001f; t += 0.1f)
+        {
+            float current = RoomBlend.Smoothstep01(t);
+            Assert.GreaterOrEqual(current, previous, "smoothstep artan girdide azalmamalı");
+            previous = current;
+        }
+    }
 }

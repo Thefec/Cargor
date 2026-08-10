@@ -43,6 +43,14 @@ namespace NewCss
         [Tooltip("Karartılmış alanda karanlık çarpanı (1 = değişmez, 0 = simsiyah) — shader'a iletilir.")]
         private float dim = 0.35f;
 
+        [SerializeField]
+        [Tooltip("Oda değişince eski oda kutusundan yeni oda kutusuna ÇAPRAZ GEÇİŞ süresi (saniye) — " +
+                 "kullanıcı şikâyeti: harita görünümü basılıyken oda değişince griden renge ANİ sıçrama " +
+                 "yerine ~1-2 saniyelik yumuşak aydınlanma istendi. 'Hız' değil 'süre': RoomBlend.Advance " +
+                 "bu saniyede 0'dan 1'e lineer ilerler, shader'a giden değer ayrıca smoothstep'lenir.")]
+        [Range(0.05f, 5f)]
+        private float roomBlendDuration = 1.2f;
+
         /// <summary>Yerel oyuncunun histerezisli oda id'si. -1 (RoomResolver.NoRoomSentinel) = oda çözülemedi/yok.
         /// PlayerRoomVisibility (S4) bunu kendi oda id'siyle karşılaştırır.</summary>
         public static int LocalRoomId { get; private set; } = RoomResolver.NoRoomSentinel;
@@ -62,6 +70,9 @@ namespace NewCss
         private static readonly int FadeId = Shader.PropertyToID("_CargoRoomFade");
         private static readonly int DesatId = Shader.PropertyToID("_CargoRoomDesat");
         private static readonly int DimId = Shader.PropertyToID("_CargoRoomDim");
+        private static readonly int PrevMinId = Shader.PropertyToID("_CargoRoomPrevMin");
+        private static readonly int PrevMaxId = Shader.PropertyToID("_CargoRoomPrevMax");
+        private static readonly int BlendId = Shader.PropertyToID("_CargoRoomBlend");
 
         private Transform _localPlayer;
         private CameraFollow _cameraFollow;
@@ -76,20 +87,44 @@ namespace NewCss
         private float _lastDesat = float.NaN;
         private float _lastDim = float.NaN;
 
+        // İki kutulu çapraz geçiş durumu (kullanıcı şikâyeti: oda değişince ani sıçrama).
+        // _newMin/_newMax "hedef" (blend=1) kutuyu, _prevMin/_prevMax "eski" (blend=0) kutuyu
+        // tutar. İkisi de field-default Vector4(0,0,0,0) ile başlar — ilk oda çözümlemesinde
+        // bu "sıfır kutu" doğal olarak prev'e kayar (madde 4: "oda yoktan gelme" özel durum
+        // GEREKMEZ, genel geçiş mantığı zaten yumuşak aydınlanma üretir).
+        private Vector4 _newMin;
+        private Vector4 _newMax;
+        private Vector4 _prevMin;
+        private Vector4 _prevMax;
+        // Ham lineer ilerleme (0..1) — RoomBlend.Advance ile roomBlendDuration saniyede 1'e ulaşır.
+        // 0f ile başlar: ilk ApplyRoomBounds çağrısı zaten sıfırlayacak, ama o çağrıdan önce
+        // (henüz oda yokken) fade=0 olduğundan roomK=0 ve değeri önemsizdir — 0f en identity-
+        // uyumlu varsayılan.
+        private float _blendProgress;
+        // NaN: ilk karede kesin push (aynı desat/dim deseni).
+        private float _lastAppliedBlend = float.NaN;
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Bootstrap()
         {
             // H6: startup hook'ta fade'i kesin sıfırla — önceki oturumdan (fast enter play mode /
             // domain reload kapalı) sızmış bayat bir global değer olabilir, ilk kare bile griye
-            // düşmesin.
+            // düşmesin. Blend de aynı sızıntıya açık (statik shader global) — 0 = "tamamen eski
+            // kutu" ama fade zaten 0 olduğundan görsel etkisi yok, yine de tutarlılık için sıfırlanır.
             Shader.SetGlobalFloat(FadeId, 0f);
+            Shader.SetGlobalFloat(BlendId, 0f);
             // Domain reload kapalıyken statikler önceki oturumdan sağ çıkar — yok olmuş bir
             // transform'a takılı kalmasın.
             LocalPlayer = null;
             LocalRoomId = RoomResolver.NoRoomSentinel;
 
             var go = new GameObject("[RoomViewController]");
-            go.hideFlags = HideFlags.HideAndDontSave;
+            // HideAndDontSave DEĞİL: o bayrak objeyi hem Hierarchy'de gizler hem NotEditable
+            // yapar, kullanıcı Inspector'dan dim/desat/roomBlendDuration'ı elde ayarlayamazdı
+            // (plan §9.3 tam olarak bunu istiyor). DontSaveInEditor|DontSaveInBuild aynı "sahneye
+            // kaydedilmez" garantisini verir ama Play sırasında Hierarchy'de görünür + düzenlenebilir
+            // bırakır.
+            go.hideFlags = HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild;
             DontDestroyOnLoad(go);
             go.AddComponent<RoomViewController>();
         }
@@ -220,22 +255,68 @@ namespace NewCss
                 _lastDesat = desaturation;
                 _lastDim = dim;
             }
+
+            // Oda değişiminden bağımsız — çapraz geçiş her karede ilerler (roomChanged'in
+            // kendisiyle sınırlı değil, ApplyRoomBounds içinde sıfırlanan _blendProgress'i
+            // buradan sonra da ilerletmemiz gerekir ki geçiş süre boyunca devam etsin).
+            UpdateBlend();
         }
 
-        private static void ApplyRoomBounds(int roomId)
+        /// <summary>
+        /// Eski "hedef" kutuyu "önceki" kutuya kaydırır, yeni hedefi uygular, çapraz geçişi
+        /// (blend) sıfırlar. Instance metodu (eskiden static'ti) — artık _prevMin/_newMin gibi
+        /// örnek durumuna yazıyor.
+        ///
+        /// SINIRLAMA (kullanıcı isteği madde 5): geçiş ORTASINDA oda yeniden değişirse, "prev"
+        /// o anki (belki hâlâ 0..1 arası karışmakta olan) hedef kutu olur — ara karışım durumu
+        /// tek bir kutuyla temsil edilemediği için görsel küçük bir sıçrama olabilir. Bilerek
+        /// kabul edildi: histerezis (RoomResolver, 0.35 m margin + "mevcut oda korunur") hızlı
+        /// art arda oda değişimini zaten nadir kılıyor, bu köşe durumu playtest'te göze
+        /// çarpmayacak kadar seyrek olmalı.
+        /// </summary>
+        private void ApplyRoomBounds(int roomId)
         {
+            _prevMin = _newMin;
+            _prevMax = _newMax;
+
             if (roomId != RoomResolver.NoRoomSentinel && RoomRegistry.TryGetBounds(roomId, out RoomBox box))
             {
-                Shader.SetGlobalVector(MinId, new Vector4(box.MinX, box.MinY, box.MinZ, 0f));
-                Shader.SetGlobalVector(MaxId, new Vector4(box.MaxX, box.MaxY, box.MaxZ, 0f));
+                _newMin = new Vector4(box.MinX, box.MinY, box.MinZ, 0f);
+                _newMax = new Vector4(box.MaxX, box.MaxY, box.MaxZ, 0f);
             }
             else
             {
                 // H8: oda yok / bulunamadı -> min=max=0. Fade zaten 0'a gidiyor olacağından
                 // (want=false, haveRoom=false) bu kutunun içeriği görsel olarak etkisizdir; yine
                 // de "her şey dışarıda" tanımsız-global-varsayılanıyla tutarlı kalsın diye sıfırlanır.
-                Shader.SetGlobalVector(MinId, Vector4.zero);
-                Shader.SetGlobalVector(MaxId, Vector4.zero);
+                _newMin = Vector4.zero;
+                _newMax = Vector4.zero;
+            }
+
+            Shader.SetGlobalVector(MinId, _newMin);
+            Shader.SetGlobalVector(MaxId, _newMax);
+            Shader.SetGlobalVector(PrevMinId, _prevMin);
+            Shader.SetGlobalVector(PrevMaxId, _prevMax);
+
+            // Madde 1+4: her oda değişiminde (ilk çözümleme dahil, çünkü _newMin/_newMax ilk
+            // seferde sıfır kutudan geliyordu) çapraz geçiş baştan başlar.
+            _blendProgress = 0f;
+        }
+
+        /// <summary>
+        /// Çapraz geçişi (madde 1-3) roomBlendDuration saniyede lineer ilerletir, shader'a
+        /// smoothstep'lenmiş hâlini gönderir. Oda değişip değişmediğinden bağımsız her karede
+        /// çağrılır — ApplyRoomBounds yalnız _blendProgress'i sıfırlar, ilerletme burada olur.
+        /// </summary>
+        private void UpdateBlend()
+        {
+            _blendProgress = RoomBlend.Advance(_blendProgress, Time.deltaTime, roomBlendDuration);
+            float smoothed = RoomBlend.Smoothstep01(_blendProgress);
+
+            if (!Mathf.Approximately(_lastAppliedBlend, smoothed))
+            {
+                Shader.SetGlobalFloat(BlendId, smoothed);
+                _lastAppliedBlend = smoothed;
             }
         }
 
