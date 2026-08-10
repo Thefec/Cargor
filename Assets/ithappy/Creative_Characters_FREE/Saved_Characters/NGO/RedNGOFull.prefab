@@ -20,6 +20,7 @@ GameObject:
   - component: {fileID: -4876532500303209859}
   - component: {fileID: -3573328446338628382}
   - component: {fileID: 1710018964712232436}
+  - component: {fileID: 712966118537426415}
   m_Layer: 7
   m_Name: RedNGOFull
   m_TagString: Item
@@ -198,6 +199,7 @@ MonoBehaviour:
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
+  <InScenePlaced>k__BackingField: 0
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 1
   SpawnWithObservers: 1
@@ -378,3 +380,15 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &712966118537426415
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3616459180107946145}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cdcb4794450a42b49a29efdb4964f4eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NewCss.RoomItemVisibility

@@ -21,6 +21,7 @@ GameObject:
   - component: {fileID: 8513165974358963866}
   - component: {fileID: -4157939555391810392}
   - component: {fileID: 6326407661866331581}
+  - component: {fileID: 6234699417707130161}
   m_Layer: 7
   m_Name: CameraNGO
   m_TagString: Item
@@ -197,6 +198,7 @@ MonoBehaviour:
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
+  <InScenePlaced>k__BackingField: 0
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 1
   SpawnWithObservers: 1
@@ -292,7 +294,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7c82736062490f40a06cbe5f3b97b31, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NewCss.BoxFallPenalty
-  dropMoneyPenalty: 5
   economySettings: {fileID: 11400000, guid: 415dc128c56df644f9af98009bf37743, type: 2}
   boxDropSound: {fileID: 8300000, guid: 016732318ef656a4392c44070b4a51aa, type: 3}
   soundVolume: 1
@@ -396,3 +397,15 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &6234699417707130161
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6172315368671001352}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cdcb4794450a42b49a29efdb4964f4eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NewCss.RoomItemVisibility
