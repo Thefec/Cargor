@@ -52,8 +52,19 @@ namespace NewCss
         public static int Resolve(int current, float x, float y, float z)
         {
             RebuildCacheIfNeeded();
-            return RoomResolver.Resolve(current, x, y, z, _cache);
+            return RoomResolver.Resolve(current, x, y, z, _cache, DoorwayMargin);
         }
+
+        /// <summary>
+        /// Kapı ağzı toleransı: sahnedeki RoomViewSettings paneli varsa oradan, yoksa
+        /// RoomResolver'ın kendi varsayılanından gelir. Tek noktada okunur ki çözücünün
+        /// iki çağıranı (RoomViewController ve PlayerRoomVisibility) asla farklı marj
+        /// kullanmasın — farklı marj = iki taraf farklı odaya karar verir.
+        /// </summary>
+        private static float DoorwayMargin =>
+            RoomViewSettings.Active != null
+                ? RoomViewSettings.Active.doorwayMargin
+                : RoomResolver.DefaultMargin;
 
         /// <summary>
         /// Verilen roomId'ye ait tüm RoomVolume kutularının BİRLEŞİM (union) AABB'sini döner.

@@ -23,33 +23,43 @@ namespace NewCss
         // çağırmamak için referanslar bulununca cache'lenir, yalnız kayıpsa (null) periyodik yeniden aranır.
         private const float TargetSearchInterval = 0.5f;
 
-        [Header("=== KARARTMA AYARLARI ===")]
-        [SerializeField]
-        [Tooltip("Fade geçiş hızı (birim/sn). Kamera harita-görünümü lerp'iyle (CameraFollow.mapViewTransitionSpeed, " +
-                 "varsayılan 5) UYUMLU tutulmalı — aksi halde kamera oturmadan dünya griye döner ya da tersi. " +
-                 "DOĞRULAMA: EscapeMenuManager.cs:404 Time.timeScale=0 yapıyor, ANCAK CameraFollow.cs:264-275 " +
-                 "kendi map-view lerp'inde ÖLÇEKLİ Time.deltaTime kullanıyor (InputBindingManager.GetAction ise " +
-                 "ham Input.GetKey okuduğu için IsMapViewActive duraklatmada da değişebilir). Burada da ölçekli " +
-                 "Time.deltaTime kullanılır ki duraklatmada kamera ile karartma AYNI ANDA dursun; unscaledDeltaTime " +
-                 "kullansaydık kamera donarken karartma bağımsız ilerler/tersine döner ve ikisi senkronsuz görünürdü.")]
-        [Range(0.1f, 20f)]
-        private float fadeSpeed = 5f;
+        // ─────────────────────────────────────────────────────────────────────────────
+        // AYARLAR TEK YERDE: sahnedeki RoomViewSettings bileşeni (`---ROOMS---` objesinde).
+        // Buradaki alanlar KASITLI olarak [SerializeField] DEĞİL: bu bileşen çalışma anında
+        // yaratıldığı için Inspector'ında yapılan ayar Play'den çıkınca kaybolurdu. Aşağıdakiler
+        // yalnızca "panel sahnede yoksa" devreye giren sabit varsayılanlardır (Tutorial güvenli).
+        // ─────────────────────────────────────────────────────────────────────────────
+        private const float DefaultMapFadeDuration = 0.2f;
+        private const float DefaultRoomBlendDuration = 0.6f;
+        private const float DefaultDesaturation = 1f;
+        private const float DefaultDim = 0.35f;
 
-        [SerializeField, Range(0f, 1f)]
-        [Tooltip("Karartılmış alanda desatürasyon miktarı (0 = renkli kalır, 1 = tam gri) — shader'a iletilir.")]
-        private float desaturation = 1f;
+        private static RoomViewSettings Settings => RoomViewSettings.Active;
 
-        [SerializeField, Range(0f, 1f)]
-        [Tooltip("Karartılmış alanda karanlık çarpanı (1 = değişmez, 0 = simsiyah) — shader'a iletilir.")]
-        private float dim = 0.35f;
+        /// <summary>Harita görünümü fade'i "süre" olarak ayarlanır ama RoomFade.Step "hız" ister —
+        /// dönüşüm burada, tek noktada. Süre 0'a yakınsa sıfıra bölmeyi engellemek için taban var.</summary>
+        private static float FadeSpeed
+        {
+            get
+            {
+                float duration = Settings != null ? Settings.mapFadeDuration : DefaultMapFadeDuration;
+                return duration <= 0.001f ? 1000f : 1f / duration;
+            }
+        }
 
-        [SerializeField]
-        [Tooltip("Oda değişince eski oda kutusundan yeni oda kutusuna ÇAPRAZ GEÇİŞ süresi (saniye) — " +
-                 "kullanıcı şikâyeti: harita görünümü basılıyken oda değişince griden renge ANİ sıçrama " +
-                 "yerine ~1-2 saniyelik yumuşak aydınlanma istendi. 'Hız' değil 'süre': RoomBlend.Advance " +
-                 "bu saniyede 0'dan 1'e lineer ilerler, shader'a giden değer ayrıca smoothstep'lenir.")]
-        [Range(0.05f, 5f)]
-        private float roomBlendDuration = 1.2f;
+        private static float RoomBlendDuration =>
+            Settings != null ? Settings.roomBlendDuration : DefaultRoomBlendDuration;
+
+        private static float Desaturation =>
+            Settings != null ? Settings.desaturation : DefaultDesaturation;
+
+        private static float Dim =>
+            Settings != null ? Settings.dim : DefaultDim;
+
+        // NOT — ölçekli Time.deltaTime kullanılır, unscaledDeltaTime DEĞİL. Gerekçe:
+        // EscapeMenuManager.cs:404 Time.timeScale=0 yapıyor, ANCAK CameraFollow.cs:264-275 kendi
+        // harita-görünümü lerp'inde ÖLÇEKLİ Time.deltaTime kullanıyor. Aynısını kullanmazsak
+        // duraklatmada kamera donarken karartma bağımsız ilerler ve ikisi senkronsuz görünür.
 
         /// <summary>Yerel oyuncunun histerezisli oda id'si. -1 (RoomResolver.NoRoomSentinel) = oda çözülemedi/yok.
         /// PlayerRoomVisibility (S4) bunu kendi oda id'siyle karşılaştırır.</summary>
@@ -230,8 +240,8 @@ namespace NewCss
             bool want = haveRoom && _cameraFollow != null && _cameraFollow.IsMapViewActive;
 
             float previousFade = _fade;
-            // Ölçekli Time.deltaTime — gerekçe için fadeSpeed tooltip'ine bak.
-            _fade = RoomFade.Step(_fade, want, Time.deltaTime, fadeSpeed);
+            // Ölçekli Time.deltaTime — gerekçe yukarıdaki ayar bloğunun notunda.
+            _fade = RoomFade.Step(_fade, want, Time.deltaTime, FadeSpeed);
 
             bool roomChanged = _currentRoomId != _lastAppliedRoomId;
             if (roomChanged)
@@ -244,16 +254,18 @@ namespace NewCss
             // X basılı tutulup fade 1'e oturduğunda Inspector'dan dim/desat çevirmek HİÇBİR ŞEY
             // yapmazdı — oysa plan §9.3 kullanıcıdan bu iki değeri tam olarak öyle, oyun
             // çalışırken elde ayarlamasını istiyor.
-            bool tuningChanged = !Mathf.Approximately(_lastDesat, desaturation)
-                                 || !Mathf.Approximately(_lastDim, dim);
+            float desat = Desaturation;
+            float dimValue = Dim;
+            bool tuningChanged = !Mathf.Approximately(_lastDesat, desat)
+                                 || !Mathf.Approximately(_lastDim, dimValue);
 
             if (roomChanged || tuningChanged || !Mathf.Approximately(previousFade, _fade))
             {
                 Shader.SetGlobalFloat(FadeId, _fade);
-                Shader.SetGlobalFloat(DesatId, desaturation);
-                Shader.SetGlobalFloat(DimId, dim);
-                _lastDesat = desaturation;
-                _lastDim = dim;
+                Shader.SetGlobalFloat(DesatId, desat);
+                Shader.SetGlobalFloat(DimId, dimValue);
+                _lastDesat = desat;
+                _lastDim = dimValue;
             }
 
             // Oda değişiminden bağımsız — çapraz geçiş her karede ilerler (roomChanged'in
@@ -310,7 +322,7 @@ namespace NewCss
         /// </summary>
         private void UpdateBlend()
         {
-            _blendProgress = RoomBlend.Advance(_blendProgress, Time.deltaTime, roomBlendDuration);
+            _blendProgress = RoomBlend.Advance(_blendProgress, Time.deltaTime, RoomBlendDuration);
             float smoothed = RoomBlend.Smoothstep01(_blendProgress);
 
             if (!Mathf.Approximately(_lastAppliedBlend, smoothed))

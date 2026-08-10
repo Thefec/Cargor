@@ -69,6 +69,14 @@ namespace NewCss
                 return true;
             }
 
+            // Ayar panelinden gizleme tamamen kapatılabilir (karartmayı tek başına ayarlarken
+            // ya da görünürlüğün bir sorunun sebebi olup olmadığını test ederken).
+            var settings = RoomViewSettings.Active;
+            if (settings != null && !settings.hideOtherRoomPlayers)
+            {
+                return true;
+            }
+
             int viewerRoom = RoomViewController.LocalRoomId;
 
             if (viewerRoom == RoomResolver.NoRoomSentinel || _ownRoomId == RoomResolver.NoRoomSentinel)
