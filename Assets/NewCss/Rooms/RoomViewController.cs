@@ -47,6 +47,16 @@ namespace NewCss
         /// PlayerRoomVisibility (S4) bunu kendi oda id'siyle karşılaştırır.</summary>
         public static int LocalRoomId { get; private set; } = RoomResolver.NoRoomSentinel;
 
+        /// <summary>
+        /// İzleyen istemcinin kendi karakteri. PlayerRoomVisibility (S4) bunu "ben yerel oyuncu
+        /// muyum" testi için okur — K4: aksi halde yerel oyuncunun odası İKİ ayrı histerezis durum
+        /// makinesiyle (buradaki _currentRoomId ve o objenin kendi _ownRoomId'si) çözülür; ikisi
+        /// ilk çözümlemelerini farklı karede/konumda yaparsa çakışma bölgesinde ayrışabilir ve
+        /// histerezis ayrışmayı KİLİTLER → oyuncu kendi karakterini göremez. Plan §6.1 zaten
+        /// "yerel oyuncu daima kendi odasındadır" varsayıyor; bu alan o varsayımı koda yazar.
+        /// </summary>
+        public static Transform LocalPlayer { get; private set; }
+
         private static readonly int MinId = Shader.PropertyToID("_CargoRoomMin");
         private static readonly int MaxId = Shader.PropertyToID("_CargoRoomMax");
         private static readonly int FadeId = Shader.PropertyToID("_CargoRoomFade");
@@ -62,6 +72,9 @@ namespace NewCss
         // farklı bir başlangıç değeri — "henüz hiç uygulanmadı" anlamına gelir.
         private int _lastAppliedRoomId = int.MinValue;
         private float _fade;
+        // NaN ile başlar ki ilk karşılaştırma kesin "değişti" desin ve globaller bir kez yazılsın.
+        private float _lastDesat = float.NaN;
+        private float _lastDim = float.NaN;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Bootstrap()
@@ -70,6 +83,10 @@ namespace NewCss
             // domain reload kapalı) sızmış bayat bir global değer olabilir, ilk kare bile griye
             // düşmesin.
             Shader.SetGlobalFloat(FadeId, 0f);
+            // Domain reload kapalıyken statikler önceki oturumdan sağ çıkar — yok olmuş bir
+            // transform'a takılı kalmasın.
+            LocalPlayer = null;
+            LocalRoomId = RoomResolver.NoRoomSentinel;
 
             var go = new GameObject("[RoomViewController]");
             go.hideFlags = HideFlags.HideAndDontSave;
@@ -92,6 +109,8 @@ namespace NewCss
         private void OnDestroy()
         {
             ResetFadeState();
+            LocalPlayer = null;
+            LocalRoomId = RoomResolver.NoRoomSentinel;
         }
 
         private void Update()
@@ -124,6 +143,8 @@ namespace NewCss
             {
                 _localPlayer = FindLocalPlayerTransform();
             }
+
+            LocalPlayer = _localPlayer;
         }
 
         /// <summary>PlayerMovement.cs:271 SetupCamera / CameraFollow.cs TryFindByNetworkManager+TryFindByTag
@@ -184,11 +205,20 @@ namespace NewCss
                 _lastAppliedRoomId = _currentRoomId;
             }
 
-            if (roomChanged || !Mathf.Approximately(previousFade, _fade))
+            // K5: desat/dim'i de değişim testine dahil et. Sadece fade/oda değişimine baksaydık,
+            // X basılı tutulup fade 1'e oturduğunda Inspector'dan dim/desat çevirmek HİÇBİR ŞEY
+            // yapmazdı — oysa plan §9.3 kullanıcıdan bu iki değeri tam olarak öyle, oyun
+            // çalışırken elde ayarlamasını istiyor.
+            bool tuningChanged = !Mathf.Approximately(_lastDesat, desaturation)
+                                 || !Mathf.Approximately(_lastDim, dim);
+
+            if (roomChanged || tuningChanged || !Mathf.Approximately(previousFade, _fade))
             {
                 Shader.SetGlobalFloat(FadeId, _fade);
                 Shader.SetGlobalFloat(DesatId, desaturation);
                 Shader.SetGlobalFloat(DimId, dim);
+                _lastDesat = desaturation;
+                _lastDim = dim;
             }
         }
 

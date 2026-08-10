@@ -59,6 +59,16 @@ namespace NewCss
         /// Yalnızca ikisi de çözülmüş VE farklıysa gizlenir.</summary>
         private bool ComputeVisible()
         {
+            // K4: izleyenin KENDİ karakteri asla gizlenmez. Yerel oyuncunun odası iki ayrı
+            // histerezis durum makinesiyle çözülüyor (RoomViewController._currentRoomId ve
+            // buradaki _ownRoomId); ikisi ilk çözümlemelerini farklı karede/konumda yaparsa
+            // çakışma bölgesinde ayrışabilir ve histerezis ayrışmayı KİLİTLER — oyuncu kendi
+            // karakterini kaybeder. Plan §6.1 zaten "yerel oyuncu daima kendi odasında" diyor.
+            if (RoomViewController.LocalPlayer == transform)
+            {
+                return true;
+            }
+
             int viewerRoom = RoomViewController.LocalRoomId;
 
             if (viewerRoom == RoomResolver.NoRoomSentinel || _ownRoomId == RoomResolver.NoRoomSentinel)
