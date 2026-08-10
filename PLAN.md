@@ -8,7 +8,16 @@
 
 ## 🎯 Şu an aktif iş
 
-**YOK — kod yazılmıyor.** İki iş kuyrukta: **play-test** (kullanıcıda) ve **telsiz** (plan onaylı, uygulama komutu bekliyor).
+**🕶️ ODA-BAZLI GÖRÜNÜRLÜK / KARARTMA — S0+S1 KODLANDI, S2 kullanıcıda.** Dal **`feature/room-visibility`** (`main`'den), 5 commit, **MERGE/PUSH YOK**.
+
+> Tam plan: **[plans/oda-gorunurluk.md](plans/oda-gorunurluk.md)** (tek başına yeterli — §2 sahne ölçümleri hazır, keşif tekrarlanmayacak).
+> **Biten:** S0 `NewCss.Rooms.Core` (motor referanssız `RoomBox`/`RoomResolver`/`RoomFade` + 6 EditMode testi) · S1 `RoomVolume` + `RoomRegistry` · authoring düzeltmesi (`RoomVolumeEditor`, `BoxBoundsHandle` ile sürüklenebilir kutu).
+> **Doğrulama:** 0 CS · EditMode **15/15** · 6000.5.6f1 headless, bağımsız tekrarlandı.
+> 🙋 **S2 — KULLANICIDA, S3/S4/S5'in DOĞRULANMASINI bloke eden tek iş:** odaları Unity'de elle çiz. Duvar hatları x = -68.3/-58.5/-43.5/-37.86/-28.86 · z = -17.1/+2.9/+7.9 · zemin y ≈ 3.88. ⚠️ **Y'yi cömert ver (y ≈ 2.9 → 11.9)** — iç duvarlar yalnız 1.84 m.
+> **Kalan:** S3 `RoomViewController` · S4 `PlayerRoomVisibility` + prefab · S5 3 shader yaması · S6 `NetworkStaminaBarUI` `IsOwner` fix'i (bağımsız mevcut bug) · S7 2-istemci playtest · **S8 dal-sonu tek toplu `kontrol` kapısı (henüz çalışmadı)**. S3 ve S6 S2'yi beklemeden yazılabilir.
+> **Bilerek kabul edilen riskler:** pop-in · görünmeyen oyuncunun ayak sesi duvardan geçiyor (playtest-1'de DEĞİŞTİRME, ölç) · gölge sızıntısı. **Ekonomi:** economist turu zorunlu değil (hiçbir ekonomik değere dokunulmuyor); yerine 5 dk'lık kota marjı kontrolü, `kutu/dk/oyuncu` %20'den fazla düşerse tur playtest SONRASI zorunlu.
+
+Diğer kuyruk: **play-test** (kullanıcıda) ve **telsiz** (ayrı dal `feature/voice-chat`, 21 commit merge'siz — bkz. o daldaki `plans/devam.md`).
 
 > 🎙️ **TELSİZ (oyun içi bas-konuş sesli iletişim) — PLAN ONAYLI, UYGULAMA BEKLİYOR.**
 > Tam plan: **[plans/telsiz-voice-chat.md](plans/telsiz-voice-chat.md)** (10 adımlık commit sırası, doğrulama katmanları, riskler).
