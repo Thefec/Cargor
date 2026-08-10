@@ -81,6 +81,12 @@ namespace NewCss
         /// </summary>
         public static Transform LocalPlayer { get; private set; }
 
+        /// <summary>Harita görünümü (X) şu an basılı mı — UpdateFade içinde zaten hesaplanan
+        /// _cameraFollow.IsMapViewActive'in dışa açılmış hâli. RoomItemVisibility (S9) bunu
+        /// "stok kontrolü" istisnası için okur: X basılıyken eşyalar başka odada da görünür kalır,
+        /// oyuncular gizli kalmaya devam eder (PlayerRoomVisibility bu alanı KULLANMAZ).</summary>
+        public static bool MapViewActive { get; private set; }
+
         private static readonly int MinId = Shader.PropertyToID("_CargoRoomMin");
         private static readonly int MaxId = Shader.PropertyToID("_CargoRoomMax");
         private static readonly int FadeId = Shader.PropertyToID("_CargoRoomFade");
@@ -133,6 +139,7 @@ namespace NewCss
             // transform'a takılı kalmasın.
             LocalPlayer = null;
             LocalRoomId = RoomResolver.NoRoomSentinel;
+            MapViewActive = false;
 
             var go = new GameObject("[RoomViewController]");
             // HideAndDontSave DEĞİL: o bayrak objeyi hem Hierarchy'de gizler hem NotEditable
@@ -162,6 +169,7 @@ namespace NewCss
             ResetFadeState();
             LocalPlayer = null;
             LocalRoomId = RoomResolver.NoRoomSentinel;
+            MapViewActive = false;
         }
 
         private void Update()
@@ -244,6 +252,7 @@ namespace NewCss
         {
             bool haveRoom = _currentRoomId != RoomResolver.NoRoomSentinel;
             bool mapView = _cameraFollow != null && _cameraFollow.IsMapViewActive;
+            MapViewActive = mapView;
 
             // Karartma artık harita görünümüne BAĞLI DEĞİL: normal oyunda da NormalViewStrength
             // şiddetinde çalışır, X basılınca tam güce (1) çıkar. Aradaki geçişi aynı RoomFade

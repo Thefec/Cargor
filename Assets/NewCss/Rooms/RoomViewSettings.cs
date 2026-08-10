@@ -64,6 +64,11 @@ namespace NewCss
                  "olmadığını test ederken kapat.")]
         public bool hideOtherRoomPlayers = true;
 
+        [Tooltip("Kapalıysa başka odadaki eşyalar (kutu/ürün) GİZLENMEZ. Açıkken bile harita " +
+                 "görünümü (X) basılı olduğu sürece eşyalar 'stok kontrolü' istisnasıyla görünür " +
+                 "kalır — yalnız oyuncular gizli kalmaya devam eder, bu ayar onu etkilemez.")]
+        public bool hideOtherRoomItems = true;
+
         [Header("═══ İLERİ DÜZEY ═══")]
 
         [Tooltip("KAPI TOLERANSI (metre). Oda kutuları sorgu sırasında bu kadar genişletilir ve " +
