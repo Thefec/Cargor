@@ -172,6 +172,12 @@ public partial class PlayerInventory : NetworkBehaviour
         DisablePhysicsOnObject(_heldItemVisual);
         DisableCollidersOnObject(_heldItemVisual);
         SetLayerRecursively(_heldItemVisual, LayerMask.NameToLayer("Default"));
+
+        // Rooms/H2: yeni oluşturulan bu renderer'ı, karakterin GÜNCEL oda görünürlük durumuna
+        // hemen uydur. PlayerRoomVisibility kenar-tetiklemeli olduğundan (Assets/NewCss/Rooms/
+        // PlayerRoomVisibility.cs) bu çağrı olmadan, gizli bir oyuncu kutu alırsa kutu bir sonraki
+        // oda değişimine kadar görünür kalıp boş odada havada asılı durur.
+        GetComponent<PlayerRoomVisibility>()?.Refresh();
     }
 
     private void PreserveBoxInfo()
