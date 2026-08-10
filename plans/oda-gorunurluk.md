@@ -343,4 +343,15 @@ AABB'lerin gerçek geometriyle örtüşmesi · **SRP Batcher'ın bozulmaması (F
 ## 12. Git
 
 Yeni dal **`feature/room-visibility`, `main`'den**.
+
+⚠️ **Bu plan dosyası `feature/voice-chat` üstüne commit'lendi (`5fddfe0`, docs-only).** Yeni dal `main`'den açılınca dosya orada OLMAYACAK. İlk iş:
+
+```bash
+git checkout main
+git checkout -b feature/room-visibility
+git cherry-pick 5fddfe0          # docs-only, çakışma beklenmiyor
+```
+
+⚠️ `5fddfe0` `plans/devam.md` ve `PLAN.md`'ye de dokunuyor; bu iki dosyada `feature/voice-chat`'in ses içeriği var → cherry-pick **çakışabilir**. Çakışırsa `plans/oda-gorunurluk.md`'yi al, diğer ikisini `main` hâlinde bırak (`git checkout --ours`), planın satırlarını sonra elle ekle.
+
 `feature/voice-chat` üstüne **KURMA**: o dalda 19 merge'siz commit ve açık bir Dissonance kararı var (kabul edilirse ~2500 satır ses kodu silinecek). Oda işi ses kodundan bağımsız doğrulandı (§2.4) → dolaştırmanın anlamı yok.
