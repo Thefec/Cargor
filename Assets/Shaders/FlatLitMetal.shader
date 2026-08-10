@@ -66,6 +66,19 @@ Shader "Custom/FlatLitMetal"
             TEXTURE2D(_NormalMap);
             SAMPLER(sampler_NormalMap);
 
+            // Oda karartma (plan §3.3, S5) — UnityPerMaterial CBUFFER'ının DIŞINDA,
+            // SRP Batcher'ı korumak için (RoomViewController.cs Shader.SetGlobalX ile besler).
+            float4 _CargoRoomMin;
+            float4 _CargoRoomMax;
+            float  _CargoRoomFade;
+            float  _CargoRoomDesat;
+            float  _CargoRoomDim;
+
+            // Luminance hesapla (bu dosyada yoktu, karartma icin eklendi)
+            float Luminance3(float3 color) {
+                return dot(color, float3(0.299, 0.587, 0.114));
+            }
+
             struct Attributes {
                 float4 positionOS : POSITION;
                 float3 normalOS   : NORMAL;
@@ -177,6 +190,14 @@ Shader "Custom/FlatLitMetal"
                                  * addLight.shadowAttenuation * 0.5;
                     LIGHT_LOOP_END
                 #endif
+
+                // ── Oda karartma (plan §3.3, S5) ──
+                // k dışta çarpılır: _CargoRoomFade tanımsız/0 (oda sistemi kurulmamış sahne) ise shader kimliktir.
+                float roomInside = (all(IN.positionWS >= _CargoRoomMin.xyz) &&
+                                     all(IN.positionWS <= _CargoRoomMax.xyz)) ? 1.0 : 0.0;
+                float roomK = _CargoRoomFade * (1.0 - roomInside);
+                final = lerp(final, Luminance3(final).xxx, roomK * _CargoRoomDesat);
+                final *= lerp(1.0, _CargoRoomDim, roomK);
 
                 return half4(final, baseColor.a);
             }
