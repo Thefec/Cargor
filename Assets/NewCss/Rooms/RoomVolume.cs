@@ -19,8 +19,19 @@ namespace NewCss
         [Tooltip("Yalnız düzenleme/gizmo etiketi için — oyun mantığı bu ismi kullanmaz.")]
         public string roomName = "Oda";
 
-        [Tooltip("Kutunun dünya-uzayı sınırları. Gizmo'ya bakarak elle oturt (plan §9).")]
+        [Tooltip("Kutunun DÜNYA-uzayı sınırları — transform'dan bağımsızdır, objeyi taşımak kutuyu taşımaz. " +
+                 "Scene view'daki sarı tutamaçlardan sürükle ya da §2.1'deki ölçülmüş duvar koordinatlarını doğrudan yaz.")]
         public Bounds worldBounds = new Bounds(Vector3.zero, new Vector3(10f, 8f, 10f));
+
+        /// <summary>
+        /// Component ilk eklendiğinde (ve Inspector'dan Reset'lendiğinde) kutuyu objenin
+        /// bulunduğu yere taşır. Aksi hâlde varsayılan kutu dünya orijininde doğar; depo
+        /// x[-92..-24], y≈3.88'de olduğu için kullanıcı "kutu nerede" diye arar.
+        /// </summary>
+        private void Reset()
+        {
+            worldBounds = new Bounds(transform.position, new Vector3(10f, 8f, 10f));
+        }
 
         private void OnEnable()
         {
@@ -35,20 +46,30 @@ namespace NewCss
         private static readonly Color GizmoColor = new Color(0.2f, 0.9f, 1f, 0.35f);
         private static readonly Color GizmoColorSelected = new Color(1f, 0.7f, 0.1f, 0.55f);
 
+        /// <summary>
+        /// Seçili DEĞİLKEN yalnız tel kafes. Dolu kutu çizilirse birkaç oda birden
+        /// Scene view'ı renkli sise çevirir ve kutuyu duvara oturtmak için bakman
+        /// gereken raf/masa/duvar geometrisi görünmez olur (authoring'i imkânsızlaştırır).
+        /// </summary>
         private void OnDrawGizmos()
         {
-            DrawGizmo(GizmoColor);
+            DrawGizmo(GizmoColor, false);
         }
 
+        /// <summary>Seçiliyken hacmi okunur kılmak için dolu kutu da çizilir.</summary>
         private void OnDrawGizmosSelected()
         {
-            DrawGizmo(GizmoColorSelected);
+            DrawGizmo(GizmoColorSelected, true);
         }
 
-        private void DrawGizmo(Color color)
+        private void DrawGizmo(Color color, bool solid)
         {
-            Gizmos.color = color;
-            Gizmos.DrawCube(worldBounds.center, worldBounds.size);
+            if (solid)
+            {
+                Gizmos.color = color;
+                Gizmos.DrawCube(worldBounds.center, worldBounds.size);
+            }
+
             Gizmos.color = new Color(color.r, color.g, color.b, 1f);
             Gizmos.DrawWireCube(worldBounds.center, worldBounds.size);
 
