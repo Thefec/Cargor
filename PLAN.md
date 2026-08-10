@@ -8,14 +8,17 @@
 
 ## 🎯 Şu an aktif iş
 
-**🕶️ ODA-BAZLI GÖRÜNÜRLÜK / KARARTMA — TÜM KOD BİTTİ (S0–S6), `kontrol` 1. turda ONAY. Tek kalan iş S2, kullanıcıda.** Dal **`feature/room-visibility`** (`main`'den), 10 commit, **MERGE/PUSH YOK**.
+**🕶️ ODA-BAZLI GÖRÜNÜRLÜK / KARARTMA — S0–S6 + S2 + cila turu BİTTİ, `kontrol` iki turda da ONAY. Kalan tek adım S7 playtest.** Dal **`feature/room-visibility`** (`main`'den), 24 commit, **MERGE/PUSH YOK**.
+
+> **Cila turu (2026-08-11, 4 kullanıcı isteği):** oda değişiminde çapraz fade (ani renklenme gitti) · **`RoomViewSettings` ayar paneli** (`---ROOMS---` objesinde, değerler sahneye kaydedilir — controller runtime'da yaratıldığı için onun Inspector'ındaki ayarlar kalıcı DEĞİLDİ) · karartma **normal oyun görünümünde de** çalışıyor (`normalViewStrength`, X'te tam güç) · **eşyalar da başka odalarda gizli, ama X basılıyken görünür** ("stok kontrolü"; oyuncular X'te de gizli → telsiz baskısı korunuyor). Detay: [plans/devam.md](plans/devam.md) 2026-08-11.
+> **Doğrulama:** 0 CS · EditMode **19/19** · shader'lar `ShaderUtil.ShaderHasError` ile ZORLA sorgulandı (3'ü de temiz) · `kontrol` 2. tur ONAY.
 
 > Tam plan: **[plans/oda-gorunurluk.md](plans/oda-gorunurluk.md)** (tek başına yeterli — §2 sahne ölçümleri hazır, keşif tekrarlanmayacak). Oturum detayı: [plans/devam.md](plans/devam.md) 2026-08-10.
 > **Biten:** S0 `NewCss.Rooms.Core` (motor referanssız `RoomBox`/`RoomResolver`/`RoomFade` + 6 test) · S1 `RoomVolume`+`RoomRegistry`+`RoomVolumeEditor` (sürüklenebilir kutu) · S3 `RoomViewController` · S4 `PlayerRoomVisibility` + `Visual.cs` tek satır + **`Character.prefab` bağlandı** · S5 3 shader global AABB yaması · S6 `NetworkStaminaBarUI` `IsOwner` fix'i.
 > **Doğrulama:** 0 CS · EditMode **15/15** · log'da `Shader error` **0** (3 shader'ın gerçekten yeniden import edildiği teyitli) · 6000.5.6f1 headless, bağımsız tekrarlandı · **`kontrol` ONAY, bloklayıcı bulgu yok**.
-> 🙋 **S2 — KULLANICIDA, TEK KALAN İŞ:** odaları Unity'de elle çiz. Duvar hatları x = -68.3/-58.5/-43.5/-37.86/-28.86 · z = -17.1/+2.9/+7.9 · zemin y ≈ 3.88. ⚠️ **Y'yi cömert ver (y ≈ 2.9 → 11.9)** — iç duvarlar yalnız 1.84 m. Kutular Scene view'da sarı tutamaçlardan sürüklenebilir.
-> 🔴 **Yalnız gerçek Unity'de ölçülebilir (açık):** SRP Batcher bozulmadı mı (Frame Debugger önce/sonra batch sayısı — shader dokunuşunun tek gerçek riski) · AABB'lerin geometriyle örtüşmesi · H1'deki 5 URP/Lit materyalin parlak leke bırakması · pop-in hissi.
-> **Kalan adımlar:** S2 → S7 2-istemci playtest.
+> ✅ **S2 BİTTİ** — kullanıcı 5 odayı çizdi (hangar/paket/resepsiyon/breakroom/office). ⚠️ Tır avlusu (x < -68.4) hiçbir odaya ait değil; bug değil, "hiçbir kutuda değilken son oda korunur" sözleşmesi (H8). Avlu odası istenirse yalnız yeni bir `RoomVolume` eklenir, kod değişmez.
+> 🔴 **Yalnız gerçek Unity'de ölçülebilir (açık):** **SRP Batcher** bozulmadı mı (Frame Debugger önce/sonra batch sayısı — shader dokunuşunun tek gerçek riski; **karartma artık HER KAREDE aktif**, eskiden pratikte yalnız X'te çalışıyordu) · AABB'lerin geometriyle örtüşmesi · H1'deki 5 URP/Lit materyalin parlak leke bırakması · pop-in hissi (X kapanınca eşyaların anında kaybolması dahil).
+> **Kalan tek adım:** S7 2-istemci playtest.
 > **Bilerek kabul edilen riskler:** pop-in · görünmeyen oyuncunun ayak sesi duvardan geçiyor (playtest-1'de DEĞİŞTİRME, ölç) · gölge sızıntısı. **Ekonomi:** economist turu zorunlu değil (hiçbir ekonomik değere dokunulmuyor); yerine 5 dk'lık kota marjı kontrolü, `kutu/dk/oyuncu` %20'den fazla düşerse tur playtest SONRASI zorunlu.
 
 Diğer kuyruk: **play-test** (kullanıcıda) ve **telsiz** (ayrı dal `feature/voice-chat`, 21 commit merge'siz — bkz. o daldaki `plans/devam.md`).

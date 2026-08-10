@@ -142,11 +142,11 @@ namespace NewCss
             MapViewActive = false;
 
             var go = new GameObject("[RoomViewController]");
-            // HideAndDontSave DEĞİL: o bayrak objeyi hem Hierarchy'de gizler hem NotEditable
-            // yapar, kullanıcı Inspector'dan dim/desat/roomBlendDuration'ı elde ayarlayamazdı
-            // (plan §9.3 tam olarak bunu istiyor). DontSaveInEditor|DontSaveInBuild aynı "sahneye
-            // kaydedilmez" garantisini verir ama Play sırasında Hierarchy'de görünür + düzenlenebilir
-            // bırakır.
+            // HideAndDontSave DEĞİL: o bayrak objeyi Hierarchy'de tamamen gizler ve NotEditable
+            // yapar. Ayarlar artık RoomViewSettings'te (sahne bileşeni) olduğu için bu obje bir
+            // AYAR yüzeyi değil, ama Play sırasında görünür kalması hâlâ değerli: sistemin
+            // gerçekten ayağa kalkıp kalkmadığını Hierarchy'den tek bakışta görürsün.
+            // DontSaveInEditor|DontSaveInBuild aynı "sahneye kaydedilmez" garantisini verir.
             go.hideFlags = HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild;
             DontDestroyOnLoad(go);
             go.AddComponent<RoomViewController>();
