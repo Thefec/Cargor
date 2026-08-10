@@ -33,6 +33,7 @@ namespace NewCss
         private const float DefaultRoomBlendDuration = 0.6f;
         private const float DefaultDesaturation = 1f;
         private const float DefaultDim = 0.35f;
+        private const float DefaultNormalViewStrength = 1f;
 
         private static RoomViewSettings Settings => RoomViewSettings.Active;
 
@@ -55,6 +56,11 @@ namespace NewCss
 
         private static float Dim =>
             Settings != null ? Settings.dim : DefaultDim;
+
+        /// <summary>Normal oyun görünümünde karartma şiddeti. 0 = yalnız harita görünümünde
+        /// çalışır (sistemin ilk hâli), 1 = normal oyunda da tam güç.</summary>
+        private static float NormalViewStrength =>
+            Settings != null ? Settings.normalViewStrength : DefaultNormalViewStrength;
 
         // NOT — ölçekli Time.deltaTime kullanılır, unscaledDeltaTime DEĞİL. Gerekçe:
         // EscapeMenuManager.cs:404 Time.timeScale=0 yapıyor, ANCAK CameraFollow.cs:264-275 kendi
@@ -237,11 +243,17 @@ namespace NewCss
         private void UpdateFade()
         {
             bool haveRoom = _currentRoomId != RoomResolver.NoRoomSentinel;
-            bool want = haveRoom && _cameraFollow != null && _cameraFollow.IsMapViewActive;
+            bool mapView = _cameraFollow != null && _cameraFollow.IsMapViewActive;
+
+            // Karartma artık harita görünümüne BAĞLI DEĞİL: normal oyunda da NormalViewStrength
+            // şiddetinde çalışır, X basılınca tam güce (1) çıkar. Aradaki geçişi aynı RoomFade
+            // yürütüyor, o yüzden X'e basmak sert bir sıçrama değil yumuşak bir güçlenme.
+            // Oda yoksa (H8) hedef her hâlükârda 0 — herkes görünür, dünya normal.
+            float target = haveRoom ? (mapView ? 1f : NormalViewStrength) : 0f;
 
             float previousFade = _fade;
             // Ölçekli Time.deltaTime — gerekçe yukarıdaki ayar bloğunun notunda.
-            _fade = RoomFade.Step(_fade, want, Time.deltaTime, FadeSpeed);
+            _fade = RoomFade.Step(_fade, target, Time.deltaTime, FadeSpeed);
 
             bool roomChanged = _currentRoomId != _lastAppliedRoomId;
             if (roomChanged)

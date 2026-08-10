@@ -11,13 +11,15 @@ namespace NewCss.Rooms.Core
     public static class RoomFade
     {
         /// <summary>
-        /// "cur" değerini "want" hedefine (1f açık, 0f kapalı) "speed" birim/saniye
-        /// hızla "dt" kadar ilerletir. Hedefi asla geçmez, tam üstüne oturur.
+        /// "cur" değerini "target" hedefine "speed" birim/saniye hızla "dt" kadar
+        /// ilerletir. Hedefi asla geçmez, tam üstüne oturur.
+        ///
+        /// Hedef KASITLI olarak bool değil float: karartma artık yalnız "açık/kapalı"
+        /// değil — normal oyun görünümünde ara bir şiddette (0..1) durabiliyor, X'e
+        /// basılınca tam güce (1) çıkıyor. Bool olsaydı bu ara durum ifade edilemezdi.
         /// </summary>
-        public static float Step(float cur, bool want, float dt, float speed)
+        public static float Step(float cur, float target, float dt, float speed)
         {
-            float target = want ? 1f : 0f;
-
             if (cur == target)
             {
                 return target;

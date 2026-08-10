@@ -103,7 +103,7 @@ public class RoomResolverTests
         int steps = 0;
         while (cur != 0f && steps < maxSteps)
         {
-            cur = RoomFade.Step(cur, false, dt, speed);
+            cur = RoomFade.Step(cur, 0f, dt, speed);
             steps++;
         }
 
@@ -111,6 +111,32 @@ public class RoomResolverTests
         // sonlu adımda tam kilitlenmeli.
         Assert.AreEqual(0f, cur, "fade sonlu adımda tam 0f'a kilitlenmeli, asimptotik kalmamalı");
         Assert.Less(steps, maxSteps, "hedefe tavan sayıya çarpmadan, sonlu adımda ulaşmalı");
+    }
+
+    [Test]
+    public void RoomFade_Step_SettlesExactlyOnPartialTarget_FromBothDirections()
+    {
+        const float dt = 1f / 60f;
+        const float speed = 3f;
+        const int maxSteps = 1000;
+        // Ara hedef: normal oyun görünümünde karartma tam 0/1 değil, ayarlanabilir bir
+        // şiddette durur. Hedefi aşıp salınmamalı ve tam üstüne oturmalı.
+        const float partialTarget = 0.42f;
+
+        foreach (float start in new[] { 0f, 1f })
+        {
+            float cur = start;
+            int steps = 0;
+            while (cur != partialTarget && steps < maxSteps)
+            {
+                cur = RoomFade.Step(cur, partialTarget, dt, speed);
+                steps++;
+            }
+
+            Assert.AreEqual(partialTarget, cur,
+                $"{start} noktasından ara hedefe TAM oturmalı (aşıp salınmamalı)");
+            Assert.Less(steps, maxSteps, $"{start} noktasından sonlu adımda ulaşmalı");
+        }
     }
 
     // ── Oda geçişinde iki-kutulu çapraz-geçiş (RoomBlend) — kullanıcı şikâyeti: harita

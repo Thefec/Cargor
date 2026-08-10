@@ -41,6 +41,14 @@ namespace NewCss
 
         [Header("═══ KARARTMA GÖRÜNÜMÜ ═══")]
 
+        [Tooltip("NORMAL OYUN GÖRÜNÜMÜNDE karartma şiddeti (0 = kapalı, yalnız X basılıyken çalışır; " +
+                 "1 = normal oyunda da tam güç). X'e basınca her hâlükârda tam güce çıkar, aradaki " +
+                 "geçiş yumuşaktır. Çok baskın gelirse burayı düşür — aşağıdaki desatürasyon/karartma " +
+                 "değerlerini düşürmek X görünümünü de zayıflatırdı, bu kaydırıcı yalnız normal " +
+                 "görünümü etkiler.")]
+        [Range(0f, 1f)]
+        public float normalViewStrength = 1f;
+
         [Tooltip("Başka odaların renksizleştirilme miktarı. 0 = renkli kalır, 1 = tam gri.")]
         [Range(0f, 1f)]
         public float desaturation = 1f;
