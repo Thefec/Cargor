@@ -8,7 +8,15 @@
 
 ## 🎯 Şu an aktif iş
 
-**YOK — kod yazılmıyor.** İki iş kuyrukta: **play-test** (kullanıcıda) ve **telsiz** (plan onaylı, uygulama komutu bekliyor).
+**YOK — kod yazılmıyor.** Üç iş kuyrukta: **play-test** (kullanıcıda), **telsiz** (plan onaylı, uygulama komutu bekliyor) ve **oda-bazlı görünürlük / karartma** (plan onaylı, uygulama komutu bekliyor).
+
+> 🕶️ **KARARTMA / ODA-BAZLI GÖRÜNÜRLÜK — plan onaylandı 2026-08-10, KOD YAZILMADI.** Tam plan: **[plans/oda-gorunurluk.md](plans/oda-gorunurluk.md)** · Yeni dal önerisi: **`feature/room-visibility`, `main`'den** (voice-chat dalına bağlama — orada 19 merge'siz commit + açık Dissonance kararı var).
+> **Kilit bulgu:** odalar sahnede **zaten var**; iç duvarlar yarım (1.84 m), çatı yok, kamera 40° eğik → herkes duvar üstünden görüyor. Eksik olan level değil **görünürlük katmanı** → yeni geometri/level bölünmesi **GEREKMİYOR** (planın ilk varsayımı buydu, keşif çürüttü).
+> **Üç sütun:** modüler oda verisi (`RoomVolume`/`RoomRegistry`/`RoomResolver`, kodda sıfır oda sabiti) · **istemci taraflı gizleme** (NetworkHide reddedildi: raf→paketleme→tezgah akışında sürekli oda değişimi = her geçişte despawn/respawn) · **global shader AABB** karartma (materyal duplikasyonu/MPB yok, oda sayısından bağımsız).
+> **Ucuz çıktı:** `positionWS` + `Luminance3()` shader'da hazır (`FlatLitEnvironment.shader:85,:91`) → 3 shader × ~4 satır. Yol üstünde mevcut bir bug da düşüyor: uzak oyuncuların stamina barı ekrana çiziliyor (`NetworkStaminaBarUI`, `IsOwner` gate'i yok).
+> 🙋 **Kullanıcıda bloke eden tek iş: odaları Unity'de elle çizmek (S2).** Ölçülen duvar hatları x = -68.3/-58.5/-43.5/-37.86/-28.86 · z = -17.1/+2.9/+7.9 · zemin y ≈ 3.88.
+> **Bilerek kabul edilen riskler:** pop-in (yarım duvar + eğik kamera → "yok olma" hissi) · görünmeyen oyuncunun ayak sesi duvardan geçiyor (`spatialBlend 0.5` — playtest-1'de DEĞİŞTİRME, ölç) · gölge sızıntısı (kozmetik).
+> **Ekonomi:** playtest öncesi economist turu **zorunlu değil** (hiçbir ekonomik değere dokunulmuyor, etkinin işareti bile belirsiz); yerine 5 dk'lık kota marjı kontrolü. `kutu/dk/oyuncu` %20'den fazla düşerse tur playtest SONRASI zorunlu.
 
 > 🎙️ **TELSİZ — kod tamam + `kontrol` ONAY, ama SES KALİTESİ turu bitmedi.** Dal **`feature/voice-chat`**, **15 commit**, **MERGE/PUSH YOK**.
 > Tam plan: **[plans/telsiz-voice-chat.md](plans/telsiz-voice-chat.md)** · 🙋 **Editor işleri: [plans/telsiz-editor-isleri.md](plans/telsiz-editor-isleri.md)** · Hata ayıklama detayı: **[plans/devam.md](plans/devam.md) 2026-08-08**
@@ -18,7 +26,7 @@
 > 🔴 **KALAN EKSİKLER (sabit ayarla çözülmez):** **PLC (paket kaybı gizleme)** + **adaptif buffer**. Ölçülen varyansın tamamı YEREL; gerçek ağda relay jitter'ı üstüne binecek.
 > 🔴🔴 **AÇIK KARAR — [Dissonance](https://assetstore.unity.com/packages/tools/audio/dissonance-voice-chat-70078) ($100, NGO entegrasyonu ücretsiz).** Lethal Company'nin kullandığı middleware; adaptif buffer + PLC + Opus + **oda/kanal sistemi** (2. aşamaya birebir) hazır veriyor, `FacepunchTransport` ile şeffaf çalışır. Geçilirse `V` binding/sahne kapısı/ayarlar/HUD taşınır, ~2500 satır bırakılır.
 > **3 bilinçli kapsam kesintisi:** slotlar+HUD kodda kuruluyor (prefab opsiyonel) · klik SFX yok (null-guard) · per-player mute oturum-içi (`SteamIdHolder` replike değil).
-> Sıradaki 2. aşama: **oda-bazlı görünürlük** (oda sayısı SABİT DEĞİL → veri-güdümlü). Dissonance seçilirse oda kanalları bedava gelir.
+> Sıradaki 2. aşama: **oda-bazlı görünürlük** → ✅ **planlandı, [plans/oda-gorunurluk.md](plans/oda-gorunurluk.md)** (yukarıdaki blok). Ses tarafı bağımsız doğrulandı: telsiz HUD ekran-uzayı, `spatialBlend = 0` → oda sistemi telsizi etkilemiyor. Dissonance seçilirse oda **kanalları** yine bedava gelir, ama görsel karartma/gizleme her hâlükârda bizim.
 
 `main` = `6e945bb`, **origin/main'in 1 önünde (PUSH YOK)**. Ekonomi denge turu 2026-08-06'da merge edildi (`238fd92`, `--no-ff`, 21 commit) — sorun çıkarsa tek noktadan revert edilebilir.
 
@@ -66,6 +74,7 @@
 | [plans/economy-rebuild-2026-07-30.md](plans/economy-rebuild-2026-07-30.md) · [-faz2](plans/economy-rebuild-2026-07-30-faz2.md) · [-faz3](plans/economy-rebuild-2026-07-30-faz3.md) | 4 fazlık analiz (envanter, verim modeli, kira/prestij/event, upgrade/quest) | 📖 gerekçe kaynağı |
 | **[plans/playtest-olcum-protokolu.md](plans/playtest-olcum-protokolu.md)** | 🙋 **Oynamadan önce aç** — ölçüm protokolü; tek zorunlu çıktı kutu/dk/oyuncu | 🔴 **bekliyor** |
 | **[plans/telsiz-voice-chat.md](plans/telsiz-voice-chat.md)** | 🎙️ Telsiz (bas-konuş) tam implementasyon planı — mimari, 5 kritik karar, 10 adım, doğrulama A-D, riskler | 🟢 **onaylı — uygulama komutu bekliyor** |
+| **[plans/oda-gorunurluk.md](plans/oda-gorunurluk.md)** | 🕶️ Karartma / oda-bazlı görünürlük — modüler oda verisi, istemci taraflı gizleme, global shader AABB, S0–S8 | 🟢 **onaylı — uygulama komutu bekliyor** |
 | [plans/playtest-2026-07-19.md](plans/playtest-2026-07-19.md) | Regresyon checklist'i (27 madde) | 🟡 bayat — ekonomi kısmı FAZ4 öncesi (`maxPrestige 240` yazıyor) |
 | [plans/quest-ekleme-rehberi.md](plans/quest-ekleme-rehberi.md) | 30 görevin Inspector doldurma rehberi + değer tablosu | 📖 referans |
 | [plans/economy-audit-2026-07-20.md](plans/economy-audit-2026-07-20.md) | Holistik ekonomi denetimi (7 sistem) | 📖 tarihsel *(tır penceresi cap bulgusu FAZ4'te ÇÜRÜDÜ — darboğaz tır değil insan üretim hızı)* |
