@@ -32,8 +32,22 @@ namespace NewCss
         private const float DefaultMapFadeDuration = 0.2f;
         private const float DefaultRoomBlendDuration = 0.6f;
         private const float DefaultDesaturation = 1f;
+        private const float DefaultMapViewDesaturation = 0.6f;
         private const float DefaultDim = 0.35f;
         private const float DefaultNormalViewStrength = 1f;
+        private const bool DefaultDimOnlyInsideRooms = true;
+
+        /// <summary>
+        /// Karartma maskesine sığabilecek en fazla oda kutusu sayısı. **Üç shader'daki
+        /// CARGO_ROOM_MAX_BOXES ile AYNI OLMAK ZORUNDA** (FlatLit, FlatLitEnvironment,
+        /// FlatLitMetal) — biri değişirse diğerleri de değişmeli. Sahnede şu an 5 kutu var.
+        /// </summary>
+        private const int MaxMaskBoxes = 16;
+
+        /// <summary>Dejenere kutu için "çok büyük" sabit: min = +Huge, max = -Huge yazılan bir slot
+        /// hiçbir noktayı kapsayamaz; ters yönde kullanıldığında (dünyayı kaplayan tek kutu) her
+        /// noktayı kapsar. float sonsuzluğu yerine sonlu bir değer — shader'da NaN üretmesin.</summary>
+        private const float HugeBound = 1e9f;
 
         private static RoomViewSettings Settings => RoomViewSettings.Active;
 
@@ -54,6 +68,11 @@ namespace NewCss
         private static float Desaturation =>
             Settings != null ? Settings.desaturation : DefaultDesaturation;
 
+        /// <summary>Harita görünümündeki (X) renksizleştirme. Normal görünümdekinden ayrı bir
+        /// değer: kullanıcı X'te renklerin biraz daha soluk olmasını istedi (normal 0.3 → X 0.6).</summary>
+        private static float MapViewDesaturation =>
+            Settings != null ? Settings.mapViewDesaturation : DefaultMapViewDesaturation;
+
         private static float Dim =>
             Settings != null ? Settings.dim : DefaultDim;
 
@@ -61,6 +80,11 @@ namespace NewCss
         /// çalışır (sistemin ilk hâli), 1 = normal oyunda da tam güç.</summary>
         private static float NormalViewStrength =>
             Settings != null ? Settings.normalViewStrength : DefaultNormalViewStrength;
+
+        /// <summary>true = karartma yalnız oda kutularının içinde uygulanır (dış mekan kendi
+        /// renginde kalır), false = sistemin eski hâli (odanın dışındaki her şey kararır).</summary>
+        private static bool DimOnlyInsideRooms =>
+            Settings != null ? Settings.dimOnlyInsideRooms : DefaultDimOnlyInsideRooms;
 
         // NOT — ölçekli Time.deltaTime kullanılır, unscaledDeltaTime DEĞİL. Gerekçe:
         // EscapeMenuManager.cs:404 Time.timeScale=0 yapıyor, ANCAK CameraFollow.cs:264-275 kendi
@@ -95,6 +119,9 @@ namespace NewCss
         private static readonly int PrevMinId = Shader.PropertyToID("_CargoRoomPrevMin");
         private static readonly int PrevMaxId = Shader.PropertyToID("_CargoRoomPrevMax");
         private static readonly int BlendId = Shader.PropertyToID("_CargoRoomBlend");
+        private static readonly int MaskMinId = Shader.PropertyToID("_CargoRoomMaskMin");
+        private static readonly int MaskMaxId = Shader.PropertyToID("_CargoRoomMaskMax");
+        private static readonly int MaskCountId = Shader.PropertyToID("_CargoRoomMaskCount");
 
         private Transform _localPlayer;
         private CameraFollow _cameraFollow;
@@ -105,6 +132,11 @@ namespace NewCss
         // farklı bir başlangıç değeri — "henüz hiç uygulanmadı" anlamına gelir.
         private int _lastAppliedRoomId = int.MinValue;
         private float _fade;
+        // Harita görünümünün (X) 0..1 açıklık miktarı — _fade'den AYRI bir durum olmak ZORUNDA:
+        // normalViewStrength = 1 iken _fade zaten 1'de oturur ve X'e basmak onu hiç değiştirmez,
+        // yani "X ne kadar açık" bilgisini taşıyamaz. Renksizleştirmeyi normal görünüm ile harita
+        // görünümü arasında yumuşakça geçirmek için bu ayrı sayaç kullanılır.
+        private float _mapBlend;
         // NaN ile başlar ki ilk karşılaştırma kesin "değişti" desin ve globaller bir kez yazılsın.
         private float _lastDesat = float.NaN;
         private float _lastDim = float.NaN;
@@ -126,6 +158,18 @@ namespace NewCss
         // NaN: ilk karede kesin push (aynı desat/dim deseni).
         private float _lastAppliedBlend = float.NaN;
 
+        // ── Karartma maskesi (kullanıcı isteği: yalnız sarı kutuların içi kararsın) ──
+        // Diziler bir kez ayrılır ve her tazelemede yeniden kullanılır (allocation yok).
+        // Shader'a HER ZAMAN tam MaxMaskBoxes uzunluğunda gönderilirler: Unity'de bir global
+        // dizinin uzunluğu İLK SetGlobalVectorArray çağrısında sabitlenir, sonradan daha uzun
+        // dizi gönderilemez — kısa gönderip sonra büyütmek sessizce kırpılırdı.
+        private readonly Vector4[] _maskMin = new Vector4[MaxMaskBoxes];
+        private readonly Vector4[] _maskMax = new Vector4[MaxMaskBoxes];
+        // -1: hiçbir gerçek Version değeriyle eşleşmez -> ilk karede maske kesin gönderilir.
+        private int _lastMaskVersion = -1;
+        private bool _lastMaskDimOnly;
+        private bool _maskCapacityWarned;
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Bootstrap()
         {
@@ -135,6 +179,9 @@ namespace NewCss
             // kutu" ama fade zaten 0 olduğundan görsel etkisi yok, yine de tutarlılık için sıfırlanır.
             Shader.SetGlobalFloat(FadeId, 0f);
             Shader.SetGlobalFloat(BlendId, 0f);
+            // Maske sayacı da aynı sızıntıya açık: önceki oturumdan kalan bir kutu listesi ilk
+            // karede yanlış yeri karartmasın. 0 = "hiçbir yer maskeli değil" -> shader kimlik.
+            Shader.SetGlobalFloat(MaskCountId, 0f);
             // Domain reload kapalıyken statikler önceki oturumdan sağ çıkar — yok olmuş bir
             // transform'a takılı kalmasın.
             LocalPlayer = null;
@@ -176,6 +223,7 @@ namespace NewCss
         {
             RefreshReferencesIfNeeded();
             ResolveLocalRoom();
+            UpdateRoomMask();
             UpdateFade();
         }
 
@@ -248,6 +296,67 @@ namespace NewCss
             LocalRoomId = _currentRoomId;
         }
 
+        /// <summary>
+        /// Karartma MASKESİNİ shader'a besler: "hangi bölgeler karartılmaya aday".
+        ///
+        /// Kullanıcı isteği: karartma yalnız sarı kutucuklarla (RoomVolume) işaretlenmiş yerlerde
+        /// olsun; haritanın dışındaki yeşillik ve tır avlusu kendi renginde kalsın. Shader
+        /// karartmayı `fade * (1 - roomInside) * insideAny` ile hesaplar — insideAny buradaki
+        /// kutu listesinden gelir, hiçbirinin içinde olmayan piksel dokunulmadan kalır.
+        ///
+        /// Her karede kopyalamak yerine yalnız kayıt defteri (RoomRegistry.Version) ya da ayar
+        /// değişince tazelenir; ayar canlı okunur ki Play sırasında açıp kapatmak anında etki etsin.
+        /// </summary>
+        private void UpdateRoomMask()
+        {
+            bool dimOnly = DimOnlyInsideRooms;
+            int version = RoomRegistry.Version;
+
+            if (version == _lastMaskVersion && dimOnly == _lastMaskDimOnly)
+            {
+                return;
+            }
+
+            _lastMaskVersion = version;
+            _lastMaskDimOnly = dimOnly;
+
+            int count;
+            if (dimOnly)
+            {
+                count = RoomRegistry.CopyBoxes(_maskMin, _maskMax);
+
+                if (RoomRegistry.Count > MaxMaskBoxes && !_maskCapacityWarned)
+                {
+                    _maskCapacityWarned = true;
+                    Debug.LogWarning(
+                        $"[RoomViewController] Sahnede {RoomRegistry.Count} oda kutusu var ama karartma " +
+                        $"maskesi en fazla {MaxMaskBoxes} tanesini taşıyabiliyor; fazlası karartılmayacak. " +
+                        "Çözüm: RoomViewController.MaxMaskBoxes ve üç shader'daki CARGO_ROOM_MAX_BOXES " +
+                        "değerini birlikte büyüt.");
+                }
+            }
+            else
+            {
+                // Eski davranış: tek kutu tüm dünyayı kaplar -> insideAny her yerde 1 -> karartma
+                // odanın dışındaki her şeye uygulanır. Shader'da ayrı bir dal gerekmez.
+                _maskMin[0] = new Vector4(-HugeBound, -HugeBound, -HugeBound, 0f);
+                _maskMax[0] = new Vector4(HugeBound, HugeBound, HugeBound, 0f);
+                count = 1;
+            }
+
+            // Kullanılmayan slotlar dejenere kutuyla doldurulur (min > max): shader sayacı aşsa
+            // ya da bayat bir slot okusa bile o kutu hiçbir noktayı kapsayamaz.
+            for (int i = count; i < MaxMaskBoxes; i++)
+            {
+                _maskMin[i] = new Vector4(HugeBound, HugeBound, HugeBound, 0f);
+                _maskMax[i] = new Vector4(-HugeBound, -HugeBound, -HugeBound, 0f);
+            }
+
+            Shader.SetGlobalVectorArray(MaskMinId, _maskMin);
+            Shader.SetGlobalVectorArray(MaskMaxId, _maskMax);
+            Shader.SetGlobalFloat(MaskCountId, count);
+        }
+
         private void UpdateFade()
         {
             bool haveRoom = _currentRoomId != RoomResolver.NoRoomSentinel;
@@ -263,6 +372,9 @@ namespace NewCss
             float previousFade = _fade;
             // Ölçekli Time.deltaTime — gerekçe yukarıdaki ayar bloğunun notunda.
             _fade = RoomFade.Step(_fade, target, Time.deltaTime, FadeSpeed);
+            // Renksizleştirme geçişi karartma fade'iyle AYNI hızda ilerler (mapFadeDuration) ki
+            // X'e basınca renk ve parlaklık tek bir hareket gibi görünsün.
+            _mapBlend = RoomFade.Step(_mapBlend, mapView ? 1f : 0f, Time.deltaTime, FadeSpeed);
 
             bool roomChanged = _currentRoomId != _lastAppliedRoomId;
             if (roomChanged)
@@ -275,7 +387,10 @@ namespace NewCss
             // X basılı tutulup fade 1'e oturduğunda Inspector'dan dim/desat çevirmek HİÇBİR ŞEY
             // yapmazdı — oysa plan §9.3 kullanıcıdan bu iki değeri tam olarak öyle, oyun
             // çalışırken elde ayarlamasını istiyor.
-            float desat = Desaturation;
+            // Renksizleştirme normal görünüm ile harita görünümü arasında geçer (kullanıcı isteği:
+            // normalde 0.3, X'te 0.6 — X'teki bakışta renkler biraz daha soluk). Karartma çarpanı
+            // (dim) bu ayrımdan ETKİLENMEZ, tek değer olarak kalır.
+            float desat = Mathf.Lerp(Desaturation, MapViewDesaturation, _mapBlend);
             float dimValue = Dim;
             bool tuningChanged = !Mathf.Approximately(_lastDesat, desat)
                                  || !Mathf.Approximately(_lastDim, dimValue);
@@ -356,6 +471,9 @@ namespace NewCss
         private void ResetFadeState()
         {
             _fade = 0f;
+            // Harita görünümü sayacı da sıfırlanır: bileşen devre dışı kalıp geri geldiğinde
+            // renksizleştirme "X hâlâ basılıymış" gibi yüksek bir değerden başlamasın.
+            _mapBlend = 0f;
             Shader.SetGlobalFloat(FadeId, 0f);
         }
     }

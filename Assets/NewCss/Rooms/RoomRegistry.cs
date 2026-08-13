@@ -20,6 +20,13 @@ namespace NewCss
 
         public static int Count => _volumes.Count;
 
+        /// <summary>
+        /// Kayıt defteri her değiştiğinde artan sayaç. RoomViewController karartma maskesini
+        /// (tüm kutuların shader'a gönderilen listesi) her karede yeniden kopyalamak yerine
+        /// yalnız bu değer değişince tazeler.
+        /// </summary>
+        public static int Version { get; private set; }
+
         public static void Register(RoomVolume volume)
         {
             if (volume == null || _volumes.Contains(volume))
@@ -29,6 +36,7 @@ namespace NewCss
 
             _volumes.Add(volume);
             _cacheDirty = true;
+            Version++;
         }
 
         public static void Unregister(RoomVolume volume)
@@ -41,6 +49,7 @@ namespace NewCss
             if (_volumes.Remove(volume))
             {
                 _cacheDirty = true;
+                Version++;
             }
         }
 
@@ -95,6 +104,41 @@ namespace NewCss
             return found;
         }
 
+        /// <summary>
+        /// Kayıtlı HER RoomVolume kutusunu (roomId'ye göre union DEĞİL — L şekilli bir odanın her
+        /// parçası ayrı kutu olarak kalmalı, aksi halde maske odanın kaplamadığı boşlukları da
+        /// yutardı) verilen dizilere yazar ve yazılan kutu sayısını döner.
+        ///
+        /// Karartma maskesi için kullanılır: shader "bu nokta HERHANGİ bir odanın içinde mi"
+        /// sorusunu bu listeyle yanıtlar; hiçbirinin içinde değilse (dış mekan) karartma uygulanmaz.
+        ///
+        /// Allocation YAPMAZ — diziler çağırana aittir ve tekrar tekrar kullanılır. Diziler
+        /// yetmezse yazma orada kesilir; toplam kutu sayısını çağıran <see cref="Count"/> ile
+        /// karşılaştırıp uyarabilir.
+        /// </summary>
+        public static int CopyBoxes(Vector4[] min, Vector4[] max)
+        {
+            if (min == null || max == null)
+            {
+                return 0;
+            }
+
+            RebuildCacheIfNeeded();
+
+            int capacity = Mathf.Min(min.Length, max.Length);
+            int written = 0;
+
+            for (int i = 0; i < _cache.Length && written < capacity; i++)
+            {
+                RoomBox box = _cache[i].Box;
+                min[written] = new Vector4(box.MinX, box.MinY, box.MinZ, 0f);
+                max[written] = new Vector4(box.MaxX, box.MaxY, box.MaxZ, 0f);
+                written++;
+            }
+
+            return written;
+        }
+
         private static RoomBox UnionOf(RoomBox a, RoomBox b)
         {
             return new RoomBox(
@@ -133,6 +177,10 @@ namespace NewCss
             _volumes.Clear();
             _cache = null;
             _cacheDirty = true;
+            // Version SIFIRLANMAZ, artırılır: sıfırlamak elinde eski bir Version tutan bir
+            // tüketicinin "değişmedi" sanıp bayat kutu listesini kullanmasına yol açabilirdi.
+            // Monoton artan sayaç bu tuzağı tanım gereği kapatır.
+            Version++;
         }
     }
 }

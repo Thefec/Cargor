@@ -49425,9 +49425,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NewCss.RoomViewSettings
   roomBlendDuration: 0.25
   mapFadeDuration: 0.2
-  desaturation: 1
+  normalViewStrength: 1
+  desaturation: 0.3
+  mapViewDesaturation: 0.6
   dim: 0.6
+  dimOnlyInsideRooms: 1
   hideOtherRoomPlayers: 1
+  hideOtherRoomItems: 1
   doorwayMargin: 0.35
 --- !u!1 &1338635676
 GameObject:

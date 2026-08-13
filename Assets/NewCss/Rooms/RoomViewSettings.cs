@@ -49,13 +49,27 @@ namespace NewCss
         [Range(0f, 1f)]
         public float normalViewStrength = 1f;
 
-        [Tooltip("Başka odaların renksizleştirilme miktarı. 0 = renkli kalır, 1 = tam gri.")]
+        [Tooltip("NORMAL OYUN GÖRÜNÜMÜNDE başka odaların renksizleştirilme miktarı. " +
+                 "0 = renkli kalır, 1 = tam gri.")]
         [Range(0f, 1f)]
         public float desaturation = 1f;
+
+        [Tooltip("HARİTA GÖRÜNÜMÜNDE (X basılıyken) başka odaların renksizleştirilme miktarı. " +
+                 "Normaldekinden yüksek tutmak X'te renkleri biraz daha soluk gösterir; geçiş " +
+                 "mapFadeDuration süresinde yumuşakça olur. Üstteki değerle aynı yaparsan X'in " +
+                 "renk üzerinde ek etkisi kalmaz.")]
+        [Range(0f, 1f)]
+        public float mapViewDesaturation = 0.6f;
 
         [Tooltip("Başka odaların karartılma çarpanı. 1 = hiç karartma, 0 = simsiyah.")]
         [Range(0f, 1f)]
         public float dim = 0.35f;
+
+        [Tooltip("Açıkken karartma YALNIZ oda kutularının (sarı hacimler) içinde uygulanır — dış mekan, " +
+                 "yeşillik ve tır avlusu kendi renginde kalır. Kapatırsan eski davranışa dönersin: " +
+                 "oyuncunun odası dışındaki HER ŞEY kararır. Bir bölge gri olmuyorsa o bölgeyi kaplayan " +
+                 "bir RoomVolume kutusu yok demektir — kutuyu Scene view'daki tutamaçlarla büyüt.")]
+        public bool dimOnlyInsideRooms = true;
 
         [Header("═══ GÖRÜNÜRLÜK ═══")]
 

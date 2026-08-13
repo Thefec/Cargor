@@ -81,6 +81,27 @@ Shader "Custom/FlatLitMetal"
             float4 _CargoRoomPrevMax;
             float  _CargoRoomBlend;   // 0 = tamamen eski kutu, 1 = tamamen yeni kutu
 
+            // Karartma MASKESİ: karartma yalnız oda kutularının (sarı hacimler) İÇİNDE uygulanır —
+            // hiçbir odaya ait olmayan dış mekan (yeşillik, tır avlusu) kendi renginde kalır.
+            // Sayaç 0 (dizi hiç gönderilmemiş) -> insideAny 0 -> shader KİMLİK.
+            // Dizi boyu RoomViewController.MaxMaskBoxes ile AYNI OLMAK ZORUNDA.
+            #define CARGO_ROOM_MAX_BOXES 16
+            float4 _CargoRoomMaskMin[CARGO_ROOM_MAX_BOXES];
+            float4 _CargoRoomMaskMax[CARGO_ROOM_MAX_BOXES];
+            float  _CargoRoomMaskCount;
+
+            // Bu nokta HERHANGİ bir oda kutusunun içinde mi? (1 = evet -> karartılmaya aday)
+            float CargoRoomInsideAny(float3 positionWS) {
+                int count = min((int)_CargoRoomMaskCount, CARGO_ROOM_MAX_BOXES);
+                float insideAny = 0.0;
+                for (int i = 0; i < count; i++) {
+                    insideAny = max(insideAny,
+                        (all(positionWS >= _CargoRoomMaskMin[i].xyz) &&
+                         all(positionWS <= _CargoRoomMaskMax[i].xyz)) ? 1.0 : 0.0);
+                }
+                return insideAny;
+            }
+
             // Luminance hesapla (bu dosyada yoktu, karartma icin eklendi)
             float Luminance3(float3 color) {
                 return dot(color, float3(0.299, 0.587, 0.114));
@@ -203,7 +224,8 @@ Shader "Custom/FlatLitMetal"
                 float insideNew  = (all(IN.positionWS >= _CargoRoomMin.xyz)     && all(IN.positionWS <= _CargoRoomMax.xyz))     ? 1.0 : 0.0;
                 float insidePrev = (all(IN.positionWS >= _CargoRoomPrevMin.xyz) && all(IN.positionWS <= _CargoRoomPrevMax.xyz)) ? 1.0 : 0.0;
                 float roomInside = lerp(insidePrev, insideNew, _CargoRoomBlend);
-                float roomK = _CargoRoomFade * (1.0 - roomInside);
+                // insideAny ile çarpılır: oda kutularının dışında kalan dış mekan hiç karartılmaz.
+                float roomK = _CargoRoomFade * (1.0 - roomInside) * CargoRoomInsideAny(IN.positionWS);
                 final = lerp(final, Luminance3(final).xxx, roomK * _CargoRoomDesat);
                 final *= lerp(1.0, _CargoRoomDim, roomK);
 
