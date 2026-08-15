@@ -38,5 +38,25 @@ namespace NewCss
             if (currentDay < RETURN_UNLOCK_DAY) return false;
             return roll < RETURN_MODE_CHANCE;
         }
+
+        /// <summary>
+        /// Gün 9 sonrası 2 kalem (dual item) modu aktif mi? Saf fonksiyon, gün eşiği kontrolü.
+        /// ProductSupply/BoxRequest mod seçiminden BAĞIMSIZ ayrı bir eksen — her müşteri (mod
+        /// farkı gözetmeksizin) gün eşiği geçildiyse dual-item olur (Faz B, oran yok — %100).
+        /// </summary>
+        /// <param name="currentDay">Oyunun mevcut günü (1-tabanlı).</param>
+        public static bool IsDualItemUnlocked(int currentDay)
+        {
+            return currentDay >= DUAL_ITEM_UNLOCK_DAY;
+        }
+
+        /// <summary>
+        /// 2-item (dual item) modundaki müşterinin etkileşim süresi çarpanı — economist kararı
+        /// (bkz. .claude/agent-memory/economist/post_rent_features_pricing_2026-08-15.md karar #4,
+        /// ×1.3 seçildi: TAM ×2 değil — ürün throughput +%54 kazanç, ×2.0 seçilseydi ekonomik
+        /// fayda sıfırlanırdı). CustomerAI.EffectiveInteractionTime içinde
+        /// manager.interactionTimeMultiplier'ın YANINA çarpı olarak eklenir, onu DEĞİŞTİRMEZ.
+        /// </summary>
+        public const float DUAL_ITEM_INTERACTION_TIME_MULTIPLIER = 1.3f;
     }
 }

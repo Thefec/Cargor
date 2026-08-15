@@ -1022,6 +1022,23 @@ namespace NewCss
 
         #endregion
 
+        #region Dual Item Mode Assignment (Faz B — gün 9 2-item)
+
+        /// <summary>
+        /// Bu müşteri 2-item (dual item) modunda mı olmalı? Gün eşiği kontrolü saf
+        /// <see cref="PostRentFeatureUnlocks.IsDualItemUnlocked"/> içinde (gün eşiği çağrı deseni
+        /// ShouldAssignBoxRequestMode ile aynı). ProductSupply/BoxRequest mod seçiminden
+        /// BAĞIMSIZ ayrı bir eksen — bir müşteri hem BoxRequest hem dual-item olabilir, hem
+        /// ProductSupply hem dual-item olabilir.
+        /// </summary>
+        public bool ShouldAssignDualItemMode()
+        {
+            int currentDay = DayCycleManager.Instance != null ? DayCycleManager.Instance.currentDay : 0;
+            return PostRentFeatureUnlocks.IsDualItemUnlocked(currentDay);
+        }
+
+        #endregion
+
         #region Product Assignment
 
         /// <summary>

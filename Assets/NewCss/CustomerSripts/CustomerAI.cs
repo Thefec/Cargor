@@ -148,6 +148,12 @@ namespace NewCss
         private readonly NetworkVariable<int> _networkInteractionMode = new((int)InteractionMode.ProductSupply);
         private readonly NetworkVariable<int> _networkRequestedReturnBoxType = new((int)BoxInfo.BoxType.Red);
 
+        // Faz B — 2-item (dual item) modu, gün 9+. Mod seçiminden bağımsız ayrı eksen.
+        private readonly NetworkVariable<bool> _networkIsDualItemMode = new(false);
+        private readonly NetworkVariable<int> _networkAssignedProductIndex2 = new(-1);
+        private readonly NetworkVariable<int> _networkRequestedReturnBoxType2 = new((int)BoxInfo.BoxType.Red);
+        private readonly NetworkVariable<bool> _networkFirstReturnColorFulfilled = new(false);
+
         #endregion
 
         #region Private Fields
@@ -168,6 +174,14 @@ namespace NewCss
         private InteractionMode _interactionMode = InteractionMode.ProductSupply;
         private BoxInfo.BoxType _requestedReturnBoxType = BoxInfo.BoxType.Red;
 
+        // Faz B — 2-item (dual item) modu, gün 9+. ProductSupply/BoxRequest'in İKİSİNDE de
+        // kullanılan opsiyonel "2. kalem" alanları — tekil alanları listeye çevirmek yerine
+        // düşük riskli genişletme (bkz. plan §Faz B): kullanılmıyorsa -1/varsayılan kalır.
+        private bool _isDualItemMode;
+        private int _assignedProductIndex2 = -1;
+        private BoxInfo.BoxType _requestedReturnBoxType2 = BoxInfo.BoxType.Red;
+        private bool _firstReturnColorFulfilled;
+
         // Interaction
         private bool _hasInteracted;
         private bool _isInInteraction;
@@ -183,6 +197,11 @@ namespace NewCss
         private GameObject _placedProduct;
         private NetworkObject _placedProductNetworkObject;
         private int _placedProductSlotIndex = -1; // Cache slot index for faster checking
+
+        // Faz B — 2-item (dual item) modu, gün 9+. İkinci ürün için ayrı takip alanları.
+        private GameObject _placedProduct2;
+        private NetworkObject _placedProductNetworkObject2;
+        private int _placedProductSlotIndex2 = -1;
 
         #endregion
 
@@ -219,6 +238,24 @@ namespace NewCss
         /// İade modunda müşterinin istediği kutu rengi. IsBoxRequestMode false iken anlamsızdır.
         /// </summary>
         public BoxInfo.BoxType RequestedReturnBoxType => _requestedReturnBoxType;
+
+        /// <summary>
+        /// Bu müşteri 2-item (dual item) modunda mı? (Faz B, gün 9+). Networked. Mod seçiminden
+        /// bağımsız — hem ProductSupply hem BoxRequest ile birleşebilir.
+        /// </summary>
+        public bool IsDualItemMode => _isDualItemMode;
+
+        /// <summary>
+        /// Dual-item BoxRequest'te istenen ikinci renk. IsDualItemMode false veya IsBoxRequestMode
+        /// false iken anlamsızdır.
+        /// </summary>
+        public BoxInfo.BoxType RequestedReturnBoxType2 => _requestedReturnBoxType2;
+
+        /// <summary>
+        /// Dual-item BoxRequest'te ilk renk zaten teslim edildi mi (müşteri ikinci rengi
+        /// bekliyor)? Graphics-UI departmanı "1/2 teslim edildi" göstergesi için kullanabilir.
+        /// </summary>
+        public bool HasDeliveredFirstReturnItem => _firstReturnColorFulfilled;
 
         #endregion
 
@@ -438,6 +475,11 @@ namespace NewCss
             float patienceMultiplier = manager != null ? manager.patienceMultiplier : 1f;
             _actualWaitTime = Random.Range(minWaitTime, maxWaitTime) * patienceMultiplier;
 
+            // Faz B — 2-item (dual item) modu, gün 9+. ProductSupply/BoxRequest seçiminden
+            // BAĞIMSIZ ayrı bir eksen — mod seçiminden ÖNCE belirlenir, aşağıdaki iki dalda da kullanılır.
+            _isDualItemMode = manager != null && manager.ShouldAssignDualItemMode();
+            _networkIsDualItemMode.Value = _isDualItemMode;
+
             // Faz A — iade (BoxRequest) modu, gün 5+ (%25 economist kararı). Bu modda müşteri
             // _assignedProductIndex KULLANMAZ, kendi ayrı alanını kullanır (bkz. Enums region).
             if (manager != null && manager.ShouldAssignBoxRequestMode())
@@ -447,14 +489,34 @@ namespace NewCss
                 _networkInteractionMode.Value = (int)_interactionMode;
                 _networkRequestedReturnBoxType.Value = (int)_requestedReturnBoxType;
 
-                Debug.Log($"{LOG_PREFIX} Spawned in BoxRequest (iade) mode, requested color: {_requestedReturnBoxType}");
+                if (_isDualItemMode)
+                {
+                    // Faz B — ikinci renk isteği. Bağımsız çekim: aynı renk tekrar çıkabilir
+                    // (economist "2 farklı renk OLABİLİR" dedi, zorunlu farklılık şartı yok).
+                    _requestedReturnBoxType2 = manager.PickRandomReturnBoxType();
+                    _networkRequestedReturnBoxType2.Value = (int)_requestedReturnBoxType2;
+                }
+
+                Debug.Log($"{LOG_PREFIX} Spawned in BoxRequest (iade) mode, requested color: {_requestedReturnBoxType}" +
+                    (_isDualItemMode ? $" + {_requestedReturnBoxType2} (dual item, gün 9+)" : ""));
             }
             else if (manager != null && HasValidProductPrefabs())
             {
                 _assignedProductIndex = manager.GetRandomProductIndexExcludingRecent(productPrefabs);
                 _networkAssignedProductIndex.Value = _assignedProductIndex;
 
-                Debug.Log($"{LOG_PREFIX} Spawned with product index: {_assignedProductIndex} ({productPrefabs[_assignedProductIndex].name})");
+                if (_isDualItemMode)
+                {
+                    // Faz B — ikinci ürün. GetRandomProductIndexExcludingRecent kendi geçmişini
+                    // günceller (AddToProductHistory) — art arda çağrı pratikte farklı ürüne
+                    // meyilli ama garanti değil, sorun teşkil etmiyor (aynı ürün 2 kez de geçerli).
+                    _assignedProductIndex2 = manager.GetRandomProductIndexExcludingRecent(productPrefabs);
+                    _networkAssignedProductIndex2.Value = _assignedProductIndex2;
+                }
+
+                Debug.Log($"{LOG_PREFIX} Spawned with product index: {_assignedProductIndex}" +
+                    (_isDualItemMode ? $" + {_assignedProductIndex2} (dual item, gün 9+)" : "") +
+                    $" ({productPrefabs[_assignedProductIndex].name})");
             }
         }
 
@@ -478,6 +540,10 @@ namespace NewCss
             _networkAssignedProductIndex.OnValueChanged += HandleAssignedProductIndexChanged;
             _networkInteractionMode.OnValueChanged += HandleInteractionModeChanged;
             _networkRequestedReturnBoxType.OnValueChanged += HandleRequestedReturnBoxTypeChanged;
+            _networkIsDualItemMode.OnValueChanged += HandleIsDualItemModeChanged;
+            _networkAssignedProductIndex2.OnValueChanged += HandleAssignedProductIndex2Changed;
+            _networkRequestedReturnBoxType2.OnValueChanged += HandleRequestedReturnBoxType2Changed;
+            _networkFirstReturnColorFulfilled.OnValueChanged += HandleFirstReturnColorFulfilledChanged;
         }
 
         private void UnsubscribeFromNetworkEvents()
@@ -491,6 +557,10 @@ namespace NewCss
             _networkAssignedProductIndex.OnValueChanged -= HandleAssignedProductIndexChanged;
             _networkInteractionMode.OnValueChanged -= HandleInteractionModeChanged;
             _networkRequestedReturnBoxType.OnValueChanged -= HandleRequestedReturnBoxTypeChanged;
+            _networkIsDualItemMode.OnValueChanged -= HandleIsDualItemModeChanged;
+            _networkAssignedProductIndex2.OnValueChanged -= HandleAssignedProductIndex2Changed;
+            _networkRequestedReturnBoxType2.OnValueChanged -= HandleRequestedReturnBoxType2Changed;
+            _networkFirstReturnColorFulfilled.OnValueChanged -= HandleFirstReturnColorFulfilledChanged;
         }
 
         #endregion
@@ -876,8 +946,14 @@ namespace NewCss
 
         // Sabirli Musteriler perki (patient_customers) FAZ4 tercih: CustomerManager.interactionTimeMultiplier
         // ile olceklenir (default 1f). bkz. plans/economy-rebuild-2026-07-30-faz4-final.md SS B.7.
+        // Faz B — 2-item (dual item) modu, gün 9+: manager.interactionTimeMultiplier'ın YANINA ayrı
+        // bir çarpı olarak eklenir (onu DEĞİŞTİRMEZ). BoxRequest-dual'de her ayrı teslimat (1. ve
+        // 2. renk) kendi InteractionTimerCoroutine'ini ayrı ayrı çalıştırdığından bu çarpan HER
+        // teslimat turuna uygulanır (ProductSupply-dual'de ise tek turluk teslimat — 2 ürün aynı
+        // anda masaya konur, tek E-etkileşimi).
         private float EffectiveInteractionTime =>
-            interactionTime * (manager != null ? manager.interactionTimeMultiplier : 1f);
+            interactionTime * (manager != null ? manager.interactionTimeMultiplier : 1f) *
+            (_isDualItemMode ? PostRentFeatureUnlocks.DUAL_ITEM_INTERACTION_TIME_MULTIPLIER : 1f);
 
         private void CompleteInteraction()
         {
@@ -915,11 +991,35 @@ namespace NewCss
         /// istenen renkte bir kutu taşıyorsa başarı (kutu elinden alınır, prestij ödülü — mevcut
         /// customerServedPrestigeBonus, HandleSuccessfulInteraction ile birebir aynı), aksi halde
         /// hata (mevcut wrongProductPrestigePenalty). Para YOK (economist kararı — tek para kaynağı tır).
-        /// Ürün yerleştirme/pickup coroutine'i yok: teslimat anında tamamlanır, müşteri direkt çıkışa geçer.
+        /// Ürün yerleştirme/pickup coroutine'i yok: teslimat anında tamamlanır.
+        ///
+        /// Faz B — 2-item (dual item) modu, gün 9+: PlayerInventory tek seferde tek eşya taşıyor
+        /// (bkz. PlayerInventory.cs _currentItemID/_currentItemData tekil alanlar, HasItem/CurrentItemData
+        /// property'leri tekil) — bu yüzden 2. renk AYRI bir E-etkileşimi (ayrı bir sefer) olarak
+        /// gerçekleşir. İlk renk doğru teslim edilince interaction BİTMEZ: müşteri Service state'inde
+        /// kalır, oyuncu serbest bırakılır ve ikinci E-etkileşimine yeniden izin verilir
+        /// (RearmForSecondReturnInteraction). Yalnız İKİ renk de tamamlanınca HandleSuccessfulInteraction
+        /// çağrılır — prestij ödülü müşteri başına BİR KEZ verilir (economist: ekstra ödül yok).
+        /// Yanlış renk (1. veya 2. turda) her zaman anında hata + çıkış — kısmi başarı yok.
         /// </summary>
         private void ProcessReturnBoxInteraction()
         {
-            bool success = TryConsumeMatchingReturnBox();
+            BoxInfo.BoxType targetColor = (_isDualItemMode && _firstReturnColorFulfilled)
+                ? _requestedReturnBoxType2
+                : _requestedReturnBoxType;
+
+            bool success = TryConsumeMatchingReturnBox(targetColor);
+
+            if (success && _isDualItemMode && !_firstReturnColorFulfilled)
+            {
+                // İlk renk teslim edildi, ikinci renk bekleniyor — interaction'ı bitirme.
+                _firstReturnColorFulfilled = true;
+                _networkFirstReturnColorFulfilled.Value = true;
+
+                UnlockInteractingPlayer();
+                RearmForSecondReturnInteraction();
+                return;
+            }
 
             if (success)
             {
@@ -935,10 +1035,34 @@ namespace NewCss
         }
 
         /// <summary>
-        /// Etkileşimi başlatan oyuncunun elindeki item'ın rengi istenen BoxInfo.BoxType ile eşleşiyor mu
-        /// kontrol eder; eşleşiyorsa oyuncunun elinden kutuyu alır (SetInventoryStateServer) ve true döner.
+        /// Faz B — dual-item BoxRequest'te ilk renk teslim edildikten sonra müşteriyi ikinci
+        /// E-etkileşimine hazır hale getirir (server-only). Customer Service state'inde kalır;
+        /// timeout riski yok çünkü _waitTimeStarted CompleteInteraction'da zaten false yapıldı
+        /// (CheckWaitTimeExpired bu koşulla erken çıkar, bkz. Wait Time Management region).
         /// </summary>
-        private bool TryConsumeMatchingReturnBox()
+        private void RearmForSecondReturnInteraction()
+        {
+            _hasInteracted = false;
+            ShowWaitCanvas();
+        }
+
+        /// <summary>Bekleme canvas'ını (ve networked görünürlüğünü) tekrar gösterir. Server-only.</summary>
+        private void ShowWaitCanvas()
+        {
+            _networkShowCanvas.Value = true;
+
+            if (hideCanvasUntilTimer && waitCanvas != null)
+            {
+                waitCanvas.gameObject.SetActive(true);
+            }
+        }
+
+        /// <summary>
+        /// Etkileşimi başlatan oyuncunun elindeki item'ın rengi <paramref name="targetColor"/> ile
+        /// eşleşiyor mu kontrol eder; eşleşiyorsa oyuncunun elinden kutuyu alır
+        /// (SetInventoryStateServer) ve true döner.
+        /// </summary>
+        private bool TryConsumeMatchingReturnBox(BoxInfo.BoxType targetColor)
         {
             var playerInventory = GetInteractingPlayerInventory();
             if (playerInventory == null || !playerInventory.HasItem)
@@ -953,7 +1077,7 @@ namespace NewCss
             }
 
             var boxInfo = itemData.visualPrefab.GetComponent<BoxInfo>();
-            if (boxInfo == null || boxInfo.boxType != _requestedReturnBoxType)
+            if (boxInfo == null || boxInfo.boxType != targetColor)
             {
                 return false;
             }
@@ -990,7 +1114,20 @@ namespace NewCss
         private IEnumerator PlaceProductCoroutine()
         {
             // Ürünü yerleştir
-            _placedProduct = PlaceProductOnDropOffTable();
+            _placedProduct = PlaceProductOnDropOffTable(_assignedProductIndex, out _placedProductSlotIndex);
+
+            // Faz B — 2-item (dual item) modu, gün 9+: ikinci ürünü de aynı masaya (DisplayTable
+            // zaten çoklu slot destekliyor, masa tarafında değişiklik gerekmedi). Tek E-etkileşimi
+            // ile İKİ ürün de bırakılır (BoxRequest'in ayrı-sefer kısıtından farklı — burada
+            // oyuncunun elinde bir şey taşıması gerekmiyor, müşteri ürünü bırakıyor).
+            if (_isDualItemMode && _placedProduct != null)
+            {
+                _placedProduct2 = PlaceProductOnDropOffTable(_assignedProductIndex2, out _placedProductSlotIndex2);
+                if (_placedProduct2 == null)
+                {
+                    Debug.LogWarning($"{LOG_PREFIX} Dual-item 2. ürün yerleştirilemedi (masa dolu olabilir) — sadece 1. ürünle devam ediliyor.");
+                }
+            }
 
             // Kısa bir gecikme - physics'in settle olması için
             yield return new WaitForSeconds(PRODUCT_PLACEMENT_DELAY);
@@ -999,6 +1136,10 @@ namespace NewCss
             {
                 // Physics'i tekrar kontrol et ve sabitle
                 EnsureProductIsStable(_placedProduct);
+                if (_placedProduct2 != null)
+                {
+                    EnsureProductIsStable(_placedProduct2);
+                }
 
                 HandleSuccessfulInteraction();
                 StartCoroutine(WaitForProductPickupCoroutine());
@@ -1057,8 +1198,16 @@ namespace NewCss
 
         #region Product Placement - DÜZELTILMIŞ
 
-        private GameObject PlaceProductOnDropOffTable()
+        /// <summary>
+        /// Belirtilen ürünü drop-off masasına yerleştirir. <paramref name="productIndex"/> geçersizse
+        /// (örn. -1, atanmamış) rastgele bir ürüne düşer. Faz B — 2-item modunda hem 1. hem 2. ürün
+        /// için (farklı productIndex/slotIndex ile) İKİ KEZ çağrılır; DisplayTable çoklu slot
+        /// desteklediğinden masa tarafında değişiklik gerekmiyor.
+        /// </summary>
+        private GameObject PlaceProductOnDropOffTable(int productIndex, out int placedSlotIndex)
         {
+            placedSlotIndex = -1;
+
             if (dropOffTable == null || !HasValidProductPrefabs())
             {
                 Debug.LogWarning($"{LOG_PREFIX} Cannot place product: dropOffTable or productPrefabs is null");
@@ -1072,12 +1221,15 @@ namespace NewCss
                 return null;
             }
 
-            int productIndex = GetProductIndex();
+            if (productIndex < 0 || productIndex >= productPrefabs.Length)
+            {
+                productIndex = Random.Range(0, productPrefabs.Length);
+            }
 
             // ✅ 1. Slot index'ini DisplayTable.ItemCount üzerinden al
             //    PlaceItemInstance() aynı index'i kullanacak çünkü _placedItems.Count == ItemCount
             int slotIndex = dropOffTable.ItemCount;
-            _placedProductSlotIndex = slotIndex; // Cache for later checking
+            placedSlotIndex = slotIndex; // Cache for later checking
 
             // ✅ 2. Ürünü doğrudan hedef slot pozisyon/rotasyonunda oluştur.
             //    Böylece NetworkTransform (Interpolate:1) client'ta origin->slot "kayması"
@@ -1158,16 +1310,6 @@ namespace NewCss
             ItemPlacementAnimator.PlayOn(this, netObj.gameObject);
         }
 
-        private int GetProductIndex()
-        {
-            if (_assignedProductIndex >= 0 && _assignedProductIndex < productPrefabs.Length)
-            {
-                return _assignedProductIndex;
-            }
-
-            return Random.Range(0, productPrefabs.Length);
-        }
-
         private IEnumerator EnsureProductFrozenAfterSpawn(GameObject product)
         {
             yield return null; // Bir frame bekle
@@ -1237,32 +1379,41 @@ namespace NewCss
             {
                 _placedProductNetworkObject = _placedProduct.GetComponent<NetworkObject>();
             }
+            if (_placedProduct2 != null)
+            {
+                _placedProductNetworkObject2 = _placedProduct2.GetComponent<NetworkObject>();
+            }
 
             yield return null;
 
-            // Müşteri, ürün alınana kadar süresiz bekleyecek.
-            while (_placedProduct != null)
+            // Müşteri, İKİ ürün de alınana kadar süresiz bekleyecek (dual item modunda değilse
+            // _placedProduct2 zaten hep null'dur, döngü tek ürünle Faz A davranışına eşdeğerdir).
+            while (_placedProduct != null || _placedProduct2 != null)
             {
-                // Ürün hala var mı? (Destroy edilmiş olabilir)
-                if (_placedProduct == null)
+                if (_placedProduct != null && !IsItemStillOnTable(_placedProduct))
                 {
-                    Debug.Log($"{LOG_PREFIX} Product was picked up (null check)");
-                    break;
+                    Debug.Log($"{LOG_PREFIX} Product 1 was picked up (table check)");
+                    _placedProduct = null;
+                }
+                else if (_placedProduct != null && _placedProductNetworkObject != null && !_placedProductNetworkObject.IsSpawned)
+                {
+                    Debug.Log($"{LOG_PREFIX} Product 1 NetworkObject was despawned");
+                    _placedProduct = null;
                 }
 
-                // Ürün hala masada mı? (DisplayTable listesinden kontrol)
-                if (!IsProductStillOnTable())
+                if (_placedProduct2 != null && !IsItemStillOnTable(_placedProduct2))
                 {
-                    Debug.Log($"{LOG_PREFIX} Product was picked up (table check)");
-                    _placedProduct = null;
-                    break;
+                    Debug.Log($"{LOG_PREFIX} Product 2 was picked up (table check)");
+                    _placedProduct2 = null;
+                }
+                else if (_placedProduct2 != null && _placedProductNetworkObject2 != null && !_placedProductNetworkObject2.IsSpawned)
+                {
+                    Debug.Log($"{LOG_PREFIX} Product 2 NetworkObject was despawned");
+                    _placedProduct2 = null;
                 }
 
-                // NetworkObject check
-                if (_placedProductNetworkObject != null && !_placedProductNetworkObject.IsSpawned)
+                if (_placedProduct == null && _placedProduct2 == null)
                 {
-                    Debug.Log($"{LOG_PREFIX} Product NetworkObject was despawned");
-                    _placedProduct = null;
                     break;
                 }
 
@@ -1272,32 +1423,27 @@ namespace NewCss
             TransitionToExit();
         }
 
-        private bool IsProductStillOnTable()
+        /// <summary>
+        /// Verilen ürün nesnesi hâlâ dropOffTable'ın kendi item listesinde mi? (Pozisyon
+        /// karşılaştırması yerine doğrudan referans kontrolü — Faz B'de 1. ve 2. ürün için
+        /// paylaşımlı kullanılır.)
+        /// </summary>
+        private bool IsItemStillOnTable(GameObject item)
         {
-            if (_placedProduct == null)
+            if (item == null || dropOffTable == null)
             {
                 return false;
             }
 
-            // dropOffTable kontrolü
-            if (dropOffTable == null)
-            {
-                return false;
-            }
-
-            // ✅ Güvenilir kontrol: DisplayTable'ın kendi item listesinde ürün hala var mı?
-            //    Pozisyon karşılaştırması yerine doğrudan referans kontrolü.
-            //    Bu yöntem, ürünün hangi pozisyonda olursa olsun doğru sonuç verir.
             var allItems = dropOffTable.GetAllItems();
-            foreach (var item in allItems)
+            foreach (var tableItem in allItems)
             {
-                if (item == _placedProduct)
+                if (tableItem == item)
                 {
                     return true;
                 }
             }
 
-            // Item listesinde bulunamadı = pickup edilmiş
             return false;
         }
 
@@ -1597,6 +1743,30 @@ namespace NewCss
             _requestedReturnBoxType = (BoxInfo.BoxType)newValue;
         }
 
+        private void HandleIsDualItemModeChanged(bool previousValue, bool newValue)
+        {
+            if (IsServer) return;
+            _isDualItemMode = newValue;
+        }
+
+        private void HandleAssignedProductIndex2Changed(int previousValue, int newValue)
+        {
+            if (IsServer) return;
+            _assignedProductIndex2 = newValue;
+        }
+
+        private void HandleRequestedReturnBoxType2Changed(int previousValue, int newValue)
+        {
+            if (IsServer) return;
+            _requestedReturnBoxType2 = (BoxInfo.BoxType)newValue;
+        }
+
+        private void HandleFirstReturnColorFulfilledChanged(bool previousValue, bool newValue)
+        {
+            if (IsServer) return;
+            _firstReturnColorFulfilled = newValue;
+        }
+
         #endregion
 
         #region Debug & Editor
@@ -1620,21 +1790,39 @@ namespace NewCss
 
         private string BuildDebugInfo()
         {
-            var info = $"State: {_state}\nInteracted: {_hasInteracted}";
+            var info = $"State: {_state}\nInteracted: {_hasInteracted}\nMode: {_interactionMode}";
+
+            if (_isDualItemMode)
+            {
+                info += $"\nDualItem: true (1st done: {_firstReturnColorFulfilled})";
+            }
 
             if (IsServer)
             {
                 info += $"\nWait Time: {_actualWaitTime:F1}s";
 
-                if (_assignedProductIndex >= 0 && HasValidProductPrefabs() && _assignedProductIndex < productPrefabs.Length)
+                if (_interactionMode == InteractionMode.BoxRequest)
+                {
+                    info += $"\nRequested: {_requestedReturnBoxType}" +
+                        (_isDualItemMode ? $" + {_requestedReturnBoxType2}" : "");
+                }
+                else if (_assignedProductIndex >= 0 && HasValidProductPrefabs() && _assignedProductIndex < productPrefabs.Length)
                 {
                     info += $"\nProduct: {productPrefabs[_assignedProductIndex].name} ({_assignedProductIndex})";
+                    if (_isDualItemMode && _assignedProductIndex2 >= 0 && _assignedProductIndex2 < productPrefabs.Length)
+                    {
+                        info += $" + {productPrefabs[_assignedProductIndex2].name} ({_assignedProductIndex2})";
+                    }
                 }
 
                 if (_placedProduct != null)
                 {
                     info += $"\nPlaced:  {_placedProduct.name}";
                     info += $"\nParent: {(_placedProduct.transform.parent != null ? _placedProduct.transform.parent.name : "null")}";
+                }
+                if (_placedProduct2 != null)
+                {
+                    info += $"\nPlaced2: {_placedProduct2.name}";
                 }
 
                 if (_interactingPlayerId != ulong.MaxValue)
