@@ -1,6 +1,7 @@
 # Economist Agent Memory Index
 
 ## ⭐ EN GÜNCEL TABAN (buradan başla)
+- [Kira-sonrası 3 özellik (iade/2-item/karışık tır) fiyatlandırma](post_rent_features_pricing_2026-08-15.md) — iade %25+parasız, 2-item süre ×1.3, karışık tır düz toplam, gün5/9 DraftPool tier ile ÇAKIŞMA riski
 - [⭐FAZ4 NİHAİ DEĞER SETİ](faz4_final_value_set_2026-07-30.md) — **TEK KAYNAK, FAZ 1/2/3'ün ÜSTÜNE YAZAR**: kira {500,1000,1450,1800}+g1.35, lost −0.4, moneyMult 1.2, maliyet DİZİSİ {1,2,2.95,3.7}
 - [sim.js v3.1 masa çekişmesi](sim_v31_table_contention.md) — interactable 3→5 + masa çekişmesi eklendi; gelir tabanı %7-13 düştü, S=6sn 2. en duyarlı sayı
 - [FAZ2 kararlar: kira+prestij+event+süreler](faz2_prestige_rent_event_2026-07-30.md) — ⚠️KISMEN BAYAT (kira ölçeği/lost cezası/moneyMult FAZ4'te revize); event tablosu ve gerekçeler geçerli
