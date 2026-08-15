@@ -446,12 +446,34 @@ namespace NewCss
             InitializeWaitBar();
             InitializeCanvas();
             InitializeReturnIndicator();
+
+            if (!IsServer)
+            {
+                SyncReturnStateFromNetworkValues();
+            }
+
             UpdateReturnIndicatorVisual();
 
             if (isPrefabMode)
             {
                 SetPrefabModeComponents(true);
             }
+        }
+
+        /// <summary>
+        /// QA bulgusu #1: NGO'da ilk spawn payload'ındaki NetworkVariable değerleri client'ta
+        /// OnNetworkSpawn() çağrılmadan ÖNCE deserialize edilir; SubscribeToNetworkEvents()
+        /// (OnValueChanged aboneliği, OnNetworkSpawn içinde) bu ilk senkron olayını kaçırır —
+        /// non-host client'larda local mirror alanları spawn anında default kalıp iade
+        /// göstergesini yanlış/gizli çizebiliyordu. Truck.cs SyncFromNetworkValues ile aynı
+        /// desen: server hariç, .Value'ları doğrudan okuyup local mirror'ları senkronlar.
+        /// </summary>
+        private void SyncReturnStateFromNetworkValues()
+        {
+            _interactionMode = (InteractionMode)_networkInteractionMode.Value;
+            _requestedReturnBoxType = (BoxInfo.BoxType)_networkRequestedReturnBoxType.Value;
+            _isDualItemMode = _networkIsDualItemMode.Value;
+            _requestedReturnBoxType2 = (BoxInfo.BoxType)_networkRequestedReturnBoxType2.Value;
         }
 
         private void InitializeAudioSource()
@@ -1115,9 +1137,29 @@ namespace NewCss
         // 2. renk) kendi InteractionTimerCoroutine'ini ayrı ayrı çalıştırdığından bu çarpan HER
         // teslimat turuna uygulanır (ProductSupply-dual'de ise tek turluk teslimat — 2 ürün aynı
         // anda masaya konur, tek E-etkileşimi).
-        private float EffectiveInteractionTime =>
-            interactionTime * (manager != null ? manager.interactionTimeMultiplier : 1f) *
-            (_isDualItemMode ? PostRentFeatureUnlocks.DUAL_ITEM_INTERACTION_TIME_MULTIPLIER : 1f);
+        //
+        // economist düzeltmesi (2026-08-15, QA bulgusu üzerine): ProductSupply-dual ×1.3
+        // (DUAL_ITEM_INTERACTION_TIME_MULTIPLIER) bir KOMPRESYON ödülünü modelliyor (2 ürünü tek
+        // etkileşimde toplamak); BoxRequest-dual'da oyuncu tek seferde tek kutu taşıdığından bu
+        // kompresyon yok — aynı ×1.3'ü İKİ bacağa da uygulamak saf çifte ceza olurdu. BoxRequest-dual
+        // bunun yerine AYRI ve daha düşük DUAL_ITEM_BOXREQUEST_INTERACTION_TIME_MULTIPLIER (×1.15,
+        // bacak başına) kullanır. bkz. .claude/agent-memory/economist/post_rent_features_pricing_2026-08-15.md
+        // "DÜZELTME (2026-08-15, QA bulgusu üzerine)".
+        private float EffectiveInteractionTime
+        {
+            get
+            {
+                float dualMultiplier = 1f;
+                if (_isDualItemMode)
+                {
+                    dualMultiplier = _interactionMode == InteractionMode.BoxRequest
+                        ? PostRentFeatureUnlocks.DUAL_ITEM_BOXREQUEST_INTERACTION_TIME_MULTIPLIER
+                        : PostRentFeatureUnlocks.DUAL_ITEM_INTERACTION_TIME_MULTIPLIER;
+                }
+
+                return interactionTime * (manager != null ? manager.interactionTimeMultiplier : 1f) * dualMultiplier;
+            }
+        }
 
         private void CompleteInteraction()
         {
@@ -1202,25 +1244,16 @@ namespace NewCss
 
         /// <summary>
         /// Faz B — dual-item BoxRequest'te ilk renk teslim edildikten sonra müşteriyi ikinci
-        /// E-etkileşimine hazır hale getirir (server-only). Customer Service state'inde kalır;
-        /// timeout riski yok çünkü _waitTimeStarted CompleteInteraction'da zaten false yapıldı
-        /// (CheckWaitTimeExpired bu koşulla erken çıkar, bkz. Wait Time Management region).
+        /// E-etkileşimine hazır hale getirir (server-only). Customer Service state'inde kalır.
+        /// QA bulgusu #2 düzeltmesi: CompleteInteraction() _waitTimeStarted'ı false yapıp sabır
+        /// sayacını durdurduğu için burada YENİDEN başlatılmazsa müşteri 2. renk için sonsuza
+        /// dek sabırsızlanmadan bekler (StartWaitTime() ile aynı deseni tekrar kullanıyoruz —
+        /// _hasInteracted zaten false yapıp _waitTimeStarted'ı tekrar true'ya çeker, waitBar'ı
+        /// _actualWaitTime ile yeniden başlatır, network mirror'ları senkron eder).
         /// </summary>
         private void RearmForSecondReturnInteraction()
         {
-            _hasInteracted = false;
-            ShowWaitCanvas();
-        }
-
-        /// <summary>Bekleme canvas'ını (ve networked görünürlüğünü) tekrar gösterir. Server-only.</summary>
-        private void ShowWaitCanvas()
-        {
-            _networkShowCanvas.Value = true;
-
-            if (hideCanvasUntilTimer && waitCanvas != null)
-            {
-                waitCanvas.gameObject.SetActive(true);
-            }
+            StartWaitTime();
         }
 
         /// <summary>

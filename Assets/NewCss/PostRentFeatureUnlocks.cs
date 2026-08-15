@@ -58,5 +58,19 @@ namespace NewCss
         /// manager.interactionTimeMultiplier'ın YANINA çarpı olarak eklenir, onu DEĞİŞTİRMEZ.
         /// </summary>
         public const float DUAL_ITEM_INTERACTION_TIME_MULTIPLIER = 1.3f;
+
+        /// <summary>
+        /// BoxRequest-dual (iade, 2 farklı renk istenen müşteri) etkileşim süresi çarpanı —
+        /// bacak başına uygulanır (1. ve 2. renk teslimatının İKİSİNDE de), DUAL_ITEM_INTERACTION_
+        /// TIME_MULTIPLIER'dan (×1.3, ProductSupply-dual) KASITLI OLARAK BAĞIMSIZ ve daha düşük.
+        /// Gerekçe: ProductSupply-dual'daki ×1.3 tek E-etkileşimde 2 ürün toplamanın KOMPRESYON
+        /// ödülünü modelliyor; BoxRequest-dual'da oyuncu tek seferde tek kutu taşıdığından bu
+        /// kompresyon fiziksel olarak yok — aynı sabiti iki bacağa da uygulamak saf çifte ceza
+        /// olurdu (1.3²≈1.69× toplam ağırlık). economist düzeltmesi (QA bulgusu üzerine), bkz.
+        /// .claude/agent-memory/economist/post_rent_features_pricing_2026-08-15.md
+        /// "DÜZELTME (2026-08-15, QA bulgusu üzerine)": Python doğrulama ×1.15/bacak → -13.0%
+        /// throughput (nötr ×1.00 ile ×1.3'ün AYNEN korunmasının -23.1%'i arasında dengeli nokta).
+        /// </summary>
+        public const float DUAL_ITEM_BOXREQUEST_INTERACTION_TIME_MULTIPLIER = 1.15f;
     }
 }
