@@ -55,6 +55,17 @@ namespace NewCss
             Exiting = 4
         }
 
+        /// <summary>
+        /// Etkileşim yönü. ProductSupply = mevcut davranış (müşteri bir ÜRÜN bırakır, oyuncu alır).
+        /// BoxRequest = iade (Faz A, gün 5+): müşteri bir KUTU rengi ister, oyuncu getirir teslim eder.
+        /// İkisi karışmasın diye ayrı — BoxRequest modu _assignedProductIndex'i KULLANMAZ.
+        /// </summary>
+        private enum InteractionMode
+        {
+            ProductSupply = 0,
+            BoxRequest = 1
+        }
+
         #endregion
 
         #region Serialized Fields
@@ -133,6 +144,10 @@ namespace NewCss
         private readonly NetworkVariable<int> _networkAssignedProductIndex = new(-1);
         private readonly NetworkVariable<ulong> _networkPlacedProductId = new(0);
 
+        // Faz A — iade (BoxRequest) modu, gün 5+. ProductSupply modundan bağımsız ayrı alanlar.
+        private readonly NetworkVariable<int> _networkInteractionMode = new((int)InteractionMode.ProductSupply);
+        private readonly NetworkVariable<int> _networkRequestedReturnBoxType = new((int)BoxInfo.BoxType.Red);
+
         #endregion
 
         #region Private Fields
@@ -148,6 +163,10 @@ namespace NewCss
         private Vector3 _queueTarget;
         private int _targetQueueIndex = -1;
         private int _assignedProductIndex = -1;
+
+        // Faz A — iade (BoxRequest) modu, gün 5+ (ayrı, ProductSupply alanlarıyla karışmaz).
+        private InteractionMode _interactionMode = InteractionMode.ProductSupply;
+        private BoxInfo.BoxType _requestedReturnBoxType = BoxInfo.BoxType.Red;
 
         // Interaction
         private bool _hasInteracted;
@@ -189,6 +208,17 @@ namespace NewCss
         /// AssignFreeServiceStations() bu bayrağı okuyarak boş istasyon ataması yapar.)
         /// </summary>
         public bool IsWaitingForService => _state == CustomerState.WaitingInQueue;
+
+        /// <summary>
+        /// Bu müşteri İade (BoxRequest) modunda mı? (Faz A, gün 5+). Networked — client'ta da
+        /// doğru değeri okur. Graphics-UI departmanı görsel gösterge için bunu kullanabilir.
+        /// </summary>
+        public bool IsBoxRequestMode => _interactionMode == InteractionMode.BoxRequest;
+
+        /// <summary>
+        /// İade modunda müşterinin istediği kutu rengi. IsBoxRequestMode false iken anlamsızdır.
+        /// </summary>
+        public BoxInfo.BoxType RequestedReturnBoxType => _requestedReturnBoxType;
 
         #endregion
 
@@ -408,7 +438,18 @@ namespace NewCss
             float patienceMultiplier = manager != null ? manager.patienceMultiplier : 1f;
             _actualWaitTime = Random.Range(minWaitTime, maxWaitTime) * patienceMultiplier;
 
-            if (manager != null && HasValidProductPrefabs())
+            // Faz A — iade (BoxRequest) modu, gün 5+ (%25 economist kararı). Bu modda müşteri
+            // _assignedProductIndex KULLANMAZ, kendi ayrı alanını kullanır (bkz. Enums region).
+            if (manager != null && manager.ShouldAssignBoxRequestMode())
+            {
+                _interactionMode = InteractionMode.BoxRequest;
+                _requestedReturnBoxType = manager.PickRandomReturnBoxType();
+                _networkInteractionMode.Value = (int)_interactionMode;
+                _networkRequestedReturnBoxType.Value = (int)_requestedReturnBoxType;
+
+                Debug.Log($"{LOG_PREFIX} Spawned in BoxRequest (iade) mode, requested color: {_requestedReturnBoxType}");
+            }
+            else if (manager != null && HasValidProductPrefabs())
             {
                 _assignedProductIndex = manager.GetRandomProductIndexExcludingRecent(productPrefabs);
                 _networkAssignedProductIndex.Value = _assignedProductIndex;
@@ -435,6 +476,8 @@ namespace NewCss
             _networkAnimatorSpeed.OnValueChanged += HandleAnimatorSpeedChanged;
             _networkState.OnValueChanged += HandleStateChanged;
             _networkAssignedProductIndex.OnValueChanged += HandleAssignedProductIndexChanged;
+            _networkInteractionMode.OnValueChanged += HandleInteractionModeChanged;
+            _networkRequestedReturnBoxType.OnValueChanged += HandleRequestedReturnBoxTypeChanged;
         }
 
         private void UnsubscribeFromNetworkEvents()
@@ -446,6 +489,8 @@ namespace NewCss
             _networkAnimatorSpeed.OnValueChanged -= HandleAnimatorSpeedChanged;
             _networkState.OnValueChanged -= HandleStateChanged;
             _networkAssignedProductIndex.OnValueChanged -= HandleAssignedProductIndexChanged;
+            _networkInteractionMode.OnValueChanged -= HandleInteractionModeChanged;
+            _networkRequestedReturnBoxType.OnValueChanged -= HandleRequestedReturnBoxTypeChanged;
         }
 
         #endregion
@@ -853,8 +898,93 @@ namespace NewCss
             _waitTimeStarted = false;
             _networkWaitTimeStarted.Value = false;
 
-            // Ürün yerleştir (Coroutine ile)
-            StartCoroutine(PlaceProductCoroutine());
+            if (_interactionMode == InteractionMode.BoxRequest)
+            {
+                // Faz A — iade: ürün yerleştirme yok, oyuncunun elindeki kutu doğrudan kontrol edilir.
+                ProcessReturnBoxInteraction();
+            }
+            else
+            {
+                // Ürün yerleştir (Coroutine ile)
+                StartCoroutine(PlaceProductCoroutine());
+            }
+        }
+
+        /// <summary>
+        /// Faz A — iade (BoxRequest) etkileşiminin sonucu: etkileşimi başlatan oyuncu şu anda
+        /// istenen renkte bir kutu taşıyorsa başarı (kutu elinden alınır, prestij ödülü — mevcut
+        /// customerServedPrestigeBonus, HandleSuccessfulInteraction ile birebir aynı), aksi halde
+        /// hata (mevcut wrongProductPrestigePenalty). Para YOK (economist kararı — tek para kaynağı tır).
+        /// Ürün yerleştirme/pickup coroutine'i yok: teslimat anında tamamlanır, müşteri direkt çıkışa geçer.
+        /// </summary>
+        private void ProcessReturnBoxInteraction()
+        {
+            bool success = TryConsumeMatchingReturnBox();
+
+            if (success)
+            {
+                HandleSuccessfulInteraction();
+            }
+            else
+            {
+                HandleFailedInteraction();
+            }
+
+            UnlockInteractingPlayer();
+            TransitionToExit();
+        }
+
+        /// <summary>
+        /// Etkileşimi başlatan oyuncunun elindeki item'ın rengi istenen BoxInfo.BoxType ile eşleşiyor mu
+        /// kontrol eder; eşleşiyorsa oyuncunun elinden kutuyu alır (SetInventoryStateServer) ve true döner.
+        /// </summary>
+        private bool TryConsumeMatchingReturnBox()
+        {
+            var playerInventory = GetInteractingPlayerInventory();
+            if (playerInventory == null || !playerInventory.HasItem)
+            {
+                return false;
+            }
+
+            var itemData = playerInventory.CurrentItemData;
+            if (itemData == null || itemData.visualPrefab == null)
+            {
+                return false;
+            }
+
+            var boxInfo = itemData.visualPrefab.GetComponent<BoxInfo>();
+            if (boxInfo == null || boxInfo.boxType != _requestedReturnBoxType)
+            {
+                return false;
+            }
+
+            playerInventory.SetInventoryStateServer(false, -1);
+            return true;
+        }
+
+        /// <summary>
+        /// _interactingPlayerId'ye karşılık gelen PlayerInventory'yi bulur (ValidatePlayerInRange'in
+        /// kullandığı NetworkManager.ConnectedClients deseniyle aynı, bkz. Table.cs/ShelfState.cs).
+        /// </summary>
+        private PlayerInventory GetInteractingPlayerInventory()
+        {
+            if (_interactingPlayerId == ulong.MaxValue) return null;
+            if (NetworkManager.Singleton == null) return null;
+
+            if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(_interactingPlayerId, out var client))
+            {
+                return null;
+            }
+
+            if (client.PlayerObject == null) return null;
+
+            var inventory = client.PlayerObject.GetComponent<PlayerInventory>();
+            if (inventory == null)
+            {
+                inventory = client.PlayerObject.GetComponentInChildren<PlayerInventory>();
+            }
+
+            return inventory;
         }
 
         private IEnumerator PlaceProductCoroutine()
@@ -1453,6 +1583,18 @@ namespace NewCss
 
             _assignedProductIndex = newValue;
             Debug.Log($"{LOG_PREFIX} [Client] Received product index: {_assignedProductIndex}");
+        }
+
+        private void HandleInteractionModeChanged(int previousValue, int newValue)
+        {
+            if (IsServer) return;
+            _interactionMode = (InteractionMode)newValue;
+        }
+
+        private void HandleRequestedReturnBoxTypeChanged(int previousValue, int newValue)
+        {
+            if (IsServer) return;
+            _requestedReturnBoxType = (BoxInfo.BoxType)newValue;
         }
 
         #endregion
