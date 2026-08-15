@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Rendering;
 using Random = UnityEngine.Random;
 
 namespace NewCss
@@ -26,6 +27,23 @@ namespace NewCss
         private const float PICKUP_CHECK_INTERVAL = 0.1f;
         private const float PRODUCT_PLACEMENT_DELAY = 0.1f;
         private const float PRODUCT_POSITION_TOLERANCE = 0.5f; // Distance threshold for checking if product is still on table
+
+        // İade (BoxRequest) görsel göstergesi — Kural 1 (havuz belgesi): özellik görsel olarak
+        // apaçık olmalı. waitCanvas'ın world-space anchoredPosition'ı (Customer.prefab, Canvas
+        // RectTransform) y≈2.54; gösterge onun biraz üstünde durur ki wait bar ile çakışmasın.
+        private const float RETURN_INDICATOR_HEIGHT = 2.9f;
+        private const float RETURN_INDICATOR_SCALE = 0.3f;
+        private const float RETURN_INDICATOR_OFFSET_X = 0.28f;
+
+        // Kutu paletiyle birebir aynı (NetworkWorldItem.cs GetColorForBoxType, BoxDestructionEffectManager.cs
+        // redBoxColor/yellowBoxColor/blueBoxColor, Truck.cs TruckBlue) — ACES tonemapping altında
+        // mavi→mor kaymasını önlemek için Blue kasıtlı olarak doygun DEĞİL (bkz. Truck.cs yorum).
+        private static readonly Color ReturnIndicatorRedColor = new Color(0.8f, 0.2f, 0.2f);
+        private static readonly Color ReturnIndicatorYellowColor = new Color(0.9f, 0.8f, 0.2f);
+        private static readonly Color ReturnIndicatorBlueColor = new Color(0.2f, 0.4f, 0.8f);
+
+        private static readonly int ReturnIndicatorBaseColorId = Shader.PropertyToID("_BaseColor");
+        private static readonly int ReturnIndicatorColorId = Shader.PropertyToID("_Color");
 
         [Header("=== OUTLINE SETTINGS ===")]
         [SerializeField, Tooltip("Outline eklenecek hedef obje (boş bırakılırsa bu obje kullanılır)")]
@@ -202,6 +220,16 @@ namespace NewCss
         private GameObject _placedProduct2;
         private NetworkObject _placedProductNetworkObject2;
         private int _placedProductSlotIndex2 = -1;
+
+        // İade görsel göstergesi (Kural 1 — mekanik yazılı kural değil görsel olmalı). Yalnız
+        // yerel/client-side: networked state (_interactionMode vb.) zaten senkron, bu sadece onu
+        // okuyup küçük renkli birer küre gösteriyor. Dedicated server'da (IsClient false) hiç
+        // oluşturulmaz — gereksiz GameObject/mesh yok.
+        private GameObject _returnIndicatorRoot;
+        private GameObject _returnIndicatorSphere1;
+        private GameObject _returnIndicatorSphere2;
+        private Renderer _returnIndicatorRenderer1;
+        private Renderer _returnIndicatorRenderer2;
 
         #endregion
 
@@ -417,6 +445,8 @@ namespace NewCss
             InitializeInteractionCollider();
             InitializeWaitBar();
             InitializeCanvas();
+            InitializeReturnIndicator();
+            UpdateReturnIndicatorVisual();
 
             if (isPrefabMode)
             {
@@ -518,6 +548,10 @@ namespace NewCss
                     (_isDualItemMode ? $" + {_assignedProductIndex2} (dual item, gün 9+)" : "") +
                     $" ({productPrefabs[_assignedProductIndex].name})");
             }
+
+            // Host'ta (IsServer && IsClient) bu değerler client-side OnValueChanged handler'ları
+            // ÜZERİNDEN değil doğrudan burada set edildiği için gösterge de burada tetiklenmeli.
+            UpdateReturnIndicatorVisual();
         }
 
         private bool HasValidProductPrefabs()
@@ -663,6 +697,136 @@ namespace NewCss
                  return NetworkManager.Singleton.LocalClient.PlayerObject.transform;
             }
             return null;
+        }
+
+        #endregion
+
+        #region Return Indicator (İade Görsel Ayrımı — Kural 1)
+
+        /// <summary>
+        /// İade (BoxRequest) modundaki müşteriyi ProductSupply modundakinden görsel olarak ayırmak
+        /// için başının üstüne 1-2 küçük renkli küre oluşturur. Sadece client tarafında (IsClient) —
+        /// networked state (IsBoxRequestMode/RequestedReturnBoxType) zaten senkron, bu yalnızca o
+        /// veriyi okuyup gösteriyor. Idempotent: birden fazla çağrılırsa (OnNetworkSpawn + Start
+        /// ikisi de InitializeComponents'i tetikliyor) tekrar oluşturmaz.
+        /// </summary>
+        private void InitializeReturnIndicator()
+        {
+            if (!IsClient || _returnIndicatorRoot != null) return;
+
+            _returnIndicatorRoot = new GameObject("ReturnIndicator");
+            _returnIndicatorRoot.transform.SetParent(transform, false);
+            _returnIndicatorRoot.transform.localPosition = new Vector3(0f, RETURN_INDICATOR_HEIGHT, 0f);
+
+            _returnIndicatorSphere1 = CreateReturnIndicatorSphere(
+                "ReturnIndicatorColor1", new Vector3(-RETURN_INDICATOR_OFFSET_X, 0f, 0f), out _returnIndicatorRenderer1);
+            _returnIndicatorSphere2 = CreateReturnIndicatorSphere(
+                "ReturnIndicatorColor2", new Vector3(RETURN_INDICATOR_OFFSET_X, 0f, 0f), out _returnIndicatorRenderer2);
+
+            // İlk gerçek durum UpdateReturnIndicatorVisual() ile netleşene kadar gizli kalsın.
+            _returnIndicatorRoot.SetActive(false);
+        }
+
+        /// <summary>
+        /// Basit, procedural bir gösterge küresi oluşturur (yeni sanat asseti/sprite gerekmiyor —
+        /// bkz. görev talimatı). Collider kaldırılır (fizik/etkileşimle karışmasın), gölge/probe
+        /// kapatılır (performans — birçok müşteri aynı anda sahnede olabilir).
+        /// </summary>
+        private GameObject CreateReturnIndicatorSphere(string name, Vector3 localOffset, out Renderer renderer)
+        {
+            var sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            sphere.name = name;
+            sphere.transform.SetParent(_returnIndicatorRoot.transform, false);
+            sphere.transform.localPosition = localOffset;
+            sphere.transform.localScale = Vector3.one * RETURN_INDICATOR_SCALE;
+
+            var collider = sphere.GetComponent<Collider>();
+            if (collider != null)
+            {
+                Destroy(collider);
+            }
+
+            renderer = sphere.GetComponent<Renderer>();
+            if (renderer != null)
+            {
+                renderer.shadowCastingMode = ShadowCastingMode.Off;
+                renderer.receiveShadows = false;
+                renderer.lightProbeUsage = LightProbeUsage.Off;
+                renderer.reflectionProbeUsage = ReflectionProbeUsage.Off;
+
+                // URP unlit tercih edilir (basit renkli rozet, ışıklandırma gereksiz); bulunamazsa
+                // sırasıyla Lit, sonra her zaman var olan Sprites/Default'a düşer.
+                var shader = Shader.Find("Universal Render Pipeline/Unlit")
+                    ?? Shader.Find("Universal Render Pipeline/Lit")
+                    ?? Shader.Find("Sprites/Default");
+
+                if (shader != null)
+                {
+                    renderer.material = new Material(shader);
+                }
+            }
+
+            return sphere;
+        }
+
+        /// <summary>
+        /// Networked state'i (_interactionMode, _requestedReturnBoxType, _isDualItemMode,
+        /// _requestedReturnBoxType2, _firstReturnColorFulfilled — hepsi zaten senkron) okuyup
+        /// göstergeyi buna göre günceller. ProductSupply modunda gösterge tamamen gizli kalır
+        /// (Kural 1'in ayrımı budur). Dual-item'de ilk renk teslim edilince o küre gizlenir,
+        /// yalnız bekleyen ikinci renk kalır.
+        /// </summary>
+        private void UpdateReturnIndicatorVisual()
+        {
+            if (_returnIndicatorRoot == null) return;
+
+            bool show = IsBoxRequestMode;
+            if (_returnIndicatorRoot.activeSelf != show)
+            {
+                _returnIndicatorRoot.SetActive(show);
+            }
+
+            if (!show) return;
+
+            bool showFirst = !(_isDualItemMode && _firstReturnColorFulfilled);
+            if (_returnIndicatorSphere1 != null)
+            {
+                _returnIndicatorSphere1.SetActive(showFirst);
+            }
+            if (showFirst)
+            {
+                SetReturnIndicatorColor(_returnIndicatorRenderer1, GetReturnIndicatorColor(_requestedReturnBoxType));
+            }
+
+            if (_returnIndicatorSphere2 != null)
+            {
+                _returnIndicatorSphere2.SetActive(_isDualItemMode);
+            }
+            if (_isDualItemMode)
+            {
+                SetReturnIndicatorColor(_returnIndicatorRenderer2, GetReturnIndicatorColor(_requestedReturnBoxType2));
+            }
+        }
+
+        private static void SetReturnIndicatorColor(Renderer renderer, Color color)
+        {
+            if (renderer == null || renderer.material == null) return;
+
+            var mat = renderer.material; // CreateReturnIndicatorSphere zaten örnek (instance) material atadı
+            if (mat.HasProperty(ReturnIndicatorBaseColorId)) mat.SetColor(ReturnIndicatorBaseColorId, color);
+            if (mat.HasProperty(ReturnIndicatorColorId)) mat.SetColor(ReturnIndicatorColorId, color);
+            mat.color = color;
+        }
+
+        private static Color GetReturnIndicatorColor(BoxInfo.BoxType boxType)
+        {
+            return boxType switch
+            {
+                BoxInfo.BoxType.Red => ReturnIndicatorRedColor,
+                BoxInfo.BoxType.Yellow => ReturnIndicatorYellowColor,
+                BoxInfo.BoxType.Blue => ReturnIndicatorBlueColor,
+                _ => Color.white
+            };
         }
 
         #endregion
@@ -1015,6 +1179,8 @@ namespace NewCss
                 // İlk renk teslim edildi, ikinci renk bekleniyor — interaction'ı bitirme.
                 _firstReturnColorFulfilled = true;
                 _networkFirstReturnColorFulfilled.Value = true;
+                // Host'ta OnValueChanged client-only handler'dan geçmediği için burada da tetikle.
+                UpdateReturnIndicatorVisual();
 
                 UnlockInteractingPlayer();
                 RearmForSecondReturnInteraction();
@@ -1665,6 +1831,18 @@ namespace NewCss
             {
                 waitCanvas.gameObject.SetActive(!enabled);
             }
+
+            if (_returnIndicatorRoot != null)
+            {
+                if (enabled)
+                {
+                    _returnIndicatorRoot.SetActive(false);
+                }
+                else
+                {
+                    UpdateReturnIndicatorVisual();
+                }
+            }
         }
 
         #endregion
@@ -1735,18 +1913,21 @@ namespace NewCss
         {
             if (IsServer) return;
             _interactionMode = (InteractionMode)newValue;
+            UpdateReturnIndicatorVisual();
         }
 
         private void HandleRequestedReturnBoxTypeChanged(int previousValue, int newValue)
         {
             if (IsServer) return;
             _requestedReturnBoxType = (BoxInfo.BoxType)newValue;
+            UpdateReturnIndicatorVisual();
         }
 
         private void HandleIsDualItemModeChanged(bool previousValue, bool newValue)
         {
             if (IsServer) return;
             _isDualItemMode = newValue;
+            UpdateReturnIndicatorVisual();
         }
 
         private void HandleAssignedProductIndex2Changed(int previousValue, int newValue)
@@ -1759,12 +1940,14 @@ namespace NewCss
         {
             if (IsServer) return;
             _requestedReturnBoxType2 = (BoxInfo.BoxType)newValue;
+            UpdateReturnIndicatorVisual();
         }
 
         private void HandleFirstReturnColorFulfilledChanged(bool previousValue, bool newValue)
         {
             if (IsServer) return;
             _firstReturnColorFulfilled = newValue;
+            UpdateReturnIndicatorVisual();
         }
 
         #endregion
