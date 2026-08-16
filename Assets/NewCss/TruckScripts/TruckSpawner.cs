@@ -87,6 +87,10 @@ namespace NewCss
         private readonly List<BoxInfo.BoxType> _truckColorBag = new();
         private const int TRUCK_COLOR_QUEUE_SIZE = 5;
 
+        // Karışık tır (gün 13+) miktar dağıtımı için — UnityEngine.Random yerine System.Random
+        // kullanılıyor çünkü TruckColorMixing.SplitAmount saf/test edilebilir kalması için bunu bekliyor.
+        private readonly System.Random _mixedTruckRng = new();
+
         private GameEconomySettings economySettings;
 
         #endregion
@@ -480,7 +484,7 @@ namespace NewCss
             Truck truckScript = truckObj.GetComponent<Truck>();
 
             // Pre-initialize
-            truckScript?.PreInitialize(truckData.boxType, truckData.cargoAmount);
+            truckScript?.PreInitialize(truckData.redCount, truckData.yellowCount, truckData.blueCount);
             if (truckScript != null)
             {
                 truckScript.hangarIndex = hangarIndex;
@@ -501,12 +505,25 @@ namespace NewCss
             // Post-spawn initialization
             if (truckScript != null)
             {
-                StartCoroutine(InitializeTruckAfterSpawnCoroutine(truckScript, truckData.boxType, truckData.cargoAmount));
+                StartCoroutine(InitializeTruckAfterSpawnCoroutine(
+                    truckScript, truckData.redCount, truckData.yellowCount, truckData.blueCount));
             }
         }
 
-        private (BoxInfo.BoxType boxType, int cargoAmount) GenerateRandomTruckData()
+        /// <summary>
+        /// Gün 13 (<see cref="PostRentFeatureUnlocks.MIXED_TRUCK_UNLOCK_DAY"/>) öncesi tek renk üretir
+        /// (mevcut torba/queue davranışı AYNEN korunur — regresyon yok). Gün 13+ karışık renk üretir.
+        /// </summary>
+        private (int redCount, int yellowCount, int blueCount) GenerateRandomTruckData()
         {
+            int cargoAmount = Random.Range(GetCargoAmountMin(), GetCargoAmountMaxExclusive());
+            int currentDay = DayCycleManager.Instance != null ? DayCycleManager.Instance.currentDay : 0;
+
+            if (currentDay >= PostRentFeatureUnlocks.MIXED_TRUCK_UNLOCK_DAY)
+            {
+                return GenerateMixedTruckData(cargoAmount);
+            }
+
             BoxInfo.BoxType boxType;
 
             // Use planned color from queue if available
@@ -522,8 +539,62 @@ namespace NewCss
             // Refill the queue if needed
             RefillPlannedTruckColors();
 
-            int cargoAmount = Random.Range(GetCargoAmountMin(), GetCargoAmountMaxExclusive());
-            return (boxType, cargoAmount);
+            return ToCounts(boxType, cargoAmount);
+        }
+
+        /// <summary>
+        /// Toplam kutu adedini 2 (bazen 3) renge dağıtır, her rengin en az 1 kutusu olur. Hangi
+        /// renklerin seçileceği mevcut dengeli torbadan (<see cref="DrawNextBagColor"/>) çekilir —
+        /// torba mantığı korunuyor, sadece art arda birkaç çekim yapılıyor.
+        /// </summary>
+        private (int redCount, int yellowCount, int blueCount) GenerateMixedTruckData(int totalAmount)
+        {
+            if (totalAmount < 2)
+            {
+                // Karışım için yetersiz miktar — tek renge düş (mevcut tek-renk davranışı).
+                return ToCounts(DrawNextBagColor(), totalAmount);
+            }
+
+            bool canUseThreeColors = totalAmount >= 3;
+            int colorSlotCount = canUseThreeColors && Random.value < 0.5f ? 3 : 2;
+
+            var chosenColors = new List<BoxInfo.BoxType>();
+            int safetyGuard = 0;
+            while (chosenColors.Count < colorSlotCount && safetyGuard < 50)
+            {
+                safetyGuard++;
+                BoxInfo.BoxType color = DrawNextBagColor();
+                if (!chosenColors.Contains(color))
+                {
+                    chosenColors.Add(color);
+                }
+            }
+
+            int[] counts = TruckColorMixing.SplitAmount(totalAmount, chosenColors.Count, _mixedTruckRng);
+
+            int red = 0, yellow = 0, blue = 0;
+            for (int i = 0; i < chosenColors.Count; i++)
+            {
+                switch (chosenColors[i])
+                {
+                    case BoxInfo.BoxType.Red: red += counts[i]; break;
+                    case BoxInfo.BoxType.Yellow: yellow += counts[i]; break;
+                    case BoxInfo.BoxType.Blue: blue += counts[i]; break;
+                }
+            }
+
+            return (red, yellow, blue);
+        }
+
+        private static (int redCount, int yellowCount, int blueCount) ToCounts(BoxInfo.BoxType boxType, int amount)
+        {
+            return boxType switch
+            {
+                BoxInfo.BoxType.Red => (amount, 0, 0),
+                BoxInfo.BoxType.Yellow => (0, amount, 0),
+                BoxInfo.BoxType.Blue => (0, 0, amount),
+                _ => (amount, 0, 0)
+            };
         }
 
         /// <summary>
@@ -593,10 +664,10 @@ namespace NewCss
             }
         }
 
-        private IEnumerator InitializeTruckAfterSpawnCoroutine(Truck truck, BoxInfo.BoxType reqType, int reqAmount)
+        private IEnumerator InitializeTruckAfterSpawnCoroutine(Truck truck, int redCount, int yellowCount, int blueCount)
         {
             yield return new WaitForEndOfFrame();
-            truck.InitializeServerRpc(reqType, reqAmount);
+            truck.InitializeServerRpc(redCount, yellowCount, blueCount);
         }
 
         #endregion

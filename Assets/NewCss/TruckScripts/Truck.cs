@@ -23,11 +23,28 @@ namespace NewCss
         #region Serialized Fields - Request Settings
 
         [Header("=== TRUCK REQUEST SETTINGS ===")]
+        /// <summary>
+        /// Baskın renk (en çok istenen renk — bkz. <see cref="TruckColorMixing.GetDominantColor"/>).
+        /// Tek renkli tırlarda talep edilen tek renkle birebir aynıdır (regresyon yok). Geriye dönük
+        /// uyumluluk için tutuluyor: <c>TruckLogManager</c> ve <c>CustomerManager</c> bu alanı okuyor.
+        /// </summary>
         [SerializeField]
         public BoxInfo.BoxType requestedBoxType;
 
+        /// <summary>Toplam istenen kutu adedi (requiredRed+Yellow+Blue toplamı, spawn anında sabit).</summary>
         [SerializeField]
         public int requiredCargo;
+
+        [Header("=== MIXED TRUCK REQUEST (gün 13+) ===")]
+        /// <summary>
+        /// Talep edilen kırmızı/sarı/mavi kutu adedi (spawn anındaki ORİJİNAL değer — teslimat
+        /// ilerledikçe DEĞİŞMEZ, yalnızca renk karışımı ve UI için kullanılır). Gün 13 öncesi
+        /// spawn edilen tırlarda yalnızca istenen rengin sayacı doludur, diğer ikisi 0'dır —
+        /// tek-renk davranışı bu 3-sayaçlı modelin özel bir hâlidir, ayrı kod yolu YOKTUR.
+        /// </summary>
+        [SerializeField] public int requiredRedCount;
+        [SerializeField] public int requiredYellowCount;
+        [SerializeField] public int requiredBlueCount;
 
         #endregion
 
@@ -121,7 +138,19 @@ namespace NewCss
         #region Network Variables
 
         private readonly NetworkVariable<int> _deliveredCount = new(0);
-        private readonly NetworkVariable<BoxInfo.BoxType> _networkRequestedBoxType = new(BoxInfo.BoxType.Red);
+
+        // Kalan (teslimatla azalan) renk sayaçları — yalnızca server ProcessDelivery kabul/red
+        // kararı için okur/yazar. requiredCargo'nun sağlaması: sum(remaining) == requiredCargo - delivered.
+        private readonly NetworkVariable<int> _networkRemainingRedCount = new(0);
+        private readonly NetworkVariable<int> _networkRemainingYellowCount = new(0);
+        private readonly NetworkVariable<int> _networkRemainingBlueCount = new(0);
+
+        // Orijinal (spawn anındaki, hiç değişmeyen) renk sayaçları — geç katılan client'lar dahil
+        // herkesin renk karışımını doğru hesaplayabilmesi için ayrıca network'te tutulur.
+        private readonly NetworkVariable<int> _networkOriginalRedCount = new(0);
+        private readonly NetworkVariable<int> _networkOriginalYellowCount = new(0);
+        private readonly NetworkVariable<int> _networkOriginalBlueCount = new(0);
+
         private readonly NetworkVariable<int> _networkRequiredCargo = new(1);
         private readonly NetworkVariable<bool> _isComplete = new(false);
         private readonly NetworkVariable<bool> _isEntering = new(true);
@@ -184,12 +213,16 @@ namespace NewCss
         #region Pre-Initialization
 
         /// <summary>
-        /// Network spawn öncesi başlatma
+        /// Network spawn öncesi başlatma. Gün 13 öncesi tek-renk tırlar bu imzayı, sadece istenen
+        /// rengin sayacını doldurup diğer ikisini 0 bırakarak kullanır (tek özel hâl, ayrı kod yolu yok).
         /// </summary>
-        public void PreInitialize(BoxInfo.BoxType reqType, int reqAmount)
+        public void PreInitialize(int redCount, int yellowCount, int blueCount)
         {
-            requestedBoxType = reqType;
-            requiredCargo = reqAmount;
+            requiredRedCount = redCount;
+            requiredYellowCount = yellowCount;
+            requiredBlueCount = blueCount;
+            requiredCargo = redCount + yellowCount + blueCount;
+            requestedBoxType = TruckColorMixing.GetDominantColor(redCount, yellowCount, blueCount);
             _hasPreInitialized = true;
         }
 
@@ -255,7 +288,6 @@ namespace NewCss
         private void SubscribeToNetworkEvents()
         {
             _deliveredCount.OnValueChanged += HandleDeliveredCountChanged;
-            _networkRequestedBoxType.OnValueChanged += HandleRequestedBoxTypeChanged;
             _networkRequiredCargo.OnValueChanged += HandleRequiredCargoChanged;
             _isComplete.OnValueChanged += HandleIsCompleteChanged;
             _isEntering.OnValueChanged += HandleIsEnteringChanged;
@@ -267,7 +299,6 @@ namespace NewCss
         private void UnsubscribeFromNetworkEvents()
         {
             _deliveredCount.OnValueChanged -= HandleDeliveredCountChanged;
-            _networkRequestedBoxType.OnValueChanged -= HandleRequestedBoxTypeChanged;
             _networkRequiredCargo.OnValueChanged -= HandleRequiredCargoChanged;
             _isComplete.OnValueChanged -= HandleIsCompleteChanged;
             _isEntering.OnValueChanged -= HandleIsEnteringChanged;
@@ -282,13 +313,6 @@ namespace NewCss
 
         private void HandleDeliveredCountChanged(int previousValue, int newValue)
         {
-            UpdateUIText();
-        }
-
-        private void HandleRequestedBoxTypeChanged(BoxInfo.BoxType previousValue, BoxInfo.BoxType newValue)
-        {
-            requestedBoxType = newValue;
-            SetTruckColors();
             UpdateUIText();
         }
 
@@ -425,8 +449,14 @@ namespace NewCss
         {
             if (!_hasPreInitialized)
             {
-                requestedBoxType = _networkRequestedBoxType.Value;
+                // Renk karışımı için ORİJİNAL (spawn anındaki) sayaçlar kullanılır — geç katılan
+                // client'ta bile karışım kaymaz, çünkü bu değerler InitializeServerRpc'den sonra
+                // asla değişmez (kalan/remaining sayaçlardan ayrı tutuluyor).
+                requiredRedCount = _networkOriginalRedCount.Value;
+                requiredYellowCount = _networkOriginalYellowCount.Value;
+                requiredBlueCount = _networkOriginalBlueCount.Value;
                 requiredCargo = _networkRequiredCargo.Value;
+                requestedBoxType = TruckColorMixing.GetDominantColor(requiredRedCount, requiredYellowCount, requiredBlueCount);
             }
             UpdateUIText();
             SetTruckColors();
@@ -469,24 +499,34 @@ namespace NewCss
         #region Server RPCs
 
         [ServerRpc]
-        public void InitializeServerRpc(BoxInfo.BoxType reqType, int reqAmount)
+        public void InitializeServerRpc(int redCount, int yellowCount, int blueCount)
         {
-            _networkRequestedBoxType.Value = reqType;
-            _networkRequiredCargo.Value = reqAmount;
+            _networkRemainingRedCount.Value = redCount;
+            _networkRemainingYellowCount.Value = yellowCount;
+            _networkRemainingBlueCount.Value = blueCount;
+            _networkOriginalRedCount.Value = redCount;
+            _networkOriginalYellowCount.Value = yellowCount;
+            _networkOriginalBlueCount.Value = blueCount;
+            _networkRequiredCargo.Value = redCount + yellowCount + blueCount;
             _deliveredCount.Value = 0;
             _isComplete.Value = false;
             _isEntering.Value = true;
 
-            requestedBoxType = reqType;
-            requiredCargo = reqAmount;
+            requiredRedCount = redCount;
+            requiredYellowCount = yellowCount;
+            requiredBlueCount = blueCount;
+            requiredCargo = redCount + yellowCount + blueCount;
+            requestedBoxType = TruckColorMixing.GetDominantColor(redCount, yellowCount, blueCount);
 
-            UpdateVisualsClientRpc(reqType, reqAmount);
+            UpdateVisualsClientRpc(redCount, yellowCount, blueCount);
         }
 
         /// <summary>
         /// Dönüş değeri: teslimat işlendiyse (başarılı ya da yanlış-renk cezası uygulandıysa) true,
         /// sessizce reddedildiyse (tamamlanmış / giriş yapıyor) false.
         /// Çağıran, kutuyu despawn edip etmeyeceğine bu değere göre karar verir.
+        /// Gün 13 öncesi tek-renk tırlarda (diğer iki sayaç 0) bu, eski tam-eşitlik kontrolüyle
+        /// birebir aynı sonucu üretir — ayrı kod yolu yok, aynı 3-sayaçlı model.
         /// </summary>
         public bool ProcessDelivery(BoxInfo.BoxType boxType, bool isFull)
         {
@@ -500,18 +540,29 @@ namespace NewCss
                 return false;
             }
 
-            if (isFull && boxType == _networkRequestedBoxType.Value)
+            if (!isFull)
             {
+                return false;
+            }
+
+            int remainingRed = _networkRemainingRedCount.Value;
+            int remainingYellow = _networkRemainingYellowCount.Value;
+            int remainingBlue = _networkRemainingBlueCount.Value;
+
+            bool accepted = TruckColorMixing.TryConsumeDelivery(
+                ref remainingRed, ref remainingYellow, ref remainingBlue, boxType);
+
+            if (accepted)
+            {
+                _networkRemainingRedCount.Value = remainingRed;
+                _networkRemainingYellowCount.Value = remainingYellow;
+                _networkRemainingBlueCount.Value = remainingBlue;
                 ProcessSuccessfulDelivery();
                 return true;
             }
-            else if (isFull)
-            {
-                ProcessWrongDelivery();
-                return true;
-            }
 
-            return false;
+            ProcessWrongDelivery();
+            return true;
         }
 
         #endregion
@@ -519,10 +570,13 @@ namespace NewCss
         #region Client RPCs
 
         [ClientRpc]
-        private void UpdateVisualsClientRpc(BoxInfo.BoxType reqType, int reqAmount)
+        private void UpdateVisualsClientRpc(int redCount, int yellowCount, int blueCount)
         {
-            requestedBoxType = reqType;
-            requiredCargo = reqAmount;
+            requiredRedCount = redCount;
+            requiredYellowCount = yellowCount;
+            requiredBlueCount = blueCount;
+            requiredCargo = redCount + yellowCount + blueCount;
+            requestedBoxType = TruckColorMixing.GetDominantColor(redCount, yellowCount, blueCount);
 
             UpdateUIText();
             SetTruckColors();
@@ -585,7 +639,8 @@ namespace NewCss
                 // İkincisi tanımlıydı ama hiçbir yerden çağrılmıyordu (ölü tetikleyici).
                 // Bu blok server-only (_isComplete.Value yazımı) → event tam bir kez atılır.
                 Quest.QuestTracker.NotifyTruckCompleted();
-                Quest.QuestTracker.NotifySpecificColorTruckCompleted(_networkRequestedBoxType.Value);
+                // Karışık tırlarda (gün 13+) baskın renk kullanılır — quest sistemi hâlâ tek renk bekliyor.
+                Quest.QuestTracker.NotifySpecificColorTruckCompleted(requestedBoxType);
             }
         }
 
@@ -810,7 +865,7 @@ namespace NewCss
 
         private void SetTruckColors()
         {
-            Color targetColor = GetColorForBoxType(requestedBoxType);
+            Color targetColor = GetRequestedColorMix();
 
             SetObjectColor(truckBody, targetColor);
             SetObjectColor(leftDoor, targetColor);
@@ -828,15 +883,17 @@ namespace NewCss
         /// </summary>
         private static readonly Color TruckBlue = new Color(0.2f, 0.4f, 0.8f);
 
-        private static Color GetColorForBoxType(BoxInfo.BoxType boxType)
+        /// <summary>
+        /// İstenen renklerin ağırlıklı RGB karışımı. KARIŞIM ORİJİNAL TAM TALEBE (requiredRedCount vb.,
+        /// spawn anında sabit) göre hesaplanır — teslimat ilerledikçe (kalan sayaçlar azaldıkça) renk
+        /// KAYMAZ (plan kararı, kafa karışıklığını önlemek için). Gün 13 öncesi tek-renk tırlarda
+        /// (diğer iki sayaç 0) bu, eski tek-renk switch'iyle birebir aynı sonucu üretir.
+        /// </summary>
+        private Color GetRequestedColorMix()
         {
-            return boxType switch
-            {
-                BoxInfo.BoxType.Red => Color.red,
-                BoxInfo.BoxType.Yellow => Color.yellow,
-                BoxInfo.BoxType.Blue => TruckBlue,
-                _ => Color.white
-            };
+            return TruckColorMixing.GetColorMix(
+                requiredRedCount, requiredYellowCount, requiredBlueCount,
+                Color.red, Color.yellow, TruckBlue);
         }
 
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
