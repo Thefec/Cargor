@@ -885,6 +885,23 @@ namespace NewCss
         [ServerRpc(RequireOwnership = false)]
         private void SetBreakRoomReadyServerRpc(bool ready)
         {
+            // N3 server-auth: client'in "herkes break room'da" iddiasina KORU KORUNE guvenme.
+            // Bu RPC server'da calisir; ready=true yalnizca server kendi otoriter presence
+            // verisiyle (BreakRoomManager.IsReady = server-side AreAllPlayersInRoom) + sure-bitti
+            // kosulunu dogrularsa kabul edilir. Aksi halde lag-desync veya hileli client bypass'i
+            // reddedilir (gunu erken atlatamaz).
+            if (ready)
+            {
+                var breakRoom = BreakRoomManager.Instance;
+                if (breakRoom == null || !breakRoom.IsReady || !IsTimeUp)
+                {
+                    Debug.LogWarning($"{LOG_PREFIX} SetBreakRoomReadyServerRpc reddedildi: " +
+                                     $"server presence dogrulamasi basarisiz " +
+                                     $"(BreakRoom={(breakRoom != null ? breakRoom.IsReady.ToString() : "null")}, IsTimeUp={IsTimeUp}).");
+                    return;
+                }
+            }
+
             _networkIsBreakRoomReady.Value = ready;
         }
 
