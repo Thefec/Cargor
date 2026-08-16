@@ -37,6 +37,12 @@ namespace NewCss.Quest
         [SerializeField, Tooltip("Panel animator")]
         private Animator panelAnimator;
 
+        [SerializeField, Tooltip("Kaydırma animasyonu: panel yukarıdan aşağı girer, aşağıdan yukarı çıkar. " +
+                                 "Boşsa ve panelde de yoksa çalışma anında varsayılan değerlerle otomatik eklenir; " +
+                                 "süre/mesafe ayarlamak istersen UISlideAnimation bileşenini panele elle ekle. " +
+                                 "Animator atanmışsa o öncelikli olur.")]
+        private UISlideAnimation panelSlide;
+
         [Header("=== QUEST SLOTS ===")]
         [SerializeField, Tooltip("Görev slot'ları")]
         private List<QuestSlotUI> questSlots = new List<QuestSlotUI>();
@@ -113,6 +119,7 @@ namespace NewCss.Quest
         {
             SetupPanel();
             SetupAnimator();
+            SetupSlide();
             SetupCloseButton();
             CacheAnimationDurations();
         }
@@ -136,6 +143,27 @@ namespace NewCss.Quest
             if (questPanel != null)
             {
                 panelAnimator = questPanel.GetComponent<Animator>();
+            }
+        }
+
+        /// <summary>
+        /// Kaydırma animasyonunu hazırlar. Animator atanmışsa hiç karışmaz (eski davranış aynen
+        /// korunur). Aksi halde panelde bileşen var mı diye bakar, yoksa varsayılan değerlerle
+        /// EKLER — böylece sahnede elle bağlama yapılmadan da açılış/kapanış animasyonlu olur.
+        /// Süreleri/mesafeyi ayarlamak isteyen bileşeni panele elle ekleyip Inspector'dan girer;
+        /// o durumda burada eklenmez, mevcut olan kullanılır.
+        /// </summary>
+        private void SetupSlide()
+        {
+            if (panelSlide != null || panelAnimator != null || questPanel == null)
+            {
+                return;
+            }
+
+            if (!questPanel.TryGetComponent(out panelSlide))
+            {
+                panelSlide = questPanel.AddComponent<UISlideAnimation>();
+                LogDebug("UISlideAnimation not found on panel, added with default settings");
             }
         }
 
@@ -240,9 +268,19 @@ namespace NewCss.Quest
         /// </summary>
         public void OpenPanel()
         {
-            if (_isPanelOpen || _isAnimating)
+            if (_isPanelOpen)
             {
-                LogDebug("Panel already open or animating");
+                LogDebug("Panel already open");
+                return;
+            }
+
+            // Kapanış animasyonu sürerken yeniden açma isteği gelirse (oyuncu tetik alanından
+            // çıkıp hemen geri girdi) kaydırma animasyonu İPTAL EDİLİP baştan açılır: aşağıdaki
+            // PlayIn, PlayOut'un bekleyen geri çağırmasını da düşürür, dolayısıyla panel artık
+            // yanlışlıkla SetActive(false) olmaz. Animator yolunda eski davranış (yoksay) korunur.
+            if (_isAnimating && panelSlide == null)
+            {
+                LogDebug("Panel animating, ignoring open request");
                 return;
             }
 
@@ -262,6 +300,16 @@ namespace NewCss.Quest
             if (panelAnimator != null)
             {
                 StartCoroutine(PlayOpenAnimationCoroutine());
+            }
+            else if (panelSlide != null)
+            {
+                // Giriş animasyonu KİLİTLEMEZ (_isAnimating hemen iner): panel zaten görünür ve
+                // kullanılabilir durumda, kayarken kapatmak isteyen oyuncuyu 0.35 sn bekletmenin
+                // anlamı yok. Kapanış PlayOut'u o anki konumdan devraldığı için görsel olarak da
+                // pürüzsüz.
+                panelSlide.PlayIn();
+                _isAnimating = false;
+                LogDebug("Panel opened with slide-in animation");
             }
             else
             {
@@ -291,6 +339,23 @@ namespace NewCss.Quest
             if (panelAnimator != null)
             {
                 StartCoroutine(PlayCloseAnimationCoroutine());
+            }
+            else if (panelSlide != null)
+            {
+                // Panel yukarı kayıp gözden kaybolana KADAR aktif kalmalı; SetActive(false)
+                // animasyon bitince, bu geri çağırmada yapılır. _isAnimating bu süre boyunca
+                // açık kalır ki yarıda yeniden açılmasın.
+                panelSlide.PlayOut(() =>
+                {
+                    _isAnimating = false;
+
+                    if (questPanel != null)
+                    {
+                        questPanel.SetActive(false);
+                    }
+
+                    LogDebug("Slide-out animation completed, panel deactivated");
+                });
             }
             else
             {

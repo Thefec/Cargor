@@ -59,7 +59,26 @@ namespace NewCss
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
-            
+
+            // Rooms/S6 bug fix: sahiplik gate'i yoktu -> uzak oyuncuların stamina bar'ı
+            // (Screen-Space-Overlay canvas) HER istemcinin ekranına da çiziliyordu, aynı odadaki
+            // birden fazla oyuncunun bar'ı üst üste binerdi (bkz. plan §7 H11). Oda görünürlük
+            // sisteminden BAĞIMSIZ, kendi başına bir düzeltme: sahibi olmadığın bir stamina bar'ı
+            // hiç görmemelisin.
+            if (!IsOwner)
+            {
+                var canvas = GetComponent<Canvas>();
+                if (canvas == null)
+                {
+                    canvas = GetComponentInChildren<Canvas>(true);
+                }
+
+                if (canvas != null)
+                {
+                    canvas.enabled = false;
+                }
+            }
+
             // Sadece owner kendi stamina değerlerini güncelleyebilir
             if (IsOwner)
             {
@@ -69,7 +88,7 @@ namespace NewCss
                     UpdateStaminaValues();
                 }
             }
-            
+
             // Subscribe to network variable changes for all clients
             networkCurrentStamina.OnValueChanged += OnStaminaChanged;
             networkMaxStamina.OnValueChanged += OnMaxStaminaChanged;

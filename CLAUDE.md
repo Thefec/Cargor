@@ -53,7 +53,7 @@ Her iş subagent zincirinden geçmez. Delegasyondan önce işi sınıfla:
 - **Oyun**: Cargor — Co-op Kargo / Mağaza Yönetimi Simülasyonu (Eclion Software)
 - **Tür**: Co-op, Management, Indie — "Overcooked meets Warehouse Simulator"
 - **Oyuncu**: 1–4 online co-op (Netcode for GameObjects, server-authoritative)
-- **Unity sürümü**: 6000.4.3f1
+- **Unity sürümü**: 6000.5.6f1 (tek doğru kaynak: `ProjectSettings/ProjectVersion.txt`)
 - **Render pipeline**: URP
 - **Hedef platform**: Windows / Steam
 - **Ana kod klasörü**: `Assets/NewCss/` (BoxScripts, CustomerSripts, Echonomy, GameState, TruckScripts, UIScripts, UpgradeScripts...)

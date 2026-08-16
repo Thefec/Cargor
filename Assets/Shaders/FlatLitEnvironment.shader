@@ -73,6 +73,42 @@ Shader "Custom/FlatLitEnvironment"
             TEXTURE2D(_BaseMap);
             SAMPLER(sampler_BaseMap);
 
+            // Oda karartma (plan §3.3, S5) — UnityPerMaterial CBUFFER'ının DIŞINDA,
+            // SRP Batcher'ı korumak için (RoomViewController.cs Shader.SetGlobalX ile besler).
+            float4 _CargoRoomMin;
+            float4 _CargoRoomMax;
+            float  _CargoRoomFade;
+            float  _CargoRoomDesat;
+            float  _CargoRoomDim;
+
+            // İki kutulu çapraz geçiş (oda değişince ani sıçrama yerine yumuşak aydınlanma).
+            // _CargoRoomBlend tanımsızken 0 -> roomInside = insidePrev; prev de tanımsız/sıfırsa
+            // her şey dışarıda, ama _CargoRoomFade de 0 olduğundan roomK=0 ve shader KİMLİK kalır.
+            float4 _CargoRoomPrevMin;
+            float4 _CargoRoomPrevMax;
+            float  _CargoRoomBlend;   // 0 = tamamen eski kutu, 1 = tamamen yeni kutu
+
+            // Karartma MASKESİ: karartma yalnız oda kutularının (sarı hacimler) İÇİNDE uygulanır —
+            // hiçbir odaya ait olmayan dış mekan (yeşillik, tır avlusu) kendi renginde kalır.
+            // Sayaç 0 (dizi hiç gönderilmemiş) -> insideAny 0 -> shader KİMLİK.
+            // Dizi boyu RoomViewController.MaxMaskBoxes ile AYNI OLMAK ZORUNDA.
+            #define CARGO_ROOM_MAX_BOXES 16
+            float4 _CargoRoomMaskMin[CARGO_ROOM_MAX_BOXES];
+            float4 _CargoRoomMaskMax[CARGO_ROOM_MAX_BOXES];
+            float  _CargoRoomMaskCount;
+
+            // Bu nokta HERHANGİ bir oda kutusunun içinde mi? (1 = evet -> karartılmaya aday)
+            float CargoRoomInsideAny(float3 positionWS) {
+                int count = min((int)_CargoRoomMaskCount, CARGO_ROOM_MAX_BOXES);
+                float insideAny = 0.0;
+                for (int i = 0; i < count; i++) {
+                    insideAny = max(insideAny,
+                        (all(positionWS >= _CargoRoomMaskMin[i].xyz) &&
+                         all(positionWS <= _CargoRoomMaskMax[i].xyz)) ? 1.0 : 0.0);
+                }
+                return insideAny;
+            }
+
             struct Attributes {
                 float4 positionOS : POSITION;
                 float3 normalOS   : NORMAL;
@@ -214,6 +250,16 @@ Shader "Custom/FlatLitEnvironment"
                     // Kenar rengini uygula
                     finalColor = lerp(finalColor, _EdgeColor.rgb, edgeLine * _EdgeColor.a);
                 #endif
+
+                // ── Oda karartma (plan §3.3, S5) — iki kutulu çapraz geçiş ──
+                // k dışta çarpılır: _CargoRoomFade tanımsız/0 (oda sistemi kurulmamış sahne) ise shader kimliktir.
+                float insideNew  = (all(IN.positionWS >= _CargoRoomMin.xyz)     && all(IN.positionWS <= _CargoRoomMax.xyz))     ? 1.0 : 0.0;
+                float insidePrev = (all(IN.positionWS >= _CargoRoomPrevMin.xyz) && all(IN.positionWS <= _CargoRoomPrevMax.xyz)) ? 1.0 : 0.0;
+                float roomInside = lerp(insidePrev, insideNew, _CargoRoomBlend);
+                // insideAny ile çarpılır: oda kutularının dışında kalan dış mekan hiç karartılmaz.
+                float roomK = _CargoRoomFade * (1.0 - roomInside) * CargoRoomInsideAny(IN.positionWS);
+                finalColor = lerp(finalColor, Luminance3(finalColor).xxx, roomK * _CargoRoomDesat);
+                finalColor *= lerp(1.0, _CargoRoomDim, roomK);
 
                 return half4(finalColor, texColor.a * _BaseColor.a);
             }
