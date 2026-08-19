@@ -72,48 +72,58 @@
 // serialize edilmis degeri yukler). Catismalar raporun "AYRISMA" bolumunde.
 const SRC = {
   // ---- Assets/Resources/EkonomiAyarlari.asset (ScriptableObject, CANLI) -----
-  baseRentByPlayerCount:      [500, 900, 1200, 1500], // asset:15 hex f4010000/84030000/b0040000/dc050000
-  rentGrowthMultiplier:       1.15,   // asset:16   (= GameEconomySettings.cs:24)
-  rentIntervalDays:           4,      // asset:18   (= cs:27)
-  gracePaymentPercent:        0.8,    // asset:19   (= cs:30)
-  rentScaledMultiplier:       1.0,    // asset:20   (perk yoksa 1)
-  rewardPerBox:               50,     // asset:21   (= cs:42)
-  penaltyPerBox:              40,     // asset:22   (= cs:45)  YANLIS RENK teslimat
-  hangarStayDurationLegacy:   30,     // asset:23   (= cs:48) YALNIZ dizi bos ise
-  hangarStayByPlayerCount:    [90, 60, 40, 30], // asset:24 hex 5a/3c/28/1e (= cs:51)
-  prestigePerBonus:           4,      // asset:25   (= cs:54)
-  bonusPerTier:               5,      // asset:26   (= cs:57)
-  rewardVolatility:           0,      // asset:27   (perk kapali)
-  boxDropMoneyPenalty:        5,      // asset:29   (= cs:72) FIZIKSEL dusme
-  phoneRingChancePerHour:     0.30,   // asset:30   (= cs:81)
-  phoneRingEventMultiplier:   1.5,    // asset:31   (= cs:84)
-  callMoneyReward:            20,     // asset:33   (= cs:90)
-  callPrestigeReward:         0.2,    // asset:34   (= cs:93)
-  customerLostPrestigePenalty:  -0.6, // asset:35   (= cs:102)
-  customerServedPrestigeBonus:   0.2, // asset:36   (= cs:105)
-  wrongProductPrestigePenalty: -0.04, // asset:37   (= cs:108)
-  boxDropPrestigePenalty:     -0.02,  // asset:38   (= cs:111)
-  wrongDeliveryPrestigePenalty: -0.08,// asset:39   (= cs:114)
-  festivalBonusMin:           100,    // asset:40   (= cs:123) FALLBACK -- artik kullanilmiyor
-  festivalBonusMax:           300,    // asset:41   (= cs:126) FALLBACK
-  // FESTIVAL DAY canli davranis: EventEffectManager.cs:404-408 -> kiranin %10-%20'si.
+  // v3.2 RESYNC (2026-08-19): FAZ4 (2026-07-30) sonrasi asset/scene guncellemeleri
+  // hic yansitilmamisti. Asagidaki 11 deger bu turda duzeltildi (bkz. rapor).
+  baseRentByPlayerCount:      [500, 1000, 1450, 1800], // asset:15 hex f4010000/e8030000/aa050000/08070000 (= GameEconomySettings.cs:21)
+  rentGrowthMultiplier:       1.35,   // asset:16   (= GameEconomySettings.cs:24)
+  rentIntervalDays:           4,      // asset:17   (= cs:27)
+  gracePaymentPercent:        0.8,    // asset:18   (= cs:30)
+  rentScaledMultiplier:       1.0,    // asset:19   (perk yoksa 1, cs:33)
+  rewardPerBox:               50,     // asset:20   (= cs:42)
+  penaltyPerBox:              40,     // asset:21   (= cs:45)  YANLIS RENK teslimat
+  hangarStayDurationLegacy:   30,     // asset:22 "hangarStayDuration" (= cs:48) YALNIZ dizi bos ise
+  hangarStayByPlayerCount:    [120, 60, 40, 30], // asset:23 hex 78/3c/28/1e (= cs:51) v3.2: 1P 90->120
+  prestigePerBonus:           8,      // asset:24   (= cs:54)
+  bonusPerTier:               5,      // asset:25   (= cs:57)
+  rewardVolatility:           0,      // asset:26   (perk kapali, cs:60)
+  boxDropMoneyPenalty:        5,      // asset:30   (= cs:78) FIZIKSEL dusme
+  phoneRingChancePerHour:     0.20,   // asset:31   (= cs:87) LEGACY skaler; canli davranis artik P-bazli, asagidaki MODEL NOTU'na bak
+  phoneRingEventMultiplier:   2.0,    // asset:32   (= cs:93)
+  callMoneyReward:            20,     // asset:34   (= cs:99)
+  callPrestigeReward:         0.4,    // asset:35   (= cs:102)
+  customerLostPrestigePenalty:  -0.4, // asset:36   (= cs:111)
+  customerServedPrestigeBonus:   0.4, // asset:37   (= cs:114)
+  wrongProductPrestigePenalty: -0.08, // asset:38   (= cs:117)
+  boxDropPrestigePenalty:     -0.04,  // asset:39   (= cs:120)
+  wrongDeliveryPrestigePenalty: -0.16,// asset:40   (= cs:123)
+  festivalBonusMin:           100,    // asset:41   (= cs:132) FALLBACK -- artik kullanilmiyor
+  festivalBonusMax:           300,    // asset:42   (= cs:135) FALLBACK
+  // FESTIVAL DAY canli davranis: EventEffectManager.cs:407 -> kiranin %10-%20'si.
   festivalRentSharePct:       [0.10, 0.20],
+  // v3.2: EkonomiAyarlari.asset'te FAZ4'ten sonra eklenen P-bazli/yardimci alanlar.
+  // SIM'DE HENUZ KULLANILMIYOR (bkz. asagidaki MODEL NOTU + rapor). Referans icin tutuluyor.
+  rewardVolatilityMean:       1,      // asset:27 (= cs:63) perk kapaliyken etkisiz
+  truckCargoMinByPlayerCount: [1, 2, 2, 2],   // asset:28 hex (= cs:66) MODELLENMIYOR
+  truckCargoMaxExclusiveByPlayerCount: [3, 4, 5, 6], // asset:29 hex (= cs:69) MODELLENMIYOR
+  phoneRingChanceByPlayerCount: [0.20, 0.25, 0.30, 0.35], // asset'te YOK -> cs:90 default CANLI (MODELLENMIYOR)
+  phoneRingPerkBonus:         0,      // asset:33 (= cs:96) perk kapali
 
   // ---- Assets/NewCss/UIScripts/DayCycleManager.cs + SAHNE -------------------
-  maxDays:                    16,   // cs:35 MAX_DAYS
-  dynamicDurationStartDay:    3,    // cs:36 DYNAMIC_DURATION_START_DAY
-  realDurationInSeconds:      200,  // SAHNE unity:15995 (cs:50 default 160 -> AYRISMA)
-  dailyDurationIncrease:      10,   // SAHNE unity:15996 (= cs:53)
-  dayStartHour:               7,    // SAHNE unity:15997 (= cs:56)
-  dayEndHour:                 18,   // SAHNE unity:15998 (= cs:59)
+  maxDays:                    16,   // cs:36 MAX_DAYS
+  dynamicDurationStartDay:    3,    // cs:37 DYNAMIC_DURATION_START_DAY
+  realDurationInSeconds:      200,  // SAHNE unity:16797 (= cs:52 default, artik AYRISMA yok)
+  dailyDurationIncrease:      10,   // SAHNE unity:16798 (= cs:55)
+  dayStartHour:               7,    // SAHNE unity:16799 "startHour" (alan yeniden adlandirildi, = cs:58)
+  dayEndHour:                 18,   // SAHNE unity:16800 "endHour" (alan yeniden adlandirildi, = cs:61)
 
   // ---- Assets/NewCss/TruckScripts/TruckSpawner.cs + SAHNE ------------------
-  truckStartHour:             8,    // SAHNE unity:36778 (= cs:67)
-  truckEndHour:               17,   // SAHNE unity:36779 (= cs:70)
-  minCargo:                   2,    // cs:37 MIN_CARGO_AMOUNT
-  maxCargoExclusive:          6,    // cs:38 MAX_CARGO_AMOUNT (Random.Range int -> UST SINIR HARIC)
-  respawnDelayRange:          [3, 5], // SAHNE unity:36776 (= cs:60) -> ort 4s
-  hangarCount:                3,    // SAHNE unity:36763-36775: requiredUpgradeLevel 0/1/2
+  truckStartHour:             8,    // SAHNE unity:39722 (= cs:68)
+  truckEndHour:               17,   // SAHNE unity:39723 (= cs:71)
+  minCargo:                   2,    // cs:38 MIN_CARGO_AMOUNT (legacy fallback -- FAZ4'ten sonra CANLI kargo
+                                     // P-bazli, bkz. asagidaki MODEL NOTU + truckCargoMinByPlayerCount)
+  maxCargoExclusive:          6,    // cs:39 MAX_CARGO_AMOUNT (Random.Range int -> UST SINIR HARIC, ayni not)
+  respawnDelayRange:          [3, 5], // SAHNE unity:39720 (= cs:61) -> ort 4s
+  hangarCount:                3,    // SAHNE unity 39705-39718: requiredUpgradeLevel 0/1/2 (dogrulandi)
   hangarsAtLevel0:            1,    // level 0 -> yalniz ilk hangar aktif
 
   // ---- Assets/NewCss/TruckScripts/Truck.cs + Truck.prefab ------------------
@@ -123,23 +133,23 @@ const SRC = {
   // yukleyip 50/40 ile EZIYOR. [HideInInspector] alanlar.
 
   // ---- Assets/NewCss/CustomerSripts/PrestigeManager.cs + SAHNE ------------
-  startingPrestige:           6,    // SAHNE unity:25234 (= cs:16)
-  maxPrestige:                100,  // SAHNE unity:25235 (= cs:19)
-  prestigePerCustomer:        4,    // SAHNE unity:25237 (= cs:26)
-  baseCustomerCapacity:       1,    // SAHNE unity:25238 (= cs:29)
-  maxCustomerCapacity:        20,   // SAHNE unity:25239 (= cs:32)
+  startingPrestige:           12,   // SAHNE unity:26357 (= cs:16) v3.2: 6->12 (cs default de 12'ye cikmis)
+  maxPrestige:                100,  // SAHNE unity:26358 (= cs:19)
+  prestigePerCustomer:        4,    // SAHNE unity:26360 (= cs:26)
+  baseCustomerCapacity:       1,    // SAHNE unity:26361 (= cs:29)
+  maxCustomerCapacity:        20,   // SAHNE unity:26362 (= cs:32)
 
   // ---- Assets/NewCss/CustomerSripts/CustomerManager.cs + SAHNE ------------
-  maxQueueSize:               2,    // SAHNE unity:68600 (cs:57 default = DEFAULT_QUEUE_SIZE 3 -> AYRISMA)
-  shelfMultiplier:            2,    // SAHNE unity:68602 (= cs:68)
-  levelMultiplier:            2,    // SAHNE unity:68603 (= cs:71)
-  storeLevelStart:            1,    // SAHNE unity:68604 (= cs:74)
-  minVariance:               -2,    // SAHNE unity:68605 (= cs:77)
-  maxVariance:                3,    // SAHNE unity:68606 (= cs:80)
-  minCustomersPerDay:         1,    // SAHNE unity:68607 (= cs:83)
-  maxCustomersPerDay:         50,   // SAHNE unity:68608 (= cs:86)
-  spawnStartHour:             8,    // SAHNE unity:68617 (= cs DEFAULT_SPAWN_START_HOUR)
-  spawnEndHour:               17,   // SAHNE unity:68618 (= cs DEFAULT_SPAWN_END_HOUR)
+  maxQueueSize:               2,    // SAHNE unity:73027 (cs:20 DEFAULT_QUEUE_SIZE artik 2 -- AYRISMA KAPANDI)
+  shelfMultiplier:            2,    // SAHNE unity:73029 "_shelfMultiplier" (= cs:71)
+  levelMultiplier:            2,    // SAHNE unity:73030 "_levelMultiplier" (= cs:74)
+  storeLevelStart:            1,    // SAHNE unity:73031 "_storeLevel" (= cs:77)
+  minVariance:               -2,    // SAHNE unity:73032 "_minVariance" (= cs:80)
+  maxVariance:                3,    // SAHNE unity:73033 "_maxVariance" (= cs:83)
+  minCustomersPerDay:         1,    // SAHNE unity:73034 "_minCustomersPerDay" (= cs:86)
+  maxCustomersPerDay:         50,   // SAHNE unity:73035 "_maxCustomersPerDay" (= cs:89)
+  spawnStartHour:             8,    // SAHNE unity:73046 (= cs DEFAULT_SPAWN_START_HOUR:21)
+  spawnEndHour:               17,   // SAHNE unity:73047 (= cs DEFAULT_SPAWN_END_HOUR:22)
 
   // ---- Assets/ithappy/.../Customer.prefab (CANLI musteri sabri) -----------
   // DIKKAT: DifficultyManager'in P-bazli sabir olceklemesi bu prefab'a ULASMIYOR
@@ -170,31 +180,35 @@ const SRC = {
 
   // Paralel MUSTERI servis istasyonu sayisi. CANLI = 1: CustomerAI.cs:582 yalniz
   // manager.IsFirstInQueue(this) iken BeginService cagiriyor -> ayni anda TEK
-  // musteri. (CustomerManager.cs:124 `serviceTables[]` ve cs:873 AssignDropOffTable
-  // KABLOLANMAMIS -- sifir cagiran; sahnede dizi 1 elemanli, unity:68615-68616.)
+  // musteri. (CustomerManager.cs serviceTables[] KABLOLANMAMIS -- sifir cagiran;
+  // sahnede dizi 2 elemanli ama yalniz [0] dolu/[1] fileID:0 bos, unity:73040-73042.)
   serviceStations:            1,
 
   // ---- Assets/NewCss/GameState/DifficultyManager.cs + DifficultyManager.prefab
   baseStartingMoney:          500,  // prefab:75 (= cs:36)
-  moneyMultiplierPerPlayer:   1.0,  // prefab:81 (= cs:61) -> baslangic parasi P'den BAGIMSIZ
-  playerCountMultCoeff:       0.3,  // cs:430  -> 1 + (P-1)*0.3 = 1.0/1.3/1.6/1.9
-  upgradeCostMultiplierPerPlayer: 1.15, // prefab:85 (= cs:76)  [FAZ3 girdisi]
+  moneyMultiplierPerPlayer:   1.2,  // prefab:80 (= cs:60) v3.2: 1.0->1.2 (FAZ4 karari, artik P'ye BAGIMLI)
+  playerCountMultCoeff:       0.3,  // DifficultyManager.cs:429 ApplyCustomerSettings() inline literal
+                                     // (eski "playerCountMultCoeff" serialize alani KALDIRILDI, deger ayni: 1+(P-1)*0.3)
+  upgradeCostMultiplierPerPlayer: [1.00, 2.00, 2.95, 3.70], // cs:72 upgradeCostMultiplierByPlayerCount[]
+                                     // v3.2: eski tek-skaler 1.15 (compounding) alani KALDIRILDI; artik P-bazli
+                                     // DIZI (prefab override YOK, cs default canli). SIM'DE KULLANILMIYOR
+                                     // (upgradeSpendRatio=0 taban kosuda tuketilmiyor) -- dokumantasyon amacli.
   // OLU/KULLANILMAYAN (bkz AYRISMA): baseCustomerCount 10 / customerCountPerPlayer 2
-  // (prefab:74,80) -> ScaledCustomerCount hicbir yere yazilmiyor, yalniz log/UI.
-  // basePhoneCallChance 0.2 / phoneChancePerPlayer 0.1 (prefab:76,82) ->
-  // PhoneCallManager.SetCallChance(...) GOVDESI BOS (PhoneCallManager.cs:425).
+  // (prefab:74,79) -> ScaledCustomerCount hicbir yere yazilmiyor, yalniz log/UI.
+  // basePhoneCallChance / phoneChancePerPlayer KALDIRILDI (FAZ4 SS.6) -- artik prefab'ta da YOK,
+  // telefonun P-olceklemesi GameEconomySettings.phoneRingChanceByPlayerCount'a tasindi.
   // baseMinPatience 8 / baseMaxPatience 14 / patienceReductionPerPlayer 2
-  // (prefab:77,78,83) -> yalniz sahnedeki CustomerAI ornegine yazilir, YOK.
+  // (prefab:76,77,81) -> yalniz sahnedeki CustomerAI ornegine yazilir, YOK.
 
   // ---- Assets/NewCss/UIScripts/MoneySystem.cs + SAHNE --------------------
-  moneySystemSceneStartingMoney: 50000, // SAHNE unity:4734 -- DEBUG DEGERI (AYRISMA)
+  moneySystemSceneStartingMoney: 500, // SAHNE unity:4913 -- v3.2: eski DEBUG degeri 50000 DUZELTILMIS (artik AYRISMA yok)
   moneyFloorZero:             true,  // cs:91 Mathf.Max(0, ...)
 
   // ---- Assets/NewCss/Phone/PhoneCallManager.cs + SAHNE -------------------
-  phoneStartHour:             8,    // SAHNE unity:14156 (= cs:33)
-  phoneEndHour:               18,   // SAHNE unity:14157 (= cs:36)
-  phoneRingDuration:          25,   // SAHNE unity:14158 (= cs:40) GERCEK saniye
-  phoneRingChanceCap:         0.65, // cs:270 Mathf.Clamp(..., 0f, 0.65f)
+  phoneStartHour:             8,    // SAHNE unity:14820 (= cs:33)
+  phoneEndHour:               18,   // SAHNE unity:14821 (= cs:36)
+  phoneRingDuration:          15,   // SAHNE unity:14822 "ringDuration" (= cs:40) v3.2: 25->15
+  phoneRingChanceCap:         0.65, // cs:281 GetEffectiveRingChance() Mathf.Clamp(baseChance*mult + perkBonus, 0, 0.65)
 
   // ---- Assets/NewCss/Events/EventCalendarUI.cs --------------------------
   eventFreeDays:              3,    // cs:25 INITIAL_EVENT_FREE_DAYS
