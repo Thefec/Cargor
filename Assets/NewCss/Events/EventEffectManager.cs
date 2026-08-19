@@ -683,7 +683,9 @@ namespace NewCss
             player.moveSpeed = eventStartPlayerMoveSpeed * multipliers.playerMoveSpeedMultiplier;
         }
 
-        /// <summary>PlayerMovement.staminaRegenRate için perk-rebase. Sadece energetic_crew çağırır.</summary>
+        /// <summary>PlayerMovement.staminaRegenRate için perk-rebase. energetic_crew VE stamina
+        /// backbone yükseltmesi (UpgradePanel.ApplyStaminaUpgrade, satın alma anı — stamina-backbone-live
+        /// fix, 2026-08-19) çağırır; spawn/late-join yolundan ASLA çağrılmaz (çift çarpım).</summary>
         public void RebasePlayerStaminaRegenRate(PlayerMovement player, float newBaseStaminaRegenRate)
         {
             if (player == null || !player.IsOwner || currentActiveEvent.Value == -1) return;
