@@ -8,27 +8,22 @@
 
 ## 🎯 Şu an aktif iş
 
-**🕶️ ODA-BAZLI GÖRÜNÜRLÜK / KARARTMA — S0–S6 + S2 + cila turu BİTTİ, `kontrol` iki turda da ONAY. Kalan tek adım S7 playtest.** Dal **`feature/room-visibility`** (`main`'den), 24 commit, **MERGE/PUSH YOK**.
+**🧟 6 ÖLÜ PERK CANLANDIRILDI — dal `feature/perk-revival` (main'den, 7 commit, MERGE/PUSH YOK), `kontrol` 1. TURDA ONAY.**
 
-> **Cila turu (2026-08-11, 4 kullanıcı isteği):** oda değişiminde çapraz fade (ani renklenme gitti) · **`RoomViewSettings` ayar paneli** (`---ROOMS---` objesinde, değerler sahneye kaydedilir — controller runtime'da yaratıldığı için onun Inspector'ındaki ayarlar kalıcı DEĞİLDİ) · karartma **normal oyun görünümünde de** çalışıyor (`normalViewStrength`, X'te tam güç) · **eşyalar da başka odalarda gizli, ama X basılıyken görünür** ("stok kontrolü"; oyuncular X'te de gizli → telsiz baskısı korunuyor). Detay: [plans/devam.md](plans/devam.md) 2026-08-11.
-> **Doğrulama:** 0 CS · EditMode **19/19** · shader'lar `ShaderUtil.ShaderHasError` ile ZORLA sorgulandı (3'ü de temiz) · `kontrol` 2. tur ONAY.
+> Perkler kalıcı **prefab** alanlarına yazıyordu; tır tarafında `Truck.OnNetworkSpawn` (`Truck.cs:243-250`) her spawn'da SO'dan yeniden okuyup eziyor, oyuncu tarafında ise oyuncu bir kez spawn olduğu için canlıya hiç ulaşmıyordu. Ölü olan 6 perk: `prestige_broker` · `fast_hangar` · `gambler_case` · `agile_crew` · `energetic_crew` · 🔴 `all_in` (**tuzak kart**: faydası ölü, bedeli çalışıyordu). Çözüm `EventEffectManager` deseni: canlı instance'lara uygulama + spawn/late-join kancaları + satın-alma anında event baseline rebase'i. **Sabit değişmedi** (economist: fiyatlar zaten FAZ4 §B.7 ile güncel; `prestige_broker` etkisi bilerek `+0.5/lvl` bırakıldı). Tam teşhis + sözleşme: [plans/perk-revival.md](plans/perk-revival.md).
+> **Doğrulama:** 0 CS · EditMode **19/19** · `EconomyInvariantCheck` **179/179** temiz · QA'nın 1 bloklayıcı bulgusu (event sırasında alınan perk siliniyordu) kapandı.
+> **Kalan tek adım:** Unity playtest — **6 perk canlı olduğu için `kutu/dk/oyuncu` tabanı değişti**, önceki ölçüm bu perkler ölüyken alınmıştı. Playtest'te özellikle izle: `gambler_case`+`high_volatility` kombinasyonu çarpımsal birleşiyor (+%27 yerine +%49, dışlama listesinde yok).
 
-> Tam plan: **[plans/oda-gorunurluk.md](plans/oda-gorunurluk.md)** (tek başına yeterli — §2 sahne ölçümleri hazır, keşif tekrarlanmayacak). Oturum detayı: [plans/devam.md](plans/devam.md) 2026-08-10.
-> **Biten:** S0 `NewCss.Rooms.Core` (motor referanssız `RoomBox`/`RoomResolver`/`RoomFade` + 6 test) · S1 `RoomVolume`+`RoomRegistry`+`RoomVolumeEditor` (sürüklenebilir kutu) · S3 `RoomViewController` · S4 `PlayerRoomVisibility` + `Visual.cs` tek satır + **`Character.prefab` bağlandı** · S5 3 shader global AABB yaması · S6 `NetworkStaminaBarUI` `IsOwner` fix'i.
-> **Doğrulama:** 0 CS · EditMode **15/15** · log'da `Shader error` **0** (3 shader'ın gerçekten yeniden import edildiği teyitli) · 6000.5.6f1 headless, bağımsız tekrarlandı · **`kontrol` ONAY, bloklayıcı bulgu yok**.
-> ✅ **S2 BİTTİ** — kullanıcı 5 odayı çizdi (hangar/paket/resepsiyon/breakroom/office). ⚠️ Tır avlusu (x < -68.4) hiçbir odaya ait değil; bug değil, "hiçbir kutuda değilken son oda korunur" sözleşmesi (H8). Avlu odası istenirse yalnız yeni bir `RoomVolume` eklenir, kod değişmez.
-> 🔴 **Yalnız gerçek Unity'de ölçülebilir (açık):** **SRP Batcher** bozulmadı mı (Frame Debugger önce/sonra batch sayısı — shader dokunuşunun tek gerçek riski; **karartma artık HER KAREDE aktif**, eskiden pratikte yalnız X'te çalışıyordu) · AABB'lerin geometriyle örtüşmesi · H1'deki 5 URP/Lit materyalin parlak leke bırakması · pop-in hissi (X kapanınca eşyaların anında kaybolması dahil).
-> **Kalan tek adım:** S7 2-istemci playtest.
-> **Bilerek kabul edilen riskler:** pop-in · görünmeyen oyuncunun ayak sesi duvardan geçiyor (playtest-1'de DEĞİŞTİRME, ölç) · gölge sızıntısı. **Ekonomi:** economist turu zorunlu değil (hiçbir ekonomik değere dokunulmuyor); yerine 5 dk'lık kota marjı kontrolü, `kutu/dk/oyuncu` %20'den fazla düşerse tur playtest SONRASI zorunlu.
+> ✅ **2026-08-16'da 3 dal main'e merge edildi:** `feature/room-visibility` · `feature/post-rent-mechanics` · `feature/economy-verification` + N3 break-room fix'i (`cc04901`).
 
-Diğer kuyruk: **play-test** (kullanıcıda) ve **telsiz** (ayrı dal `feature/voice-chat`, 21 commit merge'siz — bkz. o daldaki `plans/devam.md`).
+> 🔴 **AÇIK PLAYTEST BORÇLARI (kod bitti, yalnız gerçek Unity'de ölçülebilir):**
+> - **Oda-görünürlük S7** — 2 istemcili playtest: SRP Batcher (Frame Debugger önce/sonra) · AABB'lerin geometriyle örtüşmesi · 5 URP/Lit materyalin parlak leke bırakması · pop-in hissi. Sahneye `---ROOMS---` + `RoomVolume`'ler zaten çizili (5 oda). Tam plan: [plans/oda-gorunurluk.md](plans/oda-gorunurluk.md).
+> - **Kira sonrası 3 özellik** — iade göstergesinin görünürlüğü · 2-item akışının tempo hissi · ACES tonemapping altında karışık tır renklerinin doğru görünmesi.
+> - Genel: 0 dk/oyuncu **kutu/dakika** hâlâ makinede ölçülmedi, bkz. [plans/playtest-olcum-protokolu.md](plans/playtest-olcum-protokolu.md).
 
-> 🎙️ **TELSİZ (oyun içi bas-konuş sesli iletişim) — PLAN ONAYLI, UYGULAMA BEKLİYOR.**
-> Tam plan: **[plans/telsiz-voice-chat.md](plans/telsiz-voice-chat.md)** (10 adımlık commit sırası, doğrulama katmanları, riskler).
-> Kullanıcı kararı: *"detaylıca planlama yapalım, uygulama komutunu ben vereceğim."* **Komut gelmeden kod yazma.**
-> Ardından gelecek 2. aşama: **oda-bazlı görünürlük** (oda sayısı SABİT DEĞİL, haritaya göre değişecek → veri-güdümlü olmalı). Telsiz tasarımı bunu engellemiyor; gerekçe planın "Sonraki iş" bölümünde.
+> 🎙️ **TELSİZ — PLAN ONAYLI ama dal `feature/voice-chat`'te 25 commit yarım kalmış (MERGE/PUSH YOK).** Mikrofon sorunu kapandı; **açık: client'ta WASD ölmesi** (`PlayerMovement.cs`'de geçici `[TESHIS]` kodu bekliyor). Tam plan: [plans/telsiz-voice-chat.md](plans/telsiz-voice-chat.md). Detay: [plans/devam.md](plans/devam.md) "Telsiz" girişleri.
 
-`main` = `6e945bb`, **origin/main'in 1 önünde (PUSH YOK)**. Ekonomi denge turu 2026-08-06'da merge edildi (`238fd92`, `--no-ff`, 21 commit) — sorun çıkarsa tek noktadan revert edilebilir.
+`main` = 2026-08-16 üç merge + N3 fix ile güncel, **origin/main'e PUSH YOK**.
 
 - ✅ **Roguelite draft + RELEASE PUSH FAZ 0/1** — arşiv: [plans/roguelite-draft.md](plans/roguelite-draft.md), [plans/release-push.md](plans/release-push.md)
 - ✅ **Ekonomi sıfırdan yeniden hesaplandı + uygulandı** — 4 faz analiz ([plans/economy-rebuild-2026-07-30*.md](plans/economy-rebuild-2026-07-30-faz4-final.md)), §D#1–#8 tamamı kodda; kalite kapısı 3 turda ONAY
@@ -42,9 +37,10 @@ Diğer kuyruk: **play-test** (kullanıcıda) ve **telsiz** (ayrı dal `feature/v
 1. 🔴 **PLAY-TEST — tek gerçek kapı.** Bu turda kira, prestij, upgrade fiyatları, quest ödülleri, event çarpanları ve telefon ekonomisi değişti; **hiçbiri oyun içinde çalışırken görülmedi.** Makine doğrulaması "derleniyor ve sayılar doğru yerde" der, "oyun iyi hissettiriyor" demez. Checklist tabanı: [plans/playtest-2026-07-19.md](plans/playtest-2026-07-19.md) (bayat, ekonomi kısmı yeniden yazılmalı).
    **Ölçülecekler duyarlılık sırasına göre:** `kutu/dk/oyuncu` (1.2→2.0 ile 1P kümülatifi %117 değişiyor) · masa meşgul süresi S · `agile_crew`'in üretime yansıması · telefon yanıtlamanın oyuncu-saniyesi maliyeti. Bir oyun günü yalnız 200–330 gerçek saniye → **mutlak TL değil oranlarla konuş.**
 2. 🙋 **Kullanıcıda bekleyen 3 iş:** (a) 2. servis masasının mesh/collider yerleşimi — headless doğrulayamıyor; (b) sahnede `endIntensity 0.03→0` plansız değişiklik, istenmiyorsa geri al; (c) `StringTable Shared Data`'daki event açıklamaları eski yüzdelerde kalmış olabilir.
-3. **PERK MİMARİSİ — (a) ✅ KAPANDI / (b) 🟡 AÇIK.**
-   - ✅ **Asset bozulması durdu** — seçenek **B (snapshot + restore)** uygulandı (2026-08-07, `6e945bb`, kontrol ONAY). 13 alan (SO×7 + `Truck` prefab×4 + `PlayerMovement` prefab×2) `UpgradePanel`'de static snapshot'a alınıp `OnNetworkDespawn`+`OnDestroy`'da geri yazılıyor. Denge değişmedi; denetçi 179/179.
-   - 🟡 **AÇIK — seçenek C: 5 ölü perk.** `gambler_case` · `all_in` (ödül kısmı) · `prestige_broker` · `fast_hangar` · `agile_crew` hâlâ etkisiz: perk prefab'a yazıyor ama `Truck.Awake` her spawn'da değerleri SO'dan yeniden okuyor (`Truck.cs:211-218`); `PlayerMovement` de prefab olduğu için mevcut oyunculara ulaşmıyor. Fix = `TruckSpawner`/spawn yolunun aktif perkleri canlı instance'a uygulaması. **⚠️ 5 perk canlanınca ekonomi kayar → economist turu ŞART, ayrı denge turu.** Play-test'ten SONRA yapılmalı (ölçüm tabanı kirlenmesin).
+3. **PERK MİMARİSİ — ✅ İKİ YARISI DA KAPANDI.**
+   - ✅ **Asset bozulması durdu** — seçenek **B (snapshot + restore)** (2026-08-07, `6e945bb`, kontrol ONAY). 13 alan `UpgradePanel`'de static snapshot'a alınıp `OnNetworkDespawn`+`OnDestroy`'da geri yazılıyor. Denetçi 179/179.
+   - ✅ **6 ölü perk canlandı** — seçenek **C** (2026-08-19, dal `feature/perk-revival`, kontrol 1. turda ONAY). Perkler artık canlı tır/oyuncu instance'larına yazıyor. Detay: [plans/perk-revival.md](plans/perk-revival.md).
+
 4. 📖 ~~GDD senkronu~~ ✅ **BİTTİ** (2026-08-07, `bc43773`) — §4/§5/§6/§7/§8/§13/§14/§16/§19/§21/§31 koda hizalandı; §7 Kota Sistemi tamamen kaldırıldı (kodda yok).
 5. 🧹 **Temizlik onayı bekliyor:** kök `herhangi` (0 bayt) + `Assets/_Recovery/0 (1..13).unity` (13 dosya).
 
