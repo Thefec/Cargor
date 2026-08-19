@@ -217,6 +217,14 @@ namespace NewCss
             if (IsOwner)
             {
                 SetupCamera();
+
+                // perk-revival (bkz. plans/perk-revival.md §2): late-join oyuncusu bu ana kadar
+                // satın alınmış agile_crew/energetic_crew perklerini kaçırmasın. F10 fix'teki
+                // BuffManager deseniyle aynı sorun sınıfı, ama kapsam SADECE owned player (her peer
+                // kendi owned player'ını EventEffectManager.GetOwnedPlayer() ile bulduğu gibi) —
+                // bu yüzden IsOwner bloğunun İÇİNDE, BuffManager çağrısının aksine tüm player
+                // instance'ları için değil.
+                UpgradePanel.Instance?.ApplyLivePerksToPlayer(this);
             }
 
             // F10 fix: late-join oyuncusu veya BuffManager'ın buff listesi zaten dolmuşken sonradan spawn
