@@ -623,8 +623,10 @@ namespace NewCss
             public int RewardPerBox;
             public int PenaltyPerBox;
 
-            // PlayerMovement prefab (2 alan) — PerkEffect.cs: ApplyEnergeticCrew, ApplyAgileCrew;
-            // ayrıca InitializeStaminaBaseValue (yukarıda) staminaRegenRate'e yazıyor.
+            // PlayerMovement prefab (2 alan) — perk-revival sonrası MoveSpeed yarısı da vestigiyel
+            // (agile_crew artık PerkEffect.ApplyToPlayer üzerinden canlı instance'a yazıyor).
+            // StaminaRegenRate yarısı hâlâ CANLI: InitializeStaminaBaseValue (yukarıda) ve
+            // ApplyStaminaUpgrade (backbone stamina yükseltmesi, perk değil) buraya yazmaya devam ediyor.
             public float StaminaRegenRate;
             public float MoveSpeed;
         }
