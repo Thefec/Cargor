@@ -270,10 +270,13 @@ namespace NewCss
         [Header("=== MANAGER REFERENCES ===")]
         [SerializeField] private CustomerManager CustomerManager;
         // NOT: sahnede bu alan Character PREFAB'ına işaret ediyor (bkz. plans/perk-revival.md
-        // §1.1) — canlı oyuncu instance'ı DEĞİL. Hâlâ InitializeStaminaBaseValue/ApplyStaminaUpgrade
-        // (backbone stamina yükseltmesi, perk değil) tarafından yazılıyor; PerkAssetSnapshot bu
-        // yüzden hâlâ anlamlı. Perk yazıları (agile_crew/energetic_crew) artık FindObjectsOfType
-        // üzerinden canlı instance'a gidiyor (bkz. GetOwnedPlayer/ApplyLivePerksToPlayer).
+        // §1.1) — canlı oyuncu instance'ı DEĞİL. stamina-backbone-live fix (perk-revival'in
+        // bilinçli kapsam dışı bıraktığı kalıntı) SONRASI: InitializeStaminaBaseValue/
+        // ApplyStaminaUpgrade hâlâ buraya yazıyor ama artık YALNIZ VESTİGİYEL — Truck-prefab 4
+        // alanıyla aynı gerekçeyle (düşük risk) SİLİNMEDİ, PerkAssetSnapshot restore'u için
+        // referans olarak duruyor. Asıl "Dinç Ekip" omurga yükseltmesi artık GetOwnedPlayer/
+        // ApplyLivePerksToPlayer üzerinden agile_crew/energetic_crew perkleriyle AYNI yoldan canlı
+        // instance'a gidiyor.
         [SerializeField] private PlayerMovement PlayerMovement;
         // NOT: sahnede bu alan Truck PREFAB'ına işaret ediyor (bkz. plans/perk-revival.md §1.1) —
         // canlı tır instance'ı DEĞİL. perk-revival sonrası hiçbir Apply* yolu buraya yazmıyor
@@ -593,10 +596,14 @@ namespace NewCss
         /// RewardPerBox/PenaltyPerBox) artık FİİLEN VESTİGİYEL — PerkEffect hiçbir yerde ctx.Truck'a
         /// yazmıyor (canlı instance'a taşındı, bkz. PerkEffect.ApplyToTruck), yani capture her zaman
         /// zaten-authored değeri yakalayıp aynısını geri yazıyor (no-op). Bilinçli olarak SİLİNMEDİ:
-        /// (a) düşük risk — no-op olsa da zarar vermiyor, (b) PlayerMovement 2 alanı hâlâ CANLI
-        /// (InitializeStaminaBaseValue backbone yükseltmesi staminaRegenRate'e prefab üzerinden
-        /// yazmaya devam ediyor — bu perk DEĞİL, kapsam dışı), simetriyi bozup ayrı bir yol açmak
-        /// gereksiz risk. Silme kararı ileride ayrı bir temizlik turuna bırakıldı.
+        /// düşük risk — no-op olsa da zarar vermiyor, simetriyi bozup ayrı bir yol açmak gereksiz
+        /// risk. Silme kararı ileride ayrı bir temizlik turuna bırakıldı.
+        ///
+        /// stamina-backbone-live fix (2026-08-19) NOT: PlayerMovement 2 alanının StaminaRegenRate
+        /// yarısı da artık AYNI GEREKÇEYLE VESTİGİYEL — "Dinç Ekip" omurga yükseltmesi ölüydü
+        /// (perk-revival'in bilinçli kapsam dışı bıraktığı kalıntı, bkz. plans/perk-revival.md
+        /// §1.3), ApplyStaminaUpgrade/ApplyLivePerksToPlayer artık GetOwnedPlayer üzerinden canlı
+        /// instance'a yazıyor. MoveSpeed yarısı zaten agile_crew ile aynı sebepten vestigiyeldi.
         /// </summary>
         private class PerkAssetSnapshot
         {
@@ -623,10 +630,10 @@ namespace NewCss
             public int RewardPerBox;
             public int PenaltyPerBox;
 
-            // PlayerMovement prefab (2 alan) — perk-revival sonrası MoveSpeed yarısı da vestigiyel
+            // PlayerMovement prefab (2 alan) — MoveSpeed yarısı perk-revival sonrası vestigiyel
             // (agile_crew artık PerkEffect.ApplyToPlayer üzerinden canlı instance'a yazıyor).
-            // StaminaRegenRate yarısı hâlâ CANLI: InitializeStaminaBaseValue (yukarıda) ve
-            // ApplyStaminaUpgrade (backbone stamina yükseltmesi, perk değil) buraya yazmaya devam ediyor.
+            // StaminaRegenRate yarısı da stamina-backbone-live fix (2026-08-19) SONRASI vestigiyel —
+            // yukarıdaki sınıf notuna bkz.
             public float StaminaRegenRate;
             public float MoveSpeed;
         }
@@ -1082,6 +1089,16 @@ namespace NewCss
         /// perk-revival: PlayerMovement.OnNetworkSpawn tarafından çağrılır (IsOwner altında —
         /// F10 late-join buff deseniyle aynı yer, bkz. PlayerMovement.cs). Late-join oyuncusu bu
         /// ana kadar satın alınmış agile_crew/energetic_crew perklerini kaçırmasın diye.
+        ///
+        /// stamina-backbone-live fix (aynı hastalık sınıfı, perk-revival'in kapsam dışı bıraktığı
+        /// kalıntı — bkz. plans/perk-revival.md §1.3, §2.3): omurga "Dinç Ekip" (UPGRADE_STAMINA)
+        /// yükseltmesi de PlayerMovement PREFAB referansına yazıyordu (ApplyStaminaUpgrade), canlı
+        /// oyuncu bir kez spawn olduğu için (PlayerSpawner.cs:293-301) hiç ulaşmıyordu. Aynı döngüye
+        /// eklendi ki ReplayPurchasedUpgradeLevels'ın ascending-index sırasıyla (bkz. o metodun
+        /// yorumu) TUTARLI kalsın: energetic_crew (mutlak 2.5 override) ile aynı index-sıralı
+        /// "son yazan kazanır" semantiğini iki ayrı metoda bölmek yerine burada koruyoruz.
+        /// RebasePlayerStaminaRegenRate BİLİNÇLİ OLARAK ÇAĞRILMAZ — ApplyStaminaUpgrade'deki
+        /// gerekçeyle aynı (satın alma anına özgü, spawn/late-join yolunda çift çarpım olur).
         /// </summary>
         public void ApplyLivePerksToPlayer(PlayerMovement player)
         {
@@ -1092,7 +1109,16 @@ namespace NewCss
                 int level = _upgradeLevels[i];
                 if (level <= 0) continue;
 
-                string effectId = upgrades[i]?.effectId;
+                UpgradeDefinition definition = upgrades[i];
+                if (definition == null) continue;
+
+                if (ResolveUpgradeKey(definition) == UPGRADE_STAMINA)
+                {
+                    player.staminaRegenRate = definition.StaminaValue + (level * 0.5f);
+                    continue;
+                }
+
+                string effectId = definition.effectId;
                 if (string.IsNullOrEmpty(effectId) || !PerkEffect.WritesToPlayer(effectId)) continue;
 
                 PerkEffect.ApplyToPlayer(effectId, level, player);
@@ -1107,12 +1133,30 @@ namespace NewCss
             }
         }
 
+        /// <summary>
+        /// stamina-backbone-live fix: eskiden yalnız <see cref="PlayerMovement"/> PREFAB
+        /// referansına yazıyordu (bkz. plans/perk-revival.md §1.1/§1.3) — canlı oyuncuya hiç
+        /// ulaşmıyordu, "Dinç Ekip" omurga yükseltmesi fiilen ölüydü. Prefab yazısı (aşağıda)
+        /// perk-revival'in Truck-4-alan kararıyla aynı gerekçeyle VESTİGİYEL bırakıldı (düşük risk,
+        /// PerkAssetSnapshot restore'u hâlâ bunu authored'a döndürüyor) — asıl düzeltme
+        /// ApplyPerkToOwnedPlayer ile birebir aynı desen: GetOwnedPlayer() üzerinden bu peer'in
+        /// canlı instance'ına mutlak değer yazılır, ardından aktif event varsa
+        /// RebasePlayerStaminaRegenRate ile snapshot yeniden taban alınır (energetic_crew ile aynı
+        /// gerekçe — EventEffectManager.cs:~687). Late-join/spawn yolu ayrıca
+        /// ApplyLivePerksToPlayer üzerinden kapatılıyor (PlayerMovement.OnNetworkSpawn).
+        /// </summary>
         private void ApplyStaminaUpgrade(EntryUI entry, int level)
         {
             if (PlayerMovement != null)
             {
                 PlayerMovement.staminaRegenRate = entry.Definition.StaminaValue + (level * 0.5f);
             }
+
+            PlayerMovement ownedPlayer = GetOwnedPlayer();
+            if (ownedPlayer == null) return;
+
+            ownedPlayer.staminaRegenRate = entry.Definition.StaminaValue + (level * 0.5f);
+            EventEffectManager.Instance?.RebasePlayerStaminaRegenRate(ownedPlayer, ownedPlayer.staminaRegenRate);
         }
 
         private void ApplyMoneyUpgrade(EntryUI entry, int level)

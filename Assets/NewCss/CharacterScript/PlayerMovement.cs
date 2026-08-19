@@ -224,6 +224,9 @@ namespace NewCss
                 // kendi owned player'ını EventEffectManager.GetOwnedPlayer() ile bulduğu gibi) —
                 // bu yüzden IsOwner bloğunun İÇİNDE, BuffManager çağrısının aksine tüm player
                 // instance'ları için değil.
+                // stamina-backbone-live fix: "Dinç Ekip" omurga yükseltmesi de aynı yoldan (bkz.
+                // UpgradePanel.ApplyLivePerksToPlayer) canlı instance'a mutlak yazılıyor — BuffManager
+                // += yapmadan ÖNCE burada olmalı (aksi halde backbone'un mutlak ataması buff'ları silerdi).
                 UpgradePanel.Instance?.ApplyLivePerksToPlayer(this);
             }
 
