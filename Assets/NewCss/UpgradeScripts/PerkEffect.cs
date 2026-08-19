@@ -5,12 +5,18 @@ namespace NewCss
     /// <summary>
     /// Perk etkilerinin dokunduğu sistemlere referans taşıyıcı.
     /// UpgradePanel.BuildPerkContext() tarafından kurulur.
+    ///
+    /// perk-revival (2026-08-19): Truck/PlayerMovement alanları BİLİNÇLİ OLARAK burada YOK.
+    /// Eskiden UpgradePanel'in sahne SerializeField'ları (aslında Truck/Character PREFAB
+    /// referansları — bkz. plans/perk-revival.md §1.1) buradan yazılıyordu; canlı sahne
+    /// instance'larına hiç ulaşmıyordu (6 ölü perk). Artık tır/oyuncu perkleri ayrı giriş
+    /// noktalarından (ApplyToTruck / ApplyToPlayer) canlı instance parametresiyle çağrılıyor —
+    /// bkz. UpgradePanel.ApplyPerkToAllLiveTrucks / ApplyLivePerksToTruck / ApplyPerkToOwnedPlayer
+    /// / ApplyLivePerksToPlayer.
     /// </summary>
     public class PerkContext
     {
-        public Truck Truck;
         public CustomerManager CustomerManager;
-        public PlayerMovement PlayerMovement;
         public GameEconomySettings Economy;
         public DayCycleManager DayCycle;
         public UpgradePanel Panel;
@@ -43,17 +49,18 @@ namespace NewCss
         {
             if (ctx == null) return;
 
+            // perk-revival: prestige_broker/fast_hangar/gambler_case (tamamen Truck) ve
+            // agile_crew/energetic_crew (tamamen PlayerMovement) buradan ÇIKARILDI — canlı
+            // instance'a ApplyToTruck/ApplyToPlayer üzerinden uygulanıyor (çağıran taraf
+            // UpgradePanel.ApplyUpgradeEffect: WritesToTruck/WritesToPlayer/NeedsGenericApply).
+            // all_in BURADA KALDI ama artık yalnız Economy (gracePaymentPercent) parçasını yapar —
+            // ödül parçası ApplyToTruck'a taşındı (bkz. ApplyAllIn ve ApplyAllInRewardToTruck).
             switch (effectId)
             {
                 case "cheap_rent":        ApplyCheapRent(level, ctx); break;
-                case "prestige_broker":   ApplyPrestigeBroker(level, ctx); break;
                 case "prestige_master":   ApplyPrestigeMaster(level, ctx); break;
-                case "fast_hangar":       ApplyFastHangar(level, ctx); break;
-                case "energetic_crew":    ApplyEnergeticCrew(level, ctx); break;
-                case "agile_crew":        ApplyAgileCrew(level, ctx); break;
                 case "patient_customers": ApplyPatientCustomers(level, ctx); break;
                 case "long_queue":        ApplyLongQueue(level, ctx); break;
-                case "gambler_case":      ApplyGamblerCase(level, ctx); break;
                 case "leveraged_rent":    ApplyLeveragedRent(level, ctx); break;
                 case "high_volatility":   ApplyHighVolatility(level, ctx); break;
                 case "all_in":            ApplyAllIn(level, ctx); break;
@@ -61,9 +68,103 @@ namespace NewCss
                 case "phone_line":        ApplyPhoneLine(level, ctx); break;
                 case "overtime":          ApplyOvertime(level, ctx); break;
                 case "bulk_buy":          ApplyBulkBuy(level, ctx); break;
+                case "prestige_broker":
+                case "fast_hangar":
+                case "gambler_case":
+                case "agile_crew":
+                case "energetic_crew":
+                    // Tamamen ApplyToTruck/ApplyToPlayer'a taşındı — burada no-op (uyarı basma).
+                    break;
                 default:
                     Debug.LogWarning($"[PerkEffect] Bilinmeyen effectId: '{effectId}'");
                     break;
+            }
+        }
+
+        /// <summary>
+        /// Tır perklerini (prestige_broker/fast_hangar/gambler_case/all_in-ödül) CANLI bir tır
+        /// instance'ına uygular. Çağıran: UpgradePanel.ApplyPerkToAllLiveTrucks (satın alma anı,
+        /// sahadaki tüm tırlar) ve UpgradePanel.ApplyLivePerksToTruck (Truck.OnNetworkSpawn — SO
+        /// okumasından SONRA, event çarpanından ÖNCE; bkz. plans/perk-revival.md §2.1).
+        /// Idempotent: level'dan mutlak değer hesaplar.
+        /// </summary>
+        public static void ApplyToTruck(string effectId, int level, Truck truck, PerkContext ctx)
+        {
+            if (truck == null || ctx == null) return;
+
+            switch (effectId)
+            {
+                case "prestige_broker": ApplyPrestigeBrokerToTruck(level, truck); break;
+                case "fast_hangar":     ApplyFastHangarToTruck(level, truck, ctx); break;
+                case "gambler_case":    ApplyGamblerCaseToTruck(level, truck, ctx); break;
+                case "all_in":          ApplyAllInRewardToTruck(level, truck, ctx); break;
+            }
+        }
+
+        /// <summary>
+        /// Oyuncu perklerini (agile_crew/energetic_crew) CANLI bir PlayerMovement instance'ına
+        /// uygular. Çağıran: UpgradePanel.ApplyPerkToOwnedPlayer (satın alma anı, bu peer'in kendi
+        /// owned player'ı) ve UpgradePanel.ApplyLivePerksToPlayer (PlayerMovement.OnNetworkSpawn,
+        /// late-join). Idempotent.
+        /// </summary>
+        public static void ApplyToPlayer(string effectId, int level, PlayerMovement player)
+        {
+            if (player == null) return;
+
+            switch (effectId)
+            {
+                case "agile_crew":     ApplyAgileCrewToPlayer(level, player); break;
+                case "energetic_crew": ApplyEnergeticCrewToPlayer(level, player); break;
+            }
+        }
+
+        /// <summary>effectId canlı Truck instance'ına mı yazıyor? UpgradePanel dispatch için.</summary>
+        public static bool WritesToTruck(string effectId)
+        {
+            switch (effectId)
+            {
+                case "prestige_broker":
+                case "fast_hangar":
+                case "gambler_case":
+                case "all_in":
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        /// <summary>effectId canlı PlayerMovement instance'ına mı yazıyor? UpgradePanel dispatch için.</summary>
+        public static bool WritesToPlayer(string effectId)
+        {
+            switch (effectId)
+            {
+                case "agile_crew":
+                case "energetic_crew":
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// effectId, genel PerkContext (Economy/CustomerManager/DayCycle/Panel) üzerinden Apply()
+        /// çağrısına ihtiyaç duyuyor mu? prestige_broker/fast_hangar/gambler_case/agile_crew/
+        /// energetic_crew TAMAMEN Truck/Player'a taşındığı için burada false — Apply() bu id'ler
+        /// için artık hiçbir şey yapmıyor, gereksiz çağrıyı atlamak için (uyarı basmaz ama boşuna
+        /// switch girer). all_in dahil DİĞER HERKES true (all_in'in Economy parçası hâlâ Apply()'da).
+        /// </summary>
+        public static bool NeedsGenericApply(string effectId)
+        {
+            switch (effectId)
+            {
+                case "prestige_broker":
+                case "fast_hangar":
+                case "gambler_case":
+                case "agile_crew":
+                case "energetic_crew":
+                    return false;
+                default:
+                    return true;
             }
         }
 
@@ -78,11 +179,11 @@ namespace NewCss
             ctx.Economy.rentGrowthMultiplier = 1.15f - 0.03f * level;
         }
 
-        // Prestij Simsarı: Truck.bonusPerTier 5 → 5.5 → 6 (her seviye +0.5)
-        private static void ApplyPrestigeBroker(int level, PerkContext ctx)
+        // Prestij Simsarı: Truck.bonusPerTier 5 → 5.5 → 6 (her seviye +0.5). perk-revival: artık
+        // ApplyToTruck üzerinden canlı tıra yazılıyor (bkz. ApplyToTruck switch'i).
+        private static void ApplyPrestigeBrokerToTruck(int level, Truck truck)
         {
-            if (ctx.Truck == null) return;
-            ctx.Truck.bonusPerTier = 5f + 0.5f * level;
+            truck.bonusPerTier = 5f + 0.5f * level;
         }
 
         // Prestij Ustası: customerServedPrestigeBonus 0.4 → 0.52 → 0.64 (her seviye +0.12). FAZ4: taban ×2
@@ -96,25 +197,26 @@ namespace NewCss
         // Hızlı Hangar (relic): hangarStayDuration taban(Economy P-bazlı GetHangarStayDuration) × 1.30.
         // Taban artık oyuncu sayısına göre (1P=90..4P=30); perk P-uygun tabana uygulanır ki
         // sapma P'ye göre sabit %30 kalsın (eski flat-30 taban P-bazlı dizide yanlış olurdu).
-        private static void ApplyFastHangar(int level, PerkContext ctx)
+        private static void ApplyFastHangarToTruck(int level, Truck truck, PerkContext ctx)
         {
-            if (ctx.Truck == null || ctx.Economy == null || level <= 0) return;
+            if (ctx.Economy == null || level <= 0) return;
             int pc = DifficultyManager.Instance != null ? DifficultyManager.Instance.PlayerCount : 1;
-            ctx.Truck.hangarStayDuration = ctx.Economy.GetHangarStayDuration(pc) * 1.30f;
+            truck.hangarStayDuration = ctx.Economy.GetHangarStayDuration(pc) * 1.30f;
         }
 
-        // Enerjik Ekip (relic): staminaRegenRate 1 → 2.5 (mevcut mekaniğe bağlanış, ekonomik değer değil)
-        private static void ApplyEnergeticCrew(int level, PerkContext ctx)
+        // Enerjik Ekip (relic): staminaRegenRate 1 → 2.5 (mevcut mekaniğe bağlanış, ekonomik değer
+        // değil). perk-revival: artık ApplyToPlayer üzerinden owned player'a yazılıyor.
+        private static void ApplyEnergeticCrewToPlayer(int level, PlayerMovement player)
         {
-            if (ctx.PlayerMovement == null || level <= 0) return;
-            ctx.PlayerMovement.staminaRegenRate = 1f + 1.5f;
+            if (level <= 0) return;
+            player.staminaRegenRate = 1f + 1.5f;
         }
 
         // Çevik Ekip (relic): moveSpeed 5 → 5.75 (+%15, mevcut mekaniğe bağlanış)
-        private static void ApplyAgileCrew(int level, PerkContext ctx)
+        private static void ApplyAgileCrewToPlayer(int level, PlayerMovement player)
         {
-            if (ctx.PlayerMovement == null || level <= 0) return;
-            ctx.PlayerMovement.moveSpeed = 5f * 1.15f;
+            if (level <= 0) return;
+            player.moveSpeed = 5f * 1.15f;
         }
 
         // Sabırlı Müşteriler (relic, DOKUNUŞ-5, FAZ4 §B.7 tercih): sabır bağlayıcı kısıt değil,
@@ -138,11 +240,14 @@ namespace NewCss
         // Kumarbaz Kasası (relic): ödül +%30, ceza +%55. Truck.rewardPerBox/penaltyPerBox gerçek
         // tüketilen değerlerdir (Economy.rewardPerBox sadece OnNetworkSpawn'da bir kez kopyalanır);
         // idempotent kalması için her zaman Economy'nin (sabit) baz değerinden yeniden hesaplanır.
-        private static void ApplyGamblerCase(int level, PerkContext ctx)
+        // perk-revival: artık ApplyToTruck üzerinden canlı tıra yazılıyor. gambler_case ve all_in
+        // draft'ta EXCLUSIVE_EFFECT_GROUPS'ta (UpgradePanel.cs:216) — ikisi asla birlikte aktif
+        // olmadığından rewardPerBox üzerinde çakışma yok.
+        private static void ApplyGamblerCaseToTruck(int level, Truck truck, PerkContext ctx)
         {
-            if (ctx.Economy == null || ctx.Truck == null || level <= 0) return;
-            ctx.Truck.rewardPerBox = Mathf.RoundToInt(ctx.Economy.rewardPerBox * 1.30f);
-            ctx.Truck.penaltyPerBox = Mathf.RoundToInt(ctx.Economy.penaltyPerBox * 1.55f);
+            if (ctx.Economy == null || level <= 0) return;
+            truck.rewardPerBox = Mathf.RoundToInt(ctx.Economy.rewardPerBox * 1.30f);
+            truck.penaltyPerBox = Mathf.RoundToInt(ctx.Economy.penaltyPerBox * 1.55f);
         }
 
         // Telefon Hattı (relic): PhoneCallManager reaktif V3'e geçti (kontenjan kavramı yok,
@@ -182,11 +287,19 @@ namespace NewCss
         }
 
         // Kelle Koltukta (relic): gelir +%25, grace period iptal (gracePaymentPercent=0).
+        // perk-revival: SPLIT — Economy (kalıcı SO, tek instance, güvenle burada kalır) parçası
+        // burada; Truck ödül parçası ApplyAllInRewardToTruck'a taşındı (canlı instance gerekir).
         private static void ApplyAllIn(int level, PerkContext ctx)
         {
-            if (ctx.Economy == null || ctx.Truck == null || level <= 0) return;
-            ctx.Truck.rewardPerBox = Mathf.RoundToInt(ctx.Economy.rewardPerBox * 1.25f);
+            if (ctx.Economy == null || level <= 0) return;
             ctx.Economy.gracePaymentPercent = 0f;
+        }
+
+        // Kelle Koltukta — ödül parçası: rewardPerBox +%25, CANLI tıra (ApplyToTruck üzerinden).
+        private static void ApplyAllInRewardToTruck(int level, Truck truck, PerkContext ctx)
+        {
+            if (ctx.Economy == null || level <= 0) return;
+            truck.rewardPerBox = Mathf.RoundToInt(ctx.Economy.rewardPerBox * 1.25f);
         }
 
         // DOKUNUŞ-3: Acil Fren (relic). İflası 1 kez önleyen tek-kullanımlık bayrak;
