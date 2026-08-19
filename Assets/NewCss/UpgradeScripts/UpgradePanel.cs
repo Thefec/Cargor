@@ -983,14 +983,29 @@ namespace NewCss
         /// kendi local Truck instance'larını aynı idempotent formülle günceller (rewardPerBox/
         /// penaltyPerBox'ın parasal sonucu yalnız server'da tüketilir, bkz. Truck.ProcessDelivery
         /// `if (!IsServer) return false;` — client'taki değer sadece UI/tutarlılık için).
+        ///
+        /// QA-fix (event sırasında perk satın alma): PerkEffect.ApplyToTruck ham (event'ten
+        /// habersiz) mutlak değeri yazdıktan HEMEN SONRA, effectId rewardPerBox'a dokunuyorsa
+        /// (bkz. PerkEffect.AffectsEventTruckReward) EventEffectManager.RebaseTruckRewardPerBox
+        /// çağrılır — aktif event varsa baseline'ı bu yeni perk değerine günceller ve çarpanı
+        /// yeniden uygular; event yoksa no-op. Bu çağrı BİLİNÇLİ OLARAK yalnız burada (satın alma,
+        /// MEVCUT tır) — Truck.OnNetworkSpawn'daki ApplyLivePerksToTruck yolunda YOK, çünkü o yolu
+        /// hemen EventEffectManager.ApplyEventEffectToNewObject izliyor ve o zaten doğru şekilde
+        /// bir kez çarpıyor; burada da rebase edilseydi ÇİFT çarpım olurdu (bkz.
+        /// plans/perk-revival.md ve QA bulgusu).
         /// </summary>
         private void ApplyPerkToAllLiveTrucks(string effectId, int level)
         {
             var ctx = BuildPerkContext();
+            bool rebaseReward = PerkEffect.AffectsEventTruckReward(effectId);
             Truck[] trucks = FindObjectsOfType<Truck>();
             foreach (var truck in trucks)
             {
                 PerkEffect.ApplyToTruck(effectId, level, truck, ctx);
+                if (rebaseReward)
+                {
+                    EventEffectManager.Instance?.RebaseTruckRewardPerBox(truck, truck.rewardPerBox);
+                }
             }
         }
 
@@ -999,13 +1014,28 @@ namespace NewCss
         /// EventEffectManager.GetOwnedPlayer()). Her client kendi owned player'ını bulur — perk
         /// satın alan oyuncu kimliği önemli değil, kart tüm takıma etki eder (mevcut roguelite
         /// tasarımı) ve her peer bu satırı kendi owned player'ı için çalıştırır.
+        ///
+        /// QA-fix: ApplyToPlayer ham değeri yazdıktan HEMEN SONRA, aktif event varsa ilgili
+        /// Rebase* çağrılır (agile_crew → moveSpeed, energetic_crew → staminaRegenRate) — aynı
+        /// gerekçe ApplyPerkToAllLiveTrucks'taki gibi. PlayerMovement.OnNetworkSpawn'daki
+        /// ApplyLivePerksToPlayer yolunda BİLİNÇLİ OLARAK YOK (late-join/yeni oyuncu — event varsa
+        /// EventEffectManager kendi late-join yakalamasıyla ayrıca ilgileniyor, burada rebase
+        /// çift çarpıma yol açardı).
         /// </summary>
         private void ApplyPerkToOwnedPlayer(string effectId, int level)
         {
             PlayerMovement ownedPlayer = GetOwnedPlayer();
-            if (ownedPlayer != null)
+            if (ownedPlayer == null) return;
+
+            PerkEffect.ApplyToPlayer(effectId, level, ownedPlayer);
+
+            if (effectId == "agile_crew")
             {
-                PerkEffect.ApplyToPlayer(effectId, level, ownedPlayer);
+                EventEffectManager.Instance?.RebasePlayerMoveSpeed(ownedPlayer, ownedPlayer.moveSpeed);
+            }
+            else if (effectId == "energetic_crew")
+            {
+                EventEffectManager.Instance?.RebasePlayerStaminaRegenRate(ownedPlayer, ownedPlayer.staminaRegenRate);
             }
         }
 

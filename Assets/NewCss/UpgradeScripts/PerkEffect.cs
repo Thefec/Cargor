@@ -147,6 +147,21 @@ namespace NewCss
         }
 
         /// <summary>
+        /// effectId Truck.rewardPerBox'a mı yazıyor? QA-fix (event-perk çakışması, bkz.
+        /// ApplyGamblerCaseToTruck yorumu): SADECE bu iki id'nin yazdığı alan
+        /// (EventEffectManager.EventMultipliers.rewardPerBoxMultiplier) event tarafından da
+        /// çarpılıyor. prestige_broker (bonusPerTier), fast_hangar (hangarStayDuration) ve
+        /// gambler_case'in penaltyPerBox yarısı HİÇBİR event alanında yok (grep ile doğrulandı) —
+        /// rebase'e ihtiyaçları yok. UpgradePanel.ApplyPerkToAllLiveTrucks bu predicate'i satın
+        /// alma anında EventEffectManager.RebaseTruckRewardPerBox çağrısı gerekip gerekmediğine
+        /// karar vermek için kullanır.
+        /// </summary>
+        public static bool AffectsEventTruckReward(string effectId)
+        {
+            return effectId == "gambler_case" || effectId == "all_in";
+        }
+
+        /// <summary>
         /// effectId, genel PerkContext (Economy/CustomerManager/DayCycle/Panel) üzerinden Apply()
         /// çağrısına ihtiyaç duyuyor mu? prestige_broker/fast_hangar/gambler_case/agile_crew/
         /// energetic_crew TAMAMEN Truck/Player'a taşındığı için burada false — Apply() bu id'ler
@@ -206,13 +221,22 @@ namespace NewCss
 
         // Enerjik Ekip (relic): staminaRegenRate 1 → 2.5 (mevcut mekaniğe bağlanış, ekonomik değer
         // değil). perk-revival: artık ApplyToPlayer üzerinden owned player'a yazılıyor.
+        //
+        // QA-fix NOT (event-rebase burada BİLİNÇLİ OLARAK YOK): staminaRegenRate event'lerin
+        // staminaRegenRateMultiplier'ıyla da çarpılıyor (EventEffectManager). Bu metod hem satın
+        // alma anında (mevcut oyuncu, event ZATEN aktif olabilir → rebase GEREKİR) hem de
+        // PlayerMovement.OnNetworkSpawn'dan (yeni/late-join oyuncu, event varsa
+        // EventEffectManager kendi late-join yakalamasıyla ayrıca ilgilenir → rebase burada
+        // yapılırsa YANLIŞ sırada ikinci kez çarpardı) çağrılıyor. Bu yüzden rebase çağrısı BURADA
+        // değil, çağıranda: UpgradePanel.ApplyPerkToOwnedPlayer (yalnız satın alma anı).
         private static void ApplyEnergeticCrewToPlayer(int level, PlayerMovement player)
         {
             if (level <= 0) return;
             player.staminaRegenRate = 1f + 1.5f;
         }
 
-        // Çevik Ekip (relic): moveSpeed 5 → 5.75 (+%15, mevcut mekaniğe bağlanış)
+        // Çevik Ekip (relic): moveSpeed 5 → 5.75 (+%15, mevcut mekaniğe bağlanış). Event-rebase
+        // notu için bkz. ApplyEnergeticCrewToPlayer üstündeki QA-fix yorumu — aynı gerekçe.
         private static void ApplyAgileCrewToPlayer(int level, PlayerMovement player)
         {
             if (level <= 0) return;
@@ -241,8 +265,18 @@ namespace NewCss
         // tüketilen değerlerdir (Economy.rewardPerBox sadece OnNetworkSpawn'da bir kez kopyalanır);
         // idempotent kalması için her zaman Economy'nin (sabit) baz değerinden yeniden hesaplanır.
         // perk-revival: artık ApplyToTruck üzerinden canlı tıra yazılıyor. gambler_case ve all_in
-        // draft'ta EXCLUSIVE_EFFECT_GROUPS'ta (UpgradePanel.cs:216) — ikisi asla birlikte aktif
-        // olmadığından rewardPerBox üzerinde çakışma yok.
+        // draft'ta EXCLUSIVE_EFFECT_GROUPS'ta (UpgradePanel.cs:216) — bu perk-perk çakışmasını
+        // önler, rewardPerBox üzerinde iki PERKİN çakışması diye bir durum yok.
+        //
+        // QA-fix NOT (event-rebase burada BİLİNÇLİ OLARAK YOK): asıl çakışma perk-perk değil
+        // perk-EVENT arasında — rewardPerBox aynı zamanda EventEffectManager'ın
+        // rewardPerBoxMultiplier'ıyla da çarpılıyor (penaltyPerBox hiçbir event alanında YOK, o
+        // yarı risksiz). Bu metod HEM satın alma anında (mevcut tır, event aktifse rebase GEREKİR)
+        // HEM Truck.OnNetworkSpawn'dan (yeni tır — hemen ardından zaten çalışan
+        // EventEffectManager.ApplyEventEffectToNewObject bu YENİ tırı doğru şekilde bir kez
+        // çarpıyor; burada da rebase edilirse ÇİFT çarpım olurdu) çağrılıyor. Rebase çağrısı bu
+        // yüzden BURADA değil, çağıranda: UpgradePanel.ApplyPerkToAllLiveTrucks (yalnız satın alma
+        // anı, sahadaki MEVCUT tırlar).
         private static void ApplyGamblerCaseToTruck(int level, Truck truck, PerkContext ctx)
         {
             if (ctx.Economy == null || level <= 0) return;
@@ -296,6 +330,8 @@ namespace NewCss
         }
 
         // Kelle Koltukta — ödül parçası: rewardPerBox +%25, CANLI tıra (ApplyToTruck üzerinden).
+        // Event-rebase notu için bkz. ApplyGamblerCaseToTruck üstündeki QA-fix yorumu — aynı
+        // gerekçe (rebase çağrısı UpgradePanel.ApplyPerkToAllLiveTrucks'ta, burada değil).
         private static void ApplyAllInRewardToTruck(int level, Truck truck, PerkContext ctx)
         {
             if (ctx.Economy == null || level <= 0) return;
