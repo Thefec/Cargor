@@ -620,6 +620,81 @@ namespace NewCss
             }
         }
 
+        // ─────────────────────────────────────────────────────────────
+        //  perk-revival QA-fix (bkz. plans/perk-revival.md): AKTİF EVENT sırasında bir tır/oyuncu
+        //  perki satın alınırsa, PerkEffect.ApplyToTruck/ApplyToPlayer o alana mutlak değeri
+        //  doğrudan yazıyor — bu yazı eventStartTruckValues/eventStart* alanlarındaki
+        //  (event-BAŞLANGICINDAKİ, perk-ÖNCESİ) baseline'dan habersiz. Sonuç: (a) o an ekranda
+        //  event çarpanı kayboluyor (perkin ham değeri görünüyor, event'in katkısı yok) ve (b)
+        //  event bitince RemoveAllEventEffects eski perk-öncesi baseline'ı geri yazıyor — perk
+        //  kalıcı olarak siliniyor (yeniden tetiklenmez).
+        //
+        //  Çözüm: UpgradePanel.ApplyPerkToAllLiveTrucks / ApplyPerkToOwnedPlayer — SADECE satın
+        //  alma anı, MEVCUT canlı tır/oyuncu yolu — PerkEffect'in mutlak perk değerini yazmasından
+        //  HEMEN SONRA bu Rebase* metodlarını çağırır. Aktif event yoksa no-op (perkin yazdığı ham
+        //  değer zaten doğru nihai değer). Aktif event VARSA: baseline o alan için perk değerine
+        //  güncellenir VE çarpan o baseline üzerine YENİDEN uygulanır — ApplyEventEffectToNewObject'i
+        //  tekrar çağırmak YANLIŞ olurdu (o metod exitDelay/sprintSpeed gibi perkin dokunmadığı
+        //  alanları da zaten-çarpılmış haliyle yakalayıp İKİNCİ KEZ çarpardı); bu yüzden yalnızca
+        //  perkin dokunduğu tek alan hedeflenir. İdempotent: aynı raw değerle iki kez çağrılırsa
+        //  baseline aynı değere eziliyor ve çarpan sıfırdan yeniden hesaplanıyor — üst üste binmez.
+        //
+        //  BİLİNÇLİ OLARAK Truck.OnNetworkSpawn/PlayerMovement.OnNetworkSpawn (yeni doğan/late-join
+        //  nesne) yolunda ÇAĞRILMAZ — o yol zaten ApplyEventEffectToNewObject (tır) veya
+        //  EventEffectManager'ın kendi late-join yakalaması (oyuncu) ile doğru şekilde tek kez
+        //  çarpılıyor; burada da rebase edilirse ÇİFT çarpım olurdu.
+        // ─────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Truck.rewardPerBox için perk-rebase. gambler_case ve all_in çağırır. penaltyPerBox/
+        /// bonusPerTier/hangarStayDuration hiçbir EventMultipliers alanında YOK (grep ile
+        /// doğrulandı) — event bu alanlara hiç dokunmuyor, dolayısıyla prestige_broker/fast_hangar
+        /// ve gambler_case'in ceza yarısı bu rebase'e ihtiyaç duymaz.
+        /// </summary>
+        public void RebaseTruckRewardPerBox(Truck truck, int newBaseRewardPerBox)
+        {
+            if (truck == null || currentActiveEvent.Value == -1) return;
+
+            string currentEventName = eventNames[currentActiveEvent.Value];
+            if (!eventMultipliers.TryGetValue(currentEventName, out EventMultipliers multipliers)) return;
+
+            // Truck event'e hiç girmemişse (beklenmez — Truck.OnNetworkSpawn her zaman
+            // ApplyEventEffectToNewObject'i çağırır — ama savunmacı) exitDelay baseline'ı mevcut
+            // (muhtemelen zaten authored) değerden kurulur; yalnızca rewardPerBox dokunuluyor.
+            EventTruckValues baseline = eventStartTruckValues.TryGetValue(truck, out EventTruckValues existing)
+                ? existing
+                : new EventTruckValues { exitDelay = truck.exitDelay };
+
+            baseline.rewardPerBox = newBaseRewardPerBox;
+            eventStartTruckValues[truck] = baseline;
+
+            truck.rewardPerBox = (int)(baseline.rewardPerBox * multipliers.rewardPerBoxMultiplier);
+        }
+
+        /// <summary>PlayerMovement.moveSpeed için perk-rebase. Sadece agile_crew çağırır.</summary>
+        public void RebasePlayerMoveSpeed(PlayerMovement player, float newBaseMoveSpeed)
+        {
+            if (player == null || !player.IsOwner || currentActiveEvent.Value == -1) return;
+
+            string currentEventName = eventNames[currentActiveEvent.Value];
+            if (!eventMultipliers.TryGetValue(currentEventName, out EventMultipliers multipliers)) return;
+
+            eventStartPlayerMoveSpeed = newBaseMoveSpeed;
+            player.moveSpeed = eventStartPlayerMoveSpeed * multipliers.playerMoveSpeedMultiplier;
+        }
+
+        /// <summary>PlayerMovement.staminaRegenRate için perk-rebase. Sadece energetic_crew çağırır.</summary>
+        public void RebasePlayerStaminaRegenRate(PlayerMovement player, float newBaseStaminaRegenRate)
+        {
+            if (player == null || !player.IsOwner || currentActiveEvent.Value == -1) return;
+
+            string currentEventName = eventNames[currentActiveEvent.Value];
+            if (!eventMultipliers.TryGetValue(currentEventName, out EventMultipliers multipliers)) return;
+
+            eventStartStaminaRegenRate = newBaseStaminaRegenRate;
+            player.staminaRegenRate = eventStartStaminaRegenRate * multipliers.staminaRegenRateMultiplier;
+        }
+
         public bool IsGoldenBoxDay()
         {
             if (currentActiveEvent.Value == -1) return false;

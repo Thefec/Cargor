@@ -269,7 +269,16 @@ namespace NewCss
 
         [Header("=== MANAGER REFERENCES ===")]
         [SerializeField] private CustomerManager CustomerManager;
+        // NOT: sahnede bu alan Character PREFAB'ına işaret ediyor (bkz. plans/perk-revival.md
+        // §1.1) — canlı oyuncu instance'ı DEĞİL. Hâlâ InitializeStaminaBaseValue/ApplyStaminaUpgrade
+        // (backbone stamina yükseltmesi, perk değil) tarafından yazılıyor; PerkAssetSnapshot bu
+        // yüzden hâlâ anlamlı. Perk yazıları (agile_crew/energetic_crew) artık FindObjectsOfType
+        // üzerinden canlı instance'a gidiyor (bkz. GetOwnedPlayer/ApplyLivePerksToPlayer).
         [SerializeField] private PlayerMovement PlayerMovement;
+        // NOT: sahnede bu alan Truck PREFAB'ına işaret ediyor (bkz. plans/perk-revival.md §1.1) —
+        // canlı tır instance'ı DEĞİL. perk-revival sonrası hiçbir Apply* yolu buraya yazmıyor
+        // (bkz. PerkAssetSnapshot sınıf notu); yalnızca eski PerkAssetSnapshot restore kodunda
+        // referans olarak duruyor.
         [SerializeField] private Truck Truck;
         [SerializeField] private CustomerAI CustomerAI;
         [SerializeField] private EventEffectManager eventEffectManager;
@@ -316,12 +325,26 @@ namespace NewCss
         /// </summary>
         public int UpgradeCount => upgrades.Count;
 
+        /// <summary>
+        /// perk-revival: sahnede tekil UpgradePanel — diğer sistemlerin (Truck.OnNetworkSpawn,
+        /// PlayerMovement.OnNetworkSpawn) canlı tır/oyuncu perklerini talep etmesi için (bkz.
+        /// ApplyLivePerksToTruck / ApplyLivePerksToPlayer). TruckSpawner/DayCycleManager/MoneySystem
+        /// ile aynı Instance deseni. Awake'de kurulur (network spawn'dan bağımsız, sahne yüklenir
+        /// yüklenmez hazır olmalı).
+        /// </summary>
+        public static UpgradePanel Instance { get; private set; }
+
         #endregion
 
         #region Unity Lifecycle
 
         private void Awake()
         {
+            if (Instance == null)
+            {
+                Instance = this;
+            }
+
             InitializeNetworkLists();
             LocalizationHelper.OnLocaleChanged += OnLocaleChanged;
             WarnAboutNegativeCostSteps();
@@ -350,6 +373,11 @@ namespace NewCss
             // burada da çağrılıyor. RestorePerkAssetSnapshot idempotent — iki kez çalışması zararsız.
             RestorePerkAssetSnapshot();
             LocalizationHelper.OnLocaleChanged -= OnLocaleChanged;
+
+            if (Instance == this)
+            {
+                Instance = null;
+            }
         }
         
         private void OnLocaleChanged()
@@ -560,6 +588,15 @@ namespace NewCss
         /// yakalar ve her oturum sonunda geri yazar. Yalnız SO/prefab alanları — CustomerManager/
         /// DayCycleManager/Panel gibi SAHNE objeleri sahne yeniden yüklemesiyle kendiliğinden
         /// resetlendiği için kapsam dışı (gereksiz yüzey).
+        ///
+        /// perk-revival (2026-08-19) NOT: Truck-prefab 4 alanı (BonusPerTier/HangarStayDuration/
+        /// RewardPerBox/PenaltyPerBox) artık FİİLEN VESTİGİYEL — PerkEffect hiçbir yerde ctx.Truck'a
+        /// yazmıyor (canlı instance'a taşındı, bkz. PerkEffect.ApplyToTruck), yani capture her zaman
+        /// zaten-authored değeri yakalayıp aynısını geri yazıyor (no-op). Bilinçli olarak SİLİNMEDİ:
+        /// (a) düşük risk — no-op olsa da zarar vermiyor, (b) PlayerMovement 2 alanı hâlâ CANLI
+        /// (InitializeStaminaBaseValue backbone yükseltmesi staminaRegenRate'e prefab üzerinden
+        /// yazmaya devam ediyor — bu perk DEĞİL, kapsam dışı), simetriyi bozup ayrı bir yol açmak
+        /// gereksiz risk. Silme kararı ileride ayrı bir temizlik turuna bırakıldı.
         /// </summary>
         private class PerkAssetSnapshot
         {
@@ -579,15 +616,17 @@ namespace NewCss
             public float RewardVolatility;
             public float RewardVolatilityMean;
 
-            // Truck prefab (4 alan) — PerkEffect.cs: ApplyPrestigeBroker, ApplyFastHangar,
-            // ApplyGamblerCase, ApplyAllIn
+            // Truck prefab (4 alan) — perk-revival SONRASI VESTİGİYEL (yukarıdaki sınıf notuna
+            // bkz.): artık hiçbir PerkEffect yolu buraya yazmıyor, capture/restore no-op'a döndü.
             public float BonusPerTier;
             public float HangarStayDuration;
             public int RewardPerBox;
             public int PenaltyPerBox;
 
-            // PlayerMovement prefab (2 alan) — PerkEffect.cs: ApplyEnergeticCrew, ApplyAgileCrew;
-            // ayrıca InitializeStaminaBaseValue (yukarıda) staminaRegenRate'e yazıyor.
+            // PlayerMovement prefab (2 alan) — perk-revival sonrası MoveSpeed yarısı da vestigiyel
+            // (agile_crew artık PerkEffect.ApplyToPlayer üzerinden canlı instance'a yazıyor).
+            // StaminaRegenRate yarısı hâlâ CANLI: InitializeStaminaBaseValue (yukarıda) ve
+            // ApplyStaminaUpgrade (backbone stamina yükseltmesi, perk değil) buraya yazmaya devam ediyor.
             public float StaminaRegenRate;
             public float MoveSpeed;
         }
@@ -916,9 +955,147 @@ namespace NewCss
             }
 
             string effectId = entry.Definition.effectId;
-            if (!string.IsNullOrEmpty(effectId))
+            if (string.IsNullOrEmpty(effectId)) return;
+
+            // perk-revival (bkz. plans/perk-revival.md §2): prefab yerine canlı instance'lara
+            // dağıtım. Bir effectId aynı anda hem truck hem generic parçaya sahip olabilir
+            // (all_in) — bu yüzden if'ler exclusive değil, sırayla kontrol edilir.
+            if (PerkEffect.WritesToTruck(effectId))
+            {
+                ApplyPerkToAllLiveTrucks(effectId, level);
+            }
+
+            if (PerkEffect.WritesToPlayer(effectId))
+            {
+                ApplyPerkToOwnedPlayer(effectId, level);
+            }
+
+            if (PerkEffect.NeedsGenericApply(effectId))
             {
                 PerkEffect.Apply(effectId, level, BuildPerkContext());
+            }
+        }
+
+        /// <summary>
+        /// perk-revival: satın alma anında SAHADAKİ TÜM canlı tırlara uygular (desen:
+        /// EventEffectManager.SaveCurrentValuesAndApplyMultipliers → FindObjectsOfType&lt;Truck&gt;()).
+        /// Server-only DEĞİL — HandleUpgradeLevelsChanged tüm client'larda tetiklenir ve her peer
+        /// kendi local Truck instance'larını aynı idempotent formülle günceller (rewardPerBox/
+        /// penaltyPerBox'ın parasal sonucu yalnız server'da tüketilir, bkz. Truck.ProcessDelivery
+        /// `if (!IsServer) return false;` — client'taki değer sadece UI/tutarlılık için).
+        ///
+        /// QA-fix (event sırasında perk satın alma): PerkEffect.ApplyToTruck ham (event'ten
+        /// habersiz) mutlak değeri yazdıktan HEMEN SONRA, effectId rewardPerBox'a dokunuyorsa
+        /// (bkz. PerkEffect.AffectsEventTruckReward) EventEffectManager.RebaseTruckRewardPerBox
+        /// çağrılır — aktif event varsa baseline'ı bu yeni perk değerine günceller ve çarpanı
+        /// yeniden uygular; event yoksa no-op. Bu çağrı BİLİNÇLİ OLARAK yalnız burada (satın alma,
+        /// MEVCUT tır) — Truck.OnNetworkSpawn'daki ApplyLivePerksToTruck yolunda YOK, çünkü o yolu
+        /// hemen EventEffectManager.ApplyEventEffectToNewObject izliyor ve o zaten doğru şekilde
+        /// bir kez çarpıyor; burada da rebase edilseydi ÇİFT çarpım olurdu (bkz.
+        /// plans/perk-revival.md ve QA bulgusu).
+        /// </summary>
+        private void ApplyPerkToAllLiveTrucks(string effectId, int level)
+        {
+            var ctx = BuildPerkContext();
+            bool rebaseReward = PerkEffect.AffectsEventTruckReward(effectId);
+            Truck[] trucks = FindObjectsOfType<Truck>();
+            foreach (var truck in trucks)
+            {
+                PerkEffect.ApplyToTruck(effectId, level, truck, ctx);
+                if (rebaseReward)
+                {
+                    EventEffectManager.Instance?.RebaseTruckRewardPerBox(truck, truck.rewardPerBox);
+                }
+            }
+        }
+
+        /// <summary>
+        /// perk-revival: satın alma anında SADECE bu peer'in owned player'ına uygular (desen:
+        /// EventEffectManager.GetOwnedPlayer()). Her client kendi owned player'ını bulur — perk
+        /// satın alan oyuncu kimliği önemli değil, kart tüm takıma etki eder (mevcut roguelite
+        /// tasarımı) ve her peer bu satırı kendi owned player'ı için çalıştırır.
+        ///
+        /// QA-fix: ApplyToPlayer ham değeri yazdıktan HEMEN SONRA, aktif event varsa ilgili
+        /// Rebase* çağrılır (agile_crew → moveSpeed, energetic_crew → staminaRegenRate) — aynı
+        /// gerekçe ApplyPerkToAllLiveTrucks'taki gibi. PlayerMovement.OnNetworkSpawn'daki
+        /// ApplyLivePerksToPlayer yolunda BİLİNÇLİ OLARAK YOK (late-join/yeni oyuncu — event varsa
+        /// EventEffectManager kendi late-join yakalamasıyla ayrıca ilgileniyor, burada rebase
+        /// çift çarpıma yol açardı).
+        /// </summary>
+        private void ApplyPerkToOwnedPlayer(string effectId, int level)
+        {
+            PlayerMovement ownedPlayer = GetOwnedPlayer();
+            if (ownedPlayer == null) return;
+
+            PerkEffect.ApplyToPlayer(effectId, level, ownedPlayer);
+
+            if (effectId == "agile_crew")
+            {
+                EventEffectManager.Instance?.RebasePlayerMoveSpeed(ownedPlayer, ownedPlayer.moveSpeed);
+            }
+            else if (effectId == "energetic_crew")
+            {
+                EventEffectManager.Instance?.RebasePlayerStaminaRegenRate(ownedPlayer, ownedPlayer.staminaRegenRate);
+            }
+        }
+
+        /// <summary>
+        /// EventEffectManager.GetOwnedPlayer() ile birebir aynı desen — bu peer'in kontrol ettiği
+        /// PlayerMovement'ı IsOwner ile bulur. Sahnede tek referans (UpgradePanel'in serialize
+        /// edilmiş PlayerMovement alanı) PREFAB'a işaret ettiği için (bkz. plans/perk-revival.md
+        /// §1.1) kullanılamaz; FindObjectsOfType canlı sahne instance'larını tarar.
+        /// </summary>
+        private PlayerMovement GetOwnedPlayer()
+        {
+            PlayerMovement[] players = FindObjectsOfType<PlayerMovement>();
+            foreach (var player in players)
+            {
+                if (player != null && player.IsOwner) return player;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// perk-revival: Truck.OnNetworkSpawn tarafından çağrılır (SO okumasından SONRA, event
+        /// çarpanından ÖNCE — bkz. plans/perk-revival.md §2.1, sıra kritik). Şu ana kadar satın
+        /// alınmış tüm tır perklerini (prestige_broker/fast_hangar/gambler_case/all_in) bu YENİ
+        /// doğan tıra uygular. Idempotent olduğu için level=0 olan perkler no-op.
+        /// </summary>
+        public void ApplyLivePerksToTruck(Truck truck)
+        {
+            if (truck == null || _upgradeLevels == null) return;
+
+            var ctx = BuildPerkContext();
+            for (int i = 0; i < upgrades.Count && i < _upgradeLevels.Count; i++)
+            {
+                int level = _upgradeLevels[i];
+                if (level <= 0) continue;
+
+                string effectId = upgrades[i]?.effectId;
+                if (string.IsNullOrEmpty(effectId) || !PerkEffect.WritesToTruck(effectId)) continue;
+
+                PerkEffect.ApplyToTruck(effectId, level, truck, ctx);
+            }
+        }
+
+        /// <summary>
+        /// perk-revival: PlayerMovement.OnNetworkSpawn tarafından çağrılır (IsOwner altında —
+        /// F10 late-join buff deseniyle aynı yer, bkz. PlayerMovement.cs). Late-join oyuncusu bu
+        /// ana kadar satın alınmış agile_crew/energetic_crew perklerini kaçırmasın diye.
+        /// </summary>
+        public void ApplyLivePerksToPlayer(PlayerMovement player)
+        {
+            if (player == null || _upgradeLevels == null) return;
+
+            for (int i = 0; i < upgrades.Count && i < _upgradeLevels.Count; i++)
+            {
+                int level = _upgradeLevels[i];
+                if (level <= 0) continue;
+
+                string effectId = upgrades[i]?.effectId;
+                if (string.IsNullOrEmpty(effectId) || !PerkEffect.WritesToPlayer(effectId)) continue;
+
+                PerkEffect.ApplyToPlayer(effectId, level, player);
             }
         }
 
@@ -964,11 +1141,14 @@ namespace NewCss
         /// </summary>
         private PerkContext BuildPerkContext()
         {
+            // perk-revival: Truck/PlayerMovement artık burada YOK — PerkContext'ten kaldırıldı,
+            // çünkü bu sınıfın Truck/PlayerMovement SerializeField'ları PREFAB referansı (bkz.
+            // plans/perk-revival.md §1.1). Tır/oyuncu perkleri artık ApplyPerkToAllLiveTrucks /
+            // ApplyPerkToOwnedPlayer / ApplyLivePerksToTruck / ApplyLivePerksToPlayer üzerinden
+            // canlı instance parametresiyle çağrılıyor.
             return new PerkContext
             {
-                Truck = Truck,
                 CustomerManager = CustomerManager,
-                PlayerMovement = PlayerMovement,
                 Economy = economySettings,
                 DayCycle = DayCycleManager.Instance,
                 Panel = this,
