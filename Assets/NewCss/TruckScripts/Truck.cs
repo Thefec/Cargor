@@ -250,6 +250,13 @@ namespace NewCss
                 bonusPerTier      = economySettings.bonusPerTier;
             }
 
+            // perk-revival (bkz. plans/perk-revival.md §2.1): SO okumasından SONRA, event
+            // çarpanından ÖNCE — şu ana kadar satın alınmış tır perklerini (prestige_broker/
+            // fast_hangar/gambler_case/all_in) bu YENİ doğan tıra uygula. Sıra kritik: ters sırada
+            // EventEffectManager'ın snapshot'ı perk-öncesi değeri "event-öncesi" sanıp yakalardı ve
+            // event bitince perki silerdi.
+            UpgradePanel.Instance?.ApplyLivePerksToTruck(this);
+
             SubscribeToNetworkEvents();
             SetupTriggerCollider();
             AutoFindAudioSources();
