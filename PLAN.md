@@ -8,22 +8,23 @@
 
 ## 🎯 Şu an aktif iş
 
-**🧟 6 ÖLÜ PERK CANLANDIRILDI — dal `feature/perk-revival` (main'den, 7 commit, MERGE/PUSH YOK), `kontrol` 1. TURDA ONAY.**
+**✅ 6 ÖLÜ PERK CANLANDIRILDI + KALINTI TEMİZLİĞİ — hepsi `main`'e merge + push edildi.**
 
 > Perkler kalıcı **prefab** alanlarına yazıyordu; tır tarafında `Truck.OnNetworkSpawn` (`Truck.cs:243-250`) her spawn'da SO'dan yeniden okuyup eziyor, oyuncu tarafında ise oyuncu bir kez spawn olduğu için canlıya hiç ulaşmıyordu. Ölü olan 6 perk: `prestige_broker` · `fast_hangar` · `gambler_case` · `agile_crew` · `energetic_crew` · 🔴 `all_in` (**tuzak kart**: faydası ölü, bedeli çalışıyordu). Çözüm `EventEffectManager` deseni: canlı instance'lara uygulama + spawn/late-join kancaları + satın-alma anında event baseline rebase'i. **Sabit değişmedi** (economist: fiyatlar zaten FAZ4 §B.7 ile güncel; `prestige_broker` etkisi bilerek `+0.5/lvl` bırakıldı). Tam teşhis + sözleşme: [plans/perk-revival.md](plans/perk-revival.md).
-> **Doğrulama:** 0 CS · EditMode **19/19** · `EconomyInvariantCheck` **179/179** temiz · QA'nın 1 bloklayıcı bulgusu (event sırasında alınan perk siliniyordu) kapandı.
-> **Kalan tek adım:** Unity playtest — **6 perk canlı olduğu için `kutu/dk/oyuncu` tabanı değişti**, önceki ölçüm bu perkler ölüyken alınmıştı. Playtest'te özellikle izle: `gambler_case`+`high_volatility` kombinasyonu çarpımsal birleşiyor (+%27 yerine +%49, dışlama listesinde yok).
+> **Kullanıcı playtest yaptı, sorun bildirmedi** — merge onaylandı. Playtest'te izlenmesi önerilen (bloklayıcı değil): `gambler_case`+`high_volatility` çarpımsal birleşiyor (+%27 yerine +%49, dışlama listesinde yok).
+> **Aynı turda ek kapatıldı:** "Dinç Ekip" stamina backbone'u aynı hastalık sınıfıydı (prefab'a yazıyordu) — bağlandı, draft'ta kapalı olduğu için economist gerekmedi. `tools/economy-sim/sim.js` FAZ4 sonrası hiç resync edilmemişti — 11 sabit düzeltildi. 🔴 **Resync bir risk açığa çıkardı:** STRICT bantta 4P artık gün 16'da (son kira) iflas ediyor, Slow/optimistic bantta 2P-4P hepsi gün 16'da iflas ediyor — FAZ4'ün kira eğrisi bu doğru sim ile hiç test edilmemiş olabilir. Kod değişmedi, karar economist'te; playtest'te 4P gün 13-16 nakit akışı izlenmeli. Kök `herhangi` + `Assets/_Recovery` (13 dosya) kullanıcı onayıyla silindi.
+> **Doğrulama (tüm merge'ler sonrası tekrar koşuldu):** 0 CS · EditMode 19/19 · `EconomyInvariantCheck` 179/179 temiz.
 
 > ✅ **2026-08-16'da 3 dal main'e merge edildi:** `feature/room-visibility` · `feature/post-rent-mechanics` · `feature/economy-verification` + N3 break-room fix'i (`cc04901`).
 
-> 🔴 **AÇIK PLAYTEST BORÇLARI (kod bitti, yalnız gerçek Unity'de ölçülebilir):**
+> 🟡 **AÇIK PLAYTEST NOTLARI (kullanıcı genel playtest yaptı, sorun bildirmedi — spesifik maddeler resmi olarak kapatılmadı):**
 > - **Oda-görünürlük S7** — 2 istemcili playtest: SRP Batcher (Frame Debugger önce/sonra) · AABB'lerin geometriyle örtüşmesi · 5 URP/Lit materyalin parlak leke bırakması · pop-in hissi. Sahneye `---ROOMS---` + `RoomVolume`'ler zaten çizili (5 oda). Tam plan: [plans/oda-gorunurluk.md](plans/oda-gorunurluk.md).
 > - **Kira sonrası 3 özellik** — iade göstergesinin görünürlüğü · 2-item akışının tempo hissi · ACES tonemapping altında karışık tır renklerinin doğru görünmesi.
-> - Genel: 0 dk/oyuncu **kutu/dakika** hâlâ makinede ölçülmedi, bkz. [plans/playtest-olcum-protokolu.md](plans/playtest-olcum-protokolu.md).
+> - 🔴 **YENİ: 4P gün-16 iflas riski** (yukarı bak) — sim resync'in açığa çıkardığı bulgu, ayrıca izlenmeli.
 
-> 🎙️ **TELSİZ — PLAN ONAYLI ama dal `feature/voice-chat`'te 25 commit yarım kalmış (MERGE/PUSH YOK).** Mikrofon sorunu kapandı; **açık: client'ta WASD ölmesi** (`PlayerMovement.cs`'de geçici `[TESHIS]` kodu bekliyor). Tam plan: [plans/telsiz-voice-chat.md](plans/telsiz-voice-chat.md). Detay: [plans/devam.md](plans/devam.md) "Telsiz" girişleri.
+> 🎙️ **TELSİZ — dal `feature/voice-chat`, main'e göre 25 önde / **46 GERİDE**, MERGE/PUSH YOK, KARARLI OLARAK AÇIK BIRAKILDI.** Mikrofon sorunu kapandı; **açık: client'ta WASD ölmesi** (`PlayerMovement.cs`'de geçici `[TESHIS]` kodu bekliyor) — son commit gerçek bir NRE bug'ını düzeltti ve WASD'i de çözmüş olabilir ama hiç doğrulanmadı. **Kullanıcı kendisi 2-makine testi yapacak**, sonuç gelmeden dala dokunulmuyor. Tam plan: [plans/telsiz-voice-chat.md](plans/telsiz-voice-chat.md). Detay: [plans/devam.md](plans/devam.md) "Telsiz" girişleri.
 
-`main` = 2026-08-16 üç merge + N3 fix ile güncel, **origin/main'e PUSH YOK**.
+`main` = 2026-08-19 perk canlandırma + stamina fix + sim resync + temizlik ile güncel, **origin/main'e PUSH EDİLDİ**.
 
 - ✅ **Roguelite draft + RELEASE PUSH FAZ 0/1** — arşiv: [plans/roguelite-draft.md](plans/roguelite-draft.md), [plans/release-push.md](plans/release-push.md)
 - ✅ **Ekonomi sıfırdan yeniden hesaplandı + uygulandı** — 4 faz analiz ([plans/economy-rebuild-2026-07-30*.md](plans/economy-rebuild-2026-07-30-faz4-final.md)), §D#1–#8 tamamı kodda; kalite kapısı 3 turda ONAY
@@ -42,7 +43,7 @@
    - ✅ **6 ölü perk canlandı** — seçenek **C** (2026-08-19, dal `feature/perk-revival`, kontrol 1. turda ONAY). Perkler artık canlı tır/oyuncu instance'larına yazıyor. Detay: [plans/perk-revival.md](plans/perk-revival.md).
 
 4. 📖 ~~GDD senkronu~~ ✅ **BİTTİ** (2026-08-07, `bc43773`) — §4/§5/§6/§7/§8/§13/§14/§16/§19/§21/§31 koda hizalandı; §7 Kota Sistemi tamamen kaldırıldı (kodda yok).
-5. 🧹 **Temizlik onayı bekliyor:** kök `herhangi` (0 bayt) + `Assets/_Recovery/0 (1..13).unity` (13 dosya).
+5. ✅ **Temizlik yapıldı** (2026-08-19) — kök `herhangi` (0 bayt) + `Assets/_Recovery/` (13 dosya) silindi, `main`'de.
 
 ### 🟢 Latent / düşük öncelik
 - **Ölü quest tetikleyicileri**: `CompleteMinigame` + `MakePackagingMistake` — `QuestTracker.Notify*` metodlarının gerçek çağıranı yok. 30 asset'in hiçbiri bu tipleri kullanmıyor (hepsi tip 1/2/3/4), o yüzden canlı bug değil; yeni görev tipi eklenirse önce bunlar bağlanmalı.
