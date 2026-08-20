@@ -252,7 +252,7 @@ Tüm ekonomik değerler tek bir `GameEconomySettings` ScriptableObject'ten yöne
 │
 ├── 💸 KİRA AYARLARI
 │   ├── baseRentByPlayerCount: [500, 1000, 1450, 1800]
-│   ├── rentGrowthMultiplier: 1.35 (%35 artış/dönem)
+│   ├── rentGrowthMultiplier: 1.20 (%20 artış/dönem)
 │   ├── rentScaledMultiplier: 1.0 (varsayılan; leveraged_rent perki 0.75 yapar)
 │   ├── rentIntervalDays: 4 (her 4 günde bir kira)
 │   └── gracePaymentPercent: 0.8 (%80 affedilme bedeli; leveraged_rent VE all_in perkleri 0 yapar = grace iptal)
@@ -326,7 +326,7 @@ $$\text{KutuBaşıGelir} = \text{rewardPerBox} + \left\lfloor \frac{\text{presti
 
 ### 5.1 Kira Formülü
 
-$$\text{Kira} = \text{BaseRent}[P] \times 1.35^{\text{cycle}} \times \text{rentScaledMultiplier}$$
+$$\text{Kira} = \text{BaseRent}[P] \times 1.20^{\text{cycle}} \times \text{rentScaledMultiplier}$$
 
 Burada:
 - \(P\) = Oyuncu sayısı (1-4)
@@ -351,13 +351,16 @@ Burada:
 | Gün | Dönem | 1P | 2P | 3P | 4P |
 |-----|-------|-----|-----|-----|-----|
 | 4 | Dönem 0 | 500 | 1.000 | 1.450 | 1.800 |
-| 8 | Dönem 1 | 675 | 1.350 | 1.958 | 2.430 |
-| 12 | Dönem 2 | 911 | 1.823 | 2.643 | 3.281 |
-| 16 | Dönem 3 | 1.230 | 2.460 | 3.568 | 4.429 |
-| — | **16 gün toplamı** | **3.316** | **6.633** | **9.619** | **11.940** |
+| 8 | Dönem 1 | 600 | 1.200 | 1.740 | 2.160 |
+| 12 | Dönem 2 | 720 | 1.440 | 2.088 | 2.592 |
+| 16 | Dönem 3 | 864 | 1.728 | 2.506 | 3.110 |
+| — | **16 gün toplamı** | **2.684** | **5.368** | **7.784** | **9.662** |
 
-> Eğim `rentGrowthMultiplier = 1.35` — eski 1.15'ten çok daha dik. Amaç: geç oyunda birikmiş
-> parayı eritip son kira dönemini gerçek bir tehdit yapmak.
+> Eğim `rentGrowthMultiplier = 1.20` (2026-08-20'de 1.35'ten düşürüldü — sim.js FAZ4-sonrası
+> resync'i STRICT bantta 4P'nin ve Slow-optimistic bantta 2P/3P/4P'nin gün 16'da (son kira)
+> iflas ettiğini gösterdi; economist analizi 1.35'in FAZ3/4 sonrası gerçek gelir eğrisine göre
+> fazla dik olduğunu doğruladı, parametrik tarama 1.20'yi önerdi — bkz.
+> `.claude/agent-memory/economist/rent_growth_1_35_deficit_2026-08-20.md`).
 
 ### 5.4 Grace Period (Affedilme Mekanizması)
 
@@ -380,7 +383,7 @@ Burada:
 
 **Örnek (güncel formülle)**:
 - 1 oyuncu, dönem 2 (upgrade sayısından bağımsız):
-  - Kira = 500 × 1.35² × 1.0 = **911 TL**
+  - Kira = 500 × 1.20² × 1.0 = **720 TL**
 
 ---
 

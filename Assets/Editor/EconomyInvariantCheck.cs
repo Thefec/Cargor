@@ -255,7 +255,7 @@ public static class EconomyInvariantCheck
 
         // §B.3 kira
         r.ExpectIntArray("baseRentByPlayerCount", eco.baseRentByPlayerCount, new[] { 500, 1000, 1450, 1800 });
-        r.ExpectFloat("rentGrowthMultiplier", eco.rentGrowthMultiplier, 1.35f);
+        r.ExpectFloat("rentGrowthMultiplier", eco.rentGrowthMultiplier, 1.20f);
         r.Expect("rentIntervalDays", eco.rentIntervalDays, 4);
 
         // §B.5 tır
@@ -294,7 +294,7 @@ public static class EconomyInvariantCheck
 
         // Kira formülü: baseRent × growth^cycle × scaledMultiplier
         r.ExpectFloat("CalculateRent(1P, dönem 0)", eco.CalculateRent(1, 0), 500f, 0.01f);
-        r.ExpectFloat("CalculateRent(4P, dönem 2)", eco.CalculateRent(4, 2), 1800f * 1.35f * 1.35f, 0.5f);
+        r.ExpectFloat("CalculateRent(4P, dönem 2)", eco.CalculateRent(4, 2), 1800f * 1.20f * 1.20f, 0.5f);
 
         // ── PERK SIZINTISI ────────────────────────────────────────────────────
         // Bu alanlar PerkEffect tarafından RUNTIME'DA doğrudan yazılıyor ve hiçbir yerde

@@ -75,7 +75,7 @@ const SRC = {
   // v3.2 RESYNC (2026-08-19): FAZ4 (2026-07-30) sonrasi asset/scene guncellemeleri
   // hic yansitilmamisti. Asagidaki 11 deger bu turda duzeltildi (bkz. rapor).
   baseRentByPlayerCount:      [500, 1000, 1450, 1800], // asset:15 hex f4010000/e8030000/aa050000/08070000 (= GameEconomySettings.cs:21)
-  rentGrowthMultiplier:       1.35,   // asset:16   (= GameEconomySettings.cs:24)
+  rentGrowthMultiplier:       1.20,   // asset:16   (= GameEconomySettings.cs:24)
   rentIntervalDays:           4,      // asset:17   (= cs:27)
   gracePaymentPercent:        0.8,    // asset:18   (= cs:30)
   rentScaledMultiplier:       1.0,    // asset:19   (perk yoksa 1, cs:33)

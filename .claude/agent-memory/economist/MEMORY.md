@@ -1,6 +1,7 @@
 # Economist Agent Memory Index
 
 ## ⭐ EN GÜNCEL TABAN (buradan başla)
+- [Kira büyüme 1.35 açığı + 1.20 önerisi 2026-08-20](rent_growth_1_35_deficit_2026-08-20.md) — ✅DOĞRULANDI: sim-resync sonrası 4P/STRICT gün16'da iflas, kök neden kira/gelir oranının oyun boyunca monotonik artması; g=1.20 parametrik taramayla test edildi (tüm Normal+Slow-optimistic bantlar sağlıklı marjla hayatta); SLOW-STRICT g'den BAĞIMSIZ erken ölüyor (taban kira sorunu, ayrı konu, tek sabitle çözülmez)
 - [sim.js v3.2 resync 2026-08-19](sim_resync_2026-08-19.md) — ✅STALE alanlar KAPANDI (16 sabit güncellendi, dal `fix/sim-resync` commit'siz); ⚠️SONUÇ DEĞİŞTİ: STRICT/Slow'da 4P artık gün16'da iflas ediyor (FAZ4 kira 1.35 hiç sim'le doğrulanmamıştı) — playtest'te 4P gün13-16 nakit akışı izlenmeli; cargo+telefon P-bazlı wiring hâlâ eksik (model gap, raporlandı)
 - [Perk canlandırma ekonomik inceleme 2026-08-19](perk_revival_economic_review_2026-08-19.md) — 6 ölü perkten 5'i FAZ4-kalibreli (dokunma), `prestige_broker` kod hâlâ eski etki taşıyor (dokunma, doubling YAPMA — 18x riski), `gambler_case`+`high_volatility` stacking +49% EV playtest-izle, ⚠️sim.js SRC artık resync edildi (bkz yukarı)
 - [Kalıcı Kart Sistemi değer onayı 2026-08-12](permanent_cards_value_review_2026-08-12.md) — 14 karttan 3'ü değer değişikliği (#6 -%5→-%2, #11 -%15→-%6 [sim: gün+%10 lineer ama net çarpan 0.935 idi], #20 talep+%20 kaldır), #16 güçlendirilmeli
