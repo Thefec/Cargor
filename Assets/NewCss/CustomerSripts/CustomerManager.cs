@@ -709,6 +709,15 @@ namespace NewCss
             Quest.BuffManager.Instance?.ApplyActiveBuffsTo(customerAI);
 
             networkObject.Spawn();
+
+            // Rastgele kıyafet/görünüm: Spawn() ÇAĞRILDIKTAN SONRA uygulanır. NetworkVariable'lar
+            // Spawn() sırasında InitializeVariables() ile NetworkBehaviour'a bağlanır; bundan önce
+            // .Value set etmek fonksiyonel olarak zararsız olsa da NGO'nun "NetworkVariable is written
+            // to, but doesn't know its NetworkBehaviour yet" uyarısını basıyordu (her customer spawn'ında
+            // ~10 log). Mesh swap zaten OnNetworkSpawn -> ApplyAllCustomizations() ile güncel .Value'yu
+            // okuyup OnValueChanged event'iyle tetiklendiğinden sıralamayı buraya almak sonucu bozmaz.
+            customerObject.GetComponent<CustomerMeshSwapper>()?.RandomizeOutfit();
+
             SetupCustomerClientRpc(networkObject.NetworkObjectId, queueIndex);
 
             _customerQueue.Add(customerAI);
