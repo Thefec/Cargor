@@ -71,6 +71,7 @@
 | [plans/economy-rebuild-2026-07-30.md](plans/economy-rebuild-2026-07-30.md) · [-faz2](plans/economy-rebuild-2026-07-30-faz2.md) · [-faz3](plans/economy-rebuild-2026-07-30-faz3.md) | 4 fazlık analiz (envanter, verim modeli, kira/prestij/event, upgrade/quest) | 📖 gerekçe kaynağı |
 | **[plans/playtest-olcum-protokolu.md](plans/playtest-olcum-protokolu.md)** | 🙋 **Oynamadan önce aç** — ölçüm protokolü; tek zorunlu çıktı kutu/dk/oyuncu | 🔴 **bekliyor** |
 | **[plans/telsiz-voice-chat.md](plans/telsiz-voice-chat.md)** | 🎙️ Telsiz (bas-konuş) tam implementasyon planı — mimari, 5 kritik karar, 10 adım, doğrulama A-D, riskler | 🟢 **onaylı — uygulama komutu bekliyor** |
+| **[plans/localization.md](plans/localization.md)** | 🌐 TR/EN çeviri bitirme akışı — wiring kullanıcıda (Editor GUI), EN metin doldurma müdürde | 🔴 **süreç netleşti — kullanıcının sahne seçimi bekleniyor** |
 | [plans/playtest-2026-07-19.md](plans/playtest-2026-07-19.md) | Regresyon checklist'i (27 madde) | 🟡 bayat — ekonomi kısmı FAZ4 öncesi (`maxPrestige 240` yazıyor) |
 | [plans/quest-ekleme-rehberi.md](plans/quest-ekleme-rehberi.md) | 30 görevin Inspector doldurma rehberi + değer tablosu | 📖 referans |
 | [plans/economy-audit-2026-07-20.md](plans/economy-audit-2026-07-20.md) | Holistik ekonomi denetimi (7 sistem) | 📖 tarihsel *(tır penceresi cap bulgusu FAZ4'te ÇÜRÜDÜ — darboğaz tır değil insan üretim hızı)* |

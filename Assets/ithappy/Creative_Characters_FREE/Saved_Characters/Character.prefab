@@ -7345,8 +7345,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Enerji Seviyesi
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 59a62c19558970648a489e073e0c3128, type: 2}
-  m_sharedMaterial: {fileID: 8470922807131959319, guid: 59a62c19558970648a489e073e0c3128, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 9b06d1fb27c356c4098c02fad67cc786, type: 2}
+  m_sharedMaterial: {fileID: -713182712946970239, guid: 9b06d1fb27c356c4098c02fad67cc786, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

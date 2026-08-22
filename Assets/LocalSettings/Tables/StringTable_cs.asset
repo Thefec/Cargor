@@ -1,0 +1,871 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: StringTable_cs
+  m_EditorClassIdentifier:
+  m_LocaleId:
+    m_Code: cs
+  m_SharedData: {fileID: 11400000, guid: 7d8d57bedebf1954db92f72969b59263, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 88301023232
+    m_Localized: "Hra online"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 574282444800
+    m_Localized: "Jazyk"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26808395673600
+    m_Localized: "Citlivost myši"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27030165303296
+    m_Localized: "Hra offline"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27180690485248
+    m_Localized: "Nastavení"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27238353776640
+    m_Localized: "Ukončit"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27356159193088
+    m_Localized: "Obecné"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27414908809216
+    m_Localized: "Grafika"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27504130043904
+    m_Localized: "Zvuk"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27565803089920
+    m_Localized: "Zpět"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28147393671168
+    m_Localized: "Titulky"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 118380277706752
+    m_Localized: "Uložit"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4669780596797440
+    m_Localized: "Přizpůsobit"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4669983794049024
+    m_Localized: "Den"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4670284437565440
+    m_Localized: "NÁROČNÝ DEN"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4670557176377344
+    m_Localized: "BONUS ZA DORUČENÍ"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4670594551820288
+    m_Localized: "NAŠTVANÍ ZÁKAZNÍCI"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4670644065579008
+    m_Localized: "KLIDNÝ DEN"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4670683781443584
+    m_Localized: "POMALÁ LOGISTIKA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4670721878306816
+    m_Localized: "EXPRESNÍ NÁKLAD"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4670821572718592
+    m_Localized: "TĚŽKÉ KRABICE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4670864191041536
+    m_Localized: "DEN ZLATÉ KRABICE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4670907031662592
+    m_Localized: "DEN PŘÍLEŽITOSTÍ"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4670942314147840
+    m_Localized: "PROBLÉM S ÚNAVOU"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4671003622289408
+    m_Localized: "VIP SLUŽBA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4671211781402624
+    m_Localized: "Přizpůsobení postavy"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4671355847356416
+    m_Localized: "Doplňky"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4671495475736576
+    m_Localized: "Obličeje"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4671520289239040
+    m_Localized: "Brýle"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4671581857427456
+    m_Localized: "Rukavice"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4671685976829952
+    m_Localized: "Účesy"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4671905867411456
+    m_Localized: "Klobouky"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4671966126977024
+    m_Localized: "Knírek"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4672063447412736
+    m_Localized: "Svrchní oblečení"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4672192313208832
+    m_Localized: "Kalhoty"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4672235917193216
+    m_Localized: "Boty"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4672275557560320
+    m_Localized: "Barva pleti"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4672388858294272
+    m_Localized: "PRESTIŽ"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4672484777832448
+    m_Localized: "Další den"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4672617426890752
+    m_Localized: "Pokračovat"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30567298710810624
+    m_Localized: "Hostit hru"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30567344864931840
+    m_Localized: "Připojit se ke hře"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30567847749398528
+    m_Localized: "Start"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30567978871730176
+    m_Localized: "Lobby"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30568446771507200
+    m_Localized: "Vybrat mapu\n(Již brzy)"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30568844051787776
+    m_Localized: "Hlavní kancelář"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30569701396885504
+    m_Localized: "Hrát online"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000001
+    m_Localized: "Hráči v lobby"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000002
+    m_Localized: "Celkem: {0} hráčů"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000003
+    m_Localized: "Stav odpočinkové místnosti"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000004
+    m_Localized: "Uvnitř: {0} / {1} hráčů"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000005
+    m_Localized: "Všichni jsou připraveni!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000006
+    m_Localized: "Čeká se na {0} hráčů..."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000007
+    m_Localized: "Nebyli nalezeni žádní hráči"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000008
+    m_Localized: "Hráč"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000009
+    m_Localized: "Výukový program"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000010
+    m_Localized: "Pouze hostitel může vyhazovat hráče!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000011
+    m_Localized: "Hráč byl vyhozen!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000012
+    m_Localized: "Vyhození se nezdařilo!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000013
+    m_Localized: "Volné místo"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000014
+    m_Localized: "Den {0}  {1}:{2} ({3}s)"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000015
+    m_Localized: "Den skončil. Jdi do odpočinkové místnosti."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000016
+    m_Localized: "Den nájmu"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000017
+    m_Localized: "Úroveň: {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000018
+    m_Localized: "Cena: {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000019
+    m_Localized: "Max"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000020
+    m_Localized: "Koupit"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000021
+    m_Localized: "Fronta"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000022
+    m_Localized: "Zvyšuje maximální velikost fronty zákazníků."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000023
+    m_Localized: "Vytrvalost"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000024
+    m_Localized: "Zvyšuje rychlost regenerace vytrvalosti."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000025
+    m_Localized: "Peníze"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000026
+    m_Localized: "Zvyšuje odměnu za doručenou krabici."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000027
+    m_Localized: "Kamion"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000028
+    m_Localized: "Odemyká další garáže pro kamiony."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000029
+    m_Localized: "Úroveň úkolu"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000030
+    m_Localized: "Odemyká úkoly vyšší úrovně."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000031
+    m_Localized: "RUŠNÝ DEN"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000032
+    m_Localized: "Rychlost příchodu zákazníků se zvyšuje o 30 %."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000033
+    m_Localized: "NAŠTVANÍ ZÁKAZNÍCI"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000034
+    m_Localized: "Trpělivost zákazníků klesá o 30 %."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000035
+    m_Localized: "POMALÁ LOGISTIKA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000036
+    m_Localized: "Kamiony opouštějí místo o 50 % pomaleji."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000037
+    m_Localized: "TĚŽKÉ KRABICE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000038
+    m_Localized: "Celková rychlost pohybu klesá o 20 %."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000039
+    m_Localized: "PROBLÉM S ÚNAVOU"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000040
+    m_Localized: "Vytrvalost se obnovuje o 40 % pomaleji a rychlost sprintu klesá o 30 %."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000041
+    m_Localized: "PŘEKVAPIVÁ KONTROLA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000042
+    m_Localized: "Všechny chybné operace jsou penalizovány dvojnásobně."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000043
+    m_Localized: "MARKETINGOVÝ DEN"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000044
+    m_Localized: "O 20 % více zákazníků, ale o 30 % nižší zisk."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000045
+    m_Localized: "ZÁKAZNICKÁ PODPORA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000046
+    m_Localized: "Telefon na recepci zvoní o 50 % častěji."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000047
+    m_Localized: "BONUS ZA DORUČENÍ"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000048
+    m_Localized: "Získej o 20 % více peněz za doručení."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000049
+    m_Localized: "KLIDNÝ DEN"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000050
+    m_Localized: "Trpělivost zákazníků stoupá o 30 %."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000051
+    m_Localized: "EXPRESNÍ NÁKLAD"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000052
+    m_Localized: "Kamiony opouštějí místo o 30 % rychleji."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000053
+    m_Localized: "DEN ZLATÉ KRABICE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000054
+    m_Localized: "Každá správně doručená krabice přináší o 30 % navíc. Přináší také o 20 % více zákazníků, o 20 % rychlejší odjezdy kamionů a o 20 % rychlejší pohyb, ale vytrvalost se obnovuje o 20 % pomaleji."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000055
+    m_Localized: "DEN PŘÍLEŽITOSTÍ"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000056
+    m_Localized: "Náklady na vylepšení klesají o 20 %."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000057
+    m_Localized: "DEN KVÓTY"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000058
+    m_Localized: "Všechny kamiony požadují pouze jednu barvu krabice."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000059
+    m_Localized: "VIP SLUŽBA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000060
+    m_Localized: "10% šance, že krabice je perfektní a vydělá o 10 % více."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000061
+    m_Localized: "DEŠTIVÝ DEN"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000062
+    m_Localized: "Přichází o 20 % méně zákazníků."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000063
+    m_Localized: "DEN FESTIVALU"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000064
+    m_Localized: "Na začátku dne je udělen náhodný bonus."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000065
+    m_Localized: "Hráči"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000066
+    m_Localized: "({0}/{1} v odpočinkové místnosti)"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000067
+    m_Localized: "Očekávaní zákazníci"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000068
+    m_Localized: "Červená"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000069
+    m_Localized: "Modrá"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000070
+    m_Localized: "Žlutá"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000071
+    m_Localized: "Zelená"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000072
+    m_Localized: "Žádný úkol"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000073
+    m_Localized: "Odměna"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000074
+    m_Localized: "Postih"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000075
+    m_Localized: "Dokončeno"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000076
+    m_Localized: "Selhalo"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000077
+    m_Localized: "Dokonči minihru {0}krát"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000078
+    m_Localized: "Umísti {0} krabic na polici"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000079
+    m_Localized: "Umísti {0} {1} krabic na polici"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000080
+    m_Localized: "Dokonči {0} kamionů"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000081
+    m_Localized: "Obsluž {0} zákazníků"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000082
+    m_Localized: "Ignoruj {0} zákazníků"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000083
+    m_Localized: "Zabal {0} hraček"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000107
+    m_Localized: "Dnes jsi již přijal úkol"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000108
+    m_Localized: "Přijmout"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000084
+    m_Localized: "Kapacita 0"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000085
+    m_Localized: "Kapacita +1"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000086
+    m_Localized: "Kapacita +2"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000087
+    m_Localized: "Kapacita +3"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000095
+    m_Localized: "Kapacita +4"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000096
+    m_Localized: "Kapacita +5"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000097
+    m_Localized: "Kapacita +6"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000098
+    m_Localized: "Kapacita +7"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000099
+    m_Localized: "Kapacita +8"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000100
+    m_Localized: "Kapacita +9"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000101
+    m_Localized: "Kapacita +10"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000102
+    m_Localized: "Kapacita +11"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000103
+    m_Localized: "Kapacita +12"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000104
+    m_Localized: "Kapacita +13"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000105
+    m_Localized: "Kapacita +14"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000106
+    m_Localized: "Kapacita +15"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000088
+    m_Localized: "Stůl 0"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000089
+    m_Localized: "Stůl +1"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000090
+    m_Localized: "Stůl +2"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000091
+    m_Localized: "Kapacita fronty 0"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000092
+    m_Localized: "Kapacita fronty +1"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000093
+    m_Localized: "Kapacita fronty +2"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30570000000000094
+    m_Localized: "Kapacita fronty +3"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 42431428665192448
+    m_Localized: "VSync (výběr FPS je omezen)"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 42431953292931072
+    m_Localized: "Hlasitost hudby"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 42432326804090880
+    m_Localized: "Rozlišení"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 42432451492360192
+    m_Localized: "Režim obrazovky"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 42432584829284352
+    m_Localized: "Hlasitost efektů"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 42434254002892800
+    m_Localized: "Základní výukový program"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194447572992
+    m_Localized: "Sprint"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194502098944
+    m_Localized: "LOGISTICKÝ TERMINÁL CARGOR"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194502098945
+    m_Localized: "Úroveň energie"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194514681856
+    m_Localized: "Pohyb nahoru/dolů/vlevo/vpravo"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194514681857
+    m_Localized: "Hráč"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194514681858
+    m_Localized: "Vstoupit"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194514681859
+    m_Localized: "Rukavice"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194518876160
+    m_Localized: "Obličej"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194518876161
+    m_Localized: "Opravdu chceš spustit výukový program?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194523070464
+    m_Localized: "Doplňky"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194523070465
+    m_Localized: "VSync"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194523070466
+    m_Localized: "Zpět"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194523070467
+    m_Localized: "Hráč"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194523070468
+    m_Localized: "ECLION\n\nV2.01"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194523070469
+    m_Localized: "Položit"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194523070470
+    m_Localized: "ZPĚT"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194527264768
+    m_Localized: "ODHALIT"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194531459072
+    m_Localized: "ZOOM"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194531459073
+    m_Localized: "Zvednout"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194531459074
+    m_Localized: "VIDEO"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194531459075
+    m_Localized: "ZVUK"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194535653376
+    m_Localized: "Interagovat"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194535653377
+    m_Localized: "Hlavní kancelář"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194535653378
+    m_Localized: "GRAFIKA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194535653379
+    m_Localized: "Vlasy"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194535653380
+    m_Localized: "JAZYK"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194535653381
+    m_Localized: "HLASITOST HUDBY"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194539847680
+    m_Localized: "HLASITOST SFX"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194539847681
+    m_Localized: "Možnost A"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194539847682
+    m_Localized: "XXXX-XXXX-XXXX-XXXX"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194539847683
+    m_Localized: "Kalhoty"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194539847684
+    m_Localized: "Boty"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194539847685
+    m_Localized: "Hráč"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194539847686
+    m_Localized: "CELKOVÁ HLASITOST"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194548236288
+    m_Localized: "Zpět"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194548236289
+    m_Localized: "ROZLIŠENÍ"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194548236290
+    m_Localized: "PŘIPOJIT SE K MÍSTNOSTI"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194548236291
+    m_Localized: "ID lobby:"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194548236292
+    m_Localized: "PŘIZPŮSOBIT"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194548236293
+    m_Localized: "Možnost A"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194556624896
+    m_Localized: "Hráč"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194556624897
+    m_Localized: "Klobouk"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194556624898
+    m_Localized: "Přizpůsobit"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194556624899
+    m_Localized: "Hodit"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194556624900
+    m_Localized: "Zobrazení mapy"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194556624901
+    m_Localized: "OVLÁDÁNÍ"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194560819200
+    m_Localized: "Svrchní oblečení"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194560819201
+    m_Localized: "Brýle"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 141928975156891283
+    m_Localized: "Levé tlačítko"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 142557709478291173
+    m_Localized: "Pravé tlačítko"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263128
+    m_Localized: "Prostřední tlačítko"
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []
