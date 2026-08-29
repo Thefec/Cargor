@@ -17706,8 +17706,8 @@ MonoBehaviour:
   phoneEndHour: 18
   ringDuration: 15
   economySettings: {fileID: 11400000, guid: 415dc128c56df644f9af98009bf37743, type: 2}
-  ringingSound: {fileID: 0}
-  successCallSound: {fileID: 0}
+  ringingSound: {fileID: 424799597}
+  successCallSound: {fileID: 424799598}
   phoneWaitBar: {fileID: 424799593}
   phoneCollider: {fileID: 424799585}
   playerTag: Character
@@ -17729,7 +17729,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fillImage: {fileID: 282469587}
-  barContainer: {fileID: 0}
+  barContainer: {fileID: 1263143603}
 --- !u!114 &424799596
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17769,7 +17769,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: d077ec545f7ec04409600beb3b2d9368, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 0.3
+  m_Volume: 0.6
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -17777,10 +17777,10 @@ AudioSource:
   SpatializePostEffects: 0
   Priority: 128
   DopplerLevel: 1
-  MinDistance: 1
-  MaxDistance: 2.5
+  MinDistance: 5
+  MaxDistance: 50
   Pan2D: 0
-  rolloffMode: 0
+  rolloffMode: 1
   BypassEffects: 0
   BypassListenerEffects: 0
   BypassReverbZones: 0
@@ -17866,16 +17866,16 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: a488ce2f04a98e34480b044287bb392b, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 0.1
+  m_Volume: 0.4
   m_Pitch: 1
-  Loop: 1
+  Loop: 0
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
   Priority: 128
   DopplerLevel: 1
   MinDistance: 1
-  MaxDistance: 2.5
+  MaxDistance: 15
   Pan2D: 0
   rolloffMode: 0
   BypassEffects: 0

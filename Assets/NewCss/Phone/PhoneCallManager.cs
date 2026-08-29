@@ -153,6 +153,7 @@ namespace NewCss
             _isNetworkReady = true;
             InitializeWaitBar();
             SetupPhoneCollider();
+            WarnOnMissingReferences();
 
             _isRinging.OnValueChanged += HandleRingingChanged;
             // Late-join: netvar zaten true olarak spawn olabilir, OnValueChanged geriye dönük tetiklenmez.
@@ -225,6 +226,24 @@ namespace NewCss
             {
                 phoneCollider.isTrigger = true;
             }
+        }
+
+        /// <summary>
+        /// Bagli olmayan inspector alanlarini bir kez uyarir. Bu alanlarin hepsi kullanim
+        /// noktasinda null-guard'li: atanmadiklarinda sistem HATA VERMEZ, sadece sessizlesir
+        /// (telefon sessiz calar, bar gorunmez). Bir oyun gunu boyunca "telefon hic calmadi"
+        /// sanilmasinin sebebi tam olarak buydu — bir daha sessizce kaybolmasin.
+        /// </summary>
+        private void WarnOnMissingReferences()
+        {
+            if (ringingSound == null)
+                Debug.LogWarning(LOG_PREFIX + " ringingSound atanmamis — telefon SESSIZ calacak.");
+            if (successCallSound == null)
+                Debug.LogWarning(LOG_PREFIX + " successCallSound atanmamis — cevaplama sesi calmayacak.");
+            if (phoneWaitBar == null)
+                Debug.LogWarning(LOG_PREFIX + " phoneWaitBar atanmamis — geri sayim bari gosterilmeyecek.");
+            if (phoneCollider == null)
+                Debug.LogWarning(LOG_PREFIX + " phoneCollider bulunamadi — telefon CEVAPLANAMAZ.");
         }
 
         #endregion

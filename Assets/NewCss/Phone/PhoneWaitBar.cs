@@ -17,16 +17,21 @@ namespace NewCss
 
         private void Awake()
         {
-            if (barContainer == null)
+            // barContainer atanmamissa fillImage'dan turet. Eskiden burada transform.GetChild(0)
+            // vardi: bu component telefon mesh node'unda oturuyor, bar Canvas'i ise prefab KOKUNUN
+            // cocugu — yani GetChild(0) bar yerine mesh parcasini yakalayip HideBar()'da telefonun
+            // kendisini kapatabiliyordu. fillImage'in ebeveyni her zaman bar widget'inin koku.
+            if (barContainer == null && fillImage != null)
             {
-                // Try to find a child if not assigned
-                if (transform.childCount > 0)
-                    barContainer = transform.GetChild(0).gameObject;
+                barContainer = fillImage.transform.parent != null
+                    ? fillImage.transform.parent.gameObject
+                    : fillImage.gameObject;
             }
 
-            if (fillImage == null && barContainer != null)
+            if (barContainer == null || fillImage == null)
             {
-                fillImage = barContainer.GetComponentInChildren<Image>();
+                Debug.LogWarning("[PhoneWaitBar] barContainer/fillImage atanmamis — bekleme bari " +
+                                 "gizlenemez veya dolmaz. Inspector'da alanlari bagla. (" + name + ")");
             }
 
             HideBar();
