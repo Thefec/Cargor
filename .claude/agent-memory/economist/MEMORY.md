@@ -1,6 +1,7 @@
 # Economist Agent Memory Index
 
 ## ⭐ EN GÜNCEL TABAN (buradan başla)
+- [Event interval retune 1/3→1/2 2026-08-25](event_interval_retune_2026-08-25.md) — ⚠️KRİTİK: sim.js event sıklığını PARA AKIŞINA hiç bağlamıyor (ampirik 0-diff kanıtlı), SRC.event* alanları dekoratif; MC ile 1/2 önerisi ort. event/16gün 4.5→6.07 (+35%), SLOW-STRICT sim'de "etkilenmez" ama bu sim kör olduğu için trivial
 - [Kira büyüme 1.35 açığı + 1.20 önerisi 2026-08-20](rent_growth_1_35_deficit_2026-08-20.md) — ✅DOĞRULANDI: sim-resync sonrası 4P/STRICT gün16'da iflas, kök neden kira/gelir oranının oyun boyunca monotonik artması; g=1.20 parametrik taramayla test edildi (tüm Normal+Slow-optimistic bantlar sağlıklı marjla hayatta); SLOW-STRICT g'den BAĞIMSIZ erken ölüyor (taban kira sorunu, ayrı konu, tek sabitle çözülmez)
 - [sim.js v3.2 resync 2026-08-19](sim_resync_2026-08-19.md) — ✅STALE alanlar KAPANDI (16 sabit güncellendi, dal `fix/sim-resync` commit'siz); ⚠️SONUÇ DEĞİŞTİ: STRICT/Slow'da 4P artık gün16'da iflas ediyor (FAZ4 kira 1.35 hiç sim'le doğrulanmamıştı) — playtest'te 4P gün13-16 nakit akışı izlenmeli; cargo+telefon P-bazlı wiring hâlâ eksik (model gap, raporlandı)
 - [Perk canlandırma ekonomik inceleme 2026-08-19](perk_revival_economic_review_2026-08-19.md) — 6 ölü perkten 5'i FAZ4-kalibreli (dokunma), `prestige_broker` kod hâlâ eski etki taşıyor (dokunma, doubling YAPMA — 18x riski), `gambler_case`+`high_volatility` stacking +49% EV playtest-izle, ⚠️sim.js SRC artık resync edildi (bkz yukarı)

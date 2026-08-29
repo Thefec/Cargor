@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
   m_Name: StringTable_sl
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   m_LocaleId:
     m_Code: sl
   m_SharedData: {fileID: 11400000, guid: 7d8d57bedebf1954db92f72969b59263, type: 2}
@@ -19,851 +19,1423 @@ MonoBehaviour:
     m_Items: []
   m_TableData:
   - m_Id: 88301023232
-    m_Localized: "Igra na spletu"
+    m_Localized: Igra na spletu
     m_Metadata:
       m_Items: []
   - m_Id: 574282444800
-    m_Localized: "Jezik"
+    m_Localized: Jezik
     m_Metadata:
       m_Items: []
   - m_Id: 26808395673600
-    m_Localized: "Občutljivost miške"
+    m_Localized: "Ob\u010Dutljivost mi\u0161ke"
     m_Metadata:
       m_Items: []
   - m_Id: 27030165303296
-    m_Localized: "Igra brez povezave"
+    m_Localized: Igra brez povezave
     m_Metadata:
       m_Items: []
   - m_Id: 27180690485248
-    m_Localized: "Nastavitve"
+    m_Localized: Nastavitve
     m_Metadata:
       m_Items: []
   - m_Id: 27238353776640
-    m_Localized: "Izhod"
+    m_Localized: Izhod
     m_Metadata:
       m_Items: []
   - m_Id: 27356159193088
-    m_Localized: "Splošno"
+    m_Localized: "Splo\u0161no"
     m_Metadata:
       m_Items: []
   - m_Id: 27414908809216
-    m_Localized: "Grafika"
+    m_Localized: Grafika
     m_Metadata:
       m_Items: []
   - m_Id: 27504130043904
-    m_Localized: "Zvok"
+    m_Localized: Zvok
     m_Metadata:
       m_Items: []
   - m_Id: 27565803089920
-    m_Localized: "Nazaj"
+    m_Localized: Nazaj
     m_Metadata:
       m_Items: []
   - m_Id: 28147393671168
-    m_Localized: "Zasluge"
+    m_Localized: Zasluge
     m_Metadata:
       m_Items: []
   - m_Id: 118380277706752
-    m_Localized: "Shrani"
+    m_Localized: Shrani
     m_Metadata:
       m_Items: []
   - m_Id: 4669780596797440
-    m_Localized: "Prilagodi"
+    m_Localized: Prilagodi
     m_Metadata:
       m_Items: []
   - m_Id: 4669983794049024
-    m_Localized: "Dan"
+    m_Localized: Dan
     m_Metadata:
       m_Items: []
   - m_Id: 4670284437565440
-    m_Localized: "INTENZIVEN DAN"
+    m_Localized: INTENZIVEN DAN
     m_Metadata:
       m_Items: []
   - m_Id: 4670557176377344
-    m_Localized: "BONUS ZA DOSTAVO"
+    m_Localized: BONUS ZA DOSTAVO
     m_Metadata:
       m_Items: []
   - m_Id: 4670594551820288
-    m_Localized: "JEZNE STRANKE"
+    m_Localized: JEZNE STRANKE
     m_Metadata:
       m_Items: []
   - m_Id: 4670644065579008
-    m_Localized: "SPROŠČEN DAN"
+    m_Localized: "SPRO\u0160\u010CEN DAN"
     m_Metadata:
       m_Items: []
   - m_Id: 4670683781443584
-    m_Localized: "POČASNA LOGISTIKA"
+    m_Localized: "PO\u010CASNA LOGISTIKA"
     m_Metadata:
       m_Items: []
   - m_Id: 4670721878306816
-    m_Localized: "EKSPRESNI TOVOR"
+    m_Localized: EKSPRESNI TOVOR
     m_Metadata:
       m_Items: []
   - m_Id: 4670821572718592
-    m_Localized: "TEŽKE ŠKATLE"
+    m_Localized: "TE\u017DKE \u0160KATLE"
     m_Metadata:
       m_Items: []
   - m_Id: 4670864191041536
-    m_Localized: "DAN ZLATE ŠKATLE"
+    m_Localized: "DAN ZLATE \u0160KATLE"
     m_Metadata:
       m_Items: []
   - m_Id: 4670907031662592
-    m_Localized: "DAN PRILOŽNOSTI"
+    m_Localized: "DAN PRILO\u017DNOSTI"
     m_Metadata:
       m_Items: []
   - m_Id: 4670942314147840
-    m_Localized: "TEŽAVA Z UTRUJENOSTJO"
+    m_Localized: "TE\u017DAVA Z UTRUJENOSTJO"
     m_Metadata:
       m_Items: []
   - m_Id: 4671003622289408
-    m_Localized: "VIP STORITEV"
+    m_Localized: VIP STORITEV
     m_Metadata:
       m_Items: []
   - m_Id: 4671211781402624
-    m_Localized: "Prilagajanje lika"
+    m_Localized: Prilagajanje lika
     m_Metadata:
       m_Items: []
   - m_Id: 4671355847356416
-    m_Localized: "Dodatki"
+    m_Localized: Dodatki
     m_Metadata:
       m_Items: []
   - m_Id: 4671495475736576
-    m_Localized: "Obrazi"
+    m_Localized: Obrazi
     m_Metadata:
       m_Items: []
   - m_Id: 4671520289239040
-    m_Localized: "Očala"
+    m_Localized: "O\u010Dala"
     m_Metadata:
       m_Items: []
   - m_Id: 4671581857427456
-    m_Localized: "Rokavice"
+    m_Localized: Rokavice
     m_Metadata:
       m_Items: []
   - m_Id: 4671685976829952
-    m_Localized: "Pričeske"
+    m_Localized: "Pri\u010Deske"
     m_Metadata:
       m_Items: []
   - m_Id: 4671905867411456
-    m_Localized: "Klobuki"
+    m_Localized: Klobuki
     m_Metadata:
       m_Items: []
   - m_Id: 4671966126977024
-    m_Localized: "Brki"
+    m_Localized: Brki
     m_Metadata:
       m_Items: []
   - m_Id: 4672063447412736
-    m_Localized: "Vrhnja oblačila"
+    m_Localized: "Vrhnja obla\u010Dila"
     m_Metadata:
       m_Items: []
   - m_Id: 4672192313208832
-    m_Localized: "Hlače"
+    m_Localized: "Hla\u010De"
     m_Metadata:
       m_Items: []
   - m_Id: 4672235917193216
-    m_Localized: "Čevlji"
+    m_Localized: "\u010Cevlji"
     m_Metadata:
       m_Items: []
   - m_Id: 4672275557560320
-    m_Localized: "Barva kože"
+    m_Localized: "Barva ko\u017Ee"
     m_Metadata:
       m_Items: []
   - m_Id: 4672388858294272
-    m_Localized: "PRESTIŽ"
+    m_Localized: "PRESTI\u017D"
     m_Metadata:
       m_Items: []
   - m_Id: 4672484777832448
-    m_Localized: "Naslednji dan"
+    m_Localized: Naslednji dan
     m_Metadata:
       m_Items: []
   - m_Id: 4672617426890752
-    m_Localized: "Nadaljuj"
+    m_Localized: Nadaljuj
     m_Metadata:
       m_Items: []
   - m_Id: 30567298710810624
-    m_Localized: "Gosti igro"
+    m_Localized: Gosti igro
     m_Metadata:
       m_Items: []
   - m_Id: 30567344864931840
-    m_Localized: "Pridruži se igri"
+    m_Localized: "Pridru\u017Ei se igri"
     m_Metadata:
       m_Items: []
   - m_Id: 30567847749398528
-    m_Localized: "Začni"
+    m_Localized: "Za\u010Dni"
     m_Metadata:
       m_Items: []
   - m_Id: 30567978871730176
-    m_Localized: "Lobby"
+    m_Localized: Lobby
     m_Metadata:
       m_Items: []
   - m_Id: 30568446771507200
-    m_Localized: "Izberi zemljevid\n(Kmalu)"
+    m_Localized: 'Izberi zemljevid
+
+      (Kmalu)'
     m_Metadata:
       m_Items: []
   - m_Id: 30568844051787776
-    m_Localized: "Glavna pisarna"
+    m_Localized: Glavna pisarna
     m_Metadata:
       m_Items: []
   - m_Id: 30569701396885504
-    m_Localized: "Igraj na spletu"
+    m_Localized: Igraj na spletu
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000001
-    m_Localized: "Igralci v predsobi"
+    m_Localized: Igralci v predsobi
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000002
-    m_Localized: "Skupaj: {0} igralcev"
+    m_Localized: 'Skupaj: {0} igralcev'
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000003
-    m_Localized: "Stanje sobe za odmor"
+    m_Localized: Stanje sobe za odmor
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000004
-    m_Localized: "Notri: {0} / {1} igralcev"
+    m_Localized: 'Notri: {0} / {1} igralcev'
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000005
-    m_Localized: "Vsi so pripravljeni!"
+    m_Localized: Vsi so pripravljeni!
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000006
-    m_Localized: "Čakanje na {0} igralcev ..."
+    m_Localized: "\u010Cakanje na {0} igralcev ..."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000007
-    m_Localized: "Ni najdenih igralcev"
+    m_Localized: Ni najdenih igralcev
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000008
-    m_Localized: "Igralec"
+    m_Localized: Igralec
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000009
-    m_Localized: "Vodič"
+    m_Localized: "Vodi\u010D"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000010
-    m_Localized: "Samo gostitelj lahko odstrani igralce!"
+    m_Localized: Samo gostitelj lahko odstrani igralce!
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000011
-    m_Localized: "Igralec odstranjen!"
+    m_Localized: Igralec odstranjen!
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000012
-    m_Localized: "Odstranitev ni uspela!"
+    m_Localized: Odstranitev ni uspela!
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000013
-    m_Localized: "Prazno mesto"
+    m_Localized: Prazno mesto
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000014
-    m_Localized: "Dan {0}  {1}:{2} ({3}s)"
+    m_Localized: Dan {0}  {1}:{2} ({3}s)
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000015
-    m_Localized: "Dan je končan. Pojdi v sobo za odmor."
+    m_Localized: "Dan je kon\u010Dan. Pojdi v sobo za odmor."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000016
-    m_Localized: "Dan najemnine"
+    m_Localized: Dan najemnine
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000017
-    m_Localized: "Stopnja: {0}"
+    m_Localized: 'Stopnja: {0}'
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000018
-    m_Localized: "Strošek: {0}"
+    m_Localized: "Stro\u0161ek: {0}"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000019
-    m_Localized: "Najv."
+    m_Localized: Najv.
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000020
-    m_Localized: "Kupi"
+    m_Localized: Kupi
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000021
-    m_Localized: "Čakalna vrsta"
+    m_Localized: "\u010Cakalna vrsta"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000022
-    m_Localized: "Poveča največjo velikost čakalne vrste strank."
+    m_Localized: "Pove\u010Da najve\u010Djo velikost \u010Dakalne vrste strank."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000023
-    m_Localized: "Vzdržljivost"
+    m_Localized: "Vzdr\u017Eljivost"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000024
-    m_Localized: "Poveča hitrost obnavljanja vzdržljivosti."
+    m_Localized: "Pove\u010Da hitrost obnavljanja vzdr\u017Eljivosti."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000025
-    m_Localized: "Denar"
+    m_Localized: Denar
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000026
-    m_Localized: "Poveča nagrado za vsako dostavljeno škatlo."
+    m_Localized: "Pove\u010Da nagrado za vsako dostavljeno \u0161katlo."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000027
-    m_Localized: "Tovornjak"
+    m_Localized: Tovornjak
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000028
-    m_Localized: "Odklene dodatne hangarje za tovornjake."
+    m_Localized: Odklene dodatne hangarje za tovornjake.
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000029
-    m_Localized: "Stopnja naloge"
+    m_Localized: Stopnja naloge
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000030
-    m_Localized: "Odklene naloge višje stopnje."
+    m_Localized: "Odklene naloge vi\u0161je stopnje."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000031
-    m_Localized: "ZAPOSLEN DAN"
+    m_Localized: ZAPOSLEN DAN
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000032
-    m_Localized: "Hitrost prihoda strank se poveča za 30 %."
+    m_Localized: "Hitrost prihoda strank se pove\u010Da za 30 %."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000033
-    m_Localized: "JEZNE STRANKE"
+    m_Localized: JEZNE STRANKE
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000034
-    m_Localized: "Potrpežljivost strank se zmanjša za 30 %."
+    m_Localized: "Potrpe\u017Eljivost strank se zmanj\u0161a za 30 %."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000035
-    m_Localized: "POČASNA LOGISTIKA"
+    m_Localized: "PO\u010CASNA LOGISTIKA"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000036
-    m_Localized: "Tovornjaki zapustijo prizorišče 50 % počasneje."
+    m_Localized: "Tovornjaki zapustijo prizori\u0161\u010De 50 % po\u010Dasneje."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000037
-    m_Localized: "TEŽKE ŠKATLE"
+    m_Localized: "TE\u017DKE \u0160KATLE"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000038
-    m_Localized: "Splošna hitrost gibanja se zmanjša za 20 %."
+    m_Localized: "Splo\u0161na hitrost gibanja se zmanj\u0161a za 20 %."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000039
-    m_Localized: "TEŽAVA Z UTRUJENOSTJO"
+    m_Localized: "TE\u017DAVA Z UTRUJENOSTJO"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000040
-    m_Localized: "Vzdržljivost se obnavlja 40 % počasneje, hitrost šprinta pa se zmanjša za 30 %."
+    m_Localized: "Vzdr\u017Eljivost se obnavlja 40 % po\u010Dasneje, hitrost \u0161printa
+      pa se zmanj\u0161a za 30 %."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000041
-    m_Localized: "NENAPOVEDAN NADZOR"
+    m_Localized: NENAPOVEDAN NADZOR
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000042
-    m_Localized: "Vse napačne operacije se kaznujejo dvojno."
+    m_Localized: "Vse napa\u010Dne operacije se kaznujejo dvojno."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000043
-    m_Localized: "DAN TRŽENJA"
+    m_Localized: "DAN TR\u017DENJA"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000044
-    m_Localized: "20 % več strank, a 30 % manj zaslužka."
+    m_Localized: "20 % ve\u010D strank, a 30 % manj zaslu\u017Eka."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000045
-    m_Localized: "PODPORA STRANKAM"
+    m_Localized: PODPORA STRANKAM
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000046
-    m_Localized: "Telefon na recepciji zvoni 50 % pogosteje."
+    m_Localized: Telefon na recepciji zvoni 50 % pogosteje.
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000047
-    m_Localized: "BONUS ZA DOSTAVO"
+    m_Localized: BONUS ZA DOSTAVO
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000048
-    m_Localized: "Zaslužite 20 % več denarja na dostavo."
+    m_Localized: "Zaslu\u017Eite 20 % ve\u010D denarja na dostavo."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000049
-    m_Localized: "SPROŠČEN DAN"
+    m_Localized: "SPRO\u0160\u010CEN DAN"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000050
-    m_Localized: "Potrpežljivost strank se poveča za 30 %."
+    m_Localized: "Potrpe\u017Eljivost strank se pove\u010Da za 30 %."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000051
-    m_Localized: "EKSPRESNI TOVOR"
+    m_Localized: EKSPRESNI TOVOR
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000052
-    m_Localized: "Tovornjaki zapustijo prizorišče 30 % hitreje."
+    m_Localized: "Tovornjaki zapustijo prizori\u0161\u010De 30 % hitreje."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000053
-    m_Localized: "DAN ZLATE ŠKATLE"
+    m_Localized: "DAN ZLATE \u0160KATLE"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000054
-    m_Localized: "Vsaka pravilno dostavljena škatla prinese dodatnih 30 %. Prinese tudi 20 % več strank, 20 % hitrejše odhode tovornjakov in 20 % hitrejše gibanje, vendar se vzdržljivost obnavlja 20 % počasneje."
+    m_Localized: "Vsaka pravilno dostavljena \u0161katla prinese dodatnih 30 %. Prinese
+      tudi 20 % ve\u010D strank, 20 % hitrej\u0161e odhode tovornjakov in 20 % hitrej\u0161e
+      gibanje, vendar se vzdr\u017Eljivost obnavlja 20 % po\u010Dasneje."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000055
-    m_Localized: "DAN PRILOŽNOSTI"
+    m_Localized: "DAN PRILO\u017DNOSTI"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000056
-    m_Localized: "Stroški nadgradenj se zmanjšajo za 20 %."
+    m_Localized: "Stro\u0161ki nadgradenj se zmanj\u0161ajo za 20 %."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000057
-    m_Localized: "DAN KVOTE"
+    m_Localized: DAN KVOTE
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000058
-    m_Localized: "Vsi tovornjaki zahtevajo samo eno barvo škatle."
+    m_Localized: "Vsi tovornjaki zahtevajo samo eno barvo \u0161katle."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000059
-    m_Localized: "VIP STORITEV"
+    m_Localized: VIP STORITEV
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000060
-    m_Localized: "10 % možnosti, da je škatla popolna in prinese 10 % več."
+    m_Localized: "10 % mo\u017Enosti, da je \u0161katla popolna in prinese 10 % ve\u010D."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000061
-    m_Localized: "DEŽEVEN DAN"
+    m_Localized: "DE\u017DEVEN DAN"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000062
-    m_Localized: "Prihaja 20 % manj strank."
+    m_Localized: Prihaja 20 % manj strank.
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000063
-    m_Localized: "DAN FESTIVALA"
+    m_Localized: DAN FESTIVALA
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000064
-    m_Localized: "Na začetku dneva se prejme naključni bonus."
+    m_Localized: "Na za\u010Detku dneva se prejme naklju\u010Dni bonus."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000065
-    m_Localized: "Igralci"
+    m_Localized: Igralci
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000066
-    m_Localized: "({0}/{1} v sobi za odmor)"
+    m_Localized: ({0}/{1} v sobi za odmor)
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000067
-    m_Localized: "Pričakovane stranke"
+    m_Localized: "Pri\u010Dakovane stranke"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000068
-    m_Localized: "Rdeča"
+    m_Localized: "Rde\u010Da"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000069
-    m_Localized: "Modra"
+    m_Localized: Modra
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000070
-    m_Localized: "Rumena"
+    m_Localized: Rumena
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000071
-    m_Localized: "Zelena"
+    m_Localized: Zelena
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000072
-    m_Localized: "Ni naloge"
+    m_Localized: Ni naloge
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000073
-    m_Localized: "Nagrada"
+    m_Localized: Nagrada
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000074
-    m_Localized: "Kazen"
+    m_Localized: Kazen
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000075
-    m_Localized: "Zaključeno"
+    m_Localized: "Zaklju\u010Deno"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000076
-    m_Localized: "Neuspešno"
+    m_Localized: "Neuspe\u0161no"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000077
-    m_Localized: "Dokončaj mini igro {0}-krat"
+    m_Localized: "Dokon\u010Daj mini igro {0}-krat"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000078
-    m_Localized: "Postavi {0} škatel na polico"
+    m_Localized: "Postavi {0} \u0161katel na polico"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000079
-    m_Localized: "Postavi {0} {1} škatel na polico"
+    m_Localized: "Postavi {0} {1} \u0161katel na polico"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000080
-    m_Localized: "Dokončaj {0} tovornjakov"
+    m_Localized: "Dokon\u010Daj {0} tovornjakov"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000081
-    m_Localized: "Postrezi {0} strankam"
+    m_Localized: Postrezi {0} strankam
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000082
-    m_Localized: "Ignoriraj {0} strank"
+    m_Localized: Ignoriraj {0} strank
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000083
-    m_Localized: "Zapakiraj {0} igrač"
+    m_Localized: "Zapakiraj {0} igra\u010D"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000107
-    m_Localized: "Danes ste že sprejeli nalogo"
+    m_Localized: "Danes ste \u017Ee sprejeli nalogo"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000108
-    m_Localized: "Sprejmi"
+    m_Localized: Sprejmi
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000084
-    m_Localized: "Zmogljivost 0"
+    m_Localized: Zmogljivost 0
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000085
-    m_Localized: "Zmogljivost +1"
+    m_Localized: Zmogljivost +1
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000086
-    m_Localized: "Zmogljivost +2"
+    m_Localized: Zmogljivost +2
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000087
-    m_Localized: "Zmogljivost +3"
+    m_Localized: Zmogljivost +3
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000095
-    m_Localized: "Zmogljivost +4"
+    m_Localized: Zmogljivost +4
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000096
-    m_Localized: "Zmogljivost +5"
+    m_Localized: Zmogljivost +5
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000097
-    m_Localized: "Zmogljivost +6"
+    m_Localized: Zmogljivost +6
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000098
-    m_Localized: "Zmogljivost +7"
+    m_Localized: Zmogljivost +7
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000099
-    m_Localized: "Zmogljivost +8"
+    m_Localized: Zmogljivost +8
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000100
-    m_Localized: "Zmogljivost +9"
+    m_Localized: Zmogljivost +9
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000101
-    m_Localized: "Zmogljivost +10"
+    m_Localized: Zmogljivost +10
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000102
-    m_Localized: "Zmogljivost +11"
+    m_Localized: Zmogljivost +11
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000103
-    m_Localized: "Zmogljivost +12"
+    m_Localized: Zmogljivost +12
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000104
-    m_Localized: "Zmogljivost +13"
+    m_Localized: Zmogljivost +13
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000105
-    m_Localized: "Zmogljivost +14"
+    m_Localized: Zmogljivost +14
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000106
-    m_Localized: "Zmogljivost +15"
+    m_Localized: Zmogljivost +15
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000088
-    m_Localized: "Miza 0"
+    m_Localized: Miza 0
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000089
-    m_Localized: "Miza +1"
+    m_Localized: Miza +1
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000090
-    m_Localized: "Miza +2"
+    m_Localized: Miza +2
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000091
-    m_Localized: "Zmogljivost čakalne vrste 0"
+    m_Localized: "Zmogljivost \u010Dakalne vrste 0"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000092
-    m_Localized: "Zmogljivost čakalne vrste +1"
+    m_Localized: "Zmogljivost \u010Dakalne vrste +1"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000093
-    m_Localized: "Zmogljivost čakalne vrste +2"
+    m_Localized: "Zmogljivost \u010Dakalne vrste +2"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000094
-    m_Localized: "Zmogljivost čakalne vrste +3"
+    m_Localized: "Zmogljivost \u010Dakalne vrste +3"
     m_Metadata:
       m_Items: []
   - m_Id: 42431428665192448
-    m_Localized: "VSync (izbira FPS je omejena)"
+    m_Localized: VSync (izbira FPS je omejena)
     m_Metadata:
       m_Items: []
   - m_Id: 42431953292931072
-    m_Localized: "Glasnost glasbe"
+    m_Localized: Glasnost glasbe
     m_Metadata:
       m_Items: []
   - m_Id: 42432326804090880
-    m_Localized: "Ločljivost"
+    m_Localized: "Lo\u010Dljivost"
     m_Metadata:
       m_Items: []
   - m_Id: 42432451492360192
-    m_Localized: "Način zaslona"
+    m_Localized: "Na\u010Din zaslona"
     m_Metadata:
       m_Items: []
   - m_Id: 42432584829284352
-    m_Localized: "Glasnost zvočnih učinkov"
+    m_Localized: "Glasnost zvo\u010Dnih u\u010Dinkov"
     m_Metadata:
       m_Items: []
   - m_Id: 42434254002892800
-    m_Localized: "Osnovni vodič"
+    m_Localized: "Osnovni vodi\u010D"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194447572992
-    m_Localized: "Šprint"
+    m_Localized: "\u0160print"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194502098944
-    m_Localized: "CARGOR LOGISTIČNI TERMINAL"
+    m_Localized: "CARGOR LOGISTI\u010CNI TERMINAL"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194502098945
-    m_Localized: "Raven energije"
+    m_Localized: Raven energije
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681856
-    m_Localized: "Premikanje gor/dol/levo/desno"
+    m_Localized: Premikanje gor/dol/levo/desno
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681857
-    m_Localized: "Igralec"
+    m_Localized: Igralec
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681858
-    m_Localized: "Vstopi"
+    m_Localized: Vstopi
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681859
-    m_Localized: "Rokavice"
+    m_Localized: Rokavice
     m_Metadata:
       m_Items: []
   - m_Id: 136075194518876160
-    m_Localized: "Obraz"
+    m_Localized: Obraz
     m_Metadata:
       m_Items: []
   - m_Id: 136075194518876161
-    m_Localized: "Ali res želite vstopiti v vodič?"
+    m_Localized: "Ali res \u017Eelite vstopiti v vodi\u010D?"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070464
-    m_Localized: "Dodatki"
+    m_Localized: Dodatki
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070465
-    m_Localized: "VSync"
+    m_Localized: VSync
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070466
-    m_Localized: "Nazaj"
+    m_Localized: Nazaj
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070467
-    m_Localized: "Igralec"
+    m_Localized: Igralec
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070468
-    m_Localized: "ECLION\n\nV2.01"
+    m_Localized: 'ECLION
+
+
+      V2.01'
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070469
-    m_Localized: "Spusti"
+    m_Localized: Spusti
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070470
-    m_Localized: "NAZAJ"
+    m_Localized: NAZAJ
     m_Metadata:
       m_Items: []
   - m_Id: 136075194527264768
-    m_Localized: "RAZKRIJ"
+    m_Localized: RAZKRIJ
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459072
-    m_Localized: "ZOOM"
+    m_Localized: ZOOM
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459073
-    m_Localized: "Poberi"
+    m_Localized: Poberi
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459074
-    m_Localized: "VIDEO"
+    m_Localized: VIDEO
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459075
-    m_Localized: "ZVOK"
+    m_Localized: ZVOK
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653376
-    m_Localized: "Interakcija"
+    m_Localized: Interakcija
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653377
-    m_Localized: "Glavna pisarna"
+    m_Localized: Glavna pisarna
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653378
-    m_Localized: "GRAFIKA"
+    m_Localized: GRAFIKA
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653379
-    m_Localized: "Lasje"
+    m_Localized: Lasje
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653380
-    m_Localized: "JEZIK"
+    m_Localized: JEZIK
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653381
-    m_Localized: "GLASNOST GLASBE"
+    m_Localized: GLASNOST GLASBE
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847680
-    m_Localized: "GLASNOST SFX"
+    m_Localized: GLASNOST SFX
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847681
-    m_Localized: "Možnost A"
+    m_Localized: "Mo\u017Enost A"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847682
-    m_Localized: "XXXX-XXXX-XXXX-XXXX"
+    m_Localized: XXXX-XXXX-XXXX-XXXX
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847683
-    m_Localized: "Hlače"
+    m_Localized: "Hla\u010De"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847684
-    m_Localized: "Čevlji"
+    m_Localized: "\u010Cevlji"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847685
-    m_Localized: "Igralec"
+    m_Localized: Igralec
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847686
-    m_Localized: "GLAVNA GLASNOST"
+    m_Localized: GLAVNA GLASNOST
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236288
-    m_Localized: "Nazaj"
+    m_Localized: Nazaj
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236289
-    m_Localized: "LOČLJIVOST"
+    m_Localized: "LO\u010CLJIVOST"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236290
-    m_Localized: "PRIDRUŽI SE SOBI"
+    m_Localized: "PRIDRU\u017DI SE SOBI"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236291
-    m_Localized: "ID predsobe:"
+    m_Localized: 'ID predsobe:'
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236292
-    m_Localized: "PRILAGODI"
+    m_Localized: PRILAGODI
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236293
-    m_Localized: "Možnost A"
+    m_Localized: "Mo\u017Enost A"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624896
-    m_Localized: "Igralec"
+    m_Localized: Igralec
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624897
-    m_Localized: "Klobuk"
+    m_Localized: Klobuk
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624898
-    m_Localized: "Prilagodi"
+    m_Localized: Prilagodi
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624899
-    m_Localized: "Vrzi"
+    m_Localized: Vrzi
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624900
-    m_Localized: "Pogled na zemljevid"
+    m_Localized: Pogled na zemljevid
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624901
-    m_Localized: "UPRAVLJANJE"
+    m_Localized: UPRAVLJANJE
     m_Metadata:
       m_Items: []
   - m_Id: 136075194560819200
-    m_Localized: "Vrhnja oblačila"
+    m_Localized: "Vrhnja obla\u010Dila"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194560819201
-    m_Localized: "Očala"
+    m_Localized: "O\u010Dala"
     m_Metadata:
       m_Items: []
   - m_Id: 141928975156891283
-    m_Localized: "Levi klik"
+    m_Localized: Levi klik
     m_Metadata:
       m_Items: []
   - m_Id: 142557709478291173
-    m_Localized: "Desni klik"
+    m_Localized: Desni klik
     m_Metadata:
       m_Items: []
   - m_Id: 144849164114263128
-    m_Localized: "Srednji klik"
+    m_Localized: Srednji klik
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528492507136
+    m_Localized: Meni
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528538644480
+    m_Localized: "POVE\u010CAVA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528538644481
+    m_Localized: Interakcija
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838784
+    m_Localized: NADGRADNJE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838785
+    m_Localized: Premikanje gor/dol/levo/desno
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838786
+    m_Localized: Zapri igro
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838787
+    m_Localized: "Mo\u017Enosti"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033088
+    m_Localized: "\u0160print"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033089
+    m_Localized: "Ste\u010Daj!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033090
+    m_Localized: "skladi\u0161\u010De"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033091
+    m_Localized: prikaz zemljevida
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227392
+    m_Localized: SPREJMI
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227393
+    m_Localized: soba za pakete
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227394
+    m_Localized: Zaposleni
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227395
+    m_Localized: Dan 1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528555421696
+    m_Localized: Naslednji dan
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528555421697
+    m_Localized: VIDEO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528559616000
+    m_Localized: ponovno vrzi
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528559616001
+    m_Localized: GRAFIKA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528568004608
+    m_Localized: Igralec3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528568004609
+    m_Localized: 'XP: 200'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528568004610
+    m_Localized: 'GOLD: 200'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198912
+    m_Localized: Misija - 1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198913
+    m_Localized: 0/1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198914
+    m_Localized: vsync
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198915
+    m_Localized: JEZIK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198916
+    m_Localized: PONASTAVI
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587520
+    m_Localized: 'XP: 200 GOLD: 300'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587521
+    m_Localized: ZVOK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587522
+    m_Localized: VSEBINA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587523
+    m_Localized: Igralec1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528584781824
+    m_Localized: koledar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528584781825
+    m_Localized: Igralec2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528584781826
+    m_Localized: GLASNOST SFX
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528588976128
+    m_Localized: Igralec4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528588976129
+    m_Localized: "Skladi\u0161\u010De cveti in vse po\u0161iljke so bile popolnoma
+      razvr\u0161\u010Dene."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528588976130
+    m_Localized: "Mo\u017Enost A"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528593170432
+    m_Localized: "\u010CET"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528593170433
+    m_Localized: Spusti
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528593170434
+    m_Localized: "<color=#4B4E6D>2</color>      Dobrodo\u0161li v Cargor!\n<color=#4B4E6D>3</color>     
+      Osnovno gibanje\n<color=#4B4E6D>4</color>      Kako pakirati izdelke\n<color=#4B4E6D>5</color>     
+      Postavljanje na police\n<color=#4B4E6D>6</color>      Tovornjaki in dostava\n<color=#4B4E6D>7</color>      
+      Stranke\n<line-height=18><color=#4B4E6D>8</color>      Posebne zahteve: vra\u010Dila,\ndvojna
+      naro\u010Dila, me\u0161ani tovornjaki</line-height>\n<color=#4B4E6D>9</color>     
+      Najemnina in va\u0161 denar\n<color=#4B4E6D>10</color>   Nadgradnje\n<color=#4B4E6D>11</color>   
+      Tabla nalog\n<color=#4B4E6D>12</color>    Telefonska linija\n<color=#4B4E6D>13</color>   
+      Prostor za po\u010Ditek in konec dneva\n<color=#4B4E6D>14</color>    Nasveti
+      za timsko delo"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528597364736
+    m_Localized: Poberi
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528597364737
+    m_Localized: CARGOR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559040
+    m_Localized: RAZKRIJ
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559041
+    m_Localized: VSEBINA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559042
+    m_Localized: Zasluge
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559043
+    m_Localized: GLAVNA GLASNOST
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559044
+    m_Localized: NED
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528609947648
+    m_Localized: "Prostor za po\u010Ditek"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528609947649
+    m_Localized: SOB
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528609947650
+    m_Localized: SRE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141952
+    m_Localized: "Knjiga pomo\u010Di"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141953
+    m_Localized: Meni
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141954
+    m_Localized: GLASNOST GLASBE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141955
+    m_Localized: MENI PREKINITVE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528618336256
+    m_Localized: Dnevni razpored
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528618336257
+    m_Localized: PET
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528622530560
+    m_Localized: Nadgradnja
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528626724864
+    m_Localized: Vrzi
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528626724865
+    m_Localized: "Skladi\u0161\u010De je bankrotiralo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528630919168
+    m_Localized: "LO\u010CLJIVOST"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528630919169
+    m_Localized: NADZOR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528635113472
+    m_Localized: NALOGA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528635113473
+    m_Localized: "PRIRO\u010CNIK\nSKLADI\u0160\u010CA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307776
+    m_Localized: TOR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307777
+    m_Localized: "Presti\u017E"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307778
+    m_Localized: Nadaljuj
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307779
+    m_Localized: NALOGA OPRAVLJENA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307780
+    m_Localized: recepcija
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528647696384
+    m_Localized: Naloga
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528651890688
+    m_Localized: PON
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528651890689
+    m_Localized: Denar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269394388168704
+    m_Localized: "<b> Pozor: </b> Pozor: \u010De se barva \u0161katle ne ujema z
+      izdelkom, pakiranje spodleti in \u0161katla se ti razbije v roki. Preveri barvo,
+      preden zapakira\u0161 \u2014 ne zapravljaj \u0161katle."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269394430111744
+    m_Localized: "<b> Nasvet: </b>Metanje in lovljenje prihrani \u010Das na postaji
+      za dva, a naj ti ne postane navada \u2014 vsak padec te nekaj stane."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605470711808
+    m_Localized: "RAZVR\u0160\u010CANJE NA POLICE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605474906112
+    m_Localized: "Police so srce Cargorja. Tam vedno \u010Dakajo tri vrste praznih
+      \u0161katel \u2014 rde\u010Da, rumena in modra; ko eno vzame\u0161, se polica
+      kmalu spet napolni, zato nikoli ni popolnoma prazna. \u010Ce ima\u0161 odve\u010Dno
+      \u0161katlo ali zapakiran izdelek, ki ga trenutno ne \u017Eeli\u0161 nositi,
+      ga lahko vrne\u0161 na polico. Urejena polica olaj\u0161a delo tebi in tvoji
+      ekipi \u2014 vsak ve, kje kaj najde."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605474906113
+    m_Localized: KAKO SE PAKIRAJO IZDELKI
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605474906114
+    m_Localized: OSNOVNI GIBI
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605483294720
+    m_Localized: "<b>Hoja / Tek</b> \u2013 ti omogo\u010Da gibanje po skladi\u0161\u010Du.\n\n<b>Pobiranje
+      / Odlaganje</b> \u2013 vzemi predmet s tal, mize ali police, ali ga odlo\u017Ei
+      tam, kjer stoji\u0161.\n\n<b>Met</b> \u2013 vrzi to, kar dr\u017Ei\u0161, stran.
+      Hitro, a tvegano: \u010De zadene ob nekaj trdega, se razbije in izgubi\u0161
+      denar ter ugled. \u010Ce to vr\u017Ee\u0161 soigralcu, ki to ujame, ni kazni
+      \u2013 celo prihrani \u010Das.\n\n<b>Interakcija</b> \u2013 pogovor s strankami,
+      dvig telefona, jemanje predmetov s police/mize \u2014 vse poteka prek tega
+      gumba.\n\n<b>Zemljevid / Nadzor zalog</b> \u2013 odpre pregled skladi\u0161\u010Da,
+      da vidi\u0161, kaj je kje. Ne prikazuje polo\u017Eaja soigralcev \u2014 to
+      mora\u0161 vpra\u0161ati po radiu."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605483294721
+    m_Localized: 'KAKO SE
+
+      PAKIRAJO
+
+      IZDELKI'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605483294722
+    m_Localized: "Ko se pogovarja\u0161 s stranko, te prosi za izdelek in ga pusti
+      na svoji mizi. S tem \u0161e ni konec \u2014 izdelek \u0161e ni zapakiran.\n\nKoraki
+      pakiranja:\n\nVzemi gol izdelek, ki ga je stranka pustila.\n\nPojdi do najbli\u017Eje
+      mize za pakiranje.\n\nS police vzemi prazno \u0161katlo iste barve kot izdelek.\n\nZdru\u017Ei
+      izdelek in \u0161katlo na mizi \u2014 najprej zalepi s trakom, nato nalepi
+      etiketo, in paket je pripravljen.\n\nZdaj ima\u0161 zapakirano \u0161katlo.
+      Naslednja je dostava (glej Stran 6)."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859394301952
+    m_Localized: Stranke
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859406884864
+    m_Localized: "Cargor lahko igra\u0161 tudi sam, a prava zabava se za\u010Dne
+      v ekipi. Nekaj prakti\u010Dnih nasvetov:\n\n- <b>Razdelite si delo:</b> naj
+      eden ostane pri mizi za pakiranje, eden te\u010De proti tovornjakom, eden skrbi
+      za stranke.\n- <b>Pogovarjajte se: </b>\u010De niste v isti sobi, se morda
+      ne vidite \u2014 preverite zemljevid in na glas povejte, kaj je kje.\n- <b>Me\u010Dite
+      in lovite:</b> namesto tekanja med dvema postajama vrzite \u0161katlo neposredno
+      soigralcu.\n- <b>Uskladite se glede nadgradenj:</b> trajne izbire vplivajo
+      na vse, ne odlo\u010Daj sam.\n\nVeliko sre\u010De \u2014 dobrodo\u0161el v
+      Cargorju!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859411079168
+    m_Localized: "Dobrodo\u0161el v Cargorju!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859411079169
+    m_Localized: Telefonska Linija
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859411079170
+    m_Localized: "Telefon v skladi\u0161\u010Du ob\u010Dasno zazvoni. Pojdi ga dvignit
+      in dobil bo\u0161 majhno nagrado v denarju in ugledu. \u010Ce se ne oglasi\u0161,
+      prav tako ni\u010D ne izgubi\u0161 \u2014 telefon sam \u010Dez \u010Das utihne.\n\nAli
+      bo zazvonil, je povsem naklju\u010Dno, a nekateri dnevi (na primer ob posebnih
+      dogodkih) pove\u010Dajo verjetnost. Pogled mimogrede ne \u0161kodi."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273472
+    m_Localized: "<b> Nasvet:  </b>Ko se dan bli\u017Ea koncu, dokon\u010Daj, kar
+      dela\u0161, in se zgodaj odpravi v sobo za po\u010Ditek \u2014 ne pusti ekipe
+      \u010Dakati."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273473
+    m_Localized: Posebne Zahteve
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273474
+    m_Localized: "<b> Nasvet:  </b>Ne izbiraj brez pogovora z ekipo \u2014 nadgradnja,
+      ki jo izbere en sam igralec, spremeni na\u010Din igre vseh."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273475
+    m_Localized: "Vsak dan na oglasni deski vidi\u0161 nekaj ponujenih nalog \u2014
+      na primer zlo\u017Eiti \u0161katlo na polico, zapakirati izdelek, napolniti
+      tovornjak ali dvigniti telefon. Sprejme\u0161 lahko le eno na dan.\n\n- \u010Ce
+      sprejeto nalogo dokon\u010Da\u0161 pred koncem dneva, se nagrada samodejno
+      izpla\u010Da ob koncu dneva.\n\n- \u010Ce jo sprejme\u0161 in pusti\u0161 nedokon\u010Dano,
+      te ob koncu dneva doleti kazen.\n\n\u010Ce je ne sprejme\u0161, se ni\u010D
+      ne zgodi \u2014 a zamudi\u0161 tudi prilo\u017Enost. Izberi nalogo, ki je realna
+      glede na to, s \u010Dimer se trenutno ukvarja\u0161."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273476
+    m_Localized: Nasveti Za Timsko Delo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273477
+    m_Localized: Najemnina in Tvoj Denar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859419467776
+    m_Localized: "Vodenje Cargorja ni brezpla\u010Dno. Ob dolo\u010Denih dneh zapade
+      pla\u010Dilo najemnine \u2014 temu dnevu pravimo \"dan najemnine\".\n\n- \u010Ce
+      ima\u0161 dovolj denarja za najemnino, je pla\u010Dana in nadaljuje\u0161 naprej.\n\n-
+      \u010Ce je na dan zapadlosti ne more\u0161 pla\u010Dati, ima\u0161 enkratno
+      drugo prilo\u017Enost: ve\u010Dina tvoje gotovine se ti vzame, a posel se ne
+      zapre.\n\n<b>Denar </b>prihaja od pravilnih dostav, telefonskih klicev in dokon\u010Danih
+      nalog. Napa\u010Dne dostave, izpu\u0161\u010Dene \u0161katle in nedokon\u010Dane
+      naloge ti jemljejo denar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859419467777
+    m_Localized: "<b> Ne pozabi:  </b>tukaj nisi sam. Cargor je timsko delo \u2014
+      deli breme, oglasi se."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859419467778
+    m_Localized: "Dostavi pravo barvo \u2192 zaslu\u017Ei\u0161 denar, tvoj ugled
+      naraste.\n\nDostavi napa\u010Dno barvo \u2192 izgubi\u0161 denar. Barve preveri
+      dvakrat.\n\nVsak tovornjak ima omejen \u010Dakalni \u010Das in zmogljivost.
+      Ko se napolni ali \u010Das pote\u010De, tovornjak odpelje in prispe nov.\n\nKo
+      skladi\u0161\u010De raste (z nadgradnjami), se lahko odpre ve\u010D hangarjev
+      \u2014 tako lahko hkrati oskrbuje\u0161 ve\u010D tovornjakov."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859427856384
+    m_Localized: "<b> Nasvet:  </b>Ne zapanikari ob me\u0161anem tovornjaku ali dvojnem
+      naro\u010Dilu \u2014 preprosto ju obravnavaj kot dve lo\u010Deni dostavi in
+      ju opravi eno za drugo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859427856385
+    m_Localized: Nadgradnje
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859427856386
+    m_Localized: "Ko se dan kon\u010Da, morajo vsi v sobo za po\u010Ditek. Tudi \u010De
+      ostane zunaj samo ena oseba, se dan ne zaklju\u010Di \u2014 po\u010Daka se,
+      da se zbere celotna ekipa.\n\nKo so vsi v sobi, se prika\u017Ee povzetek dneva
+      in za\u010Dne se nov dan. \u010Ce pride\u0161 do konca \u0161estnajstega dne
+      brez bankrota, si prislu\u017Eil praznovanje."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859432050688
+    m_Localized: "Soba za Po\u010Ditek in Konec Dneva"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859432050689
+    m_Localized: "Stranke vstopijo skozi vrata, se postavijo v vrsto in te prosijo
+      za nekaj. Vrstica nad njimi ka\u017Ee, kako potrpe\u017Eljive so \u2014 ko
+      se izprazni, stranka jezno odide, ti pa izgubi\u0161 denar in ugled.\n\n- Gne\u010Da
+      se \u010Dez dan spreminja: opoldne in zve\u010Der je najbolj natrpano, popoldne
+      ima\u0161 nekaj oddiha.\n\n- Ko se pogovarja\u0161 s stranko (gumb za interakcijo),
+      ta pusti \u017Eeleni izdelek na svoji mizi \u2014 nato sledita pakiranje in
+      dostava (Strani 4-6).\n\n- Vsaka pravo\u010Dasno postre\u017Eena stranka ti
+      prinese tako denar kot ugled. Vi\u0161ji kot je tvoj ugled, ve\u010D zaslu\u017Ei\u0161
+      na dostavo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859436244992
+    m_Localized: "<b> Nasvet:  </b>Ne odla\u0161aj s te\u017Eko nalogo do zadnjega
+      dne. Konec dneva vedno pride hitreje, kot pri\u010Dakuje\u0161."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859436244993
+    m_Localized: "Vra\u010Dila, Dvojna Naro\u010Dila, Me\u0161ani Tovornjaki"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859436244994
+    m_Localized: "<b> Nasvet:  </b>\u010Ce telefon zazvoni in ti je na poti, se oglasi
+      tudi s polnimi rokami \u2014 kratek premor, majhen dobi\u010Dek."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633600
+    m_Localized: "DOBRODO\u0160EL!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633601
+    m_Localized: Oglasna Deska Nalog
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633602
+    m_Localized: "Z dnevi se delo nekoliko zaplete. Naletel bo\u0161 na tri nove
+      situacije:\n\n<b>Vra\u010Dila: </b>nekatere stranke ne \u017Eelijo izdelka
+      \u2014 nasprotno, prosijo te, da jim vrne\u0161 \u0161katlo. Barvna krogla,
+      ki se pojavi nad njimi, poka\u017Ee, katero barvo \u0161katle \u017Eelijo.
+      Vzemi pravo barvo s police in jo odnesi stranki.\n\n<b>Dvojno naro\u010Dilo:
+      </b>nekatere stranke \u017Eelijo dve razli\u010Dni barvi hkrati. Delo ni kon\u010Dano,
+      dokler nista pripravljeni obe.\n\n<b>Me\u0161ani tovornjak: </b>nekateri tovornjaki
+      ne \u017Eelijo ene barve, ampak dve razli\u010Dni barvi \u0161katel. Me\u0161ana
+      barva na karoseriji (na primer rde\u010Da + rumena = oran\u017Ena) ti da namig
+      \u2014 poka\u017Ee, kateri dve barvi mora\u0161 nalo\u017Eiti."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633603
+    m_Localized: "Tovornjaki, ki \u010Dakajo v hangarju, ti z barvo karoserije poka\u017Eejo,
+      kaj \u017Eelijo: rde\u010D tovornjak \u017Eeli rde\u010Do \u0161katlo, rumen
+      rumeno, moder modro."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859448827904
+    m_Localized: "Dobrodo\u0161el! Zdaj si del dru\u017Eine Cargor. Ta kraj je skladi\u0161\u010De,
+      trgovina in malce kaosa \u2014 vse skupaj.\n\nStranke ti povedo, kaj \u017Eelijo,
+      ti to zapakira\u0161 in nalo\u017Ei\u0161 na pravi tovornjak. Sli\u0161i se
+      preprosto, kajne? \u010Ce po \u0161estnajstih dneh \u0161e vedno stoji\u0161,
+      si res opravil dobro delo.\n\nTa zvezek, ki ga dr\u017Ei\u0161 v rokah, je
+      mesto, kamor se bo\u0161 vrnil, ko pozabi\u0161 podrobnosti. Vsaka stran obravnava
+      drugo temo. Ni se treba muditi \u2014 prve dni delaj po\u010Dasi in spoznaj
+      sistem. Hitrost bo pri\u0161la s \u010Dasom."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859453022208
+    m_Localized: '<b> Nasvet:  </b>Preveri svojo gotovino pred dnevi najemnine. Ne
+      pusti tega za zadnji trenutek.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859453022209
+    m_Localized: "<b> Pozor:  </b>Dokler je vrsta polna, ne prihajajo nove stranke,
+      a tiste, ki \u017Ee \u010Dakajo, izgubljajo potrpljenje. Ne za\u010Denjaj ni\u010Desar
+      novega, preden vrste ne izprazni\u0161."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859453022210
+    m_Localized: "<b> Nasvet:  </b>\u010Ce barvo tovornjaka opazi\u0161 \u017Ee od
+      dale\u010D, daj prednost tistemu, ki ustreza \u0161katli, ki jo nosi\u0161
+      \u2014 ne hodi zaman."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859461410816
+    m_Localized: TOVORNJAKI IN DOSTAVA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859465605120
+    m_Localized: "Ob dolo\u010Denih dneh so ti ponujene nekaj mo\u017Enosti nadgradnje
+      \u2014 vseh ne more\u0161 vzeti, izbira\u0161 med njimi. Pridobi\u0161 lahko
+      trajne izbolj\u0161ave, kot so dodatna polica, dodaten hangar, hitrej\u0161e
+      gibanje ali dalj\u0161a potrpe\u017Eljivost strank.\n\nIzbiro dobro premisli:
+      nekatere nadgradnje se medsebojno izklju\u010Dujejo, druge se odklenejo \u0161ele
+      od dolo\u010Denega dne. Izbire, ki v zgodnjih dneh pospe\u0161ijo osnove, se
+      kasneje zelo obrestujejo."
     m_Metadata:
       m_Items: []
   references:

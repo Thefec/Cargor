@@ -213,8 +213,8 @@ const SRC = {
   // ---- Assets/NewCss/Events/EventCalendarUI.cs --------------------------
   eventFreeDays:              3,    // cs:25 INITIAL_EVENT_FREE_DAYS
   eventIntervalMin:           1,    // cs:23 EVENT_INTERVAL_MIN
-  eventIntervalMax:           3,    // cs:24 EVENT_INTERVAL_MAX
-  eventSkipRentDays:          true, // cs:688 (currentDay % 4 == 0) -> continue
+  eventIntervalMax:           2,    // cs:24 EVENT_INTERVAL_MAX (2026-08-25: 3->2 — NOT: bu sim'in nakit-akışı döngüsünde kullanılmıyor, salt dokümantasyon)
+  eventSkipRentDays:          true, // cs: IsRentDay(currentDay) -> continue (rentIntervalDays'e göre, varsayılan 4)
   eventPoolSize:              16,   // cs:160-177 _allEvents
 
   // ---- Assets/Scripts/Quest/Manager/QuestManager.cs ---------------------

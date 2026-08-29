@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
   m_Name: StringTable_et
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   m_LocaleId:
     m_Code: et
   m_SharedData: {fileID: 11400000, guid: 7d8d57bedebf1954db92f72969b59263, type: 2}
@@ -19,851 +19,1417 @@ MonoBehaviour:
     m_Items: []
   m_TableData:
   - m_Id: 88301023232
-    m_Localized: "Mäng internetis"
+    m_Localized: "M\xE4ng internetis"
     m_Metadata:
       m_Items: []
   - m_Id: 574282444800
-    m_Localized: "Keel"
+    m_Localized: Keel
     m_Metadata:
       m_Items: []
   - m_Id: 26808395673600
-    m_Localized: "Hiire tundlikkus"
+    m_Localized: Hiire tundlikkus
     m_Metadata:
       m_Items: []
   - m_Id: 27030165303296
-    m_Localized: "Mäng ilma internetita"
+    m_Localized: "M\xE4ng ilma internetita"
     m_Metadata:
       m_Items: []
   - m_Id: 27180690485248
-    m_Localized: "Seaded"
+    m_Localized: Seaded
     m_Metadata:
       m_Items: []
   - m_Id: 27238353776640
-    m_Localized: "Välju"
+    m_Localized: "V\xE4lju"
     m_Metadata:
       m_Items: []
   - m_Id: 27356159193088
-    m_Localized: "Üldine"
+    m_Localized: "\xDCldine"
     m_Metadata:
       m_Items: []
   - m_Id: 27414908809216
-    m_Localized: "Graafika"
+    m_Localized: Graafika
     m_Metadata:
       m_Items: []
   - m_Id: 27504130043904
-    m_Localized: "Heli"
+    m_Localized: Heli
     m_Metadata:
       m_Items: []
   - m_Id: 27565803089920
-    m_Localized: "Tagasi"
+    m_Localized: Tagasi
     m_Metadata:
       m_Items: []
   - m_Id: 28147393671168
-    m_Localized: "Autorid"
+    m_Localized: Autorid
     m_Metadata:
       m_Items: []
   - m_Id: 118380277706752
-    m_Localized: "Salvesta"
+    m_Localized: Salvesta
     m_Metadata:
       m_Items: []
   - m_Id: 4669780596797440
-    m_Localized: "Kohanda"
+    m_Localized: Kohanda
     m_Metadata:
       m_Items: []
   - m_Id: 4669983794049024
-    m_Localized: "Päev"
+    m_Localized: "P\xE4ev"
     m_Metadata:
       m_Items: []
   - m_Id: 4670284437565440
-    m_Localized: "INTENSIIVNE PÄEV"
+    m_Localized: "INTENSIIVNE P\xC4EV"
     m_Metadata:
       m_Items: []
   - m_Id: 4670557176377344
-    m_Localized: "KOHALETOIMETAMISE BOONUS"
+    m_Localized: KOHALETOIMETAMISE BOONUS
     m_Metadata:
       m_Items: []
   - m_Id: 4670594551820288
-    m_Localized: "VIHASED KLIENDID"
+    m_Localized: VIHASED KLIENDID
     m_Metadata:
       m_Items: []
   - m_Id: 4670644065579008
-    m_Localized: "RAHULIK PÄEV"
+    m_Localized: "RAHULIK P\xC4EV"
     m_Metadata:
       m_Items: []
   - m_Id: 4670683781443584
-    m_Localized: "AEGLANE LOGISTIKA"
+    m_Localized: AEGLANE LOGISTIKA
     m_Metadata:
       m_Items: []
   - m_Id: 4670721878306816
-    m_Localized: "EKSPRESSKAUP"
+    m_Localized: EKSPRESSKAUP
     m_Metadata:
       m_Items: []
   - m_Id: 4670821572718592
-    m_Localized: "RASKED KASTID"
+    m_Localized: RASKED KASTID
     m_Metadata:
       m_Items: []
   - m_Id: 4670864191041536
-    m_Localized: "KULDKASTI PÄEV"
+    m_Localized: "KULDKASTI P\xC4EV"
     m_Metadata:
       m_Items: []
   - m_Id: 4670907031662592
-    m_Localized: "VÕIMALUSTE PÄEV"
+    m_Localized: "V\xD5IMALUSTE P\xC4EV"
     m_Metadata:
       m_Items: []
   - m_Id: 4670942314147840
-    m_Localized: "VÄSIMUSE PROBLEEM"
+    m_Localized: "V\xC4SIMUSE PROBLEEM"
     m_Metadata:
       m_Items: []
   - m_Id: 4671003622289408
-    m_Localized: "VIP TEENUS"
+    m_Localized: VIP TEENUS
     m_Metadata:
       m_Items: []
   - m_Id: 4671211781402624
-    m_Localized: "Tegelase kohandamine"
+    m_Localized: Tegelase kohandamine
     m_Metadata:
       m_Items: []
   - m_Id: 4671355847356416
-    m_Localized: "Aksessuaarid"
+    m_Localized: Aksessuaarid
     m_Metadata:
       m_Items: []
   - m_Id: 4671495475736576
-    m_Localized: "Näod"
+    m_Localized: "N\xE4od"
     m_Metadata:
       m_Items: []
   - m_Id: 4671520289239040
-    m_Localized: "Prillid"
+    m_Localized: Prillid
     m_Metadata:
       m_Items: []
   - m_Id: 4671581857427456
-    m_Localized: "Kindad"
+    m_Localized: Kindad
     m_Metadata:
       m_Items: []
   - m_Id: 4671685976829952
-    m_Localized: "Soengud"
+    m_Localized: Soengud
     m_Metadata:
       m_Items: []
   - m_Id: 4671905867411456
-    m_Localized: "Mütsid"
+    m_Localized: "M\xFCtsid"
     m_Metadata:
       m_Items: []
   - m_Id: 4671966126977024
-    m_Localized: "Vurrud"
+    m_Localized: Vurrud
     m_Metadata:
       m_Items: []
   - m_Id: 4672063447412736
-    m_Localized: "Pealisriided"
+    m_Localized: Pealisriided
     m_Metadata:
       m_Items: []
   - m_Id: 4672192313208832
-    m_Localized: "Püksid"
+    m_Localized: "P\xFCksid"
     m_Metadata:
       m_Items: []
   - m_Id: 4672235917193216
-    m_Localized: "Jalatsid"
+    m_Localized: Jalatsid
     m_Metadata:
       m_Items: []
   - m_Id: 4672275557560320
-    m_Localized: "Nahavärv"
+    m_Localized: "Nahav\xE4rv"
     m_Metadata:
       m_Items: []
   - m_Id: 4672388858294272
-    m_Localized: "PRESTIIŽ"
+    m_Localized: "PRESTII\u017D"
     m_Metadata:
       m_Items: []
   - m_Id: 4672484777832448
-    m_Localized: "Järgmine päev"
+    m_Localized: "J\xE4rgmine p\xE4ev"
     m_Metadata:
       m_Items: []
   - m_Id: 4672617426890752
-    m_Localized: "Jätka"
+    m_Localized: "J\xE4tka"
     m_Metadata:
       m_Items: []
   - m_Id: 30567298710810624
-    m_Localized: "Loo mäng"
+    m_Localized: "Loo m\xE4ng"
     m_Metadata:
       m_Items: []
   - m_Id: 30567344864931840
-    m_Localized: "Liitu mänguga"
+    m_Localized: "Liitu m\xE4nguga"
     m_Metadata:
       m_Items: []
   - m_Id: 30567847749398528
-    m_Localized: "Alusta"
+    m_Localized: Alusta
     m_Metadata:
       m_Items: []
   - m_Id: 30567978871730176
-    m_Localized: "Lobby"
+    m_Localized: Lobby
     m_Metadata:
       m_Items: []
   - m_Id: 30568446771507200
-    m_Localized: "Vali kaart\n(Peagi)"
+    m_Localized: 'Vali kaart
+
+      (Peagi)'
     m_Metadata:
       m_Items: []
   - m_Id: 30568844051787776
-    m_Localized: "Peakontor"
+    m_Localized: Peakontor
     m_Metadata:
       m_Items: []
   - m_Id: 30569701396885504
-    m_Localized: "Mängi internetis"
+    m_Localized: "M\xE4ngi internetis"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000001
-    m_Localized: "Mängijad ooteruumis"
+    m_Localized: "M\xE4ngijad ooteruumis"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000002
-    m_Localized: "Kokku: {0} mängijat"
+    m_Localized: "Kokku: {0} m\xE4ngijat"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000003
-    m_Localized: "Puhkeruumi olek"
+    m_Localized: Puhkeruumi olek
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000004
-    m_Localized: "Sees: {0} / {1} mängijat"
+    m_Localized: "Sees: {0} / {1} m\xE4ngijat"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000005
-    m_Localized: "Kõik on valmis!"
+    m_Localized: "K\xF5ik on valmis!"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000006
-    m_Localized: "Oodatakse {0} mängijat..."
+    m_Localized: "Oodatakse {0} m\xE4ngijat..."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000007
-    m_Localized: "Mängijaid ei leitud"
+    m_Localized: "M\xE4ngijaid ei leitud"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000008
-    m_Localized: "Mängija"
+    m_Localized: "M\xE4ngija"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000009
-    m_Localized: "Õpetus"
+    m_Localized: "\xD5petus"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000010
-    m_Localized: "Ainult mängu looja saab mängijaid eemaldada!"
+    m_Localized: "Ainult m\xE4ngu looja saab m\xE4ngijaid eemaldada!"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000011
-    m_Localized: "Mängija eemaldatud!"
+    m_Localized: "M\xE4ngija eemaldatud!"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000012
-    m_Localized: "Eemaldamine ebaõnnestus!"
+    m_Localized: "Eemaldamine eba\xF5nnestus!"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000013
-    m_Localized: "Tühi koht"
+    m_Localized: "T\xFChi koht"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000014
-    m_Localized: "{0}. päev  {1}:{2} ({3}s)"
+    m_Localized: "{0}. p\xE4ev  {1}:{2} ({3}s)"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000015
-    m_Localized: "Päev on läbi. Mine puhkeruumi."
+    m_Localized: "P\xE4ev on l\xE4bi. Mine puhkeruumi."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000016
-    m_Localized: "Üüripäev"
+    m_Localized: "\xDC\xFCrip\xE4ev"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000017
-    m_Localized: "Tase: {0}"
+    m_Localized: 'Tase: {0}'
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000018
-    m_Localized: "Hind: {0}"
+    m_Localized: 'Hind: {0}'
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000019
-    m_Localized: "Maks"
+    m_Localized: Maks
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000020
-    m_Localized: "Osta"
+    m_Localized: Osta
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000021
-    m_Localized: "Järjekord"
+    m_Localized: "J\xE4rjekord"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000022
-    m_Localized: "Suurendab klientide järjekorra maksimumsuurust."
+    m_Localized: "Suurendab klientide j\xE4rjekorra maksimumsuurust."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000023
-    m_Localized: "Vastupidavus"
+    m_Localized: Vastupidavus
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000024
-    m_Localized: "Suurendab vastupidavuse taastumise kiirust."
+    m_Localized: Suurendab vastupidavuse taastumise kiirust.
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000025
-    m_Localized: "Raha"
+    m_Localized: Raha
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000026
-    m_Localized: "Suurendab tasu iga kohaletoimetatud kasti eest."
+    m_Localized: Suurendab tasu iga kohaletoimetatud kasti eest.
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000027
-    m_Localized: "Veoauto"
+    m_Localized: Veoauto
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000028
-    m_Localized: "Avab lisaveoautode angaarid."
+    m_Localized: Avab lisaveoautode angaarid.
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000029
-    m_Localized: "Ülesande tase"
+    m_Localized: "\xDClesande tase"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000030
-    m_Localized: "Avab kõrgema taseme ülesanded."
+    m_Localized: "Avab k\xF5rgema taseme \xFClesanded."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000031
-    m_Localized: "KIIRE PÄEV"
+    m_Localized: "KIIRE P\xC4EV"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000032
-    m_Localized: "Klientide ilmumise kiirus suureneb 30%."
+    m_Localized: Klientide ilmumise kiirus suureneb 30%.
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000033
-    m_Localized: "VIHASED KLIENDID"
+    m_Localized: VIHASED KLIENDID
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000034
-    m_Localized: "Klientide kannatlikkus väheneb 30%."
+    m_Localized: "Klientide kannatlikkus v\xE4heneb 30%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000035
-    m_Localized: "AEGLANE LOGISTIKA"
+    m_Localized: AEGLANE LOGISTIKA
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000036
-    m_Localized: "Veoautod lahkuvad kohalt 50% aeglasemalt."
+    m_Localized: Veoautod lahkuvad kohalt 50% aeglasemalt.
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000037
-    m_Localized: "RASKED KASTID"
+    m_Localized: RASKED KASTID
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000038
-    m_Localized: "Üldine liikumiskiirus väheneb 20%."
+    m_Localized: "\xDCldine liikumiskiirus v\xE4heneb 20%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000039
-    m_Localized: "VÄSIMUSE PROBLEEM"
+    m_Localized: "V\xC4SIMUSE PROBLEEM"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000040
-    m_Localized: "Vastupidavus taastub 40% aeglasemalt ja sprindikiirus väheneb 30%."
+    m_Localized: "Vastupidavus taastub 40% aeglasemalt ja sprindikiirus v\xE4heneb
+      30%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000041
-    m_Localized: "ÜLLATUSKONTROLL"
+    m_Localized: "\xDCLLATUSKONTROLL"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000042
-    m_Localized: "Kõiki vigaseid toiminguid karistatakse topelt."
+    m_Localized: "K\xF5iki vigaseid toiminguid karistatakse topelt."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000043
-    m_Localized: "TURUNDUSPÄEV"
+    m_Localized: "TURUNDUSP\xC4EV"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000044
-    m_Localized: "20% rohkem kliente, kuid 30% väiksem tulu."
+    m_Localized: "20% rohkem kliente, kuid 30% v\xE4iksem tulu."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000045
-    m_Localized: "KLIENDITUGI"
+    m_Localized: KLIENDITUGI
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000046
-    m_Localized: "Vastuvõtu telefon heliseb 50% sagedamini."
+    m_Localized: "Vastuv\xF5tu telefon heliseb 50% sagedamini."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000047
-    m_Localized: "KOHALETOIMETAMISE BOONUS"
+    m_Localized: KOHALETOIMETAMISE BOONUS
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000048
-    m_Localized: "Teeni 20% rohkem raha iga kohaletoimetamise eest."
+    m_Localized: Teeni 20% rohkem raha iga kohaletoimetamise eest.
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000049
-    m_Localized: "RAHULIK PÄEV"
+    m_Localized: "RAHULIK P\xC4EV"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000050
-    m_Localized: "Klientide kannatlikkus suureneb 30%."
+    m_Localized: Klientide kannatlikkus suureneb 30%.
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000051
-    m_Localized: "EKSPRESSKAUP"
+    m_Localized: EKSPRESSKAUP
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000052
-    m_Localized: "Veoautod lahkuvad kohalt 30% kiiremini."
+    m_Localized: Veoautod lahkuvad kohalt 30% kiiremini.
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000053
-    m_Localized: "KULDKASTI PÄEV"
+    m_Localized: "KULDKASTI P\xC4EV"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000054
-    m_Localized: "Iga õigesti kohale toimetatud kast annab lisaks 30%. Toob ka 20% rohkem kliente, 20% kiiremad veoautode väljumised ja 20% kiirema liikumise, kuid vastupidavus taastub 20% aeglasemalt."
+    m_Localized: "Iga \xF5igesti kohale toimetatud kast annab lisaks 30%. Toob ka
+      20% rohkem kliente, 20% kiiremad veoautode v\xE4ljumised ja 20% kiirema liikumise,
+      kuid vastupidavus taastub 20% aeglasemalt."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000055
-    m_Localized: "VÕIMALUSTE PÄEV"
+    m_Localized: "V\xD5IMALUSTE P\xC4EV"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000056
-    m_Localized: "Uuenduste hind väheneb 20%."
+    m_Localized: "Uuenduste hind v\xE4heneb 20%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000057
-    m_Localized: "KVOODIPÄEV"
+    m_Localized: "KVOODIP\xC4EV"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000058
-    m_Localized: "Kõik veoautod nõuavad ainult ühte kasti värvi."
+    m_Localized: "K\xF5ik veoautod n\xF5uavad ainult \xFChte kasti v\xE4rvi."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000059
-    m_Localized: "VIP TEENUS"
+    m_Localized: VIP TEENUS
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000060
-    m_Localized: "10% võimalus, et kast on täiuslik ja annab 10% rohkem."
+    m_Localized: "10% v\xF5imalus, et kast on t\xE4iuslik ja annab 10% rohkem."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000061
-    m_Localized: "VIHMANE PÄEV"
+    m_Localized: "VIHMANE P\xC4EV"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000062
-    m_Localized: "Saabub 20% vähem kliente."
+    m_Localized: "Saabub 20% v\xE4hem kliente."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000063
-    m_Localized: "FESTIVALIPÄEV"
+    m_Localized: "FESTIVALIP\xC4EV"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000064
-    m_Localized: "Päeva alguses saadakse juhuslik boonus."
+    m_Localized: "P\xE4eva alguses saadakse juhuslik boonus."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000065
-    m_Localized: "Mängijad"
+    m_Localized: "M\xE4ngijad"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000066
-    m_Localized: "({0}/{1} puhkeruumis)"
+    m_Localized: ({0}/{1} puhkeruumis)
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000067
-    m_Localized: "Oodatavad kliendid"
+    m_Localized: Oodatavad kliendid
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000068
-    m_Localized: "Punane"
+    m_Localized: Punane
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000069
-    m_Localized: "Sinine"
+    m_Localized: Sinine
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000070
-    m_Localized: "Kollane"
+    m_Localized: Kollane
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000071
-    m_Localized: "Roheline"
+    m_Localized: Roheline
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000072
-    m_Localized: "Ülesanne puudub"
+    m_Localized: "\xDClesanne puudub"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000073
-    m_Localized: "Preemia"
+    m_Localized: Preemia
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000074
-    m_Localized: "Karistus"
+    m_Localized: Karistus
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000075
-    m_Localized: "Lõpetatud"
+    m_Localized: "L\xF5petatud"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000076
-    m_Localized: "Ebaõnnestus"
+    m_Localized: "Eba\xF5nnestus"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000077
-    m_Localized: "Lõpeta minimäng {0} korda"
+    m_Localized: "L\xF5peta minim\xE4ng {0} korda"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000078
-    m_Localized: "Aseta {0} kasti riiulile"
+    m_Localized: Aseta {0} kasti riiulile
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000079
-    m_Localized: "Aseta {0} {1} kasti riiulile"
+    m_Localized: Aseta {0} {1} kasti riiulile
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000080
-    m_Localized: "Lõpeta {0} veoautot"
+    m_Localized: "L\xF5peta {0} veoautot"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000081
-    m_Localized: "Teeninda {0} klienti"
+    m_Localized: Teeninda {0} klienti
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000082
-    m_Localized: "Eira {0} klienti"
+    m_Localized: Eira {0} klienti
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000083
-    m_Localized: "Pakenda {0} mänguasja"
+    m_Localized: "Pakenda {0} m\xE4nguasja"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000107
-    m_Localized: "Oled täna juba ülesande vastu võtnud"
+    m_Localized: "Oled t\xE4na juba \xFClesande vastu v\xF5tnud"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000108
-    m_Localized: "Nõustu"
+    m_Localized: "N\xF5ustu"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000084
-    m_Localized: "Maht 0"
+    m_Localized: Maht 0
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000085
-    m_Localized: "Maht +1"
+    m_Localized: Maht +1
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000086
-    m_Localized: "Maht +2"
+    m_Localized: Maht +2
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000087
-    m_Localized: "Maht +3"
+    m_Localized: Maht +3
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000095
-    m_Localized: "Maht +4"
+    m_Localized: Maht +4
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000096
-    m_Localized: "Maht +5"
+    m_Localized: Maht +5
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000097
-    m_Localized: "Maht +6"
+    m_Localized: Maht +6
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000098
-    m_Localized: "Maht +7"
+    m_Localized: Maht +7
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000099
-    m_Localized: "Maht +8"
+    m_Localized: Maht +8
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000100
-    m_Localized: "Maht +9"
+    m_Localized: Maht +9
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000101
-    m_Localized: "Maht +10"
+    m_Localized: Maht +10
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000102
-    m_Localized: "Maht +11"
+    m_Localized: Maht +11
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000103
-    m_Localized: "Maht +12"
+    m_Localized: Maht +12
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000104
-    m_Localized: "Maht +13"
+    m_Localized: Maht +13
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000105
-    m_Localized: "Maht +14"
+    m_Localized: Maht +14
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000106
-    m_Localized: "Maht +15"
+    m_Localized: Maht +15
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000088
-    m_Localized: "Laud 0"
+    m_Localized: Laud 0
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000089
-    m_Localized: "Laud +1"
+    m_Localized: Laud +1
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000090
-    m_Localized: "Laud +2"
+    m_Localized: Laud +2
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000091
-    m_Localized: "Järjekorra maht 0"
+    m_Localized: "J\xE4rjekorra maht 0"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000092
-    m_Localized: "Järjekorra maht +1"
+    m_Localized: "J\xE4rjekorra maht +1"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000093
-    m_Localized: "Järjekorra maht +2"
+    m_Localized: "J\xE4rjekorra maht +2"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000094
-    m_Localized: "Järjekorra maht +3"
+    m_Localized: "J\xE4rjekorra maht +3"
     m_Metadata:
       m_Items: []
   - m_Id: 42431428665192448
-    m_Localized: "VSync (FPS-i valik on piiratud)"
+    m_Localized: VSync (FPS-i valik on piiratud)
     m_Metadata:
       m_Items: []
   - m_Id: 42431953292931072
-    m_Localized: "Muusika helitugevus"
+    m_Localized: Muusika helitugevus
     m_Metadata:
       m_Items: []
   - m_Id: 42432326804090880
-    m_Localized: "Eraldusvõime"
+    m_Localized: "Eraldusv\xF5ime"
     m_Metadata:
       m_Items: []
   - m_Id: 42432451492360192
-    m_Localized: "Ekraanirežiim"
+    m_Localized: "Ekraanire\u017Eiim"
     m_Metadata:
       m_Items: []
   - m_Id: 42432584829284352
-    m_Localized: "Heliefektide helitugevus"
+    m_Localized: Heliefektide helitugevus
     m_Metadata:
       m_Items: []
   - m_Id: 42434254002892800
-    m_Localized: "Põhiõpetus"
+    m_Localized: "P\xF5hi\xF5petus"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194447572992
-    m_Localized: "Sprint"
+    m_Localized: Sprint
     m_Metadata:
       m_Items: []
   - m_Id: 136075194502098944
-    m_Localized: "CARGOR LOGISTIKATERMINAL"
+    m_Localized: CARGOR LOGISTIKATERMINAL
     m_Metadata:
       m_Items: []
   - m_Id: 136075194502098945
-    m_Localized: "Energiatase"
+    m_Localized: Energiatase
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681856
-    m_Localized: "Liikumine üles/alla/vasakule/paremale"
+    m_Localized: "Liikumine \xFCles/alla/vasakule/paremale"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681857
-    m_Localized: "Mängija"
+    m_Localized: "M\xE4ngija"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681858
-    m_Localized: "Sisene"
+    m_Localized: Sisene
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681859
-    m_Localized: "Kindad"
+    m_Localized: Kindad
     m_Metadata:
       m_Items: []
   - m_Id: 136075194518876160
-    m_Localized: "Nägu"
+    m_Localized: "N\xE4gu"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194518876161
-    m_Localized: "Kas soovid kindlasti õpetusega alustada?"
+    m_Localized: "Kas soovid kindlasti \xF5petusega alustada?"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070464
-    m_Localized: "Aksessuaarid"
+    m_Localized: Aksessuaarid
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070465
-    m_Localized: "VSync"
+    m_Localized: VSync
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070466
-    m_Localized: "Tagasi"
+    m_Localized: Tagasi
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070467
-    m_Localized: "Mängija"
+    m_Localized: "M\xE4ngija"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070468
-    m_Localized: "ECLION\n\nV2.01"
+    m_Localized: 'ECLION
+
+
+      V2.01'
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070469
-    m_Localized: "Aseta maha"
+    m_Localized: Aseta maha
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070470
-    m_Localized: "TAGASI"
+    m_Localized: TAGASI
     m_Metadata:
       m_Items: []
   - m_Id: 136075194527264768
-    m_Localized: "PALJASTA"
+    m_Localized: PALJASTA
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459072
-    m_Localized: "ZOOM"
+    m_Localized: ZOOM
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459073
-    m_Localized: "Korja üles"
+    m_Localized: "Korja \xFCles"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459074
-    m_Localized: "VIDEO"
+    m_Localized: VIDEO
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459075
-    m_Localized: "HELI"
+    m_Localized: HELI
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653376
-    m_Localized: "Suhtle"
+    m_Localized: Suhtle
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653377
-    m_Localized: "Peakontor"
+    m_Localized: Peakontor
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653378
-    m_Localized: "GRAAFIKA"
+    m_Localized: GRAAFIKA
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653379
-    m_Localized: "Juuksed"
+    m_Localized: Juuksed
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653380
-    m_Localized: "KEEL"
+    m_Localized: KEEL
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653381
-    m_Localized: "MUUSIKA HELITUGEVUS"
+    m_Localized: MUUSIKA HELITUGEVUS
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847680
-    m_Localized: "SFX HELITUGEVUS"
+    m_Localized: SFX HELITUGEVUS
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847681
-    m_Localized: "Valik A"
+    m_Localized: Valik A
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847682
-    m_Localized: "XXXX-XXXX-XXXX-XXXX"
+    m_Localized: XXXX-XXXX-XXXX-XXXX
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847683
-    m_Localized: "Püksid"
+    m_Localized: "P\xFCksid"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847684
-    m_Localized: "Jalatsid"
+    m_Localized: Jalatsid
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847685
-    m_Localized: "Mängija"
+    m_Localized: "M\xE4ngija"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847686
-    m_Localized: "PEAHELITUGEVUS"
+    m_Localized: PEAHELITUGEVUS
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236288
-    m_Localized: "Tagasi"
+    m_Localized: Tagasi
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236289
-    m_Localized: "ERALDUSVÕIME"
+    m_Localized: "ERALDUSV\xD5IME"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236290
-    m_Localized: "LIITU TOAGA"
+    m_Localized: LIITU TOAGA
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236291
-    m_Localized: "Ooteruumi ID:"
+    m_Localized: 'Ooteruumi ID:'
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236292
-    m_Localized: "KOHANDA"
+    m_Localized: KOHANDA
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236293
-    m_Localized: "Valik A"
+    m_Localized: Valik A
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624896
-    m_Localized: "Mängija"
+    m_Localized: "M\xE4ngija"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624897
-    m_Localized: "Müts"
+    m_Localized: "M\xFCts"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624898
-    m_Localized: "Kohanda"
+    m_Localized: Kohanda
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624899
-    m_Localized: "Viska"
+    m_Localized: Viska
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624900
-    m_Localized: "Kaardivaade"
+    m_Localized: Kaardivaade
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624901
-    m_Localized: "JUHTNUPUD"
+    m_Localized: JUHTNUPUD
     m_Metadata:
       m_Items: []
   - m_Id: 136075194560819200
-    m_Localized: "Pealisriided"
+    m_Localized: Pealisriided
     m_Metadata:
       m_Items: []
   - m_Id: 136075194560819201
-    m_Localized: "Prillid"
+    m_Localized: Prillid
     m_Metadata:
       m_Items: []
   - m_Id: 141928975156891283
-    m_Localized: "Vasak klõps"
+    m_Localized: "Vasak kl\xF5ps"
     m_Metadata:
       m_Items: []
   - m_Id: 142557709478291173
-    m_Localized: "Parem klõps"
+    m_Localized: "Parem kl\xF5ps"
     m_Metadata:
       m_Items: []
   - m_Id: 144849164114263128
-    m_Localized: "Keskmine klõps"
+    m_Localized: "Keskmine kl\xF5ps"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528492507136
+    m_Localized: "Men\xFC\xFC"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528538644480
+    m_Localized: SUUM
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528538644481
+    m_Localized: Suhtlemine
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838784
+    m_Localized: "T\xC4IUSTUSED"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838785
+    m_Localized: "Liikumine \xFCles/alla/vasakule/paremale"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838786
+    m_Localized: "V\xE4lju m\xE4ngust"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838787
+    m_Localized: Valikud
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033088
+    m_Localized: Sprint
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033089
+    m_Localized: Pankrot!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033090
+    m_Localized: ladu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033091
+    m_Localized: kaardivaade
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227392
+    m_Localized: "N\xD5USTU"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227393
+    m_Localized: pakiruum
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227394
+    m_Localized: "T\xF6\xF6taja"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227395
+    m_Localized: "1. p\xE4ev"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528555421696
+    m_Localized: "J\xE4rgmine p\xE4ev"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528555421697
+    m_Localized: VIDEO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528559616000
+    m_Localized: uuesti veeretada
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528559616001
+    m_Localized: GRAAFIKA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528568004608
+    m_Localized: "M\xE4ngija3"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528568004609
+    m_Localized: 'XP: 200'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528568004610
+    m_Localized: 'GOLD: 200'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198912
+    m_Localized: Missioon - 1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198913
+    m_Localized: 0/1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198914
+    m_Localized: vsync
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198915
+    m_Localized: KEEL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198916
+    m_Localized: "L\xC4HTESTA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587520
+    m_Localized: 'XP: 200 GOLD: 300'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587521
+    m_Localized: HELI
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587522
+    m_Localized: SISU
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587523
+    m_Localized: "M\xE4ngija1"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528584781824
+    m_Localized: kalender
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528584781825
+    m_Localized: "M\xE4ngija2"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528584781826
+    m_Localized: SFX HELITUGEVUS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528588976128
+    m_Localized: "M\xE4ngija4"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528588976129
+    m_Localized: "Ladu \xF5itseb ja k\xF5ik saadetised on laitmatult sorteeritud."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528588976130
+    m_Localized: Valik A
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528593170432
+    m_Localized: NELJ
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528593170433
+    m_Localized: Pane maha
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528593170434
+    m_Localized: "<color=#4B4E6D>2</color>      Tere tulemast Cargorisse!\n<color=#4B4E6D>3</color>     
+      P\xF5hiliikumine\n<color=#4B4E6D>4</color>      Kuidas tooteid pakendada\n<color=#4B4E6D>5</color>     
+      Riiulile paigutamine\n<color=#4B4E6D>6</color>      Veokid ja tarne\n<color=#4B4E6D>7</color>      
+      Kliendid\n<line-height=18><color=#4B4E6D>8</color>      Erisoovid: tagastused,\ntopelttellimused,
+      segaveokid</line-height>\n<color=#4B4E6D>9</color>      \xDC\xFCr ja teie raha\n<color=#4B4E6D>10</color>  
+      T\xE4iustused\n<color=#4B4E6D>11</color>    \xDClesannete tahvel\n<color=#4B4E6D>12</color>   
+      Telefoniliin\n<color=#4B4E6D>13</color>    Puhkeruum ja p\xE4eva l\xF5pp\n<color=#4B4E6D>14</color>   
+      Meeskonnat\xF6\xF6 n\xF5uanded"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528597364736
+    m_Localized: "Korja \xFCles"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528597364737
+    m_Localized: CARGOR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559040
+    m_Localized: AVASTA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559041
+    m_Localized: SISUKORD
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559042
+    m_Localized: Autorid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559043
+    m_Localized: "P\xD5HIHELITUGEVUS"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559044
+    m_Localized: "P\xDCHA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528609947648
+    m_Localized: Puhkeruum
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528609947649
+    m_Localized: LAU
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528609947650
+    m_Localized: KOLM
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141952
+    m_Localized: Abiraamat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141953
+    m_Localized: "Men\xFC\xFC"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141954
+    m_Localized: MUUSIKA HELITUGEVUS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141955
+    m_Localized: "PAUSIMEN\xDC\xDC"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528618336256
+    m_Localized: "P\xE4evagraafik"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528618336257
+    m_Localized: REE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528622530560
+    m_Localized: "T\xE4iustus"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528626724864
+    m_Localized: Viska
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528626724865
+    m_Localized: "Ladu l\xE4ks pankrotti."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528630919168
+    m_Localized: "ERALDUSV\xD5IME"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528630919169
+    m_Localized: JUHTNUPUD
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528635113472
+    m_Localized: "\xDCLESANNE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528635113473
+    m_Localized: "LADU\nK\xC4SIRAAMAT"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307776
+    m_Localized: TEI
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307777
+    m_Localized: "Prestii\u017E"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307778
+    m_Localized: "J\xE4tka"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307779
+    m_Localized: "MISSIOON T\xC4IDETUD"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307780
+    m_Localized: "vastuv\xF5tt"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528647696384
+    m_Localized: "\xDClesanne"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528651890688
+    m_Localized: ESM
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528651890689
+    m_Localized: Raha
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269394388168704
+    m_Localized: "<b> T\xE4helepanu: </b> T\xE4helepanu: kui kasti v\xE4rv ei \xFChti
+      tootega, pakkimine eba\xF5nnestub ja kast puruneb sul k\xE4es. Kontrolli v\xE4rvi
+      enne pakkimist \u2014 \xE4ra raiska kasti."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269394430111744
+    m_Localized: "<b> Vihje: </b>Viskamine ja p\xFC\xFCdmine s\xE4\xE4stab aega kahe
+      inimese jaamas, aga \xE4ra tee sellest harjumust \u2014 iga mahakukkumine l\xE4heb
+      sulle maksma."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605470711808
+    m_Localized: "RIIULITE T\xC4ITMINE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605474906112
+    m_Localized: "Riiulid on Cargori elut\xE4htis osa. Kolm t\xFC\xFCpi t\xFChje
+      kaste \u2014 punane, kollane ja sinine \u2014 ootavad seal alati; kui v\xF5tad
+      \xFChe, t\xE4ieneb riiul peagi uuesti, seega ei j\xE4\xE4 see kunagi t\xE4iesti
+      t\xFChjaks. Kui sul on \xFCleliigne kast v\xF5i pakitud toode, mida sa hetkel
+      kaasas kanda ei taha, v\xF5id selle riiulisse tagasi panna. Korras riiul lihtsustab
+      t\xF6\xF6d nii sulle kui su meeskonnale \u2014 k\xF5ik teavad, kust mida leida."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605474906113
+    m_Localized: KUIDAS TOOTEID PAKITAKSE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605474906114
+    m_Localized: "P\xD5HILIIKUMISED"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605483294720
+    m_Localized: "<b>K\xF5ndimine / Jooksmine</b> \u2013 v\xF5imaldab sul laos ringi
+      liikuda.\n\n<b>V\xF5tmine / Panemine</b> \u2013 v\xF5ta ese p\xF5randalt, laualt
+      v\xF5i riiulilt, v\xF5i pane see sinna, kus sa seisad.\n\n<b>Viskamine</b>
+      \u2013 viska see, mida k\xE4es hoiad, kaugele. Kiire, aga riskantne: kui see
+      p\xF5rkab vastu midagi k\xF5va, l\xE4heb see katki ning sa kaotad raha ja mainet.
+      Kui viskad selle meeskonnakaaslasele, kes selle p\xFC\xFCab, karistust pole
+      \u2014 see s\xE4\xE4stab isegi aega.\n\n<b>Suhtlemine</b> \u2013 klientidega
+      r\xE4\xE4kimine, telefoni t\xF5stmine, esemete v\xF5tmine riiulilt/laualt \u2014
+      k\xF5ik k\xE4ib selle nupuga.\n\n<b>Kaart / Laoseisu kontroll</b> \u2013 avab
+      lao \xFClevaate, et n\xE4eksid, mis kus on. See ei n\xE4ita meeskonnakaaslaste
+      asukohti \u2014 seda tuleb raadio teel k\xFCsida."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605483294721
+    m_Localized: 'KUIDAS
+
+      TOOTEID
+
+      PAKITAKSE'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605483294722
+    m_Localized: "Kui r\xE4\xE4gid kliendiga, palub ta toote ja j\xE4tab selle oma
+      lauale. Sellega t\xF6\xF6 ei l\xF5pe \u2014 toode pole veel pakitud.\n\nPakkimise
+      sammud:\n\nV\xF5ta kliendi j\xE4etud pakendamata toode.\n\nMine l\xE4hima pakkimislaua
+      juurde.\n\nV\xF5ta riiulilt tootega samav\xE4\xE4rses v\xE4rvis t\xFChi kast.\n\n\xDChenda
+      toode ja kast laual \u2014 k\xF5igepealt teibiga, siis sildiga, ja pakk on
+      valmis.\n\nN\xFC\xFCd on sul pakitud kast. J\xE4rgmisena tuleb tarne (vaata
+      lehek\xFClge 6)."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859394301952
+    m_Localized: Kliendid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859406884864
+    m_Localized: "Cargorit saab m\xE4ngida ka \xFCksi, aga t\xF5eline nali algab
+      meeskonnas. M\xF5ned praktilised n\xF5uanded:\n\n- <b>Jagage t\xF6\xF6d:</b>
+      las \xFCks j\xE4\xE4b pakkimislaua juurde, \xFCks jookseb veokite juurde, \xFCks
+      tegeleb klientidega.\n- <b>R\xE4\xE4kige omavahel: </b>kui te pole samas ruumis,
+      ei pruugi te \xFCksteist n\xE4ha \u2014 vaadake kaarti ja jagage valjusti,
+      mis kus on.\n- <b>Visake ja p\xFC\xFCdke:</b> selle asemel, et kahe jaama vahet
+      joosta, visake kast otse meeskonnakaaslasele.\n- <b>Leppige t\xE4iendustes
+      kokku:</b> p\xFCsivad valikud m\xF5jutavad k\xF5iki, \xE4ra otsusta \xFCksi.\n\nEdu
+      \u2014 tere tulemast Cargorisse!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859411079168
+    m_Localized: Tere tulemast Cargorisse!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859411079169
+    m_Localized: Telefoniliin
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859411079170
+    m_Localized: "Lao telefon heliseb aeg-ajalt. Mine see vastu v\xF5tma, et saada
+      v\xE4ike raha- ja mainepreemia. Kui sa seda ei tee, ei kaota sa ka midagi \u2014
+      telefon vaikib l\xF5puks iseenesest.\n\nKas see heliseb, s\xF5ltub t\xE4ielikult
+      juhusest, aga m\xF5nel p\xE4eval (n\xE4iteks eris\xFCndmuste p\xE4evadel) t\xF5en\xE4osus
+      suureneb. M\xF6\xF6daminnes pilku heitmine ei tee paha."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273472
+    m_Localized: "<b> Vihje:  </b>Kui p\xE4ev hakkab l\xF5ppema, l\xF5peta see, mida
+      teed, ja mine varakult puhkeruumi \u2014 \xE4ra lase oma meeskonnal oodata."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273473
+    m_Localized: Erisoovid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273474
+    m_Localized: "<b> Vihje:  </b>\xC4ra vali ilma meeskonnaga r\xE4\xE4kimata \u2014
+      \xFChe inimese valitud t\xE4iendus muudab k\xF5igi m\xE4ngu."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273475
+    m_Localized: "Iga p\xE4ev n\xE4ed teatetahvlil m\xF5nda \xFClesannet \u2014 n\xE4iteks
+      kasti riiulisse panek, toote pakkimine, veoki t\xE4itmine v\xF5i telefonile
+      vastamine. Sa saad p\xE4evas vastu v\xF5tta ainult \xFChe.\n\n- Kui l\xF5petad
+      vastuv\xF5etud \xFClesande enne p\xE4eva l\xF5ppu, makstakse su preemia automaatselt
+      p\xE4eva l\xF5pus v\xE4lja.\n\n- Kui v\xF5tad selle vastu ja j\xE4tad pooleli,
+      saad p\xE4eva l\xF5pus karistuse.\n\nKui sa \xFChtegi vastu ei v\xF5ta, ei
+      juhtu midagi \u2014 aga j\xE4\xE4d ka v\xF5imalusest ilma. Vali \xFClesanne,
+      mis on realistlik selle suhtes, millega parasjagu tegeled."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273476
+    m_Localized: "Meeskonnat\xF6\xF6 N\xF5uanded"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273477
+    m_Localized: "\xDC\xFCr ja Sinu Raha"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859419467776
+    m_Localized: "Cargori pidamine pole tasuta. Teatud p\xE4evadel saabub \xFC\xFCrimakse
+      \u2014 sellist p\xE4eva kutsume \"\xFC\xFCrip\xE4evaks\".\n\n- Kui sul on \xFC\xFCri
+      jaoks piisavalt raha, see makstakse ja sa j\xE4tkad.\n\n- Kui sa ei suuda t\xE4htajaks
+      maksta, saad \xFChekordse teise v\xF5imaluse: enamik su sularahast v\xF5etakse
+      \xE4ra, aga \xE4ri ei sulgu.\n\n<b>Raha </b>tuleb \xF5igetest tarnetest, telefonik\xF5nedest
+      ja l\xF5petatud \xFClesannetest. Valed tarned, mahakukkunud kastid ja pooleliolevad
+      \xFClesanded v\xF5tavad sinult raha."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859419467777
+    m_Localized: "<b> \xC4ra unusta:  </b>sa pole siin \xFCksi. Cargor on meeskonnat\xF6\xF6
+      \u2014 jaga koormust, anna endast m\xE4rku."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859419467778
+    m_Localized: "Tarni \xF5ige v\xE4rv \u2192 teenid raha, sinu maine t\xF5useb.\n\nTarni
+      vale v\xE4rv \u2192 kaotad raha. Kontrolli v\xE4rve kaks korda.\n\nIgal veokil
+      on piiratud ooteaeg ja mahutavus. Kui see saab t\xE4is v\xF5i aeg saab otsa,
+      veok lahkub ja saabub uus.\n\nLao kasvades (t\xE4ienduste kaudu) v\xF5ib avaneda
+      rohkem angaare \u2014 siis saad korraga toita mitut veokit."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859427856384
+    m_Localized: "<b> Vihje:  </b>\xC4ra satu paanikasse segav\xE4rvi veokit v\xF5i
+      topelttellimust n\xE4hes \u2014 m\xF5tle sellest lihtsalt kui kahest eraldi
+      tarnest ja tegele nendega \xFCksteise j\xE4rel."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859427856385
+    m_Localized: "T\xE4iendused"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859427856386
+    m_Localized: "Kui p\xE4ev l\xF5ppeb, peavad k\xF5ik minema puhkeruumi. Isegi
+      kui ainult \xFCks inimene j\xE4\xE4b v\xE4ljapoole, p\xE4ev ei sulgu \u2014
+      oodatakse, kuni kogu meeskond on koos.\n\nKui k\xF5ik on ruumis, ilmub p\xE4eva
+      kokkuv\xF5te ja algab uus p\xE4ev. Kui j\xF5uad kuueteistk\xFCmnenda p\xE4eva
+      l\xF5ppu ilma pankrotti minemata, oled pidustused \xE4ra teeninud."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859432050688
+    m_Localized: "Puhkeruum ja P\xE4eva L\xF5pp"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859432050689
+    m_Localized: "Kliendid tulevad uksest sisse, seisavad j\xE4rjekorda ja paluvad
+      sinult midagi. Nende kohal olev riba n\xE4itab, kui kannatlikud nad on \u2014
+      kui see saab otsa, lahkub klient vihaselt ja sina kaotad raha ja mainet.\n\n-
+      Liiklus muutub p\xE4eva jooksul: l\xF5una- ja \xF5htuaeg on k\xF5ige tihedamad,
+      p\xE4rastl\xF5unal saad veidi hingata.\n\n- Kui r\xE4\xE4gid kliendiga (suhtlusnupp),
+      j\xE4tab ta soovitud toote oma lauale \u2014 p\xE4rast seda j\xE4rgnevad pakkimine
+      ja tarne (lehek\xFCljed 4-6).\n\n- Iga \xF5igel ajal teenindatud klient toob
+      sulle nii raha kui mainet. Mida k\xF5rgem su maine, seda rohkem teenid tarne
+      kohta."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859436244992
+    m_Localized: "<b> Vihje:  </b>\xC4ra l\xFCkka rasket \xFClesannet viimasele p\xE4evale.
+      P\xE4eva l\xF5pp saabub alati kiiremini, kui arvad."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859436244993
+    m_Localized: "Tagastused, Topelttellimused, Segav\xE4rvi Veokid"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859436244994
+    m_Localized: "<b> Vihje:  </b>Kui telefon heliseb ja see j\xE4\xE4b sulle teele,
+      astu l\xE4bi ka t\xE4isk\xE4tega \u2014 l\xFChike paus, v\xE4ike v\xF5it."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633600
+    m_Localized: TERE TULEMAST!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633601
+    m_Localized: "\xDClesannete Tahvel"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633602
+    m_Localized: "P\xE4evade edenedes muutub t\xF6\xF6 veidi keerulisemaks. Sul tuleb
+      ette kolm uut olukorda:\n\n<b>Tagastused: </b>m\xF5ned kliendid ei taha toodet
+      \u2014 vastupidi, nad paluvad sul tuua neile kast tagasi. Nende kohal ilmuv
+      v\xE4rviline kera n\xE4itab, millist v\xE4rvi kasti nad tahavad. V\xF5ta riiulilt
+      \xF5ige v\xE4rv ja vii see kliendile.\n\n<b>Topelttellimus: </b>m\xF5ned kliendid
+      tahavad korraga kahte erinevat v\xE4rvi. T\xF6\xF6 pole valmis enne, kui m\xF5lemad
+      on valmis.\n\n<b>Segav\xE4rvi veok: </b>m\xF5ned veokid ei taha \xFCht v\xE4rvi,
+      vaid kahte erinevat kastiv\xE4rvi. Kere segav\xE4rv (n\xE4iteks punane + kollane
+      = oran\u017E) annab vihje \u2014 see n\xE4itab, millised kaks v\xE4rvi tuleb
+      peale laadida."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633603
+    m_Localized: "Angaaris ootavad veokid n\xE4itavad oma kere v\xE4rviga, mida nad
+      tahavad: punane veok tahab punast kasti, kollane kollast, sinine sinist."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859448827904
+    m_Localized: "Tere tulemast! N\xFC\xFCd oled Cargori pere osa. See koht on ladu,
+      pood ja pisut kaost \u2014 k\xF5ik \xFChes.\n\nKliendid \xFCtlevad sulle, mida
+      nad tahavad, sina pakid selle ja laadid \xF5igesse veokisse. K\xF5lab lihtsalt,
+      eks? Kui oled kuueteistk\xFCmne p\xE4eva p\xE4rast ikka jalul, oled t\xF5esti
+      head t\xF6\xF6d teinud.\n\nSee vihik sinu k\xE4es on koht, kuhu p\xF6\xF6rdud,
+      kui unustad \xFCksikasjad. Iga lehek\xFClg k\xE4sitleb erinevat teemat. Kiiret
+      pole \u2014 esimestel p\xE4evadel tee aeglaselt, tundma \xF5pi s\xFCsteemi.
+      Kiirus tuleb ajaga."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859453022208
+    m_Localized: "<b> Vihje:  </b>Kontrolli oma sularaha enne \xFC\xFCrip\xE4evi.
+      \xC4ra j\xE4ta seda viimasele hetkele."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859453022209
+    m_Localized: "<b> T\xE4helepanu:  </b>Kuni j\xE4rjekord on t\xE4is, uusi kliente
+      ei tule, aga juba ootajad kaotavad edasi kannatust. \xC4ra alusta midagi uut,
+      enne kui oled j\xE4rjekorra t\xFChjendanud."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859453022210
+    m_Localized: "<b> Vihje:  </b>Kui n\xE4ed veoki v\xE4rvi juba kaugelt, eelista
+      seda, mis \xFChtib sinu kaasas oleva kastiga \u2014 \xE4ra k\xE4i asjata."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859461410816
+    m_Localized: VEOKID JA TARNE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859465605120
+    m_Localized: "Teatud p\xE4evadel pakutakse sulle m\xF5nda t\xE4iendusvalikut
+      \u2014 k\xF5iki ei saa v\xF5tta, valid nende vahel. Saad omandada p\xFCsivaid
+      parendusi, nagu lisariiul, lisaangaar, kiirem liikumine v\xF5i pikem klientide
+      kannatlikkus.\n\nM\xF5tle valik hoolikalt l\xE4bi: m\xF5ned t\xE4iendused v\xE4listavad
+      \xFCksteist, teised avanevad alles teatud p\xE4evast. Valikud, mis kiirendavad
+      esimestel p\xE4evadel p\xF5hit\xF5desid, tasuvad end hiljem palju \xE4ra."
     m_Metadata:
       m_Items: []
   references:

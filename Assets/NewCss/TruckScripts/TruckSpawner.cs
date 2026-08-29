@@ -21,6 +21,9 @@ namespace NewCss
         [Tooltip("Bu hangar için gereken upgrade seviyesi")]
         public int requiredUpgradeLevel;
 
+        [Tooltip("Bu hangarın garaj kapısı — istenen kutu sayısı, kapının üstündeki TMP'de gösterilir")]
+        public GarageDoorController garageDoorController;
+
         [HideInInspector]
         public bool isActive;
     }
@@ -488,6 +491,7 @@ namespace NewCss
             if (truckScript != null)
             {
                 truckScript.hangarIndex = hangarIndex;
+                truckScript.garageDoor = hangar.garageDoorController;
             }
 
             // Network spawn

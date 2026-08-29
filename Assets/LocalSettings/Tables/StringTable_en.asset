@@ -667,207 +667,793 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 136075194447572992
-    m_Localized: "Sprint"
+    m_Localized: Sprint
     m_Metadata:
       m_Items: []
   - m_Id: 136075194502098944
-    m_Localized: "CARGOR LOGISTICS TERMINAL"
+    m_Localized: CARGOR LOGISTICS TERMINAL
     m_Metadata:
       m_Items: []
   - m_Id: 136075194502098945
-    m_Localized: "Energy Level"
+    m_Localized: Energy Level
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681856
-    m_Localized: "Move up/down/left/right"
+    m_Localized: Move up/down/left/right
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681857
-    m_Localized: "Player"
+    m_Localized: Player
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681858
-    m_Localized: "Enter"
+    m_Localized: Enter
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681859
-    m_Localized: "Gloves"
+    m_Localized: Gloves
     m_Metadata:
       m_Items: []
   - m_Id: 136075194518876160
-    m_Localized: "Face"
+    m_Localized: Face
     m_Metadata:
       m_Items: []
   - m_Id: 136075194518876161
-    m_Localized: "Are you sure you want to enter the tutorial?"
+    m_Localized: Are you sure you want to enter the tutorial?
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070464
-    m_Localized: "Accessories"
+    m_Localized: Accessories
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070465
-    m_Localized: "VSync"
+    m_Localized: VSync
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070466
-    m_Localized: "Return"
+    m_Localized: Return
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070467
-    m_Localized: "Player"
+    m_Localized: Player
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070468
-    m_Localized: "ECLION\n\nV2.01"
+    m_Localized: 'ECLION
+
+
+      V2.01'
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070469
-    m_Localized: "Drop"
+    m_Localized: Drop
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070470
-    m_Localized: "BACK"
+    m_Localized: BACK
     m_Metadata:
       m_Items: []
   - m_Id: 136075194527264768
-    m_Localized: "REVEAL"
+    m_Localized: REVEAL
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459072
-    m_Localized: "ZOOM"
+    m_Localized: ZOOM
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459073
-    m_Localized: "Pickup"
+    m_Localized: Pickup
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459074
-    m_Localized: "VIDEO"
+    m_Localized: VIDEO
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459075
-    m_Localized: "AUDIO"
+    m_Localized: AUDIO
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653376
-    m_Localized: "Interact"
+    m_Localized: Interact
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653377
-    m_Localized: "Main Office"
+    m_Localized: Main Office
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653378
-    m_Localized: "GRAPHICS"
+    m_Localized: GRAPHICS
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653379
-    m_Localized: "Hair"
+    m_Localized: Hair
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653380
-    m_Localized: "LANGUAGE"
+    m_Localized: LANGUAGE
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653381
-    m_Localized: "MUSIC VOL."
+    m_Localized: MUSIC VOL.
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847680
-    m_Localized: "SFX VOL."
+    m_Localized: SFX VOL.
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847681
-    m_Localized: "Option A"
+    m_Localized: Option A
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847682
-    m_Localized: "XXXX-XXXX-XXXX-XXXX"
+    m_Localized: XXXX-XXXX-XXXX-XXXX
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847683
-    m_Localized: "Pants"
+    m_Localized: Pants
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847684
-    m_Localized: "Shoes"
+    m_Localized: Shoes
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847685
-    m_Localized: "Player"
+    m_Localized: Player
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847686
-    m_Localized: "MASTER VOL."
+    m_Localized: MASTER VOL.
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236288
-    m_Localized: "Return"
+    m_Localized: Return
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236289
-    m_Localized: "RESOLUTION"
+    m_Localized: RESOLUTION
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236290
-    m_Localized: "JOIN ROOM"
+    m_Localized: JOIN ROOM
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236291
-    m_Localized: "Lobby ID:"
+    m_Localized: 'Lobby ID:'
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236292
-    m_Localized: "CUSTOMIZE"
+    m_Localized: CUSTOMIZE
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236293
-    m_Localized: "Option A"
+    m_Localized: Option A
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624896
-    m_Localized: "Player"
+    m_Localized: Player
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624897
-    m_Localized: "Hat"
+    m_Localized: Hat
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624898
-    m_Localized: "Customize"
+    m_Localized: Customize
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624899
-    m_Localized: "Throw"
+    m_Localized: Throw
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624900
-    m_Localized: "Map View"
+    m_Localized: Map View
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624901
-    m_Localized: "CONTROLS"
+    m_Localized: CONTROLS
     m_Metadata:
       m_Items: []
   - m_Id: 136075194560819200
-    m_Localized: "Outerwear"
+    m_Localized: Outerwear
     m_Metadata:
       m_Items: []
   - m_Id: 136075194560819201
-    m_Localized: "Glasses"
+    m_Localized: Glasses
     m_Metadata:
       m_Items: []
   - m_Id: 141928975156891283
-    m_Localized: "Left Click"
+    m_Localized: Left Click
     m_Metadata:
       m_Items: []
   - m_Id: 142557709478291173
-    m_Localized: "Right Click"
+    m_Localized: Right Click
     m_Metadata:
       m_Items: []
   - m_Id: 144849164114263128
-    m_Localized: "Middle Click"
+    m_Localized: Middle Click
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528492507136
+    m_Localized: Menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528538644480
+    m_Localized: ZOOM
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528538644481
+    m_Localized: Interact
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838784
+    m_Localized: UPGRADES
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838785
+    m_Localized: Move up/down/left/right
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838786
+    m_Localized: Exit Game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838787
+    m_Localized: Options
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033088
+    m_Localized: Sprint
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033089
+    m_Localized: Bankrupt!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033090
+    m_Localized: warehouse
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033091
+    m_Localized: map view
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227392
+    m_Localized: ACCEPT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227393
+    m_Localized: package room
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227394
+    m_Localized: Employee
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227395
+    m_Localized: Day 1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528555421696
+    m_Localized: Next Day
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528555421697
+    m_Localized: VIDEO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528559616000
+    m_Localized: reroll
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528559616001
+    m_Localized: GRAPHICS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528568004608
+    m_Localized: Player3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528568004609
+    m_Localized: 'XP: 200'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528568004610
+    m_Localized: 'GOLD: 200'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198912
+    m_Localized: Mission - 1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198913
+    m_Localized: 0/1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198914
+    m_Localized: vsync
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198915
+    m_Localized: LANGUAGE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198916
+    m_Localized: RESET
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587520
+    m_Localized: 'XP: 200 GOLD: 300'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587521
+    m_Localized: AUDIO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587522
+    m_Localized: CONTENT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587523
+    m_Localized: Player1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528584781824
+    m_Localized: calendar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528584781825
+    m_Localized: Player2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528584781826
+    m_Localized: SFX VOL.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528588976128
+    m_Localized: Player4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528588976129
+    m_Localized: The warehouse is thriving and all shipments have been sorted perfectly.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528588976130
+    m_Localized: Option A
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528593170432
+    m_Localized: THU
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528593170433
+    m_Localized: Drop
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528593170434
+    m_Localized: '<color=#4B4E6D>2</color>      Welcome to Cargor!
+
+      <color=#4B4E6D>3</color>     
+      Basic Movement
+
+      <color=#4B4E6D>4</color>      How to Package Products
+
+      <color=#4B4E6D>5</color>     
+      Shelf Placement
+
+      <color=#4B4E6D>6</color>      Trucks and Delivery
+
+      <color=#4B4E6D>7</color>      
+      Customers
+
+      <line-height=18><color=#4B4E6D>8</color>      Special Requests:
+      Returns,
+
+      Double Orders, Mixed Trucks</line-height>
+
+      <color=#4B4E6D>9</color>     
+      Rent and Your Money
+
+      <color=#4B4E6D>10</color>   Upgrades
+
+      <color=#4B4E6D>11</color>   
+      Quest Board
+
+      <color=#4B4E6D>12</color>    Phone Line
+
+      <color=#4B4E6D>13</color>   
+      Break Room and End of Day
+
+      <color=#4B4E6D>14</color>    Teamwork Tips'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528597364736
+    m_Localized: Pickup
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528597364737
+    m_Localized: CARGOR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559040
+    m_Localized: REVEAL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559041
+    m_Localized: CONTENTS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559042
+    m_Localized: Credits
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559043
+    m_Localized: MASTER VOL.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559044
+    m_Localized: SUN
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528609947648
+    m_Localized: Break Room
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528609947649
+    m_Localized: SAT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528609947650
+    m_Localized: WED
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141952
+    m_Localized: Help Book
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141953
+    m_Localized: Menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141954
+    m_Localized: MUSIC VOL.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141955
+    m_Localized: ESCAPE MENU
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528618336256
+    m_Localized: Daily Roster
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528618336257
+    m_Localized: FRI
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528622530560
+    m_Localized: Upgrade
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528626724864
+    m_Localized: Throw
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528626724865
+    m_Localized: The warehouse has gone bankrupt.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528630919168
+    m_Localized: RESOLUTION
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528630919169
+    m_Localized: CONTROLS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528635113472
+    m_Localized: QUEST
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528635113473
+    m_Localized: 'WAREHOUSE
+
+      HANDBOOK'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307776
+    m_Localized: TUE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307777
+    m_Localized: Prestige
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307778
+    m_Localized: Continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307779
+    m_Localized: MISSION ACCOMPLISHED
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307780
+    m_Localized: reception
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528647696384
+    m_Localized: Quest
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528651890688
+    m_Localized: MON
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528651890689
+    m_Localized: Money
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269394388168704
+    m_Localized: "<b> Warning: </b> Warning: If the box color doesn't match the product,
+      packing fails and the box breaks in your hand. Check the color before you pack
+      \u2014 don't waste a box."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269394430111744
+    m_Localized: "<b> Tip: </b>Throw-and-catch saves time at a two-person station,
+      but don't make it a habit \u2014 every drop costs you."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605470711808
+    m_Localized: SHELF PLACEMENT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605474906112
+    m_Localized: "Shelves are the lifeblood of Cargor. Three types of empty boxes
+      \u2014 red, yellow, and blue \u2014 are always waiting there; when you take
+      one, the shelf restocks itself shortly after, so it never stays fully empty.
+      If you have a spare box or a packed product you don't want to carry right now,
+      you can put it back on the shelf. A tidy shelf makes life easier for you and
+      your team \u2014 everyone knows where to find what."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605474906113
+    m_Localized: HOW PRODUCTS ARE PACKED
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605474906114
+    m_Localized: BASIC MOVEMENT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605483294720
+    m_Localized: "<b>Walk / Run</b> \u2013 lets you move around the warehouse.\n\n<b>Pick
+      up / Drop</b> \u2013 pick up an item from the floor, a table, or a shelf, or
+      put it down where you're standing.\n\n<b>Throw</b> \u2013 toss what you're
+      holding. Fast but risky: it breaks if it hits something hard, costing you money
+      and reputation. Throw it to a teammate who catches it and there's no penalty
+      \u2013 it even saves time.\n\n<b>Interact</b> \u2013 talking to customers,
+      answering the phone, and picking up items from shelves/tables all use this
+      button.\n\n<b>Map / Stock Check</b> \u2013 opens an overview of the warehouse
+      so you can see what's where. It doesn't show your teammates' positions \u2013
+      you'll have to ask over the radio."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605483294721
+    m_Localized: 'HOW
+
+      PRODUCTS
+
+      ARE PACKED'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605483294722
+    m_Localized: "When you talk to a customer, they ask you for a product and leave
+      it on their table. That's not the end of it \u2014 the product still isn't
+      packed.\n\nPacking steps:\n\nPick up the bare product the customer left.\n\nGo
+      to the nearest packing table.\n\nGrab an empty box from the shelf that matches
+      the product's color.\n\nBring the product and the box together on the table
+      \u2014 tape it, then label it, and the package is ready.\n\nYou now have a
+      packed box. Next up is delivery (see Page 6)."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859394301952
+    m_Localized: Customers
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859406884864
+    m_Localized: "Cargor can be played solo, but the real fun starts with a team.
+      A few practical tips:\n\n- <b>Split the work:</b> Have one person stay at the
+      packing table, one run to the trucks, one handle customers.\n- <b>Talk to each
+      other: </b>You might not see each other if you're not in the same room \u2014
+      check the map and share what's where out loud.\n- <b>Throw and catch:</b> Instead
+      of running back and forth between two stations, throw the box straight to a
+      teammate.\n- <b>Agree on upgrades:</b> Permanent choices affect everyone, so
+      don't decide alone.\n\nGood luck \u2014 welcome to Cargor!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859411079168
+    m_Localized: Welcome to Cargor!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859411079169
+    m_Localized: Phone Line
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859411079170
+    m_Localized: "The phone in the warehouse rings from time to time. Go over and
+      answer it for a small money and reputation reward. If you don't, you lose nothing
+      either \u2014 the phone just goes quiet on its own.\n\nWhether it rings is
+      entirely down to chance, though on some days (special event days, for example)
+      the odds go up. It doesn't hurt to glance over when you're passing by."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273472
+    m_Localized: "<b> Tip:  </b>As the day winds down, finish what you're doing and
+      head to the rest room early \u2014 don't keep your team waiting."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273473
+    m_Localized: Special Requests
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273474
+    m_Localized: "<b> Tip:  </b>Don't pick without talking to your team \u2014 one
+      person's upgrade choice changes how everyone plays."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273475
+    m_Localized: "Every day you'll see a few quest offers on the board \u2014 things
+      like stocking a shelf, packing a product, filling a truck, or answering the
+      phone. You can only accept one per day.\n\n- If you finish the quest you accepted
+      before the day ends, your reward is paid out automatically at day's end.\n\n-
+      If you accept it and leave it unfinished, you're penalized at day's end.\n\nIf
+      you don't accept one, nothing happens \u2014 but you miss the opportunity too.
+      Pick a quest that's realistic for what you've got going on."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273476
+    m_Localized: Teamwork Tips
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273477
+    m_Localized: Rent and Your Money
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859419467776
+    m_Localized: "Running Cargor isn't free. On certain days a rent payment comes
+      due \u2014 we call that a \"rent day.\"\n\n- If you have enough money to cover
+      the rent, it's paid and you carry on.\n\n- If you can't pay on the due date,
+      you get one second chance: most of your cash is taken, but the business doesn't
+      close.\n\n<b>Money </b>comes from correct deliveries, phone calls, and completed
+      quests. Wrong deliveries, dropped boxes, and unfinished quests take money away."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859419467777
+    m_Localized: "<b> Remember:  </b>You're not alone here. Cargor is a team effort
+      \u2014 share the load, speak up."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859419467778
+    m_Localized: "Deliver the right color \u2192 you earn money, your reputation
+      goes up.\n\nDeliver the wrong color \u2192 you lose money. Check the colors
+      twice.\n\nEvery truck has a limited wait time and capacity. When it's full
+      or time runs out, the truck leaves and a new one arrives.\n\nAs the warehouse
+      grows (through upgrades), multiple hangars can open \u2014 you can feed several
+      trucks at once."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859427856384
+    m_Localized: "<b> Tip:  </b>Don't panic when you see a mixed truck or a dual
+      order \u2014 just think of it as two separate deliveries and handle them one
+      after another."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859427856385
+    m_Localized: Upgrades
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859427856386
+    m_Localized: "When the day ends, everyone needs to head to the rest room. If
+      even one person stays outside, the day won't close \u2014 it waits until the
+      whole team is gathered.\n\nOnce everyone's in the room, a day summary appears
+      and a new day begins. If you make it to the end of day sixteen without going
+      bankrupt, you've earned the celebration."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859432050688
+    m_Localized: Rest Room and End of Day
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859432050689
+    m_Localized: "Customers walk in the door, join the queue, and ask you for something.
+      The bar above them shows how patient they are \u2014 if it runs out, the customer
+      storms off angry, and you lose money and reputation.\n\n- Traffic changes throughout
+      the day: lunch and evening hours are the busiest, and you get a bit of breathing
+      room in the afternoon.\n\n- When you talk to a customer (the interact button),
+      they leave the product they want on their table \u2014 after that it's packing
+      and delivery (Pages 4-6).\n\n- Every customer you serve on time earns you both
+      money and reputation. The higher your reputation, the more you earn per delivery."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859436244992
+    m_Localized: '<b> Tip:  </b>Don''t put off a hard quest until the last day. The
+      end of the day always comes faster than you expect.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859436244993
+    m_Localized: Returns, Dual Orders, Mixed Trucks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859436244994
+    m_Localized: "<b> Tip:  </b>If the phone rings and it's on your way, swing by
+      even with your hands full \u2014 a short break, a small payoff."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633600
+    m_Localized: WELCOME!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633601
+    m_Localized: Quest Board
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633602
+    m_Localized: "As the days go by, things get a bit more complicated. You'll run
+      into three new situations:\n\n<b>Returns: </b>Some customers don't want a product
+      \u2014 they do the opposite and ask you to bring them a box back. The colored
+      orb that appears above them shows which color box they want. Grab the right
+      color from the shelf and bring it to the customer.\n\n<b>Dual orders: </b>Some
+      customers want two different colors at once. The job isn't done until you've
+      prepared both.\n\n<b>Mixed truck: </b>Some trucks want two different colors
+      of box instead of just one. The mixed color on its body (for example, red +
+      yellow = orange) gives you the hint \u2014 it shows which two colors you need
+      to load."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633603
+    m_Localized: 'Trucks waiting in the hangar show you what they want by their body
+      color: a red truck wants a red box, a yellow one wants yellow, a blue one wants
+      blue.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859448827904
+    m_Localized: "Welcome! You're now part of the Cargor family. This place is a
+      warehouse, a store, and a bit of chaos \u2014 all rolled into one.\n\nCustomers
+      tell you what they want, you pack it, and load it onto the right truck. Sounds
+      simple, right? If you're still standing after sixteen days, you've genuinely
+      done a good job.\n\nThis notebook in your hands is what you'll turn to when
+      you forget the finer points. Each page covers a different topic. No need to
+      rush \u2014 take it slow in the early days and learn the system. Your speed
+      will come with time."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859453022208
+    m_Localized: '<b> Tip:  </b>Check your cash before rent days. Don''t leave it
+      to the last minute.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859453022209
+    m_Localized: '<b> Warning:  </b>No new customer arrives while the queue is full,
+      but the ones already waiting keep losing patience. Don''t start something new
+      before you''ve cleared the queue.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859453022210
+    m_Localized: "<b> Tip:  </b>If you can spot a truck's color from a distance,
+      prioritize the one that matches the box you're carrying \u2014 don't walk for
+      nothing."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859461410816
+    m_Localized: TRUCKS AND DELIVERY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859465605120
+    m_Localized: "On certain days you'll be offered a few upgrade options \u2014
+      you can't take them all, you choose between them. You can earn permanent improvements
+      like an extra shelf, an extra hangar, faster movement, or longer customer patience.\n\nChoose
+      carefully: some upgrades exclude each other, and some don't unlock until a
+      certain day. Picks that speed up the basics in the early days pay off a lot
+      down the road."
     m_Metadata:
       m_Items: []
   references:

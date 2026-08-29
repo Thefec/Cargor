@@ -21,7 +21,7 @@ namespace NewCss
         private const string CHARACTER_TAG = "Character";
         private const int CALENDAR_CELL_COUNT = 16;
         private const int EVENT_INTERVAL_MIN = 1; // Changed from 3 to 1
-        private const int EVENT_INTERVAL_MAX = 3; // Changed from 5 to 3
+        private const int EVENT_INTERVAL_MAX = 2; // Changed from 5 to 3, then to 2 (2026-08-25, economist sign-off)
         private const int INITIAL_EVENT_FREE_DAYS = 3; // First 3 days have no events
         private const int INITIAL_POSITIVE_EVENT_COUNT = 2;
         private const int GUARANTEED_NEGATIVE_EVENT_INDEX = 2;
@@ -181,6 +181,26 @@ namespace NewCss
 
         private readonly List<int> _randomEventDays = new();
         private readonly Dictionary<int, GameEvent> _eventsByDay = new();
+
+        #endregion
+
+        #region Private Fields - Rent
+
+        private GameEconomySettings _economySettings;
+
+        private int RentIntervalDays
+        {
+            get
+            {
+                if (_economySettings == null)
+                {
+                    _economySettings = Resources.Load<GameEconomySettings>("EkonomiAyarlari");
+                }
+                return _economySettings != null ? _economySettings.rentIntervalDays : 4;
+            }
+        }
+
+        private bool IsRentDay(int day) => day % RentIntervalDays == 0;
 
         #endregion
 
@@ -738,7 +758,7 @@ namespace NewCss
                 if (_randomEventDays.Contains(currentDay)) continue;
 
                 // Kira günlerinde event atama (4, 8, 12, 16...)
-                if (currentDay % 4 == 0) continue;
+                if (IsRentDay(currentDay)) continue;
 
                 _randomEventDays.Add(currentDay);
 
@@ -821,16 +841,24 @@ namespace NewCss
         }
 
         /// <summary>
-        /// O günde event varsa adını hücrenin TextMesh'ine yazar. Event yoksa hiçbir şey
-        /// yapmaz — hücre <see cref="ClearSpawnedEventTexts"/> ile zaten boşaltılmıştır.
+        /// O günde event varsa adını hücrenin TextMesh'ine yazar. Kira günüyse (event asla
+        /// atanmaz, bkz. GenerateInitialEvents) "Kira Günü" etiketini yazar. İkisi de yoksa
+        /// hiçbir şey yapmaz — hücre <see cref="ClearSpawnedEventTexts"/> ile zaten boşaltılmıştır.
         /// </summary>
         private void WriteEventText(int index, int day)
         {
-            if (!_randomEventDays.Contains(day)) return;
-            if (!_eventsByDay.TryGetValue(day, out GameEvent gameEvent)) return;
             if (eventTexts[index] == null) return;
 
-            eventTexts[index].text = gameEvent.GetLocalizedName();
+            if (_randomEventDays.Contains(day) && _eventsByDay.TryGetValue(day, out GameEvent gameEvent))
+            {
+                eventTexts[index].text = gameEvent.GetLocalizedName();
+                return;
+            }
+
+            if (IsRentDay(day))
+            {
+                eventTexts[index].text = LocalizationHelper.GetLocalizedString("RentDay");
+            }
         }
 
         /// <summary>

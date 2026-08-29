@@ -51,8 +51,13 @@ namespace NewCss
         #region Serialized Fields - UI
 
         [Header("=== UI ===")]
-        [SerializeField, Tooltip("Kamyon durum text'i")]
-        public TextMeshProUGUI truckText;
+        /// <summary>
+        /// Bu tırın bağlı olduğu garaj kapısı. İstenen kutu sayısı artık tırın üzerinde DEĞİL,
+        /// bu kapının üstündeki TMP'de gösterilir. TruckSpawner tarafından spawn anında
+        /// (hangarSpawnPoints[hangarIndex].garageDoorController) otomatik atanır.
+        /// </summary>
+        [HideInInspector]
+        public GarageDoorController garageDoor;
 
         #endregion
 
@@ -284,6 +289,7 @@ namespace NewCss
 
         public override void OnNetworkDespawn()
         {
+            garageDoor?.ClearRequestedCargoText();
             UnsubscribeFromNetworkEvents();
             base.OnNetworkDespawn();
         }
@@ -859,10 +865,7 @@ namespace NewCss
 
         private void UpdateUIText()
         {
-            if (truckText != null)
-            {
-                truckText.text = $"{requestedBoxType}: {_deliveredCount.Value}/{requiredCargo}";
-            }
+            garageDoor?.SetRequestedCargoText($"{_deliveredCount.Value}/{requiredCargo}");
             UpdateTimerUI();
         }
 

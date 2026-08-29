@@ -1,9 +1,14 @@
+using TMPro;
 using UnityEngine;
 
 namespace NewCss
 {
     public class GarageDoorController : MonoBehaviour
     {
+        [Header("Kutu Talep UI")]
+        [Tooltip("Kapının üstündeki canvas'ta, istenen kutu sayısını gösteren TMP text'i")]
+        [SerializeField] private TextMeshProUGUI requestedCargoText;
+
         [Header("Garaj Kapısı Ayarları")]
         [Tooltip("Kapının açılacağı saat (örnek: 7.5 = 07:30, 8.25 = 08:15)")]
         public float openTime = 7.5f;
@@ -379,5 +384,26 @@ namespace NewCss
         public bool IsOpen => isOpen;
         public bool IsUnlocked => isUnlocked;
         public DoorState CurrentState => currentDoorState;
+
+        /// <summary>
+        /// Bu hangara atanan tırın istenen kutu sayısı metnini kapının üstündeki TMP'ye yazar.
+        /// Çağıran: Truck.UpdateUIText (spawn/teslimat sonrası her güncellemede).
+        /// </summary>
+        public void SetRequestedCargoText(string text)
+        {
+            if (requestedCargoText != null)
+            {
+                requestedCargoText.text = text;
+            }
+        }
+
+        /// <summary>Hangarda tır yokken (despawn/çıkış) çağrılır — kapının üstündeki metni temizler.</summary>
+        public void ClearRequestedCargoText()
+        {
+            if (requestedCargoText != null)
+            {
+                requestedCargoText.text = string.Empty;
+            }
+        }
     }
 }

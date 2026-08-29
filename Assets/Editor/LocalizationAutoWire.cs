@@ -208,6 +208,74 @@ public static class LocalizationAutoWire
         }
     }
 
+    // WireActiveScene GameObject adindan bagimsiz calisiyor; runtime'da dinamik guncellenen
+    // metinler (sayfa sayaci, kalan sure vb.) yanlislikla statik key'e baglanabilir - o obje
+    // her locale degisikliginde sabit metne donerdi. Bu, tek seferlik nokta duzeltmesi icin.
+    public static void BatchRemoveLocalizeFromPageIndicator()
+    {
+        const string scenePath = "Assets/Scenes/The Main Office.unity";
+        var scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+
+        var allTexts = UnityEngine.Object.FindObjectsByType<TMP_Text>(FindObjectsInactive.Include);
+        int removed = 0;
+        foreach (var tmp in allTexts)
+        {
+            if (tmp.gameObject.name != "PageIndicator") continue;
+            var evt = tmp.gameObject.GetComponent<LocalizeStringEvent>();
+            if (evt == null) continue;
+            UnityEngine.Object.DestroyImmediate(evt, true);
+            EditorUtility.SetDirty(tmp.gameObject);
+            removed++;
+        }
+
+        if (removed > 0)
+        {
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+        }
+        Debug.Log($"[LocalizationAutoWire] PageIndicator temizligi: {removed} component kaldirildi, sahne kaydedildi.");
+    }
+
+    // CLI/batchmode giris noktasi: Unity kapaliyken -batchmode -executeMethod ile WireActiveScene'in
+    // aynisini calistirir (sahneyi acar, wiring yapar, kaydeder). Editor acikken KULLANMA - canli
+    // Editor'un ayni sahneyi ayni anda diske yazmasi bozulmaya yol acabilir.
+    public static void BatchWireMainOffice()
+    {
+        const string scenePath = "Assets/Scenes/The Main Office.unity";
+        var scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+        WireActiveScene();
+        EditorSceneManager.MarkSceneDirty(scene);
+        EditorSceneManager.SaveScene(scene);
+        Debug.Log($"[LocalizationAutoWire] {scenePath} kaydedildi (batch wiring tamam).");
+    }
+
+    // BatchWireMainOffice + PageIndicator temizligini AYNI Unity oturumunda, tek acilista yapar
+    // (iki ayri batchmode koşumu yerine) - notebook sayfalari eklendiginde WireActiveScene
+    // PageIndicator'i (dinamik sayfa sayaci) yanlislikla statik key'e baglar, o objeyi hemen
+    // ayni koşumda geri temizler.
+    public static void BatchWireAndCleanMainOffice()
+    {
+        const string scenePath = "Assets/Scenes/The Main Office.unity";
+        var scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+        WireActiveScene();
+
+        var allTexts = UnityEngine.Object.FindObjectsByType<TMP_Text>(FindObjectsInactive.Include);
+        int removed = 0;
+        foreach (var tmp in allTexts)
+        {
+            if (tmp.gameObject.name != "PageIndicator") continue;
+            var evt = tmp.gameObject.GetComponent<LocalizeStringEvent>();
+            if (evt == null) continue;
+            UnityEngine.Object.DestroyImmediate(evt, true);
+            EditorUtility.SetDirty(tmp.gameObject);
+            removed++;
+        }
+
+        EditorSceneManager.MarkSceneDirty(scene);
+        EditorSceneManager.SaveScene(scene);
+        Debug.Log($"[LocalizationAutoWire] {scenePath} kaydedildi (wiring + PageIndicator temizligi tamam, {removed} PageIndicator temizlendi).");
+    }
+
     private static bool IsNoise(string t)
     {
         if (string.IsNullOrEmpty(t)) return true;

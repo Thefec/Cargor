@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
   m_Name: StringTable_sk
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   m_LocaleId:
     m_Code: sk
   m_SharedData: {fileID: 11400000, guid: 7d8d57bedebf1954db92f72969b59263, type: 2}
@@ -19,851 +19,1442 @@ MonoBehaviour:
     m_Items: []
   m_TableData:
   - m_Id: 88301023232
-    m_Localized: "Hra online"
+    m_Localized: Hra online
     m_Metadata:
       m_Items: []
   - m_Id: 574282444800
-    m_Localized: "Jazyk"
+    m_Localized: Jazyk
     m_Metadata:
       m_Items: []
   - m_Id: 26808395673600
-    m_Localized: "Citlivosť myši"
+    m_Localized: "Citlivos\u0165 my\u0161i"
     m_Metadata:
       m_Items: []
   - m_Id: 27030165303296
-    m_Localized: "Hra offline"
+    m_Localized: Hra offline
     m_Metadata:
       m_Items: []
   - m_Id: 27180690485248
-    m_Localized: "Nastavenia"
+    m_Localized: Nastavenia
     m_Metadata:
       m_Items: []
   - m_Id: 27238353776640
-    m_Localized: "Ukončiť"
+    m_Localized: "Ukon\u010Di\u0165"
     m_Metadata:
       m_Items: []
   - m_Id: 27356159193088
-    m_Localized: "Všeobecné"
+    m_Localized: "V\u0161eobecn\xE9"
     m_Metadata:
       m_Items: []
   - m_Id: 27414908809216
-    m_Localized: "Grafika"
+    m_Localized: Grafika
     m_Metadata:
       m_Items: []
   - m_Id: 27504130043904
-    m_Localized: "Zvuk"
+    m_Localized: Zvuk
     m_Metadata:
       m_Items: []
   - m_Id: 27565803089920
-    m_Localized: "Späť"
+    m_Localized: "Sp\xE4\u0165"
     m_Metadata:
       m_Items: []
   - m_Id: 28147393671168
-    m_Localized: "Titulky"
+    m_Localized: Titulky
     m_Metadata:
       m_Items: []
   - m_Id: 118380277706752
-    m_Localized: "Uložiť"
+    m_Localized: "Ulo\u017Ei\u0165"
     m_Metadata:
       m_Items: []
   - m_Id: 4669780596797440
-    m_Localized: "Prispôsobiť"
+    m_Localized: "Prisp\xF4sobi\u0165"
     m_Metadata:
       m_Items: []
   - m_Id: 4669983794049024
-    m_Localized: "Deň"
+    m_Localized: "De\u0148"
     m_Metadata:
       m_Items: []
   - m_Id: 4670284437565440
-    m_Localized: "NÁROČNÝ DEŇ"
+    m_Localized: "N\xC1RO\u010CN\xDD DE\u0147"
     m_Metadata:
       m_Items: []
   - m_Id: 4670557176377344
-    m_Localized: "BONUS ZA DORUČENIE"
+    m_Localized: "BONUS ZA DORU\u010CENIE"
     m_Metadata:
       m_Items: []
   - m_Id: 4670594551820288
-    m_Localized: "NAHNEVANÍ ZÁKAZNÍCI"
+    m_Localized: "NAHNEVAN\xCD Z\xC1KAZN\xCDCI"
     m_Metadata:
       m_Items: []
   - m_Id: 4670644065579008
-    m_Localized: "POKOJNÝ DEŇ"
+    m_Localized: "POKOJN\xDD DE\u0147"
     m_Metadata:
       m_Items: []
   - m_Id: 4670683781443584
-    m_Localized: "POMALÁ LOGISTIKA"
+    m_Localized: "POMAL\xC1 LOGISTIKA"
     m_Metadata:
       m_Items: []
   - m_Id: 4670721878306816
-    m_Localized: "EXPRESNÝ NÁKLAD"
+    m_Localized: "EXPRESN\xDD N\xC1KLAD"
     m_Metadata:
       m_Items: []
   - m_Id: 4670821572718592
-    m_Localized: "ŤAŽKÉ KRABICE"
+    m_Localized: "\u0164A\u017DK\xC9 KRABICE"
     m_Metadata:
       m_Items: []
   - m_Id: 4670864191041536
-    m_Localized: "DEŇ ZLATEJ KRABICE"
+    m_Localized: "DE\u0147 ZLATEJ KRABICE"
     m_Metadata:
       m_Items: []
   - m_Id: 4670907031662592
-    m_Localized: "DEŇ PRÍLEŽITOSTÍ"
+    m_Localized: "DE\u0147 PR\xCDLE\u017DITOST\xCD"
     m_Metadata:
       m_Items: []
   - m_Id: 4670942314147840
-    m_Localized: "PROBLÉM S ÚNAVOU"
+    m_Localized: "PROBL\xC9M S \xDANAVOU"
     m_Metadata:
       m_Items: []
   - m_Id: 4671003622289408
-    m_Localized: "VIP SLUŽBA"
+    m_Localized: "VIP SLU\u017DBA"
     m_Metadata:
       m_Items: []
   - m_Id: 4671211781402624
-    m_Localized: "Prispôsobenie postavy"
+    m_Localized: "Prisp\xF4sobenie postavy"
     m_Metadata:
       m_Items: []
   - m_Id: 4671355847356416
-    m_Localized: "Doplnky"
+    m_Localized: Doplnky
     m_Metadata:
       m_Items: []
   - m_Id: 4671495475736576
-    m_Localized: "Tváre"
+    m_Localized: "Tv\xE1re"
     m_Metadata:
       m_Items: []
   - m_Id: 4671520289239040
-    m_Localized: "Okuliare"
+    m_Localized: Okuliare
     m_Metadata:
       m_Items: []
   - m_Id: 4671581857427456
-    m_Localized: "Rukavice"
+    m_Localized: Rukavice
     m_Metadata:
       m_Items: []
   - m_Id: 4671685976829952
-    m_Localized: "Účesy"
+    m_Localized: "\xDA\u010Desy"
     m_Metadata:
       m_Items: []
   - m_Id: 4671905867411456
-    m_Localized: "Klobúky"
+    m_Localized: "Klob\xFAky"
     m_Metadata:
       m_Items: []
   - m_Id: 4671966126977024
-    m_Localized: "Fúzy"
+    m_Localized: "F\xFAzy"
     m_Metadata:
       m_Items: []
   - m_Id: 4672063447412736
-    m_Localized: "Vrchné oblečenie"
+    m_Localized: "Vrchn\xE9 oble\u010Denie"
     m_Metadata:
       m_Items: []
   - m_Id: 4672192313208832
-    m_Localized: "Nohavice"
+    m_Localized: Nohavice
     m_Metadata:
       m_Items: []
   - m_Id: 4672235917193216
-    m_Localized: "Topánky"
+    m_Localized: "Top\xE1nky"
     m_Metadata:
       m_Items: []
   - m_Id: 4672275557560320
-    m_Localized: "Farba pleti"
+    m_Localized: Farba pleti
     m_Metadata:
       m_Items: []
   - m_Id: 4672388858294272
-    m_Localized: "PRESTÍŽ"
+    m_Localized: "PREST\xCD\u017D"
     m_Metadata:
       m_Items: []
   - m_Id: 4672484777832448
-    m_Localized: "Ďalší deň"
+    m_Localized: "\u010Eal\u0161\xED de\u0148"
     m_Metadata:
       m_Items: []
   - m_Id: 4672617426890752
-    m_Localized: "Pokračovať"
+    m_Localized: "Pokra\u010Dova\u0165"
     m_Metadata:
       m_Items: []
   - m_Id: 30567298710810624
-    m_Localized: "Hosťovať hru"
+    m_Localized: "Hos\u0165ova\u0165 hru"
     m_Metadata:
       m_Items: []
   - m_Id: 30567344864931840
-    m_Localized: "Pripojiť sa k hre"
+    m_Localized: "Pripoji\u0165 sa k hre"
     m_Metadata:
       m_Items: []
   - m_Id: 30567847749398528
-    m_Localized: "Štart"
+    m_Localized: "\u0160tart"
     m_Metadata:
       m_Items: []
   - m_Id: 30567978871730176
-    m_Localized: "Lobby"
+    m_Localized: Lobby
     m_Metadata:
       m_Items: []
   - m_Id: 30568446771507200
-    m_Localized: "Vybrať mapu\n(Čoskoro)"
+    m_Localized: "Vybra\u0165 mapu\n(\u010Coskoro)"
     m_Metadata:
       m_Items: []
   - m_Id: 30568844051787776
-    m_Localized: "Hlavná kancelária"
+    m_Localized: "Hlavn\xE1 kancel\xE1ria"
     m_Metadata:
       m_Items: []
   - m_Id: 30569701396885504
-    m_Localized: "Hrať online"
+    m_Localized: "Hra\u0165 online"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000001
-    m_Localized: "Hráči v lobby"
+    m_Localized: "Hr\xE1\u010Di v lobby"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000002
-    m_Localized: "Spolu: {0} hráčov"
+    m_Localized: "Spolu: {0} hr\xE1\u010Dov"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000003
-    m_Localized: "Stav oddychovej miestnosti"
+    m_Localized: Stav oddychovej miestnosti
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000004
-    m_Localized: "Vnútri: {0} / {1} hráčov"
+    m_Localized: "Vn\xFAtri: {0} / {1} hr\xE1\u010Dov"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000005
-    m_Localized: "Všetci sú pripravení!"
+    m_Localized: "V\u0161etci s\xFA pripraven\xED!"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000006
-    m_Localized: "Čaká sa na {0} hráčov..."
+    m_Localized: "\u010Cak\xE1 sa na {0} hr\xE1\u010Dov..."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000007
-    m_Localized: "Nenašli sa žiadni hráči"
+    m_Localized: "Nena\u0161li sa \u017Eiadni hr\xE1\u010Di"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000008
-    m_Localized: "Hráč"
+    m_Localized: "Hr\xE1\u010D"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000009
-    m_Localized: "Návod"
+    m_Localized: "N\xE1vod"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000010
-    m_Localized: "Iba hostiteľ môže vyhodiť hráčov!"
+    m_Localized: "Iba hostite\u013E m\xF4\u017Ee vyhodi\u0165 hr\xE1\u010Dov!"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000011
-    m_Localized: "Hráč bol vyhodený!"
+    m_Localized: "Hr\xE1\u010D bol vyhoden\xFD!"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000012
-    m_Localized: "Vyhodenie zlyhalo!"
+    m_Localized: Vyhodenie zlyhalo!
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000013
-    m_Localized: "Voľné miesto"
+    m_Localized: "Vo\u013En\xE9 miesto"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000014
-    m_Localized: "Deň {0}  {1}:{2} ({3}s)"
+    m_Localized: "De\u0148 {0}  {1}:{2} ({3}s)"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000015
-    m_Localized: "Deň skončil. Choď do oddychovej miestnosti."
+    m_Localized: "De\u0148 skon\u010Dil. Cho\u010F do oddychovej miestnosti."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000016
-    m_Localized: "Deň nájomného"
+    m_Localized: "De\u0148 n\xE1jomn\xE9ho"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000017
-    m_Localized: "Úroveň: {0}"
+    m_Localized: "\xDArove\u0148: {0}"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000018
-    m_Localized: "Cena: {0}"
+    m_Localized: 'Cena: {0}'
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000019
-    m_Localized: "Max"
+    m_Localized: Max
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000020
-    m_Localized: "Kúpiť"
+    m_Localized: "K\xFApi\u0165"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000021
-    m_Localized: "Rad"
+    m_Localized: Rad
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000022
-    m_Localized: "Zvyšuje maximálnu veľkosť radu zákazníkov."
+    m_Localized: "Zvy\u0161uje maxim\xE1lnu ve\u013Ekos\u0165 radu z\xE1kazn\xEDkov."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000023
-    m_Localized: "Vytrvalosť"
+    m_Localized: "Vytrvalos\u0165"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000024
-    m_Localized: "Zvyšuje rýchlosť regenerácie vytrvalosti."
+    m_Localized: "Zvy\u0161uje r\xFDchlos\u0165 regener\xE1cie vytrvalosti."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000025
-    m_Localized: "Peniaze"
+    m_Localized: Peniaze
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000026
-    m_Localized: "Zvyšuje odmenu za doručenú krabicu."
+    m_Localized: "Zvy\u0161uje odmenu za doru\u010Den\xFA krabicu."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000027
-    m_Localized: "Kamión"
+    m_Localized: "Kami\xF3n"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000028
-    m_Localized: "Odomyká ďalšie garáže pre kamióny."
+    m_Localized: "Odomyk\xE1 \u010Fal\u0161ie gar\xE1\u017Ee pre kami\xF3ny."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000029
-    m_Localized: "Úroveň úlohy"
+    m_Localized: "\xDArove\u0148 \xFAlohy"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000030
-    m_Localized: "Odomyká úlohy vyššej úrovne."
+    m_Localized: "Odomyk\xE1 \xFAlohy vy\u0161\u0161ej \xFArovne."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000031
-    m_Localized: "RUŠNÝ DEŇ"
+    m_Localized: "RU\u0160N\xDD DE\u0147"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000032
-    m_Localized: "Rýchlosť príchodu zákazníkov sa zvyšuje o 30 %."
+    m_Localized: "R\xFDchlos\u0165 pr\xEDchodu z\xE1kazn\xEDkov sa zvy\u0161uje o
+      30 %."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000033
-    m_Localized: "NAHNEVANÍ ZÁKAZNÍCI"
+    m_Localized: "NAHNEVAN\xCD Z\xC1KAZN\xCDCI"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000034
-    m_Localized: "Trpezlivosť zákazníkov klesá o 30 %."
+    m_Localized: "Trpezlivos\u0165 z\xE1kazn\xEDkov kles\xE1 o 30 %."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000035
-    m_Localized: "POMALÁ LOGISTIKA"
+    m_Localized: "POMAL\xC1 LOGISTIKA"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000036
-    m_Localized: "Kamióny opúšťajú miesto o 50 % pomalšie."
+    m_Localized: "Kami\xF3ny op\xFA\u0161\u0165aj\xFA miesto o 50 % pomal\u0161ie."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000037
-    m_Localized: "ŤAŽKÉ KRABICE"
+    m_Localized: "\u0164A\u017DK\xC9 KRABICE"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000038
-    m_Localized: "Celková rýchlosť pohybu klesá o 20 %."
+    m_Localized: "Celkov\xE1 r\xFDchlos\u0165 pohybu kles\xE1 o 20 %."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000039
-    m_Localized: "PROBLÉM S ÚNAVOU"
+    m_Localized: "PROBL\xC9M S \xDANAVOU"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000040
-    m_Localized: "Vytrvalosť sa obnovuje o 40 % pomalšie a rýchlosť šprintu klesá o 30 %."
+    m_Localized: "Vytrvalos\u0165 sa obnovuje o 40 % pomal\u0161ie a r\xFDchlos\u0165
+      \u0161printu kles\xE1 o 30 %."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000041
-    m_Localized: "PREKVAPIVÁ KONTROLA"
+    m_Localized: "PREKVAPIV\xC1 KONTROLA"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000042
-    m_Localized: "Všetky chybné operácie sú penalizované dvojnásobne."
+    m_Localized: "V\u0161etky chybn\xE9 oper\xE1cie s\xFA penalizovan\xE9 dvojn\xE1sobne."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000043
-    m_Localized: "MARKETINGOVÝ DEŇ"
+    m_Localized: "MARKETINGOV\xDD DE\u0147"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000044
-    m_Localized: "O 20 % viac zákazníkov, ale o 30 % nižší zisk."
+    m_Localized: "O 20 % viac z\xE1kazn\xEDkov, ale o 30 % ni\u017E\u0161\xED zisk."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000045
-    m_Localized: "ZÁKAZNÍCKA PODPORA"
+    m_Localized: "Z\xC1KAZN\xCDCKA PODPORA"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000046
-    m_Localized: "Telefón na recepcii zvoní o 50 % častejšie."
+    m_Localized: "Telef\xF3n na recepcii zvon\xED o 50 % \u010Dastej\u0161ie."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000047
-    m_Localized: "BONUS ZA DORUČENIE"
+    m_Localized: "BONUS ZA DORU\u010CENIE"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000048
-    m_Localized: "Získaj o 20 % viac peňazí za doručenie."
+    m_Localized: "Z\xEDskaj o 20 % viac pe\u0148az\xED za doru\u010Denie."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000049
-    m_Localized: "POKOJNÝ DEŇ"
+    m_Localized: "POKOJN\xDD DE\u0147"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000050
-    m_Localized: "Trpezlivosť zákazníkov stúpa o 30 %."
+    m_Localized: "Trpezlivos\u0165 z\xE1kazn\xEDkov st\xFApa o 30 %."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000051
-    m_Localized: "EXPRESNÝ NÁKLAD"
+    m_Localized: "EXPRESN\xDD N\xC1KLAD"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000052
-    m_Localized: "Kamióny opúšťajú miesto o 30 % rýchlejšie."
+    m_Localized: "Kami\xF3ny op\xFA\u0161\u0165aj\xFA miesto o 30 % r\xFDchlej\u0161ie."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000053
-    m_Localized: "DEŇ ZLATEJ KRABICE"
+    m_Localized: "DE\u0147 ZLATEJ KRABICE"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000054
-    m_Localized: "Každá správne doručená krabica prináša o 30 % navyše. Prináša tiež o 20 % viac zákazníkov, o 20 % rýchlejšie odchody kamiónov a o 20 % rýchlejší pohyb, ale vytrvalosť sa obnovuje o 20 % pomalšie."
+    m_Localized: "Ka\u017Ed\xE1 spr\xE1vne doru\u010Den\xE1 krabica prin\xE1\u0161a
+      o 30 % navy\u0161e. Prin\xE1\u0161a tie\u017E o 20 % viac z\xE1kazn\xEDkov,
+      o 20 % r\xFDchlej\u0161ie odchody kami\xF3nov a o 20 % r\xFDchlej\u0161\xED
+      pohyb, ale vytrvalos\u0165 sa obnovuje o 20 % pomal\u0161ie."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000055
-    m_Localized: "DEŇ PRÍLEŽITOSTÍ"
+    m_Localized: "DE\u0147 PR\xCDLE\u017DITOST\xCD"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000056
-    m_Localized: "Náklady na vylepšenia klesajú o 20 %."
+    m_Localized: "N\xE1klady na vylep\u0161enia klesaj\xFA o 20 %."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000057
-    m_Localized: "DEŇ KVÓTY"
+    m_Localized: "DE\u0147 KV\xD3TY"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000058
-    m_Localized: "Všetky kamióny požadujú iba jednu farbu krabice."
+    m_Localized: "V\u0161etky kami\xF3ny po\u017Eaduj\xFA iba jednu farbu krabice."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000059
-    m_Localized: "VIP SLUŽBA"
+    m_Localized: "VIP SLU\u017DBA"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000060
-    m_Localized: "10 % šanca, že krabica je perfektná a zarobí o 10 % viac."
+    m_Localized: "10 % \u0161anca, \u017Ee krabica je perfektn\xE1 a zarob\xED o
+      10 % viac."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000061
-    m_Localized: "DAŽDIVÝ DEŇ"
+    m_Localized: "DA\u017DDIV\xDD DE\u0147"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000062
-    m_Localized: "Prichádza o 20 % menej zákazníkov."
+    m_Localized: "Prich\xE1dza o 20 % menej z\xE1kazn\xEDkov."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000063
-    m_Localized: "DEŇ FESTIVALU"
+    m_Localized: "DE\u0147 FESTIVALU"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000064
-    m_Localized: "Na začiatku dňa je udelený náhodný bonus."
+    m_Localized: "Na za\u010Diatku d\u0148a je udelen\xFD n\xE1hodn\xFD bonus."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000065
-    m_Localized: "Hráči"
+    m_Localized: "Hr\xE1\u010Di"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000066
-    m_Localized: "({0}/{1} v oddychovej miestnosti)"
+    m_Localized: ({0}/{1} v oddychovej miestnosti)
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000067
-    m_Localized: "Očakávaní zákazníci"
+    m_Localized: "O\u010Dak\xE1van\xED z\xE1kazn\xEDci"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000068
-    m_Localized: "Červená"
+    m_Localized: "\u010Cerven\xE1"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000069
-    m_Localized: "Modrá"
+    m_Localized: "Modr\xE1"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000070
-    m_Localized: "Žltá"
+    m_Localized: "\u017Dlt\xE1"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000071
-    m_Localized: "Zelená"
+    m_Localized: "Zelen\xE1"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000072
-    m_Localized: "Žiadna úloha"
+    m_Localized: "\u017Diadna \xFAloha"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000073
-    m_Localized: "Odmena"
+    m_Localized: Odmena
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000074
-    m_Localized: "Postih"
+    m_Localized: Postih
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000075
-    m_Localized: "Dokončené"
+    m_Localized: "Dokon\u010Den\xE9"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000076
-    m_Localized: "Zlyhalo"
+    m_Localized: Zlyhalo
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000077
-    m_Localized: "Dokonči minihru {0}-krát"
+    m_Localized: "Dokon\u010Di minihru {0}-kr\xE1t"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000078
-    m_Localized: "Umiestni {0} krabíc na policu"
+    m_Localized: "Umiestni {0} krab\xEDc na policu"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000079
-    m_Localized: "Umiestni {0} {1} krabíc na policu"
+    m_Localized: "Umiestni {0} {1} krab\xEDc na policu"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000080
-    m_Localized: "Dokonči {0} kamiónov"
+    m_Localized: "Dokon\u010Di {0} kami\xF3nov"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000081
-    m_Localized: "Obsluž {0} zákazníkov"
+    m_Localized: "Obslu\u017E {0} z\xE1kazn\xEDkov"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000082
-    m_Localized: "Ignoruj {0} zákazníkov"
+    m_Localized: "Ignoruj {0} z\xE1kazn\xEDkov"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000083
-    m_Localized: "Zabaľ {0} hračiek"
+    m_Localized: "Zaba\u013E {0} hra\u010Diek"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000107
-    m_Localized: "Dnes si už prijal úlohu"
+    m_Localized: "Dnes si u\u017E prijal \xFAlohu"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000108
-    m_Localized: "Prijať"
+    m_Localized: "Prija\u0165"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000084
-    m_Localized: "Kapacita 0"
+    m_Localized: Kapacita 0
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000085
-    m_Localized: "Kapacita +1"
+    m_Localized: Kapacita +1
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000086
-    m_Localized: "Kapacita +2"
+    m_Localized: Kapacita +2
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000087
-    m_Localized: "Kapacita +3"
+    m_Localized: Kapacita +3
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000095
-    m_Localized: "Kapacita +4"
+    m_Localized: Kapacita +4
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000096
-    m_Localized: "Kapacita +5"
+    m_Localized: Kapacita +5
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000097
-    m_Localized: "Kapacita +6"
+    m_Localized: Kapacita +6
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000098
-    m_Localized: "Kapacita +7"
+    m_Localized: Kapacita +7
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000099
-    m_Localized: "Kapacita +8"
+    m_Localized: Kapacita +8
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000100
-    m_Localized: "Kapacita +9"
+    m_Localized: Kapacita +9
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000101
-    m_Localized: "Kapacita +10"
+    m_Localized: Kapacita +10
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000102
-    m_Localized: "Kapacita +11"
+    m_Localized: Kapacita +11
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000103
-    m_Localized: "Kapacita +12"
+    m_Localized: Kapacita +12
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000104
-    m_Localized: "Kapacita +13"
+    m_Localized: Kapacita +13
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000105
-    m_Localized: "Kapacita +14"
+    m_Localized: Kapacita +14
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000106
-    m_Localized: "Kapacita +15"
+    m_Localized: Kapacita +15
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000088
-    m_Localized: "Stôl 0"
+    m_Localized: "St\xF4l 0"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000089
-    m_Localized: "Stôl +1"
+    m_Localized: "St\xF4l +1"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000090
-    m_Localized: "Stôl +2"
+    m_Localized: "St\xF4l +2"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000091
-    m_Localized: "Kapacita radu 0"
+    m_Localized: Kapacita radu 0
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000092
-    m_Localized: "Kapacita radu +1"
+    m_Localized: Kapacita radu +1
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000093
-    m_Localized: "Kapacita radu +2"
+    m_Localized: Kapacita radu +2
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000094
-    m_Localized: "Kapacita radu +3"
+    m_Localized: Kapacita radu +3
     m_Metadata:
       m_Items: []
   - m_Id: 42431428665192448
-    m_Localized: "VSync (výber FPS je obmedzený)"
+    m_Localized: "VSync (v\xFDber FPS je obmedzen\xFD)"
     m_Metadata:
       m_Items: []
   - m_Id: 42431953292931072
-    m_Localized: "Hlasitosť hudby"
+    m_Localized: "Hlasitos\u0165 hudby"
     m_Metadata:
       m_Items: []
   - m_Id: 42432326804090880
-    m_Localized: "Rozlíšenie"
+    m_Localized: "Rozl\xED\u0161enie"
     m_Metadata:
       m_Items: []
   - m_Id: 42432451492360192
-    m_Localized: "Režim obrazovky"
+    m_Localized: "Re\u017Eim obrazovky"
     m_Metadata:
       m_Items: []
   - m_Id: 42432584829284352
-    m_Localized: "Hlasitosť efektov"
+    m_Localized: "Hlasitos\u0165 efektov"
     m_Metadata:
       m_Items: []
   - m_Id: 42434254002892800
-    m_Localized: "Základný návod"
+    m_Localized: "Z\xE1kladn\xFD n\xE1vod"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194447572992
-    m_Localized: "Šprint"
+    m_Localized: "\u0160print"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194502098944
-    m_Localized: "LOGISTICKÝ TERMINÁL CARGOR"
+    m_Localized: "LOGISTICK\xDD TERMIN\xC1L CARGOR"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194502098945
-    m_Localized: "Úroveň energie"
+    m_Localized: "\xDArove\u0148 energie"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681856
-    m_Localized: "Pohyb hore/dole/vľavo/vpravo"
+    m_Localized: "Pohyb hore/dole/v\u013Eavo/vpravo"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681857
-    m_Localized: "Hráč"
+    m_Localized: "Hr\xE1\u010D"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681858
-    m_Localized: "Vstúpiť"
+    m_Localized: "Vst\xFApi\u0165"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681859
-    m_Localized: "Rukavice"
+    m_Localized: Rukavice
     m_Metadata:
       m_Items: []
   - m_Id: 136075194518876160
-    m_Localized: "Tvár"
+    m_Localized: "Tv\xE1r"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194518876161
-    m_Localized: "Naozaj chceš spustiť návod?"
+    m_Localized: "Naozaj chce\u0161 spusti\u0165 n\xE1vod?"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070464
-    m_Localized: "Doplnky"
+    m_Localized: Doplnky
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070465
-    m_Localized: "VSync"
+    m_Localized: VSync
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070466
-    m_Localized: "Späť"
+    m_Localized: "Sp\xE4\u0165"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070467
-    m_Localized: "Hráč"
+    m_Localized: "Hr\xE1\u010D"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070468
-    m_Localized: "ECLION\n\nV2.01"
+    m_Localized: 'ECLION
+
+
+      V2.01'
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070469
-    m_Localized: "Položiť"
+    m_Localized: "Polo\u017Ei\u0165"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070470
-    m_Localized: "SPÄŤ"
+    m_Localized: "SP\xC4\u0164"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194527264768
-    m_Localized: "ODHALIŤ"
+    m_Localized: "ODHALI\u0164"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459072
-    m_Localized: "ZOOM"
+    m_Localized: ZOOM
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459073
-    m_Localized: "Zdvihnúť"
+    m_Localized: "Zdvihn\xFA\u0165"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459074
-    m_Localized: "VIDEO"
+    m_Localized: VIDEO
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459075
-    m_Localized: "ZVUK"
+    m_Localized: ZVUK
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653376
-    m_Localized: "Interagovať"
+    m_Localized: "Interagova\u0165"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653377
-    m_Localized: "Hlavná kancelária"
+    m_Localized: "Hlavn\xE1 kancel\xE1ria"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653378
-    m_Localized: "GRAFIKA"
+    m_Localized: GRAFIKA
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653379
-    m_Localized: "Vlasy"
+    m_Localized: Vlasy
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653380
-    m_Localized: "JAZYK"
+    m_Localized: JAZYK
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653381
-    m_Localized: "HLASITOSŤ HUDBY"
+    m_Localized: "HLASITOS\u0164 HUDBY"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847680
-    m_Localized: "HLASITOSŤ SFX"
+    m_Localized: "HLASITOS\u0164 SFX"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847681
-    m_Localized: "Možnosť A"
+    m_Localized: "Mo\u017Enos\u0165 A"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847682
-    m_Localized: "XXXX-XXXX-XXXX-XXXX"
+    m_Localized: XXXX-XXXX-XXXX-XXXX
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847683
-    m_Localized: "Nohavice"
+    m_Localized: Nohavice
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847684
-    m_Localized: "Topánky"
+    m_Localized: "Top\xE1nky"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847685
-    m_Localized: "Hráč"
+    m_Localized: "Hr\xE1\u010D"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847686
-    m_Localized: "CELKOVÁ HLASITOSŤ"
+    m_Localized: "CELKOV\xC1 HLASITOS\u0164"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236288
-    m_Localized: "Späť"
+    m_Localized: "Sp\xE4\u0165"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236289
-    m_Localized: "ROZLÍŠENIE"
+    m_Localized: "ROZL\xCD\u0160ENIE"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236290
-    m_Localized: "PRIPOJIŤ SA K MIESTNOSTI"
+    m_Localized: "PRIPOJI\u0164 SA K MIESTNOSTI"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236291
-    m_Localized: "ID lobby:"
+    m_Localized: 'ID lobby:'
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236292
-    m_Localized: "PRISPÔSOBIŤ"
+    m_Localized: "PRISP\xD4SOBI\u0164"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236293
-    m_Localized: "Možnosť A"
+    m_Localized: "Mo\u017Enos\u0165 A"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624896
-    m_Localized: "Hráč"
+    m_Localized: "Hr\xE1\u010D"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624897
-    m_Localized: "Klobúk"
+    m_Localized: "Klob\xFAk"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624898
-    m_Localized: "Prispôsobiť"
+    m_Localized: "Prisp\xF4sobi\u0165"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624899
-    m_Localized: "Hodiť"
+    m_Localized: "Hodi\u0165"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624900
-    m_Localized: "Zobrazenie mapy"
+    m_Localized: Zobrazenie mapy
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624901
-    m_Localized: "OVLÁDANIE"
+    m_Localized: "OVL\xC1DANIE"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194560819200
-    m_Localized: "Vrchné oblečenie"
+    m_Localized: "Vrchn\xE9 oble\u010Denie"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194560819201
-    m_Localized: "Okuliare"
+    m_Localized: Okuliare
     m_Metadata:
       m_Items: []
   - m_Id: 141928975156891283
-    m_Localized: "Ľavé tlačidlo"
+    m_Localized: "\u013Dav\xE9 tla\u010Didlo"
     m_Metadata:
       m_Items: []
   - m_Id: 142557709478291173
-    m_Localized: "Pravé tlačidlo"
+    m_Localized: "Prav\xE9 tla\u010Didlo"
     m_Metadata:
       m_Items: []
   - m_Id: 144849164114263128
-    m_Localized: "Stredné tlačidlo"
+    m_Localized: "Stredn\xE9 tla\u010Didlo"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528492507136
+    m_Localized: Menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528538644480
+    m_Localized: ZOOM
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528538644481
+    m_Localized: Interakcia
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838784
+    m_Localized: "VYLEP\u0160ENIA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838785
+    m_Localized: "Pohyb hore/dole/v\u013Eavo/vpravo"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838786
+    m_Localized: "Ukon\u010Di\u0165 hru"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838787
+    m_Localized: "Mo\u017Enosti"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033088
+    m_Localized: "\u0160print"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033089
+    m_Localized: Bankrot!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033090
+    m_Localized: sklad
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033091
+    m_Localized: zobrazenie mapy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227392
+    m_Localized: "PRIJA\u0164"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227393
+    m_Localized: "miestnos\u0165 s bal\xEDkmi"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227394
+    m_Localized: Zamestnanec
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227395
+    m_Localized: "De\u0148 1"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528555421696
+    m_Localized: "\u010Eal\u0161\xED de\u0148"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528555421697
+    m_Localized: VIDEO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528559616000
+    m_Localized: "prehodi\u0165"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528559616001
+    m_Localized: GRAFIKA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528568004608
+    m_Localized: "Hr\xE1\u010D3"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528568004609
+    m_Localized: 'XP: 200'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528568004610
+    m_Localized: 'GOLD: 200'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198912
+    m_Localized: Misia - 1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198913
+    m_Localized: 0/1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198914
+    m_Localized: vsync
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198915
+    m_Localized: JAZYK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198916
+    m_Localized: "RESETOVA\u0164"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587520
+    m_Localized: 'XP: 200 GOLD: 300'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587521
+    m_Localized: ZVUK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587522
+    m_Localized: OBSAH
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587523
+    m_Localized: "Hr\xE1\u010D1"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528584781824
+    m_Localized: "kalend\xE1r"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528584781825
+    m_Localized: "Hr\xE1\u010D2"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528584781826
+    m_Localized: "HLASITOS\u0164 SFX"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528588976128
+    m_Localized: "Hr\xE1\u010D4"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528588976129
+    m_Localized: "Sklad prosperuje a v\u0161etky z\xE1sielky boli dokonale roztrieden\xE9."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528588976130
+    m_Localized: "Mo\u017Enos\u0165 A"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528593170432
+    m_Localized: "\u0160T"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528593170433
+    m_Localized: "Pusti\u0165"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528593170434
+    m_Localized: "<color=#4B4E6D>2</color>      Vitajte v Cargor!\n<color=#4B4E6D>3</color>     
+      Z\xE1kladn\xFD pohyb\n<color=#4B4E6D>4</color>      Ako bali\u0165 produkty\n<color=#4B4E6D>5</color>     
+      Ukladanie do reg\xE1lov\n<color=#4B4E6D>6</color>      Kami\xF3ny a doru\u010Dovanie\n<color=#4B4E6D>7</color>      
+      Z\xE1kazn\xEDci\n<line-height=18><color=#4B4E6D>8</color>      \u0160peci\xE1lne
+      po\u017Eiadavky: vr\xE1tenia,\ndvojit\xE9 objedn\xE1vky, zmie\u0161an\xE9 kami\xF3ny</line-height>\n<color=#4B4E6D>9</color>     
+      N\xE1jom a va\u0161e peniaze\n<color=#4B4E6D>10</color>   Vylep\u0161enia\n<color=#4B4E6D>11</color>   
+      N\xE1stenka \xFAloh\n<color=#4B4E6D>12</color>    Telef\xF3nna linka\n<color=#4B4E6D>13</color>   
+      Oddychov\xE1 miestnos\u0165 a koniec d\u0148a\n<color=#4B4E6D>14</color>   
+      Tipy na t\xEDmov\xFA pr\xE1cu"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528597364736
+    m_Localized: "Zdvihn\xFA\u0165"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528597364737
+    m_Localized: CARGOR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559040
+    m_Localized: "ODHALI\u0164"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559041
+    m_Localized: OBSAH
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559042
+    m_Localized: Titulky
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559043
+    m_Localized: "HLAVN\xC1 HLASITOS\u0164"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559044
+    m_Localized: NE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528609947648
+    m_Localized: "Oddychov\xE1 miestnos\u0165"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528609947649
+    m_Localized: SO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528609947650
+    m_Localized: ST
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141952
+    m_Localized: "Kniha pomocn\xEDka"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141953
+    m_Localized: Menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141954
+    m_Localized: "HLASITOS\u0164 HUDBY"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141955
+    m_Localized: MENU PAUZY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528618336256
+    m_Localized: "Denn\xFD rozpis"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528618336257
+    m_Localized: PI
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528622530560
+    m_Localized: "Vylep\u0161enie"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528626724864
+    m_Localized: "Hodi\u0165"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528626724865
+    m_Localized: Sklad skrachoval.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528630919168
+    m_Localized: "ROZL\xCD\u0160ENIE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528630919169
+    m_Localized: "OVL\xC1DANIE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528635113472
+    m_Localized: "\xDALOHA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528635113473
+    m_Localized: "PR\xCDRU\u010CKA\nSKLADU"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307776
+    m_Localized: UT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307777
+    m_Localized: "Prest\xED\u017E"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307778
+    m_Localized: "Pokra\u010Dova\u0165"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307779
+    m_Localized: "MISIA SPLNEN\xC1"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307780
+    m_Localized: recepcia
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528647696384
+    m_Localized: "\xDAloha"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528651890688
+    m_Localized: PO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528651890689
+    m_Localized: Peniaze
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269394388168704
+    m_Localized: "<b> Pozor: </b> Pozor: ak farba \u0161katule nezodpoved\xE1 produktu,
+      balenie zlyh\xE1 a \u0161katu\u013Ea sa ti rozbije v ruke. Skontroluj farbu
+      pred balen\xEDm \u2014 nem\xED\u0148aj \u0161katu\u013Eu nazmar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269394430111744
+    m_Localized: "<b> Tip: </b>H\xE1dzanie a chytanie \u0161etr\xED \u010Das na stanovi\u0161ti
+      pre dvoch, ale nerob si z toho zvyk \u2014 ka\u017Ed\xE9 upustenie \u0165a
+      nie\u010Do stoj\xED."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605470711808
+    m_Localized: "UKLADANIE NA REG\xC1LE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605474906112
+    m_Localized: "Reg\xE1ly s\xFA srdcom Cargor. V\u017Edy tam \u010Dakaj\xFA tri
+      typy pr\xE1zdnych \u0161kat\xFA\u013E \u2014 \u010Derven\xE1, \u017Elt\xE1
+      a modr\xE1; ke\u010F jednu zoberie\u0161, reg\xE1l sa \u010Doskoro dopln\xED,
+      tak\u017Ee nikdy nezostane \xFAplne pr\xE1zdny. Ak m\xE1\u0161 navy\u0161e
+      \u0161katu\u013Eu alebo zabalen\xFD produkt, ktor\xFD teraz nechce\u0161 nosi\u0165,
+      m\xF4\u017Ee\u0161 ho vr\xE1ti\u0165 sp\xE4\u0165 na reg\xE1l. Upraven\xFD
+      reg\xE1l u\u013Eah\u010Duje pr\xE1cu tebe aj tvojmu t\xEDmu \u2014 ka\u017Ed\xFD
+      vie, kde \u010Do n\xE1jde."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605474906113
+    m_Localized: AKO SA BALIA PRODUKTY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605474906114
+    m_Localized: "Z\xC1KLADN\xC9 POHYBY"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605483294720
+    m_Localized: "<b>Ch\xF4dza / Beh</b> \u2013 umo\u017E\u0148uje pohybova\u0165
+      sa po sklade.\n\n<b>Zdvihnutie / Polo\u017Eenie</b> \u2013 zdvihni predmet
+      zo zeme, stola alebo reg\xE1lu, alebo ho polo\u017E tam, kde stoj\xED\u0161.\n\n<b>Hod</b>
+      \u2013 ho\u010F to, \u010Do dr\u017E\xED\u0161, \u010Faleko od seba. R\xFDchle,
+      ale riskantn\xE9: ak to naraz\xED do nie\u010Doho tvrd\xE9ho, rozbije sa to
+      a strat\xED\u0161 peniaze aj reput\xE1ciu. Ak to hod\xED\u0161 spoluhr\xE1\u010Dovi,
+      ktor\xFD to chyt\xED, \u017Eiadny postih nie je \u2013 dokonca to u\u0161etr\xED
+      \u010Das.\n\n<b>Interakcia</b> \u2013 rozhovor so z\xE1kazn\xEDkmi, zdvihnutie
+      telef\xF3nu, branie vec\xED z reg\xE1lu/stola \u2014 v\u0161etko sa ovl\xE1da
+      t\xFDmto tla\u010Didlom.\n\n<b>Mapa / Kontrola z\xE1sob</b> \u2013 otvor\xED
+      preh\u013Ead skladu, aby si videl, \u010Do je kde. Nezobrazuje poz\xEDcie spoluhr\xE1\u010Dov
+      \u2014 na to sa mus\xED\u0161 op\xFDta\u0165 cez vysiela\u010Dku."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605483294721
+    m_Localized: 'AKO SA
+
+      BALIA
+
+      PRODUKTY'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605483294722
+    m_Localized: "Ke\u010F hovor\xED\u0161 so z\xE1kazn\xEDkom, po\u017Eiada \u0165a
+      o produkt a nech\xE1 ho na svojom stole. T\xFDm to v\u0161ak nekon\u010D\xED
+      \u2014 produkt e\u0161te nie je zabalen\xFD.\n\nKroky balenia:\n\nZober hol\xFD
+      produkt, ktor\xFD z\xE1kazn\xEDk nechal.\n\nCho\u010F k najbli\u017E\u0161iemu
+      baliacemu stolu.\n\nZober z reg\xE1lu pr\xE1zdnu \u0161katu\u013Eu v rovnakej
+      farbe ako produkt.\n\nSpoj produkt a \u0161katu\u013Eu na stole \u2014 najprv
+      zalep p\xE1skou, potom nalep \u0161t\xEDtok, a bal\xEDk je hotov\xFD.\n\nTeraz
+      m\xE1\u0161 zabalen\xFA \u0161katu\u013Eu. \u010Ealej je na rade doru\u010Denie
+      (pozri Strana 6)."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859394301952
+    m_Localized: "Z\xE1kazn\xEDci"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859406884864
+    m_Localized: "Cargor sa d\xE1 hra\u0165 aj s\xF3lo, ale skuto\u010Dn\xE1 z\xE1bava
+      sa za\u010D\xEDna v t\xEDme. P\xE1r praktick\xFDch r\xE1d:\n\n- <b>Rozde\u013Ete
+      si pr\xE1cu:</b> jeden zostane pri baliacom stole, jeden be\u017E\xED ku kami\xF3nom,
+      jeden sa star\xE1 o z\xE1kazn\xEDkov.\n- <b>Rozpr\xE1vajte sa: </b>ak nie ste
+      v tej istej miestnosti, nemus\xEDte sa vidie\u0165 \u2014 sledujte mapu a nahlas
+      si hovorte, \u010Do je kde.\n- <b>H\xE1d\u017Ete a chytajte:</b> namiesto pobehovania
+      medzi dvoma stanovi\u0161\u0165ami ho\u010F \u0161katu\u013Eu rovno spoluhr\xE1\u010Dovi.\n-
+      <b>Dohodnite sa na vylep\u0161eniach:</b> trval\xE9 vo\u013Eby ovplyv\u0148uj\xFA
+      v\u0161etk\xFDch, nerozhoduj s\xE1m.\n\nVe\u013Ea \u0161\u0165astia \u2014
+      vitaj v Cargor!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859411079168
+    m_Localized: Vitaj v Cargor!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859411079169
+    m_Localized: "Telef\xF3nna Linka"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859411079170
+    m_Localized: "Telef\xF3n v sklade ob\u010Das zazvon\xED. Cho\u010F to zdvihn\xFA\u0165
+      a z\xEDska\u0161 mal\xFA odmenu v peniazoch a reput\xE1cii. Ak to nezdvihne\u0161,
+      tie\u017E ni\u010D nestr\xE1ca\u0161 \u2014 telef\xF3n s\xE1m nakoniec st\xEDchne.\n\n\u010Ci
+      zazvon\xED, je \u010Disto n\xE1hoda, ale niektor\xE9 dni (napr\xEDklad po\u010Das
+      \u0161peci\xE1lnych udalost\xED) sa \u0161anca zvy\u0161uje. Pozrie\u0165 sa
+      cestou nikdy neu\u0161kod\xED."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273472
+    m_Localized: "<b> Tip:  </b>Ke\u010F sa de\u0148 ch\xFDli ku koncu, dokon\u010Di,
+      \u010Do rob\xED\u0161, a v\u010Das zamier do oddychovej miestnosti \u2014 nenechaj
+      svoj t\xEDm \u010Daka\u0165."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273473
+    m_Localized: "\u0160peci\xE1lne Po\u017Eiadavky"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273474
+    m_Localized: "<b> Tip:  </b>Nevyberaj bez konzult\xE1cie s t\xEDmom \u2014 vylep\u0161enie,
+      ktor\xE9 si vyberie jeden \u010Dlovek, men\xED hru pre v\u0161etk\xFDch."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273475
+    m_Localized: "Ka\u017Ed\xFD de\u0148 vid\xED\u0161 na n\xE1stenke p\xE1r pon\xFAk
+      \xFAloh \u2014 napr\xEDklad doplni\u0165 \u0161katu\u013Eu na reg\xE1l, zabali\u0165
+      produkt, naplni\u0165 kami\xF3n alebo zdvihn\xFA\u0165 telef\xF3n. Za de\u0148
+      m\xF4\u017Ee\u0161 prija\u0165 len jednu.\n\n- Ak dokon\u010D\xED\u0161 prijat\xFA
+      \xFAlohu pred koncom d\u0148a, tvoja odmena sa automaticky prip\xED\u0161e
+      na konci d\u0148a.\n\n- Ak ju prijme\u0161 a nech\xE1\u0161 nedokon\u010Den\xFA,
+      na konci d\u0148a dostane\u0161 postih.\n\nAk \u017Eiadnu neprijme\u0161, ni\u010D
+      sa nestane \u2014 ale pr\xEDde\u0161 aj o pr\xEDle\u017Eitos\u0165. Vyber si
+      \xFAlohu, ktor\xE1 zodpoved\xE1 tomu, \u010Do pr\xE1ve rie\u0161i\u0161."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273476
+    m_Localized: "Tipy Na T\xEDmov\xFA Pr\xE1cu"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273477
+    m_Localized: "N\xE1jom a Tvoje Peniaze"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859419467776
+    m_Localized: "Prev\xE1dzkova\u0165 Cargor nie je zadarmo. V ur\u010Dit\xE9 dni
+      pr\xEDde platba n\xE1jmu \u2014 tak\xFD de\u0148 naz\xFDvame \"de\u0148 n\xE1jmu\".\n\n-
+      Ak m\xE1\u0161 dos\u0165 pe\u0148az\xED na n\xE1jom, zaplat\xED sa a pokra\u010Duje\u0161
+      \u010Falej.\n\n- Ak nem\xF4\u017Ee\u0161 zaplati\u0165 v term\xEDne, m\xE1\u0161
+      jednu jedin\xFA druh\xFA \u0161ancu: v\xE4\u010D\u0161ina tvojej hotovosti
+      sa ti vezme, ale podnik sa nezavrie.\n\n<b>Peniaze </b>prich\xE1dzaj\xFA zo
+      spr\xE1vnych doru\u010Den\xED, telefon\xE1tov a dokon\u010Den\xFDch \xFAloh.
+      Zl\xE9 doru\u010Denia, upusten\xE9 \u0161katule a nedokon\u010Den\xE9 \xFAlohy
+      ti ber\xFA peniaze."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859419467777
+    m_Localized: "<b> Nezabudni:  </b>nie si tu s\xE1m. Cargor je t\xEDmov\xE1 pr\xE1ca
+      \u2014 zdie\u013Eaj z\xE1\u0165a\u017E, ozvi sa."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859419467778
+    m_Localized: "Doru\u010D spr\xE1vnu farbu \u2192 zarob\xED\u0161 peniaze, tvoja
+      reput\xE1cia st\xFApa.\n\nDoru\u010D zl\xFA farbu \u2192 pr\xEDde\u0161 o peniaze.
+      Skontroluj farby dvakr\xE1t.\n\nKa\u017Ed\xFD kami\xF3n m\xE1 obmedzen\xFA
+      dobu \u010Dakania a kapacitu. Ke\u010F sa napln\xED alebo vypr\u0161\xED \u010Das,
+      kami\xF3n od\xEDde a pr\xEDde nov\xFD.\n\nS rastom skladu (v\u010Faka vylep\u0161eniam)
+      sa m\xF4\u017Ee otvori\u0165 viac hang\xE1rov \u2014 potom m\xF4\u017Ee\u0161
+      z\xE1sobova\u0165 viac kami\xF3nov naraz."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859427856384
+    m_Localized: "<b> Tip:  </b>Nepanik\xE1r pri zmie\u0161anom kami\xF3ne alebo
+      dvojitej objedn\xE1vke \u2014 jednoducho si to predstav ako dve samostatn\xE9
+      doru\u010Denia a vyrie\u0161 ich jedno po druhom."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859427856385
+    m_Localized: "Vylep\u0161enia"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859427856386
+    m_Localized: "Ke\u010F de\u0148 skon\u010D\xED, v\u0161etci musia \xEDs\u0165
+      do oddychovej miestnosti. Aj keby zostal vonku len jeden \u010Dlovek, de\u0148
+      sa neuzavrie \u2014 \u010Dak\xE1 sa, k\xFDm sa nez\xEDde cel\xFD t\xEDm.\n\nHne\u010F
+      ako s\xFA v\u0161etci v miestnosti, zobraz\xED sa zhrnutie d\u0148a a za\u010Dne
+      sa nov\xFD de\u0148. Ak sa dostane\u0161 na koniec \u0161estn\xE1steho d\u0148a
+      bez bankrotu, zasl\xFA\u017Ei\u0161 si oslavu."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859432050688
+    m_Localized: "Oddychov\xE1 Miestnos\u0165 a Koniec D\u0148a"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859432050689
+    m_Localized: "Z\xE1kazn\xEDci vch\xE1dzaj\xFA dverami, radia sa do frontu a \u017Eiadaj\xFA
+      \u0165a o nie\u010Do. Li\u0161ta nad nimi ukazuje, ak\xED s\xFA trpezliv\xED
+      \u2014 ke\u010F d\xF4jde, z\xE1kazn\xEDk nahnevane od\xEDde a ty pr\xEDde\u0161
+      o peniaze aj reput\xE1ciu.\n\n- N\xE1v\u0161tevnos\u0165 sa po\u010Das d\u0148a
+      men\xED: obed a ve\u010Der s\xFA najru\u0161nej\u0161ie, poobede si trochu
+      odd\xFDchne\u0161.\n\n- Ke\u010F hovor\xED\u0161 so z\xE1kazn\xEDkom (tla\u010Didlo
+      interakcie), nech\xE1 po\u017Eadovan\xFD produkt na svojom stole \u2014 potom
+      nasleduje balenie a doru\u010Denie (Strany 4-6).\n\n- Ka\u017Ed\xFD v\u010Das
+      obsl\xFA\u017Een\xFD z\xE1kazn\xEDk ti prinesie peniaze aj reput\xE1ciu. \u010C\xEDm
+      vy\u0161\u0161ia tvoja reput\xE1cia, t\xFDm viac zarob\xED\u0161 za doru\u010Denie."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859436244992
+    m_Localized: "<b> Tip:  </b>Neodkladaj n\xE1ro\u010Dn\xFA \xFAlohu na posledn\xFD
+      de\u0148. Koniec d\u0148a v\u017Edy pr\xEDde r\xFDchlej\u0161ie, ne\u017E \u010Dak\xE1\u0161."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859436244993
+    m_Localized: "Vr\xE1tenia, Dvojit\xE9 Objedn\xE1vky, Zmie\u0161an\xE9 Kami\xF3ny"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859436244994
+    m_Localized: "<b> Tip:  </b>Ak zvon\xED telef\xF3n a m\xE1\u0161 ho po ceste,
+      zabehni tam aj s pln\xFDmi rukami \u2014 kr\xE1tka prest\xE1vka, mal\xFD zisk."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633600
+    m_Localized: VITAJ!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633601
+    m_Localized: "N\xE1stenka \xDAloh"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633602
+    m_Localized: "Ako dni plyn\xFA, pr\xE1ca sa trochu komplikuje. Naraz\xED\u0161
+      na tri nov\xE9 situ\xE1cie:\n\n<b>Vr\xE1tenia: </b>niektor\xED z\xE1kazn\xEDci
+      nechc\xFA produkt \u2014 naopak, \u017Eiadaj\xFA \u0165a, aby si im priniesol
+      \u0161katu\u013Eu sp\xE4\u0165. Farebn\xE1 gu\u013Ea, ktor\xE1 sa nad nimi
+      objav\xED, ukazuje, ak\xFA farbu \u0161katule chc\xFA. Zober spr\xE1vnu farbu
+      z reg\xE1lu a prines ju z\xE1kazn\xEDkovi.\n\n<b>Dvojit\xE1 objedn\xE1vka:
+      </b>niektor\xED z\xE1kazn\xEDci chc\xFA dve r\xF4zne farby naraz. Pr\xE1ca
+      nie je hotov\xE1, k\xFDm nie s\xFA pripraven\xE9 obe.\n\n<b>Zmie\u0161an\xFD
+      kami\xF3n: </b>niektor\xE9 kami\xF3ny nechc\xFA jednu farbu, ale dve r\xF4zne
+      farby \u0161kat\xFA\u013E. Zmie\u0161an\xE1 farba na karos\xE9rii (napr\xEDklad
+      \u010Derven\xE1 + \u017Elt\xE1 = oran\u017Eov\xE1) ti d\xE1va n\xE1povedu \u2014
+      ukazuje, ktor\xE9 dve farby mus\xED\u0161 nalo\u017Ei\u0165."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633603
+    m_Localized: "Kami\xF3ny \u010Dakaj\xFAce v hang\xE1ri ti farbou karos\xE9rie
+      ukazuj\xFA, \u010Do chc\xFA: \u010Derven\xFD kami\xF3n chce \u010Derven\xFA
+      \u0161katu\u013Eu, \u017Elt\xFD \u017Elt\xFA, modr\xFD modr\xFA."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859448827904
+    m_Localized: "Vitaj! Teraz si s\xFA\u010Das\u0165ou rodiny Cargor. Toto miesto
+      je sklad, obchod a trochu chaosu \u2014 v\u0161etko dohromady.\n\nZ\xE1kazn\xEDci
+      ti povedia, \u010Do chc\xFA, ty to zabal\xED\u0161 a nalo\u017E\xED\u0161 na
+      spr\xE1vny kami\xF3n. Znie to jednoducho, v\u0161ak? Ak po \u0161estn\xE1stich
+      d\u0148och e\u0161te stoj\xED\u0161 na noh\xE1ch, naozaj si odviedol dobr\xFA
+      pr\xE1cu.\n\nTento zo\u0161it, ktor\xFD dr\u017E\xED\u0161 v ruke, je miesto,
+      kam sa vr\xE1ti\u0161, ke\u010F zabudne\u0161 detaily. Ka\u017Ed\xE1 strana
+      opisuje in\xFA t\xE9mu. Netreba sa pon\xE1h\u013Ea\u0165 \u2014 prv\xE9 dni
+      pracuj pomaly, spozn\xE1vaj syst\xE9m. R\xFDchlos\u0165 pr\xEDde s \u010Dasom."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859453022208
+    m_Localized: "<b> Tip:  </b>Skontroluj svoju hotovos\u0165 pred d\u0148ami n\xE1jmu.
+      Nenech\xE1vaj to na posledn\xFA chv\xED\u013Eu."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859453022209
+    m_Localized: "<b> Pozor:  </b>K\xFDm je front pln\xFD, nov\xED z\xE1kazn\xEDci
+      neprich\xE1dzaj\xFA, ale t\xED, \u010Do u\u017E \u010Dakaj\xFA, na\u010Falej
+      str\xE1caj\xFA trpezlivos\u0165. Neza\u010D\xEDnaj ni\u010D nov\xE9, k\xFDm
+      front nevypr\xE1zdni\u0161."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859453022210
+    m_Localized: "<b> Tip:  </b>Ak farbu kami\xF3nu spozn\xE1\u0161 u\u017E z dia\u013Eky,
+      uprednostni ten, ktor\xFD zodpoved\xE1 \u0161katuli, ktor\xFA nesie\u0161 \u2014
+      necho\u010F zbyto\u010Dne."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859461410816
+    m_Localized: "KAMI\xD3NY A DORU\u010CENIE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859465605120
+    m_Localized: "V ur\u010Dit\xE9 dni sa ti pon\xFAkne p\xE1r mo\u017Enost\xED vylep\u0161enia
+      \u2014 nem\xF4\u017Ee\u0161 vzia\u0165 v\u0161etky, vyber\xE1\u0161 spomedzi
+      nich. M\xF4\u017Ee\u0161 z\xEDska\u0165 trval\xE9 vylep\u0161enia ako extra
+      reg\xE1l, extra hang\xE1r, r\xFDchlej\u0161\xED pohyb alebo dlh\u0161iu trpezlivos\u0165
+      z\xE1kazn\xEDkov.\n\nV\xFDber dobre zv\xE1\u017E: niektor\xE9 vylep\u0161enia
+      sa navz\xE1jom vylu\u010Duj\xFA, in\xE9 sa odomkn\xFA a\u017E od ur\u010Dit\xE9ho
+      d\u0148a. Vo\u013Eby, ktor\xE9 ur\xFDchlia z\xE1klady v prv\xFDch d\u0148och,
+      sa nesk\xF4r ve\u013Emi vyplatia."
     m_Metadata:
       m_Items: []
   references:

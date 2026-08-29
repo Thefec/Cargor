@@ -667,207 +667,784 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 136075194447572992
-    m_Localized: "Koş"
+    m_Localized: "Ko\u015F"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194502098944
-    m_Localized: "CARGOR LOJİSTİK TERMİNALİ"
+    m_Localized: "CARGOR LOJ\u0130ST\u0130K TERM\u0130NAL\u0130"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194502098945
-    m_Localized: "Enerji Seviyesi"
+    m_Localized: Enerji Seviyesi
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681856
-    m_Localized: "Yukarı/Aşağı/Sola/Sağa Hareket Et"
+    m_Localized: "Yukar\u0131/A\u015Fa\u011F\u0131/Sola/Sa\u011Fa Hareket Et"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681857
-    m_Localized: "Oyuncu"
+    m_Localized: Oyuncu
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681858
-    m_Localized: "Giriş"
+    m_Localized: "Giri\u015F"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681859
-    m_Localized: "Eldivenler"
+    m_Localized: Eldivenler
     m_Metadata:
       m_Items: []
   - m_Id: 136075194518876160
-    m_Localized: "Yüz"
+    m_Localized: "Y\xFCz"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194518876161
-    m_Localized: "Eğitime girmek istediğinden eminmisin?"
+    m_Localized: "E\u011Fitime girmek istedi\u011Finden eminmisin?"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070464
-    m_Localized: "Aksesuarlar"
+    m_Localized: Aksesuarlar
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070465
-    m_Localized: "Dikey Senkronizasyon"
+    m_Localized: Dikey Senkronizasyon
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070466
-    m_Localized: "Geri Dön"
+    m_Localized: "Geri D\xF6n"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070467
-    m_Localized: "Oyuncu"
+    m_Localized: Oyuncu
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070468
-    m_Localized: "ECLION\n\nV2.01"
+    m_Localized: 'ECLION
+
+
+      V2.01'
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070469
-    m_Localized: "Bırak"
+    m_Localized: "B\u0131rak"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070470
-    m_Localized: "GERİ"
+    m_Localized: "GER\u0130"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194527264768
-    m_Localized: "GÖSTER"
+    m_Localized: "G\xD6STER"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459072
-    m_Localized: "YAKINLAŞTIRMA"
+    m_Localized: "YAKINLA\u015ETIRMA"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459073
-    m_Localized: "Al"
+    m_Localized: Al
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459074
-    m_Localized: "GÖRÜNTÜ"
+    m_Localized: "G\xD6R\xDCNT\xDC"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459075
-    m_Localized: "SES"
+    m_Localized: SES
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653376
-    m_Localized: "Etkileşim"
+    m_Localized: "Etkile\u015Fim"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653377
-    m_Localized: "Ana Ofis"
+    m_Localized: Ana Ofis
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653378
-    m_Localized: "GRAFİKLER"
+    m_Localized: "GRAF\u0130KLER"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653379
-    m_Localized: "Saç"
+    m_Localized: "Sa\xE7"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653380
-    m_Localized: "DİL"
+    m_Localized: "D\u0130L"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653381
-    m_Localized: "MÜZİK SESİ"
+    m_Localized: "M\xDCZ\u0130K SES\u0130"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847680
-    m_Localized: "EFEKT SESİ"
+    m_Localized: "EFEKT SES\u0130"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847681
-    m_Localized: "Seçenek A"
+    m_Localized: "Se\xE7enek A"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847682
-    m_Localized: "XXXX-XXXX-XXXX-XXXX"
+    m_Localized: XXXX-XXXX-XXXX-XXXX
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847683
-    m_Localized: "Pantolon"
+    m_Localized: Pantolon
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847684
-    m_Localized: "Ayakkabı"
+    m_Localized: "Ayakkab\u0131"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847685
-    m_Localized: "Oyuncu"
+    m_Localized: Oyuncu
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847686
-    m_Localized: "ANA SES DÜZEYİ"
+    m_Localized: "ANA SES D\xDCZEY\u0130"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236288
-    m_Localized: "Geri Dön"
+    m_Localized: "Geri D\xF6n"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236289
-    m_Localized: "ÇÖZÜNÜRLÜK"
+    m_Localized: "\xC7\xD6Z\xDCN\xDCRL\xDCK"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236290
-    m_Localized: "ODAYA KATIL"
+    m_Localized: ODAYA KATIL
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236291
-    m_Localized: "Lobi ID:"
+    m_Localized: 'Lobi ID:'
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236292
-    m_Localized: "ÖZELLEŞTİR"
+    m_Localized: "\xD6ZELLE\u015ET\u0130R"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236293
-    m_Localized: "Seçenek A"
+    m_Localized: "Se\xE7enek A"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624896
-    m_Localized: "Oyuncu"
+    m_Localized: Oyuncu
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624897
-    m_Localized: "Şapka"
+    m_Localized: "\u015Eapka"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624898
-    m_Localized: "Özelleştir"
+    m_Localized: "\xD6zelle\u015Ftir"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624899
-    m_Localized: "Fırlat"
+    m_Localized: "F\u0131rlat"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624900
-    m_Localized: "Harita Görünümü"
+    m_Localized: "Harita G\xF6r\xFCn\xFCm\xFC"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624901
-    m_Localized: "KONTROLLER"
+    m_Localized: KONTROLLER
     m_Metadata:
       m_Items: []
   - m_Id: 136075194560819200
-    m_Localized: "Dış Giyim"
+    m_Localized: "D\u0131\u015F Giyim"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194560819201
-    m_Localized: "Gözlük"
+    m_Localized: "G\xF6zl\xFCk"
     m_Metadata:
       m_Items: []
   - m_Id: 141928975156891283
-    m_Localized: "Sol Tık"
+    m_Localized: "Sol T\u0131k"
     m_Metadata:
       m_Items: []
   - m_Id: 142557709478291173
-    m_Localized: "Sağ Tık"
+    m_Localized: "Sa\u011F T\u0131k"
     m_Metadata:
       m_Items: []
   - m_Id: 144849164114263128
-    m_Localized: "Orta Tık"
+    m_Localized: "Orta T\u0131k"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528492507136
+    m_Localized: "Men\xFC"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528538644480
+    m_Localized: ZOOM
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528538644481
+    m_Localized: Interact
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838784
+    m_Localized: UPGRADES
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838785
+    m_Localized: "MOVE up/down/left/r\u0131ght"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838786
+    m_Localized: Exit Game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838787
+    m_Localized: Options
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033088
+    m_Localized: Sprint
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033089
+    m_Localized: "Batt\u0131k!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033090
+    m_Localized: warehouse
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033091
+    m_Localized: "map v\u0131ew"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227392
+    m_Localized: ACCEPT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227393
+    m_Localized: package room
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227394
+    m_Localized: Employee
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227395
+    m_Localized: dAY 1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528555421696
+    m_Localized: Next Day
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528555421697
+    m_Localized: VIDEO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528559616000
+    m_Localized: reroll
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528559616001
+    m_Localized: GRAPHICS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528568004608
+    m_Localized: Player3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528568004609
+    m_Localized: 'XP: 200'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528568004610
+    m_Localized: 'GOLD: 200'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198912
+    m_Localized: Mission - 1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198913
+    m_Localized: 0/1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198914
+    m_Localized: vsync
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198915
+    m_Localized: LANGUAGE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198916
+    m_Localized: RESET
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587520
+    m_Localized: 'XP: 200 GOLD: 300'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587521
+    m_Localized: AUDIO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587522
+    m_Localized: CONTENT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587523
+    m_Localized: Player1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528584781824
+    m_Localized: calendar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528584781825
+    m_Localized: Player2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528584781826
+    m_Localized: SFX VOL.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528588976128
+    m_Localized: Player4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528588976129
+    m_Localized: The warehouse is thriving and all shipments have been sorted perfectly.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528588976130
+    m_Localized: Option A
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528593170432
+    m_Localized: THU
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528593170433
+    m_Localized: Drop
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528593170434
+    m_Localized: "<color=#4B4E6D>2</color>      Cargor\u2019a Ho\u015F Geldin!\n<color=#4B4E6D>3</color>     
+      Temel Hareketler\n<color=#4B4E6D>4</color>      \xDCr\xFCnler Nas\u0131l Paketlenir\n<color=#4B4E6D>5</color>     
+      Rafa Yerle\u015Ftirme\n<color=#4B4E6D>6</color>      T\u0131rlar ve Teslimat\n<color=#4B4E6D>7</color>      
+      M\xFC\u015Fteriler\n<line-height=18><color=#4B4E6D>8</color>      \xD6zel Talepler:
+      \u0130adeler,\r\n\xC7ift Sipari\u015F, Kar\u0131\u015F\u0131k T\u0131rlar</line-height>\n<color=#4B4E6D>9</color>     
+      Kira ve Paran\n<color=#4B4E6D>10</color>   Y\xFCkseltmeler\n<color=#4B4E6D>11</color>   
+      G\xF6rev Panosu\n<color=#4B4E6D>12</color>    Telefon Hatt\u0131\n<color=#4B4E6D>13</color>   
+      Dinlenme Odas\u0131 ve G\xFCn Sonu\n<color=#4B4E6D>14</color>    Ekip \xC7al\u0131\u015Fmas\u0131
+      \u0130pu\xE7lar\u0131"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528597364736
+    m_Localized: Pickup
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528597364737
+    m_Localized: CARGOR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559040
+    m_Localized: REVEAL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559041
+    m_Localized: "\u0130\xC7\u0130NDEK\u0130LER"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559042
+    m_Localized: Credits
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559043
+    m_Localized: MASTER VOL.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559044
+    m_Localized: SUN
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528609947648
+    m_Localized: Break Room
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528609947649
+    m_Localized: SAT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528609947650
+    m_Localized: WED
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141952
+    m_Localized: Help Book
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141953
+    m_Localized: Menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141954
+    m_Localized: MUSIC VOL.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141955
+    m_Localized: ESCAPE MENU
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528618336256
+    m_Localized: Daily Roster
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528618336257
+    m_Localized: FRI
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528622530560
+    m_Localized: Upgrade
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528626724864
+    m_Localized: Throw
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528626724865
+    m_Localized: The warehouse has gone bankrupt.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528630919168
+    m_Localized: RESOLUTION
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528630919169
+    m_Localized: CONTROLS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528635113472
+    m_Localized: QUEST
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528635113473
+    m_Localized: "DEPO\nEL K\u0130TABI"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307776
+    m_Localized: TUE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307777
+    m_Localized: "Prest\u0131j"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307778
+    m_Localized: Continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307779
+    m_Localized: MISSION ACCOMPLISHED
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307780
+    m_Localized: reception
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528647696384
+    m_Localized: Quest
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528651890688
+    m_Localized: Mon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528651890689
+    m_Localized: Money
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269394388168704
+    m_Localized: "<b> Dikkat: </b> Dikkat: Kutu rengi \xFCr\xFCnle uyu\u015Fmuyorsa
+      paketleme ba\u015Far\u0131s\u0131z olur ve kutu elinde k\u0131r\u0131l\u0131r.
+      Renk kontrol\xFCn\xFC paketlemeden \xF6nce yap, kutunu bo\u015Fa harcama."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269394430111744
+    m_Localized: "<b> \u0130pucu: </b>F\u0131rlat\u0131p yakalama, iki ki\u015Filik
+      bir istasyonda zaman kazand\u0131r\u0131r ama al\u0131\u015Fkanl\u0131k h\xE2line
+      getirme \u2014 her d\xFC\u015F\xFCrme cebinden gider."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605470711808
+    m_Localized: "RAFA YERLE\u015ET\u0130RME"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605474906112
+    m_Localized: "Raflar Cargor'un can damar\u0131. K\u0131rm\u0131z\u0131, sar\u0131
+      ve mavi olmak \xFCzere \xFC\xE7 bo\u015F kutu t\xFCr\xFC hep orada bekler \u2014
+      birini ald\u0131\u011F\u0131nda raf kendini k\u0131sa s\xFCre i\xE7inde tazeler,
+      yani asla tamamen bo\u015F kalmaz. Elinde fazladan bir kutu ya da paketlenmi\u015F
+      bir \xFCr\xFCn varsa ve o an ta\u015F\u0131mak istemiyorsan, rafa geri koyabilirsin.
+      D\xFCzenli bir raf, hem senin hem tak\u0131m\u0131n\u0131n i\u015Fini kolayla\u015Ft\u0131r\u0131r
+      \u2014 herkes ne nerede bulaca\u011F\u0131n\u0131 bilir."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605474906113
+    m_Localized: "\xDCR\xDCNLER NASIL PAKETLEN\u0130R"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605474906114
+    m_Localized: TEMEL HAREKETLER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605483294720
+    m_Localized: "<b>Y\xFCr\xFC / Ko\u015F</b> \u2013 depoda dola\u015Fman\u0131
+      sa\u011Flar.\n\n<b>Al / B\u0131rak</b> \u2013 yerdeki, masadaki veya raftaki
+      bir e\u015Fyay\u0131 elinle al ya da b\u0131rakt\u0131\u011F\u0131n yere koy.\n\n<b>F\u0131rlat</b>
+      \u2013 elindekini uza\u011Fa at. H\u0131zl\u0131 ama riskli: sert \xE7arparsa
+      k\u0131r\u0131l\u0131r, para ve itibar kaybedersin. Bir tak\u0131m arkada\u015F\u0131na
+      at\u0131p yakalat\u0131rsan ceza yok \u2013 \xFCstelik zaman kazand\u0131r\u0131r.\n\n<b>Etkile\u015Fim</b>
+      \u2013 m\xFC\u015Fterilerle konu\u015Fmak, telefonu a\xE7mak, raftan/masadan
+      e\u015Fya almak hep bu tu\u015Fla olur.\n\n<b>Harita / Stok Kontrol\xFC</b>
+      \u2013 deponun genel g\xF6r\xFCn\xFCm\xFCn\xFC a\xE7ar; hangi e\u015Fya nerede
+      duruyor g\xF6rebilirsin. Tak\u0131m arkada\u015Flar\u0131n\u0131n konumunu
+      g\xF6stermez \u2013 onu telsizden sorman gerekecek."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605483294721
+    m_Localized: "\xDCR\xDCNLER\r\nNASIL\r\nPAKETLEN\u0130R"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605483294722
+    m_Localized: "Bir m\xFC\u015Fteriyle konu\u015Ftu\u011Funda, senden bir \xFCr\xFCn
+      ister ve onu kendi masas\u0131na b\u0131rak\u0131r. \u0130\u015Fin orada bitmiyor
+      \u2014 o \xFCr\xFCn hen\xFCz paketlenmemi\u015F.\n\nPaketleme ad\u0131mlar\u0131:\n\nM\xFC\u015Fterinin
+      b\u0131rakt\u0131\u011F\u0131 \xE7\u0131plak \xFCr\xFCn\xFC al.\n\nEn yak\u0131n
+      paketleme masas\u0131na git.\n\nRafdan \xFCr\xFCnle ayn\u0131 renkte bo\u015F
+      bir kutu al.\n\nMasada \xFCr\xFCn\xFC ve kutuyu bir araya getir \u2014 \xF6nce
+      bantla sonra etiketle art\u0131k paket haz\u0131r.\n\nElinde art\u0131k paketlenmi\u015F
+      bir kutu var. \u015Eimdi s\u0131rada teslimat var (bkz. Sayfa 6)."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859394301952
+    m_Localized: "M\xFC\u015Fteriler"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859406884864
+    m_Localized: "Cargor tek ba\u015F\u0131na da oynan\u0131r ama ger\xE7ek e\u011Flence
+      tak\u0131mla ba\u015Flar. Birka\xE7 pratik \xF6neri:\n\n- <b>\u0130\u015Fi
+      b\xF6l\xFC\u015F\xFCn:</b> Biri paketleme masas\u0131nda dursun, biri t\u0131rlara
+      ko\u015Fsun, biri m\xFC\u015Fterilerle ilgilensin.\n- <b>Konu\u015Fun: </b>Ayn\u0131
+      odada de\u011Filseniz birbirinizi g\xF6remeyebilirsiniz \u2014 nerede ne oldu\u011Funu
+      haritadan kontrol edip sesli olarak payla\u015F\u0131n.\n- <b>F\u0131rlat\u0131p
+      yakalay\u0131n:</b> \u0130ki istasyon aras\u0131nda mekik dokumak yerine, kutuyu
+      do\u011Frudan tak\u0131m arkada\u015F\u0131na f\u0131rlat\u0131n.\n- <b>Y\xFCkseltmelerde
+      uzla\u015F\u0131n:</b> Kal\u0131c\u0131 se\xE7imler herkesi etkiler, tek ba\u015F\u0131na
+      karar vermeyin.\n\n\u0130yi \xE7al\u0131\u015Fmalar \u2014 Cargor'a ho\u015F
+      geldin!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859411079168
+    m_Localized: "Cargor'a Ho\u015F Geldin!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859411079169
+    m_Localized: "Telefon Hatt\u0131"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859411079170
+    m_Localized: "Depodaki telefon zaman zaman \xE7alar. Yan\u0131na gidip a\xE7arsan
+      k\xFC\xE7\xFCk bir para ve itibar \xF6d\xFCl\xFC kazan\u0131rs\u0131n. A\xE7mazsan
+      da bir \u015Fey kaybetmezsin \u2014 telefon kendi kendine susar.\n\n\xC7almas\u0131
+      tamamen \u015Fansa ba\u011Fl\u0131, ama baz\u0131 g\xFCnler (\xF6rne\u011Fin
+      \xF6zel etkinlik g\xFCnlerinde) \xE7alma ihtimali artar. Yan\u0131ndan ge\xE7erken
+      bir bak\u0131\u015F atmak zarar vermez."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273472
+    m_Localized: "<b> \u0130pucu:  </b>G\xFCn sonuna yakla\u015F\u0131rken elindeki
+      i\u015Fi bitirip erkenden dinlenme odas\u0131na y\xF6nel \u2014 tak\u0131m\u0131n\u0131
+      bekletme."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273473
+    m_Localized: "\xD6zel Talepler"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273474
+    m_Localized: "<b> \u0130pucu:  </b>Tak\u0131m\u0131nla konu\u015Fmadan se\xE7im
+      yapma \u2014 bir ki\u015Finin ald\u0131\u011F\u0131 y\xFCkseltme, herkesin
+      i\u015Fleyi\u015Fini de\u011Fi\u015Ftirir."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273475
+    m_Localized: "Her g\xFCn panoda birka\xE7 g\xF6rev teklifi g\xF6r\xFCrs\xFCn
+      \u2014 rafa kutu koymak, \xFCr\xFCn paketlemek, t\u0131r tamamlamak, telefona
+      cevap vermek gibi. Bir g\xFCnde yaln\u0131z bir tanesini kabul edebilirsin.\n\n-
+      Kabul etti\u011Fin g\xF6revi g\xFCn bitmeden tamamlarsan, g\xFCn sonunda \xF6d\xFCl\xFCn
+      otomatik hesab\u0131na yatar.\n\n- Kabul edip yar\u0131m b\u0131rak\u0131rsan,
+      g\xFCn sonunda ceza uygulan\u0131r.\n\nKabul etmezsen hi\xE7bir \u015Fey olmaz
+      \u2014 ama f\u0131rsat\u0131 da ka\xE7\u0131r\u0131rs\u0131n. Elindeki i\u015Fe
+      g\xF6re ger\xE7ek\xE7i bir g\xF6rev se\xE7."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273476
+    m_Localized: "Ekip \xC7al\u0131\u015Fmas\u0131 \u0130pu\xE7lar\u0131"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273477
+    m_Localized: Kira ve Paran
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859419467776
+    m_Localized: "Cargor'u i\u015Fletmek \xFCcretsiz de\u011Fil. Belirli g\xFCnlerde
+      kira \xF6demesi gelir \u2014 bu g\xFCne \"kira g\xFCn\xFC\" diyoruz.\n\n- Kiray\u0131
+      \xF6deyecek paran varsa, \xF6denir ve devam edersin.\n\n- \u0130lk \xF6demede
+      tarihinde \xD6deyemezsen bir kerelik bir \u015Fans var: elindeki paran\u0131n
+      b\xFCy\xFCk bir k\u0131sm\u0131 al\u0131n\u0131r ama i\u015Fletme kapanmaz.\n\n<b>Para;
+      </b>do\u011Fru teslimatlardan, telefon aramalar\u0131ndan ve tamamlanan g\xF6revlerden
+      gelir. Yanl\u0131\u015F teslimat, d\xFC\u015F\xFCr\xFClen kutular ve yar\u0131m
+      b\u0131rak\u0131lan g\xF6revler paran\u0131 azalt\u0131r."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859419467777
+    m_Localized: "<b> Unutma:  </b>Burada yaln\u0131z de\u011Filsin. Cargor bir tak\u0131m
+      i\u015Fi \u2014 y\xFCk\xFCn\xFC payla\u015F, sesini duyur."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859419467778
+    m_Localized: "Do\u011Fru renk teslim et \u2192 para kazan\u0131rs\u0131n, itibar\u0131n
+      artar.\n\nYanl\u0131\u015F renk teslim et \u2192 para kaybedersin. Renklere
+      iki kere bak.\n\nHer t\u0131r\u0131n s\u0131n\u0131rl\u0131 bir bekleme s\xFCresi
+      ve kapasitesi var. Doldu\u011Funda ya da s\xFCresi bitti\u011Finde t\u0131r
+      ayr\u0131l\u0131r, yenisi gelir.\n\nDepo b\xFCy\xFCd\xFCk\xE7e (y\xFCkseltmelerle)
+      birden fazla hangar a\xE7\u0131labilir \u2014 ayn\u0131 anda birka\xE7 t\u0131r\u0131
+      besleyebilirsin."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859427856384
+    m_Localized: "<b> \u0130pucu:  </b>Kar\u0131\u015F\u0131k t\u0131r ya da \xE7ift
+      sipari\u015F g\xF6rd\xFC\u011F\xFCnde panik yapma \u2014 sadece iki ayr\u0131
+      teslimat gibi d\xFC\u015F\xFCn, art arda hallet."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859427856385
+    m_Localized: "Y\xFCkseltmeler"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859427856386
+    m_Localized: "G\xFCn sona erdi\u011Finde herkesin dinlenme odas\u0131na gitmesi
+      gerekir. Tek bir ki\u015Fi bile d\u0131\u015Far\u0131da kalsa, g\xFCn kapanmaz
+      \u2014 tak\u0131m tam olarak toplanana kadar beklenir.\n\nHerkes odaya girdi\u011Finde
+      g\xFCn \xF6zeti g\xF6sterilir ve yeni g\xFCn ba\u015Flar. On alt\u0131nc\u0131
+      g\xFCn\xFCn sonuna kadar iflas etmeden gelebilirsen, kutlamay\u0131 hak ettin
+      demektir."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859432050688
+    m_Localized: "Dinlenme Odas\u0131 ve G\xFCn Sonu"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859432050689
+    m_Localized: "M\xFC\u015Fteriler kap\u0131dan girer, s\u0131raya girer ve senden
+      bir \u015Fey ister. \xDCzerlerindeki bar, ne kadar sab\u0131rl\u0131 olduklar\u0131n\u0131
+      g\xF6sterir \u2014 bar biterse m\xFC\u015Fteri \xF6fkeyle ayr\u0131l\u0131r,
+      sen de para ve itibar kaybedersin.\n\n- G\xFCn i\xE7inde yo\u011Funluk de\u011Fi\u015Fir:
+      \xF6\u011Fle ve ak\u015Fam saatleri en kalabal\u0131k zamanlar, \xF6\u011Fleden
+      sonra biraz nefes al\u0131rs\u0131n.\n\n- Bir m\xFC\u015Fteriyle konu\u015Ftu\u011Funda
+      (etkile\u015Fim tu\u015Fu) istedi\u011Fi \xFCr\xFCn\xFC masas\u0131na b\u0131rak\u0131r
+      \u2014 bundan sonras\u0131 paketleme ve teslimatt\u0131r (Sayfa 4-6).\n\n-
+      Zaman\u0131nda hizmet etti\u011Fin her m\xFC\u015Fteri hem para hem itibar
+      kazand\u0131r\u0131r. \u0130tibar\u0131n y\xFCkseldik\xE7e teslimat ba\u015F\u0131na
+      kazanc\u0131n da artar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859436244992
+    m_Localized: "<b> \u0130pucu:  </b>Zor bir g\xF6revi son g\xFCne kadar erteleme.
+      G\xFCn sonu her zaman bekledi\u011Finden \xE7abuk gelir."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859436244993
+    m_Localized: "\u0130adeler, \xC7ift Sipari\u015F, Kar\u0131\u015F\u0131k T\u0131rlar"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859436244994
+    m_Localized: "<b> \u0130pucu:  </b>Telefon \xE7alarken elin doluysa bile yoluna
+      \xE7\u0131k\u0131yorsa u\u011Fra \u2014 k\u0131sa bir mola, k\xFC\xE7\xFCk
+      bir kazan\xE7."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633600
+    m_Localized: "HO\u015E\r\nGELD\u0130N!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633601
+    m_Localized: "G\xF6rev Panosu"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633602
+    m_Localized: "G\xFCnler ilerledik\xE7e i\u015F biraz kar\u0131\u015F\u0131yor.
+      \xDC\xE7 yeni durumla kar\u015F\u0131la\u015Facaks\u0131n:\n\n<b>\u0130adeler:
+      </b>Baz\u0131 m\xFC\u015Fteriler \xFCr\xFCn istemez, tam tersini yapar \u2014
+      sana bir kutu geri getirmeni ister. \xDCzerlerinde beliren renkli k\xFCre,
+      hangi renk kutu istediklerini g\xF6sterir. Rafdan do\u011Fru rengi al, m\xFC\u015Fteriye
+      g\xF6t\xFCr.\n\n<b>\xC7ift sipari\u015F: </b>Baz\u0131 m\xFC\u015Fteriler tek
+      seferde iki farkl\u0131 renk ister. \u0130kisini de haz\u0131rlamadan i\u015F
+      bitmez.\n\n<b>Kar\u0131\u015F\u0131k t\u0131r: </b>Baz\u0131 t\u0131rlar tek
+      renk de\u011Fil, iki farkl\u0131 renk kutu birden ister. G\xF6vdesindeki kar\u0131\u015F\u0131k
+      renk (\xF6rne\u011Fin k\u0131rm\u0131z\u0131 + sar\u0131 = turuncu) sana ipucu
+      verir \u2014 hangi iki rengi y\xFCklemen gerekti\u011Fini g\xF6sterir."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633603
+    m_Localized: "Hangarda bekleyen t\u0131rlar, g\xF6vde rengiyle sana ne istediklerini
+      g\xF6sterir: k\u0131rm\u0131z\u0131 t\u0131r k\u0131rm\u0131z\u0131 kutu ister,
+      sar\u0131 t\u0131r sar\u0131, mavi t\u0131r mavi."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859448827904
+    m_Localized: "Ho\u015F geldin! Art\u0131k Cargor ailesinin bir par\xE7as\u0131s\u0131n.
+      Buras\u0131 bir depo, bir ma\u011Faza ve biraz da kaos \u2014 hepsi bir arada.\n\nM\xFC\u015Fteriler
+      sana ne istediklerini s\xF6yler, sen onu paketler, do\u011Fru t\u0131ra y\xFCklersin.
+      Basit g\xF6r\xFCn\xFCyor, de\u011Fil mi? On alt\u0131 g\xFCn sonra h\xE2l\xE2
+      ayaktaysan, ger\xE7ekten iyi i\u015F \xE7\u0131karm\u0131\u015Fs\u0131n demektir.\n\nElindeki
+      bu defter, i\u015Fin inceliklerini unuttu\u011Funda ba\u015Fvuraca\u011F\u0131n
+      yer. Her sayfa farkl\u0131 bir konuyu anlat\u0131yor. Aceleye gerek yok \u2014
+      ilk g\xFCnlerde yava\u015F \xE7al\u0131\u015F, sistemi \xF6\u011Fren. H\u0131z\u0131n
+      zamanla gelecek."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859453022208
+    m_Localized: "<b> \u0130pucu:  </b>Kira g\xFCnleri \xF6ncesinde elindeki nakdi
+      kontrol et. Son ana b\u0131rakma."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859453022209
+    m_Localized: "<b> Dikkat:  </b>S\u0131ra doluyken yeni m\xFC\u015Fteri gelmez
+      ama s\u0131radakiler sab\u0131rs\u0131zlanmaya devam eder. Kuyru\u011Fu eritmeden
+      yeni i\u015Fe ba\u015Flama."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859453022210
+    m_Localized: "<b> \u0130pucu:  </b>T\u0131r rengini uzaktan g\xF6rebiliyorsan,
+      elindeki kutuyla e\u015Fle\u015Fen t\u0131ra \xF6ncelik ver \u2014 bo\u015Funa
+      y\xFCr\xFCme."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859461410816
+    m_Localized: "TIRLAR VE TESL\u0130MAT"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859465605120
+    m_Localized: "Belirli g\xFCnlerde \xF6n\xFCne birka\xE7 y\xFCkseltme se\xE7ene\u011Fi
+      gelir \u2014 hepsini alamazs\u0131n, aralar\u0131ndan se\xE7im yapars\u0131n.
+      Ek raf, ek hangar, daha h\u0131zl\u0131 hareket, daha uzun sab\u0131r s\xFCresi
+      gibi kal\u0131c\u0131 iyile\u015Ftirmeler kazanabilirsin.\n\nSe\xE7imini iyi
+      d\xFC\u015F\xFCn: baz\u0131 y\xFCkseltmeler birbirini d\u0131\u015Flar, baz\u0131lar\u0131
+      belli bir g\xFCne kadar a\xE7\u0131lmaz. Erken g\xFCnlerde temel i\u015Fleyi\u015Fi
+      h\u0131zland\u0131ran se\xE7imler, ileride i\u015Fine \xE7ok yarar."
     m_Metadata:
       m_Items: []
   references:

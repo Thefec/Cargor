@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
   m_Name: StringTable_hu
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   m_LocaleId:
     m_Code: hu
   m_SharedData: {fileID: 11400000, guid: 7d8d57bedebf1954db92f72969b59263, type: 2}
@@ -19,851 +19,1438 @@ MonoBehaviour:
     m_Items: []
   m_TableData:
   - m_Id: 88301023232
-    m_Localized: "Online játék"
+    m_Localized: "Online j\xE1t\xE9k"
     m_Metadata:
       m_Items: []
   - m_Id: 574282444800
-    m_Localized: "Nyelv"
+    m_Localized: Nyelv
     m_Metadata:
       m_Items: []
   - m_Id: 26808395673600
-    m_Localized: "Egérérzékenység"
+    m_Localized: "Eg\xE9r\xE9rz\xE9kenys\xE9g"
     m_Metadata:
       m_Items: []
   - m_Id: 27030165303296
-    m_Localized: "Offline játék"
+    m_Localized: "Offline j\xE1t\xE9k"
     m_Metadata:
       m_Items: []
   - m_Id: 27180690485248
-    m_Localized: "Beállítások"
+    m_Localized: "Be\xE1ll\xEDt\xE1sok"
     m_Metadata:
       m_Items: []
   - m_Id: 27238353776640
-    m_Localized: "Kilépés"
+    m_Localized: "Kil\xE9p\xE9s"
     m_Metadata:
       m_Items: []
   - m_Id: 27356159193088
-    m_Localized: "Általános"
+    m_Localized: "\xC1ltal\xE1nos"
     m_Metadata:
       m_Items: []
   - m_Id: 27414908809216
-    m_Localized: "Grafika"
+    m_Localized: Grafika
     m_Metadata:
       m_Items: []
   - m_Id: 27504130043904
-    m_Localized: "Hang"
+    m_Localized: Hang
     m_Metadata:
       m_Items: []
   - m_Id: 27565803089920
-    m_Localized: "Vissza"
+    m_Localized: Vissza
     m_Metadata:
       m_Items: []
   - m_Id: 28147393671168
-    m_Localized: "Stáblista"
+    m_Localized: "St\xE1blista"
     m_Metadata:
       m_Items: []
   - m_Id: 118380277706752
-    m_Localized: "Mentés"
+    m_Localized: "Ment\xE9s"
     m_Metadata:
       m_Items: []
   - m_Id: 4669780596797440
-    m_Localized: "Testreszabás"
+    m_Localized: "Testreszab\xE1s"
     m_Metadata:
       m_Items: []
   - m_Id: 4669983794049024
-    m_Localized: "Nap"
+    m_Localized: Nap
     m_Metadata:
       m_Items: []
   - m_Id: 4670284437565440
-    m_Localized: "ZSÚFOLT NAP"
+    m_Localized: "ZS\xDAFOLT NAP"
     m_Metadata:
       m_Items: []
   - m_Id: 4670557176377344
-    m_Localized: "SZÁLLÍTÁSI BÓNUSZ"
+    m_Localized: "SZ\xC1LL\xCDT\xC1SI B\xD3NUSZ"
     m_Metadata:
       m_Items: []
   - m_Id: 4670594551820288
-    m_Localized: "DÜHÖS VÁSÁRLÓK"
+    m_Localized: "D\xDCH\xD6S V\xC1S\xC1RL\xD3K"
     m_Metadata:
       m_Items: []
   - m_Id: 4670644065579008
-    m_Localized: "NYUGODT NAP"
+    m_Localized: NYUGODT NAP
     m_Metadata:
       m_Items: []
   - m_Id: 4670683781443584
-    m_Localized: "LASSÚ LOGISZTIKA"
+    m_Localized: "LASS\xDA LOGISZTIKA"
     m_Metadata:
       m_Items: []
   - m_Id: 4670721878306816
-    m_Localized: "EXPRESSZ RAKOMÁNY"
+    m_Localized: "EXPRESSZ RAKOM\xC1NY"
     m_Metadata:
       m_Items: []
   - m_Id: 4670821572718592
-    m_Localized: "NEHÉZ DOBOZOK"
+    m_Localized: "NEH\xC9Z DOBOZOK"
     m_Metadata:
       m_Items: []
   - m_Id: 4670864191041536
-    m_Localized: "ARANY DOBOZ NAPJA"
+    m_Localized: ARANY DOBOZ NAPJA
     m_Metadata:
       m_Items: []
   - m_Id: 4670907031662592
-    m_Localized: "A LEHETŐSÉGEK NAPJA"
+    m_Localized: "A LEHET\u0150S\xC9GEK NAPJA"
     m_Metadata:
       m_Items: []
   - m_Id: 4670942314147840
-    m_Localized: "FÁRADTSÁGI PROBLÉMA"
+    m_Localized: "F\xC1RADTS\xC1GI PROBL\xC9MA"
     m_Metadata:
       m_Items: []
   - m_Id: 4671003622289408
-    m_Localized: "VIP SZOLGÁLTATÁS"
+    m_Localized: "VIP SZOLG\xC1LTAT\xC1S"
     m_Metadata:
       m_Items: []
   - m_Id: 4671211781402624
-    m_Localized: "Karakter testreszabása"
+    m_Localized: "Karakter testreszab\xE1sa"
     m_Metadata:
       m_Items: []
   - m_Id: 4671355847356416
-    m_Localized: "Kiegészítők"
+    m_Localized: "Kieg\xE9sz\xEDt\u0151k"
     m_Metadata:
       m_Items: []
   - m_Id: 4671495475736576
-    m_Localized: "Arcok"
+    m_Localized: Arcok
     m_Metadata:
       m_Items: []
   - m_Id: 4671520289239040
-    m_Localized: "Szemüvegek"
+    m_Localized: "Szem\xFCvegek"
     m_Metadata:
       m_Items: []
   - m_Id: 4671581857427456
-    m_Localized: "Kesztyűk"
+    m_Localized: "Keszty\u0171k"
     m_Metadata:
       m_Items: []
   - m_Id: 4671685976829952
-    m_Localized: "Frizurák"
+    m_Localized: "Frizur\xE1k"
     m_Metadata:
       m_Items: []
   - m_Id: 4671905867411456
-    m_Localized: "Kalapok"
+    m_Localized: Kalapok
     m_Metadata:
       m_Items: []
   - m_Id: 4671966126977024
-    m_Localized: "Bajusz"
+    m_Localized: Bajusz
     m_Metadata:
       m_Items: []
   - m_Id: 4672063447412736
-    m_Localized: "Felsőruházat"
+    m_Localized: "Fels\u0151ruh\xE1zat"
     m_Metadata:
       m_Items: []
   - m_Id: 4672192313208832
-    m_Localized: "Nadrágok"
+    m_Localized: "Nadr\xE1gok"
     m_Metadata:
       m_Items: []
   - m_Id: 4672235917193216
-    m_Localized: "Cipők"
+    m_Localized: "Cip\u0151k"
     m_Metadata:
       m_Items: []
   - m_Id: 4672275557560320
-    m_Localized: "Bőrszín"
+    m_Localized: "B\u0151rsz\xEDn"
     m_Metadata:
       m_Items: []
   - m_Id: 4672388858294272
-    m_Localized: "PRESZTÍZS"
+    m_Localized: "PRESZT\xCDZS"
     m_Metadata:
       m_Items: []
   - m_Id: 4672484777832448
-    m_Localized: "Következő nap"
+    m_Localized: "K\xF6vetkez\u0151 nap"
     m_Metadata:
       m_Items: []
   - m_Id: 4672617426890752
-    m_Localized: "Folytatás"
+    m_Localized: "Folytat\xE1s"
     m_Metadata:
       m_Items: []
   - m_Id: 30567298710810624
-    m_Localized: "Játék létrehozása"
+    m_Localized: "J\xE1t\xE9k l\xE9trehoz\xE1sa"
     m_Metadata:
       m_Items: []
   - m_Id: 30567344864931840
-    m_Localized: "Csatlakozás a játékhoz"
+    m_Localized: "Csatlakoz\xE1s a j\xE1t\xE9khoz"
     m_Metadata:
       m_Items: []
   - m_Id: 30567847749398528
-    m_Localized: "Kezdés"
+    m_Localized: "Kezd\xE9s"
     m_Metadata:
       m_Items: []
   - m_Id: 30567978871730176
-    m_Localized: "Lobby"
+    m_Localized: Lobby
     m_Metadata:
       m_Items: []
   - m_Id: 30568446771507200
-    m_Localized: "Válassz pályát\n(Hamarosan)"
+    m_Localized: "V\xE1lassz p\xE1ly\xE1t\n(Hamarosan)"
     m_Metadata:
       m_Items: []
   - m_Id: 30568844051787776
-    m_Localized: "A főiroda"
+    m_Localized: "A f\u0151iroda"
     m_Metadata:
       m_Items: []
   - m_Id: 30569701396885504
-    m_Localized: "Online játék"
+    m_Localized: "Online j\xE1t\xE9k"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000001
-    m_Localized: "Játékosok a váróteremben"
+    m_Localized: "J\xE1t\xE9kosok a v\xE1r\xF3teremben"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000002
-    m_Localized: "Összesen: {0} játékos"
+    m_Localized: "\xD6sszesen: {0} j\xE1t\xE9kos"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000003
-    m_Localized: "Pihenőszoba állapota"
+    m_Localized: "Pihen\u0151szoba \xE1llapota"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000004
-    m_Localized: "Bent: {0} / {1} játékos"
+    m_Localized: "Bent: {0} / {1} j\xE1t\xE9kos"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000005
-    m_Localized: "Mindenki készen áll!"
+    m_Localized: "Mindenki k\xE9szen \xE1ll!"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000006
-    m_Localized: "Várakozás {0} játékosra..."
+    m_Localized: "V\xE1rakoz\xE1s {0} j\xE1t\xE9kosra..."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000007
-    m_Localized: "Nem található játékos"
+    m_Localized: "Nem tal\xE1lhat\xF3 j\xE1t\xE9kos"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000008
-    m_Localized: "Játékos"
+    m_Localized: "J\xE1t\xE9kos"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000009
-    m_Localized: "Bevezető"
+    m_Localized: "Bevezet\u0151"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000010
-    m_Localized: "Csak a szoba gazdája dobhat ki játékosokat!"
+    m_Localized: "Csak a szoba gazd\xE1ja dobhat ki j\xE1t\xE9kosokat!"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000011
-    m_Localized: "Játékos kirúgva!"
+    m_Localized: "J\xE1t\xE9kos kir\xFAgva!"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000012
-    m_Localized: "A kirúgás sikertelen!"
+    m_Localized: "A kir\xFAg\xE1s sikertelen!"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000013
-    m_Localized: "Üres hely"
+    m_Localized: "\xDCres hely"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000014
-    m_Localized: "{0}. nap  {1}:{2} ({3}s)"
+    m_Localized: '{0}. nap  {1}:{2} ({3}s)'
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000015
-    m_Localized: "A nap véget ért. Menj a pihenőszobába."
+    m_Localized: "A nap v\xE9get \xE9rt. Menj a pihen\u0151szob\xE1ba."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000016
-    m_Localized: "Bérleti nap"
+    m_Localized: "B\xE9rleti nap"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000017
-    m_Localized: "Szint: {0}"
+    m_Localized: 'Szint: {0}'
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000018
-    m_Localized: "Ár: {0}"
+    m_Localized: "\xC1r: {0}"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000019
-    m_Localized: "Max"
+    m_Localized: Max
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000020
-    m_Localized: "Vásárlás"
+    m_Localized: "V\xE1s\xE1rl\xE1s"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000021
-    m_Localized: "Sor"
+    m_Localized: Sor
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000022
-    m_Localized: "Növeli a vásárlói sor maximális méretét."
+    m_Localized: "N\xF6veli a v\xE1s\xE1rl\xF3i sor maxim\xE1lis m\xE9ret\xE9t."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000023
-    m_Localized: "Állóképesség"
+    m_Localized: "\xC1ll\xF3k\xE9pess\xE9g"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000024
-    m_Localized: "Növeli az állóképesség regenerálódási sebességét."
+    m_Localized: "N\xF6veli az \xE1ll\xF3k\xE9pess\xE9g regener\xE1l\xF3d\xE1si sebess\xE9g\xE9t."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000025
-    m_Localized: "Pénz"
+    m_Localized: "P\xE9nz"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000026
-    m_Localized: "Növeli a dobozonkénti szállítási jutalmat."
+    m_Localized: "N\xF6veli a dobozonk\xE9nti sz\xE1ll\xEDt\xE1si jutalmat."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000027
-    m_Localized: "Teherautó"
+    m_Localized: "Teheraut\xF3"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000028
-    m_Localized: "Feloldja a további teherautó-hangárokat."
+    m_Localized: "Feloldja a tov\xE1bbi teheraut\xF3-hang\xE1rokat."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000029
-    m_Localized: "Küldetésszint"
+    m_Localized: "K\xFCldet\xE9sszint"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000030
-    m_Localized: "Feloldja a magasabb szintű küldetéseket."
+    m_Localized: "Feloldja a magasabb szint\u0171 k\xFCldet\xE9seket."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000031
-    m_Localized: "ELFOGLALT NAP"
+    m_Localized: ELFOGLALT NAP
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000032
-    m_Localized: "A vásárlók megjelenési aránya 30%-kal nő."
+    m_Localized: "A v\xE1s\xE1rl\xF3k megjelen\xE9si ar\xE1nya 30%-kal n\u0151."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000033
-    m_Localized: "DÜHÖS VÁSÁRLÓK"
+    m_Localized: "D\xDCH\xD6S V\xC1S\xC1RL\xD3K"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000034
-    m_Localized: "A vásárlók türelme 30%-kal csökken."
+    m_Localized: "A v\xE1s\xE1rl\xF3k t\xFCrelme 30%-kal cs\xF6kken."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000035
-    m_Localized: "LASSÚ LOGISZTIKA"
+    m_Localized: "LASS\xDA LOGISZTIKA"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000036
-    m_Localized: "A teherautók 50%-kal lassabban hagyják el a helyszínt."
+    m_Localized: "A teheraut\xF3k 50%-kal lassabban hagyj\xE1k el a helysz\xEDnt."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000037
-    m_Localized: "NEHÉZ DOBOZOK"
+    m_Localized: "NEH\xC9Z DOBOZOK"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000038
-    m_Localized: "Az általános mozgási sebesség 20%-kal csökken."
+    m_Localized: "Az \xE1ltal\xE1nos mozg\xE1si sebess\xE9g 20%-kal cs\xF6kken."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000039
-    m_Localized: "FÁRADTSÁGI PROBLÉMA"
+    m_Localized: "F\xC1RADTS\xC1GI PROBL\xC9MA"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000040
-    m_Localized: "Az állóképesség 40%-kal lassabban töltődik, a sprintsebesség pedig 30%-kal csökken."
+    m_Localized: "Az \xE1ll\xF3k\xE9pess\xE9g 40%-kal lassabban t\xF6lt\u0151dik,
+      a sprintsebess\xE9g pedig 30%-kal cs\xF6kken."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000041
-    m_Localized: "MEGLEPETÉS-ELLENŐRZÉS"
+    m_Localized: "MEGLEPET\xC9S-ELLEN\u0150RZ\xC9S"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000042
-    m_Localized: "Minden hibás művelet dupla büntetést kap."
+    m_Localized: "Minden hib\xE1s m\u0171velet dupla b\xFCntet\xE9st kap."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000043
-    m_Localized: "MARKETINGNAP"
+    m_Localized: MARKETINGNAP
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000044
-    m_Localized: "20%-kal több vásárló, de 30%-kal kevesebb bevétel."
+    m_Localized: "20%-kal t\xF6bb v\xE1s\xE1rl\xF3, de 30%-kal kevesebb bev\xE9tel."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000045
-    m_Localized: "ÜGYFÉLSZOLGÁLAT"
+    m_Localized: "\xDCGYF\xC9LSZOLG\xC1LAT"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000046
-    m_Localized: "A recepciós telefon 50%-kal gyakrabban csörög."
+    m_Localized: "A recepci\xF3s telefon 50%-kal gyakrabban cs\xF6r\xF6g."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000047
-    m_Localized: "SZÁLLÍTÁSI BÓNUSZ"
+    m_Localized: "SZ\xC1LL\xCDT\xC1SI B\xD3NUSZ"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000048
-    m_Localized: "20%-kal több pénzt keresel szállításonként."
+    m_Localized: "20%-kal t\xF6bb p\xE9nzt keresel sz\xE1ll\xEDt\xE1sonk\xE9nt."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000049
-    m_Localized: "NYUGODT NAP"
+    m_Localized: NYUGODT NAP
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000050
-    m_Localized: "A vásárlók türelme 30%-kal nő."
+    m_Localized: "A v\xE1s\xE1rl\xF3k t\xFCrelme 30%-kal n\u0151."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000051
-    m_Localized: "EXPRESSZ RAKOMÁNY"
+    m_Localized: "EXPRESSZ RAKOM\xC1NY"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000052
-    m_Localized: "A teherautók 30%-kal gyorsabban hagyják el a helyszínt."
+    m_Localized: "A teheraut\xF3k 30%-kal gyorsabban hagyj\xE1k el a helysz\xEDnt."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000053
-    m_Localized: "ARANY DOBOZ NAPJA"
+    m_Localized: ARANY DOBOZ NAPJA
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000054
-    m_Localized: "Minden helyesen kiszállított doboz plusz 30%-ot ér. Emellett 20%-kal több vásárlót, 20%-kal gyorsabb teherautó-indulást és 20%-kal gyorsabb mozgást hoz, de az állóképesség 20%-kal lassabban töltődik."
+    m_Localized: "Minden helyesen kisz\xE1ll\xEDtott doboz plusz 30%-ot \xE9r. Emellett
+      20%-kal t\xF6bb v\xE1s\xE1rl\xF3t, 20%-kal gyorsabb teheraut\xF3-indul\xE1st
+      \xE9s 20%-kal gyorsabb mozg\xE1st hoz, de az \xE1ll\xF3k\xE9pess\xE9g 20%-kal
+      lassabban t\xF6lt\u0151dik."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000055
-    m_Localized: "A LEHETŐSÉGEK NAPJA"
+    m_Localized: "A LEHET\u0150S\xC9GEK NAPJA"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000056
-    m_Localized: "A fejlesztések ára 20%-kal csökken."
+    m_Localized: "A fejleszt\xE9sek \xE1ra 20%-kal cs\xF6kken."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000057
-    m_Localized: "KVÓTANAP"
+    m_Localized: "KV\xD3TANAP"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000058
-    m_Localized: "Minden teherautó csak egyféle doboz színt kér."
+    m_Localized: "Minden teheraut\xF3 csak egyf\xE9le doboz sz\xEDnt k\xE9r."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000059
-    m_Localized: "VIP SZOLGÁLTATÁS"
+    m_Localized: "VIP SZOLG\xC1LTAT\xC1S"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000060
-    m_Localized: "10% esély, hogy a doboz tökéletes és 10%-kal többet ér."
+    m_Localized: "10% es\xE9ly, hogy a doboz t\xF6k\xE9letes \xE9s 10%-kal t\xF6bbet
+      \xE9r."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000061
-    m_Localized: "ESŐS NAP"
+    m_Localized: "ES\u0150S NAP"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000062
-    m_Localized: "20%-kal kevesebb vásárló érkezik."
+    m_Localized: "20%-kal kevesebb v\xE1s\xE1rl\xF3 \xE9rkezik."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000063
-    m_Localized: "FESZTIVÁLNAP"
+    m_Localized: "FESZTIV\xC1LNAP"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000064
-    m_Localized: "A nap elején véletlenszerű bónuszt kapsz."
+    m_Localized: "A nap elej\xE9n v\xE9letlenszer\u0171 b\xF3nuszt kapsz."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000065
-    m_Localized: "Játékosok"
+    m_Localized: "J\xE1t\xE9kosok"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000066
-    m_Localized: "({0}/{1} a pihenőszobában)"
+    m_Localized: "({0}/{1} a pihen\u0151szob\xE1ban)"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000067
-    m_Localized: "Várható vásárlók"
+    m_Localized: "V\xE1rhat\xF3 v\xE1s\xE1rl\xF3k"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000068
-    m_Localized: "Piros"
+    m_Localized: Piros
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000069
-    m_Localized: "Kék"
+    m_Localized: "K\xE9k"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000070
-    m_Localized: "Sárga"
+    m_Localized: "S\xE1rga"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000071
-    m_Localized: "Zöld"
+    m_Localized: "Z\xF6ld"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000072
-    m_Localized: "Nincs küldetés"
+    m_Localized: "Nincs k\xFCldet\xE9s"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000073
-    m_Localized: "Jutalom"
+    m_Localized: Jutalom
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000074
-    m_Localized: "Büntetés"
+    m_Localized: "B\xFCntet\xE9s"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000075
-    m_Localized: "Teljesítve"
+    m_Localized: "Teljes\xEDtve"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000076
-    m_Localized: "Sikertelen"
+    m_Localized: Sikertelen
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000077
-    m_Localized: "Teljesítsd a minijátékot {0} alkalommal"
+    m_Localized: "Teljes\xEDtsd a minij\xE1t\xE9kot {0} alkalommal"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000078
-    m_Localized: "Helyezz {0} dobozt a polcra"
+    m_Localized: Helyezz {0} dobozt a polcra
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000079
-    m_Localized: "Helyezz {0} {1} dobozt a polcra"
+    m_Localized: Helyezz {0} {1} dobozt a polcra
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000080
-    m_Localized: "Fejezz be {0} teherautót"
+    m_Localized: "Fejezz be {0} teheraut\xF3t"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000081
-    m_Localized: "Szolgálj ki {0} vásárlót"
+    m_Localized: "Szolg\xE1lj ki {0} v\xE1s\xE1rl\xF3t"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000082
-    m_Localized: "Hagyj figyelmen kívül {0} vásárlót"
+    m_Localized: "Hagyj figyelmen k\xEDv\xFCl {0} v\xE1s\xE1rl\xF3t"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000083
-    m_Localized: "Csomagolj be {0} játékot"
+    m_Localized: "Csomagolj be {0} j\xE1t\xE9kot"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000107
-    m_Localized: "Ma már elfogadtál egy küldetést"
+    m_Localized: "Ma m\xE1r elfogadt\xE1l egy k\xFCldet\xE9st"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000108
-    m_Localized: "Elfogadás"
+    m_Localized: "Elfogad\xE1s"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000084
-    m_Localized: "Kapacitás 0"
+    m_Localized: "Kapacit\xE1s 0"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000085
-    m_Localized: "Kapacitás +1"
+    m_Localized: "Kapacit\xE1s +1"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000086
-    m_Localized: "Kapacitás +2"
+    m_Localized: "Kapacit\xE1s +2"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000087
-    m_Localized: "Kapacitás +3"
+    m_Localized: "Kapacit\xE1s +3"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000095
-    m_Localized: "Kapacitás +4"
+    m_Localized: "Kapacit\xE1s +4"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000096
-    m_Localized: "Kapacitás +5"
+    m_Localized: "Kapacit\xE1s +5"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000097
-    m_Localized: "Kapacitás +6"
+    m_Localized: "Kapacit\xE1s +6"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000098
-    m_Localized: "Kapacitás +7"
+    m_Localized: "Kapacit\xE1s +7"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000099
-    m_Localized: "Kapacitás +8"
+    m_Localized: "Kapacit\xE1s +8"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000100
-    m_Localized: "Kapacitás +9"
+    m_Localized: "Kapacit\xE1s +9"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000101
-    m_Localized: "Kapacitás +10"
+    m_Localized: "Kapacit\xE1s +10"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000102
-    m_Localized: "Kapacitás +11"
+    m_Localized: "Kapacit\xE1s +11"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000103
-    m_Localized: "Kapacitás +12"
+    m_Localized: "Kapacit\xE1s +12"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000104
-    m_Localized: "Kapacitás +13"
+    m_Localized: "Kapacit\xE1s +13"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000105
-    m_Localized: "Kapacitás +14"
+    m_Localized: "Kapacit\xE1s +14"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000106
-    m_Localized: "Kapacitás +15"
+    m_Localized: "Kapacit\xE1s +15"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000088
-    m_Localized: "Asztal 0"
+    m_Localized: Asztal 0
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000089
-    m_Localized: "Asztal +1"
+    m_Localized: Asztal +1
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000090
-    m_Localized: "Asztal +2"
+    m_Localized: Asztal +2
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000091
-    m_Localized: "Sor kapacitása 0"
+    m_Localized: "Sor kapacit\xE1sa 0"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000092
-    m_Localized: "Sor kapacitása +1"
+    m_Localized: "Sor kapacit\xE1sa +1"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000093
-    m_Localized: "Sor kapacitása +2"
+    m_Localized: "Sor kapacit\xE1sa +2"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000094
-    m_Localized: "Sor kapacitása +3"
+    m_Localized: "Sor kapacit\xE1sa +3"
     m_Metadata:
       m_Items: []
   - m_Id: 42431428665192448
-    m_Localized: "VSync (az FPS kiválasztása korlátozott)"
+    m_Localized: "VSync (az FPS kiv\xE1laszt\xE1sa korl\xE1tozott)"
     m_Metadata:
       m_Items: []
   - m_Id: 42431953292931072
-    m_Localized: "Zene hangereje"
+    m_Localized: Zene hangereje
     m_Metadata:
       m_Items: []
   - m_Id: 42432326804090880
-    m_Localized: "Felbontás"
+    m_Localized: "Felbont\xE1s"
     m_Metadata:
       m_Items: []
   - m_Id: 42432451492360192
-    m_Localized: "Képernyőmód"
+    m_Localized: "K\xE9perny\u0151m\xF3d"
     m_Metadata:
       m_Items: []
   - m_Id: 42432584829284352
-    m_Localized: "Hangeffektek hangereje"
+    m_Localized: Hangeffektek hangereje
     m_Metadata:
       m_Items: []
   - m_Id: 42434254002892800
-    m_Localized: "Alapvető bevezető"
+    m_Localized: "Alapvet\u0151 bevezet\u0151"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194447572992
-    m_Localized: "Sprint"
+    m_Localized: Sprint
     m_Metadata:
       m_Items: []
   - m_Id: 136075194502098944
-    m_Localized: "CARGOR LOGISZTIKAI TERMINÁL"
+    m_Localized: "CARGOR LOGISZTIKAI TERMIN\xC1L"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194502098945
-    m_Localized: "Energiaszint"
+    m_Localized: Energiaszint
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681856
-    m_Localized: "Mozgás fel/le/balra/jobbra"
+    m_Localized: "Mozg\xE1s fel/le/balra/jobbra"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681857
-    m_Localized: "Játékos"
+    m_Localized: "J\xE1t\xE9kos"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681858
-    m_Localized: "Belépés"
+    m_Localized: "Bel\xE9p\xE9s"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681859
-    m_Localized: "Kesztyűk"
+    m_Localized: "Keszty\u0171k"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194518876160
-    m_Localized: "Arc"
+    m_Localized: Arc
     m_Metadata:
       m_Items: []
   - m_Id: 136075194518876161
-    m_Localized: "Biztosan el akarod indítani a bevezetőt?"
+    m_Localized: "Biztosan el akarod ind\xEDtani a bevezet\u0151t?"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070464
-    m_Localized: "Kiegészítők"
+    m_Localized: "Kieg\xE9sz\xEDt\u0151k"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070465
-    m_Localized: "VSync"
+    m_Localized: VSync
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070466
-    m_Localized: "Vissza"
+    m_Localized: Vissza
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070467
-    m_Localized: "Játékos"
+    m_Localized: "J\xE1t\xE9kos"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070468
-    m_Localized: "ECLION\n\nV2.01"
+    m_Localized: 'ECLION
+
+
+      V2.01'
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070469
-    m_Localized: "Letevés"
+    m_Localized: "Letev\xE9s"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070470
-    m_Localized: "VISSZA"
+    m_Localized: VISSZA
     m_Metadata:
       m_Items: []
   - m_Id: 136075194527264768
-    m_Localized: "FELFEDÉS"
+    m_Localized: "FELFED\xC9S"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459072
-    m_Localized: "ZOOM"
+    m_Localized: ZOOM
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459073
-    m_Localized: "Felvétel"
+    m_Localized: "Felv\xE9tel"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459074
-    m_Localized: "VIDEÓ"
+    m_Localized: "VIDE\xD3"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459075
-    m_Localized: "HANG"
+    m_Localized: HANG
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653376
-    m_Localized: "Interakció"
+    m_Localized: "Interakci\xF3"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653377
-    m_Localized: "Főiroda"
+    m_Localized: "F\u0151iroda"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653378
-    m_Localized: "GRAFIKA"
+    m_Localized: GRAFIKA
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653379
-    m_Localized: "Haj"
+    m_Localized: Haj
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653380
-    m_Localized: "NYELV"
+    m_Localized: NYELV
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653381
-    m_Localized: "ZENE HANGEREJE"
+    m_Localized: ZENE HANGEREJE
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847680
-    m_Localized: "SFX HANGEREJE"
+    m_Localized: SFX HANGEREJE
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847681
-    m_Localized: "A opció"
+    m_Localized: "A opci\xF3"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847682
-    m_Localized: "XXXX-XXXX-XXXX-XXXX"
+    m_Localized: XXXX-XXXX-XXXX-XXXX
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847683
-    m_Localized: "Nadrágok"
+    m_Localized: "Nadr\xE1gok"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847684
-    m_Localized: "Cipők"
+    m_Localized: "Cip\u0151k"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847685
-    m_Localized: "Játékos"
+    m_Localized: "J\xE1t\xE9kos"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847686
-    m_Localized: "FŐ HANGERŐ"
+    m_Localized: "F\u0150 HANGER\u0150"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236288
-    m_Localized: "Vissza"
+    m_Localized: Vissza
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236289
-    m_Localized: "FELBONTÁS"
+    m_Localized: "FELBONT\xC1S"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236290
-    m_Localized: "CSATLAKOZÁS A SZOBÁHOZ"
+    m_Localized: "CSATLAKOZ\xC1S A SZOB\xC1HOZ"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236291
-    m_Localized: "Váróterem azonosító:"
+    m_Localized: "V\xE1r\xF3terem azonos\xEDt\xF3:"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236292
-    m_Localized: "TESTRESZABÁS"
+    m_Localized: "TESTRESZAB\xC1S"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236293
-    m_Localized: "A opció"
+    m_Localized: "A opci\xF3"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624896
-    m_Localized: "Játékos"
+    m_Localized: "J\xE1t\xE9kos"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624897
-    m_Localized: "Kalap"
+    m_Localized: Kalap
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624898
-    m_Localized: "Testreszabás"
+    m_Localized: "Testreszab\xE1s"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624899
-    m_Localized: "Dobás"
+    m_Localized: "Dob\xE1s"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624900
-    m_Localized: "Térkép nézet"
+    m_Localized: "T\xE9rk\xE9p n\xE9zet"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624901
-    m_Localized: "IRÁNYÍTÁS"
+    m_Localized: "IR\xC1NY\xCDT\xC1S"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194560819200
-    m_Localized: "Felsőruházat"
+    m_Localized: "Fels\u0151ruh\xE1zat"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194560819201
-    m_Localized: "Szemüvegek"
+    m_Localized: "Szem\xFCvegek"
     m_Metadata:
       m_Items: []
   - m_Id: 141928975156891283
-    m_Localized: "Bal kattintás"
+    m_Localized: "Bal kattint\xE1s"
     m_Metadata:
       m_Items: []
   - m_Id: 142557709478291173
-    m_Localized: "Jobb kattintás"
+    m_Localized: "Jobb kattint\xE1s"
     m_Metadata:
       m_Items: []
   - m_Id: 144849164114263128
-    m_Localized: "Középső kattintás"
+    m_Localized: "K\xF6z\xE9ps\u0151 kattint\xE1s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528492507136
+    m_Localized: "Men\xFC"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528538644480
+    m_Localized: "NAGY\xCDT\xC1S"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528538644481
+    m_Localized: "Interakci\xF3"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838784
+    m_Localized: "FEJLESZT\xC9SEK"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838785
+    m_Localized: "Mozg\xE1s fel/le/balra/jobbra"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838786
+    m_Localized: "Kil\xE9p\xE9s a j\xE1t\xE9kb\xF3l"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838787
+    m_Localized: "Be\xE1ll\xEDt\xE1sok"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033088
+    m_Localized: Sprint
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033089
+    m_Localized: "Cs\u0151d!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033090
+    m_Localized: "rakt\xE1r"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033091
+    m_Localized: "t\xE9rk\xE9p n\xE9zet"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227392
+    m_Localized: ELFOGAD
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227393
+    m_Localized: csomagszoba
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227394
+    m_Localized: Alkalmazott
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227395
+    m_Localized: 1. nap
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528555421696
+    m_Localized: "K\xF6vetkez\u0151 nap"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528555421697
+    m_Localized: "VIDE\xD3"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528559616000
+    m_Localized: "\xFAjrag\xF6rget\xE9s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528559616001
+    m_Localized: GRAFIKA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528568004608
+    m_Localized: "J\xE1t\xE9kos3"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528568004609
+    m_Localized: 'XP: 200'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528568004610
+    m_Localized: 'GOLD: 200'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198912
+    m_Localized: "K\xFCldet\xE9s - 1"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198913
+    m_Localized: 0/1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198914
+    m_Localized: vsync
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198915
+    m_Localized: NYELV
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198916
+    m_Localized: "VISSZA\xC1LL\xCDT\xC1S"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587520
+    m_Localized: 'XP: 200 GOLD: 300'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587521
+    m_Localized: HANG
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587522
+    m_Localized: TARTALOM
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587523
+    m_Localized: "J\xE1t\xE9kos1"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528584781824
+    m_Localized: "napt\xE1r"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528584781825
+    m_Localized: "J\xE1t\xE9kos2"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528584781826
+    m_Localized: "SFX HANGER\u0150"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528588976128
+    m_Localized: "J\xE1t\xE9kos4"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528588976129
+    m_Localized: "A rakt\xE1r vir\xE1gzik, \xE9s minden sz\xE1ll\xEDtm\xE1nyt t\xF6k\xE9letesen
+      szort\xEDroztak."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528588976130
+    m_Localized: "A opci\xF3"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528593170432
+    m_Localized: "CS\xDCT"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528593170433
+    m_Localized: "Ledob\xE1s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528593170434
+    m_Localized: "<color=#4B4E6D>2</color>      \xDCdv\xF6zl\xFCnk a Cargorban!\n<color=#4B4E6D>3</color>     
+      Alapvet\u0151 mozg\xE1s\n<color=#4B4E6D>4</color>      Hogyan csomagoljunk
+      term\xE9keket\n<color=#4B4E6D>5</color>      Polcra helyez\xE9s\n<color=#4B4E6D>6</color>     
+      Kamionok \xE9s sz\xE1ll\xEDt\xE1s\n<color=#4B4E6D>7</color>       V\xE1s\xE1rl\xF3k\n<line-height=18><color=#4B4E6D>8</color>     
+      Speci\xE1lis k\xE9r\xE9sek: visszak\xFCld\xE9sek,\ndupla rendel\xE9sek, vegyes
+      kamionok</line-height>\n<color=#4B4E6D>9</color>      B\xE9rleti d\xEDj \xE9s
+      p\xE9nzed\n<color=#4B4E6D>10</color>   Fejleszt\xE9sek\n<color=#4B4E6D>11</color>   
+      K\xFCldet\xE9st\xE1bla\n<color=#4B4E6D>12</color>    Telefonvonal\n<color=#4B4E6D>13</color>   
+      Pihen\u0151szoba \xE9s a nap v\xE9ge\n<color=#4B4E6D>14</color>    Csapatmunka
+      tippek"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528597364736
+    m_Localized: "Felv\xE9tel"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528597364737
+    m_Localized: CARGOR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559040
+    m_Localized: "FELFED\xC9S"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559041
+    m_Localized: TARTALOM
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559042
+    m_Localized: "St\xE1blista"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559043
+    m_Localized: "F\u0150 HANGER\u0150"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559044
+    m_Localized: VAS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528609947648
+    m_Localized: "Pihen\u0151szoba"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528609947649
+    m_Localized: SZO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528609947650
+    m_Localized: SZE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141952
+    m_Localized: "S\xFAg\xF3k\xF6nyv"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141953
+    m_Localized: "Men\xFC"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141954
+    m_Localized: ZENE HANGEREJE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141955
+    m_Localized: "SZ\xDCNET MEN\xDC"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528618336256
+    m_Localized: "Napi beoszt\xE1s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528618336257
+    m_Localized: "P\xC9N"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528622530560
+    m_Localized: "Fejleszt\xE9s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528626724864
+    m_Localized: "Dob\xE1s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528626724865
+    m_Localized: "A rakt\xE1r cs\u0151dbe ment."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528630919168
+    m_Localized: "FELBONT\xC1S"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528630919169
+    m_Localized: "IR\xC1NY\xCDT\xC1S"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528635113472
+    m_Localized: "K\xDCLDET\xC9S"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528635113473
+    m_Localized: "RAKT\xC1RI\nK\xC9ZIK\xD6NYV"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307776
+    m_Localized: KED
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307777
+    m_Localized: "Preszt\xEDzs"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307778
+    m_Localized: "Folytat\xE1s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307779
+    m_Localized: "K\xDCLDET\xC9S TELJES\xCDTVE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307780
+    m_Localized: "recepci\xF3"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528647696384
+    m_Localized: "K\xFCldet\xE9s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528651890688
+    m_Localized: "H\xC9T"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528651890689
+    m_Localized: "P\xE9nz"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269394388168704
+    m_Localized: "<b> Figyelem: </b> Figyelem: ha a doboz sz\xEDne nem egyezik a
+      term\xE9kkel, a csomagol\xE1s sikertelen lesz, \xE9s a doboz \xF6sszet\xF6rik
+      a kezedben. Ellen\u0151rizd a sz\xEDnt csomagol\xE1s el\u0151tt \u2014 ne pazarolj
+      el egy dobozt."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269394430111744
+    m_Localized: "<b> Tipp: </b>A dob\xE1s-elkap\xE1s id\u0151t sp\xF3rol egy k\xE9tf\u0151s
+      \xE1llom\xE1son, de ne szokj r\xE1 \u2014 minden leejt\xE9s p\xE9nzedbe ker\xFCl."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605470711808
+    m_Localized: "POLCRA HELYEZ\xC9S"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605474906112
+    m_Localized: "A polcok Cargor \xE9ltet\u0151 v\xE9rei. H\xE1rom \xFCres dobozt\xEDpus
+      \u2014 piros, s\xE1rga \xE9s k\xE9k \u2014 mindig ott v\xE1r; ha elveszel egyet,
+      a polc hamarosan \xFAjrat\xF6lt\u0151dik, \xEDgy soha nem marad teljesen \xFCres.
+      Ha van felesleges dobozod vagy csomagolt term\xE9ked, amit \xE9pp nem akarsz
+      cipelni, visszateheted a polcra. A rendezett polc megk\xF6nny\xEDti a munk\xE1t
+      neked \xE9s a csapatodnak is \u2014 mindenki tudja, hol mit tal\xE1l."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605474906113
+    m_Localized: "HOGYAN CSOMAGOLJUK A TERM\xC9KEKET"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605474906114
+    m_Localized: "ALAPMOZG\xC1SOK"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605483294720
+    m_Localized: "<b>S\xE9ta / Fut\xE1s</b> \u2013 ezzel mozoghatsz a rakt\xE1rban.\n\n<b>Felv\xE9tel
+      / Letev\xE9s</b> \u2013 vegy\xE9l fel egy t\xE1rgyat a f\xF6ldr\u0151l, egy
+      asztalr\xF3l vagy egy polcr\xF3l, vagy tedd le ott, ahol \xE1llsz.\n\n<b>Dob\xE1s</b>
+      \u2013 dobd el messzire, amit a kezedben tartasz. Gyors, de kock\xE1zatos:
+      ha kem\xE9ny fel\xFCletnek \xFCtk\xF6zik, elt\xF6rik, \xE9s p\xE9nzt meg megbecs\xFCl\xE9st
+      vesz\xEDtesz. Ha egy csapatt\xE1rsadnak dobod, aki elkapja, nincs b\xFCntet\xE9s
+      \u2014 s\u0151t, id\u0151t is sp\xF3rol.\n\n<b>Interakci\xF3</b> \u2013 a v\xE1s\xE1rl\xF3kkal
+      val\xF3 besz\xE9lget\xE9s, a telefon felv\xE9tele, t\xE1rgyak felv\xE9tele
+      polcr\xF3l/asztalr\xF3l \u2014 mindez ezzel a gombbal t\xF6rt\xE9nik.\n\n<b>T\xE9rk\xE9p
+      / K\xE9szletellen\u0151rz\xE9s</b> \u2013 megnyitja a rakt\xE1r \xE1ttekint\xE9s\xE9t,
+      hogy l\xE1sd, mi hol van. Nem mutatja a csapatt\xE1rsaid poz\xEDci\xF3j\xE1t
+      \u2014 ezt r\xE1di\xF3n kell megk\xE9rdezned."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605483294721
+    m_Localized: "HOGYAN\r\nCSOMAGOLJUK\r\nA TERM\xC9KEKET"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605483294722
+    m_Localized: "Amikor besz\xE9lsz egy v\xE1s\xE1rl\xF3val, az k\xE9r t\u0151led
+      egy term\xE9ket, \xE9s az asztal\xE1ra teszi. Ezzel m\xE9g nincs v\xE9ge \u2014
+      a term\xE9k m\xE9g nincs becsomagolva.\n\nCsomagol\xE1si l\xE9p\xE9sek:\n\nVedd
+      fel a v\xE1s\xE1rl\xF3 \xE1ltal otthagyott csupasz term\xE9ket.\n\nMenj a legk\xF6zelebbi
+      csomagol\xF3asztalhoz.\n\nVegy\xE9l a polcr\xF3l egy, a term\xE9kkel azonos
+      sz\xEDn\u0171 \xFCres dobozt.\n\nHozd \xF6ssze a term\xE9ket \xE9s a dobozt
+      az asztalon \u2014 el\u0151sz\xF6r ragaszt\xF3szalaggal, azt\xE1n c\xEDmk\xE9vel,
+      \xE9s a csomag k\xE9sz.\n\nMost m\xE1r van egy becsomagolt dobozod. Ezut\xE1n
+      j\xF6n a kisz\xE1ll\xEDt\xE1s (l\xE1sd 6. oldal)."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859394301952
+    m_Localized: "V\xE1s\xE1rl\xF3k"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859406884864
+    m_Localized: "Cargor egyed\xFCl is j\xE1tszhat\xF3, de az igazi sz\xF3rakoz\xE1s
+      csapatban kezd\u0151dik. N\xE9h\xE1ny gyakorlati tan\xE1cs:\n\n- <b>Ossz\xE1tok
+      meg a munk\xE1t:</b> valaki maradjon a csomagol\xF3asztaln\xE1l, valaki fusson
+      a kamionokhoz, valaki foglalkozzon a v\xE1s\xE1rl\xF3kkal.\n- <b>Besz\xE9ljetek
+      egym\xE1ssal: </b>ha nem vagytok ugyanabban a szob\xE1ban, lehet, hogy nem
+      l\xE1tj\xE1tok egym\xE1st \u2014 n\xE9zz\xE9tek a t\xE9rk\xE9pet, \xE9s hangosan
+      ossz\xE1tok meg, mi hol van.\n- <b>Dobjatok \xE9s kapjatok el:</b> ahelyett
+      hogy k\xE9t \xE1llom\xE1s k\xF6z\xF6tt futkosn\xE1tok, dobj\xE1tok a dobozt
+      egyenesen a csapatt\xE1rsnak.\n- <b>Egyezzetek meg a fejleszt\xE9sekn\xE9l:</b>
+      a v\xE9gleges v\xE1laszt\xE1sok mindenkire hatnak, ne d\xF6nts egyed\xFCl.\n\nSok
+      sikert \u2014 \xFCdv\xF6zl\xFCnk Cargorban!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859411079168
+    m_Localized: "\xDCdv\xF6zl\xFCnk Cargorban!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859411079169
+    m_Localized: Telefonvonal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859411079170
+    m_Localized: "A telefon a rakt\xE1rban id\u0151nk\xE9nt megcs\xF6rren. Menj oda
+      felvenni egy kis p\xE9nz- \xE9s megbecs\xFCl\xE9sjutalom\xE9rt. Ha nem veszed
+      fel, semmit sem vesz\xEDtesz \u2014 a telefon mag\xE1t\xF3l elhallgat.\n\nHogy
+      megcs\xF6rren-e, az teljesen a v\xE9letlenen m\xFAlik, de bizonyos napokon
+      (p\xE9ld\xE1ul k\xFCl\xF6nleges esem\xE9nynapokon) n\u0151 az es\xE9ly. Egy
+      pillant\xE1s menet k\xF6zben nem \xE1rt."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273472
+    m_Localized: "<b> Tipp:  </b>A nap v\xE9ge fel\xE9 fejezd be, amit csin\xE1lsz,
+      \xE9s indulj kor\xE1n a pihen\u0151szob\xE1ba \u2014 ne v\xE1rakoztasd a csapatodat."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273473
+    m_Localized: "K\xFCl\xF6nleges K\xE9r\xE9sek"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273474
+    m_Localized: "<b> Tipp:  </b>Ne v\xE1lassz an\xE9lk\xFCl, hogy besz\xE9ln\xE9l
+      a csapatoddal \u2014 az egy ember \xE1ltal v\xE1lasztott fejleszt\xE9s mindenki
+      j\xE1t\xE9k\xE1t megv\xE1ltoztatja."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273475
+    m_Localized: "Minden nap l\xE1thatsz n\xE9h\xE1ny k\xFCldet\xE9st a t\xE1bl\xE1n
+      \u2014 mint p\xE9ld\xE1ul egy doboz felpakol\xE1sa a polcra, egy term\xE9k
+      becsomagol\xE1sa, egy kamion megt\xF6lt\xE9se vagy a telefon felv\xE9tele.
+      Naponta csak egyet fogadhatsz el.\n\n- Ha az elfogadott k\xFCldet\xE9st a nap
+      v\xE9ge el\u0151tt teljes\xEDted, a jutalmad automatikusan j\xF3v\xE1\xEDr\xF3dik
+      a nap v\xE9g\xE9n.\n\n- Ha elfogadod, \xE9s f\xE9lbehagyod, a nap v\xE9g\xE9n
+      b\xFCntet\xE9st kapsz.\n\nHa nem fogadsz el egyet sem, semmi sem t\xF6rt\xE9nik
+      \u2014 de a lehet\u0151s\xE9get is elvesz\xEDted. V\xE1lassz olyan k\xFCldet\xE9st,
+      ami re\xE1lis ahhoz k\xE9pest, amivel \xE9pp foglalkozol."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273476
+    m_Localized: Csapatmunka Tippek
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273477
+    m_Localized: "A B\xE9rleti D\xEDj \xE9s a P\xE9nzed"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859419467776
+    m_Localized: "A Cargor \xFCzemeltet\xE9se nem ingyenes. Bizonyos napokon b\xE9rleti
+      d\xEDj esed\xE9kes \u2014 ezt a napot \"b\xE9rleti napnak\" h\xEDvjuk.\n\n-
+      Ha van el\xE9g p\xE9nzed a b\xE9rleti d\xEDjra, az kifizet\u0151dik, \xE9s
+      folytatod.\n\n- Ha a hat\xE1rid\u0151re nem tudsz fizetni, egyszeri m\xE1sodik
+      es\xE9lyt kapsz: a k\xE9szp\xE9nzed nagy r\xE9sz\xE9t elveszik, de a v\xE1llalkoz\xE1s
+      nem z\xE1r be.\n\n<b>A p\xE9nz </b>helyes kisz\xE1ll\xEDt\xE1sokb\xF3l, telefonh\xEDv\xE1sokb\xF3l
+      \xE9s teljes\xEDtett k\xFCldet\xE9sekb\u0151l sz\xE1rmazik. A hib\xE1s kisz\xE1ll\xEDt\xE1sok,
+      az elejtett dobozok \xE9s a befejezetlen k\xFCldet\xE9sek p\xE9nzt vonnak el
+      t\u0151led."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859419467777
+    m_Localized: "<b> Ne feledd:  </b>nem vagy itt egyed\xFCl. A Cargor csapatmunka
+      \u2014 oszd meg a terhet, sz\xF3lalj meg."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859419467778
+    m_Localized: "Sz\xE1ll\xEDtsd ki a megfelel\u0151 sz\xEDnt \u2192 p\xE9nzt keresel,
+      n\u0151 a megbecs\xFCl\xE9sed.\n\nSz\xE1ll\xEDtsd ki a rossz sz\xEDnt \u2192
+      p\xE9nzt vesz\xEDtesz. N\xE9zd meg k\xE9tszer a sz\xEDneket.\n\nMinden kamionnak
+      korl\xE1tozott a v\xE1rakoz\xE1si ideje \xE9s a kapacit\xE1sa. Amikor megtelik,
+      vagy lej\xE1r az id\u0151, a kamion elindul, \xE9s j\xF6n egy \xFAj.\n\nAhogy
+      a rakt\xE1r n\u0151 (fejleszt\xE9sekkel), t\xF6bb hang\xE1r is megny\xEDlhat
+      \u2014 \xEDgy egyszerre t\xF6bb kamiont is ell\xE1thatsz."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859427856384
+    m_Localized: "<b> Tipp:  </b>Ne ess p\xE1nikba egy vegyes kamion vagy dupla rendel\xE9s
+      l\xE1tt\xE1n \u2014 egyszer\u0171en gondolj r\xE1 \xFAgy, mint k\xE9t k\xFCl\xF6n
+      kisz\xE1ll\xEDt\xE1sra, \xE9s int\xE9zd el \u0151ket egym\xE1s ut\xE1n."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859427856385
+    m_Localized: "Fejleszt\xE9sek"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859427856386
+    m_Localized: "Amikor v\xE9get \xE9r a nap, mindenkinek a pihen\u0151szob\xE1ba
+      kell mennie. M\xE9g ha csak egyetlen ember marad is kint, a nap nem z\xE1rul
+      le \u2014 v\xE1rnak, am\xEDg az eg\xE9sz csapat \xF6sszegy\u0171lik.\n\nAmikor
+      mindenki a szob\xE1ban van, megjelenik a napi \xF6sszefoglal\xF3, \xE9s elkezd\u0151dik
+      egy \xFAj nap. Ha cs\u0151d n\xE9lk\xFCl el\xE9red a tizenhatodik nap v\xE9g\xE9t,
+      meg\xE9rdemled az \xFCnnepl\xE9st."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859432050688
+    m_Localized: "Pihen\u0151szoba \xE9s a Nap V\xE9ge"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859432050689
+    m_Localized: "A v\xE1s\xE1rl\xF3k bej\xF6nnek az ajt\xF3n, sorba \xE1llnak, \xE9s
+      k\xE9rnek t\u0151led valamit. A fel\xE9j\xFCk lev\u0151 s\xE1v mutatja, mennyire
+      t\xFCrelmesek \u2014 ha kifogy, a v\xE1s\xE1rl\xF3 d\xFCh\xF6sen t\xE1vozik,
+      te pedig p\xE9nzt \xE9s megbecs\xFCl\xE9st vesz\xEDtesz.\n\n- A forgalom a
+      nap folyam\xE1n v\xE1ltozik: az eb\xE9d- \xE9s estid\u0151 a legzs\xFAfoltabb,
+      d\xE9lut\xE1n kicsit fell\xE9legezhetsz.\n\n- Amikor besz\xE9lsz egy v\xE1s\xE1rl\xF3val
+      (interakci\xF3 gomb), az az asztal\xE1ra teszi a k\xEDv\xE1nt term\xE9ket \u2014
+      ut\xE1na j\xF6n a csomagol\xE1s \xE9s a kisz\xE1ll\xEDt\xE1s (4-6. oldal).\n\n-
+      Minden id\u0151ben kiszolg\xE1lt v\xE1s\xE1rl\xF3 p\xE9nzt \xE9s megbecs\xFCl\xE9st
+      is hoz. Min\xE9l magasabb a megbecs\xFCl\xE9sed, ann\xE1l t\xF6bbet keresel
+      kisz\xE1ll\xEDt\xE1sonk\xE9nt."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859436244992
+    m_Localized: "<b> Tipp:  </b>Ne halaszd az utols\xF3 napra egy neh\xE9z k\xFCldet\xE9st.
+      A nap v\xE9ge mindig gyorsabban j\xF6n, mint gondoln\xE1d."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859436244993
+    m_Localized: "Visszak\xFCld\xE9sek, Dupla Rendel\xE9sek, Vegyes Kamionok"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859436244994
+    m_Localized: "<b> Tipp:  </b>Ha cs\xF6r\xF6g a telefon, \xE9s \xFAtba esik, ugorj
+      be akkor is, ha tele van a kezed \u2014 r\xF6vid sz\xFCnet, kis nyeres\xE9g."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633600
+    m_Localized: "\xDCDV\xD6ZL\xDCNK!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633601
+    m_Localized: "K\xFCldet\xE9st\xE1bla"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633602
+    m_Localized: "Ahogy telnek a napok, a munka kicsit bonyolultabb\xE1 v\xE1lik.
+      H\xE1rom \xFAj helyzettel fogsz tal\xE1lkozni:\n\n<b>Visszak\xFCld\xE9sek:
+      </b>n\xE9h\xE1ny v\xE1s\xE1rl\xF3 nem term\xE9ket akar \u2014 \xE9pp ellenkez\u0151leg,
+      azt k\xE9ri, hogy vigy\xE9l vissza neki egy dobozt. A felett\xFCk megjelen\u0151
+      sz\xEDnes g\xF6mb mutatja, milyen sz\xEDn\u0171 dobozt szeretn\xE9nek. Vedd
+      le a megfelel\u0151 sz\xEDnt a polcr\xF3l, \xE9s vidd oda a v\xE1s\xE1rl\xF3nak.\n\n<b>Dupla
+      rendel\xE9s: </b>n\xE9h\xE1ny v\xE1s\xE1rl\xF3 egyszerre k\xE9t k\xFCl\xF6nb\xF6z\u0151
+      sz\xEDnt akar. A munka addig nincs k\xE9sz, am\xEDg mindkett\u0151 nincs elk\xE9sz\xEDtve.\n\n<b>Vegyes
+      kamion: </b>n\xE9h\xE1ny kamion nem egy, hanem k\xE9t k\xFCl\xF6nb\xF6z\u0151
+      sz\xEDn\u0171 dobozt akar. A karossz\xE9ri\xE1n l\xE9v\u0151 kevert sz\xEDn
+      (p\xE9ld\xE1ul piros + s\xE1rga = narancss\xE1rga) adja a tippet \u2014 megmutatja,
+      melyik k\xE9t sz\xEDnt kell felpakolnod."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633603
+    m_Localized: "A hang\xE1rban v\xE1r\xF3 kamionok a karossz\xE9ria sz\xEDn\xE9vel
+      mutatj\xE1k, mit akarnak: a piros kamion piros dobozt akar, a s\xE1rga s\xE1rg\xE1t,
+      a k\xE9k k\xE9ket."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859448827904
+    m_Localized: "\xDCdv\xF6zl\xFCnk! Most m\xE1r a Cargor csal\xE1d tagja vagy.
+      Ez a hely egy rakt\xE1r, egy bolt \xE9s egy kis k\xE1osz \u2014 mindez egyben.\n\nA
+      v\xE1s\xE1rl\xF3k elmondj\xE1k, mit akarnak, te becsomagolod, \xE9s felrakod
+      a megfelel\u0151 kamionra. Egyszer\u0171nek hangzik, igaz? Ha tizenhat nap
+      ut\xE1n m\xE9g mindig talpon vagy, akkor t\xE9nyleg j\xF3 munk\xE1t v\xE9gezt\xE9l.\n\nEz
+      a f\xFCzet, amit a kezedben tartasz, az a hely, ahov\xE1 visszat\xE9rsz, ha
+      elfelejted a r\xE9szleteket. Minden oldal m\xE1s t\xE9m\xE1val foglalkozik.
+      Nincs siets\xE9g \u2014 az els\u0151 napokban dolgozz lassan, ismerd meg a
+      rendszert. A sebess\xE9g id\u0151vel j\xF6n."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859453022208
+    m_Localized: "<b> Tipp:  </b>Ellen\u0151rizd a k\xE9szp\xE9nzedet a b\xE9rleti
+      napok el\u0151tt. Ne hagyd az utols\xF3 pillanatra."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859453022209
+    m_Localized: "<b> Figyelem:  </b>Am\xEDg a sor tele van, nem \xE9rkeznek \xFAj
+      v\xE1s\xE1rl\xF3k, de a m\xE1r v\xE1rakoz\xF3k egyre t\xFCrelmetlenebbek lesznek.
+      Ne kezdj bele semmi \xFAjba, miel\u0151tt ki\xFCr\xEDten\xE9d a sort."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859453022210
+    m_Localized: "<b> Tipp:  </b>Ha m\xE1r messzir\u0151l l\xE1tod egy kamion sz\xEDn\xE9t,
+      adj els\u0151bbs\xE9get annak, amelyik illik a n\xE1lad l\xE9v\u0151 dobozhoz
+      \u2014 ne gyalogolj feleslegesen."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859461410816
+    m_Localized: "KAMIONOK \xC9S KISZ\xC1LL\xCDT\xC1S"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859465605120
+    m_Localized: "Bizonyos napokon n\xE9h\xE1ny fejleszt\xE9si lehet\u0151s\xE9get
+      aj\xE1nlanak fel \u2014 nem viheted el mindet, k\xF6z\xFCl\xFCk v\xE1lasztasz.
+      V\xE9gleges fejleszt\xE9seket szerezhetsz, mint egy extra polc, egy extra hang\xE1r,
+      gyorsabb mozg\xE1s vagy hosszabb v\xE1s\xE1rl\xF3i t\xFCrelem.\n\nJ\xF3l gondold
+      \xE1t a v\xE1laszt\xE1st: n\xE9h\xE1ny fejleszt\xE9s kiz\xE1rja egym\xE1st,
+      m\xE1sok csak egy bizonyos napt\xF3l ny\xEDlnak meg. Az olyan v\xE1laszt\xE1sok,
+      amelyek az els\u0151 napokban felgyors\xEDtj\xE1k az alapokat, k\xE9s\u0151bb
+      nagyon megt\xE9r\xFClnek."
     m_Metadata:
       m_Items: []
   references:

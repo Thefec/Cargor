@@ -7,9 +7,9 @@ using System.Collections.Generic;
 namespace NewCss.UIScripts
 {
     /// <summary>
-    /// Sayfalý UI panel kontrolcüsü. 
-    /// Ýleri/Geri butonlarýyla sayfa geçiþi, animasyonlu açýlýþ/kapanýþ saðlar.
-    /// Trigger zone ile entegre çalýþýr. 
+    /// Sayfalï¿½ UI panel kontrolcï¿½sï¿½. 
+    /// ï¿½leri/Geri butonlarï¿½yla sayfa geï¿½iï¿½i, animasyonlu aï¿½ï¿½lï¿½ï¿½/kapanï¿½ï¿½ saï¿½lar.
+    /// Trigger zone ile entegre ï¿½alï¿½ï¿½ï¿½r. 
     /// </summary>
     public class PagedUIPanel : MonoBehaviour
     {
@@ -31,11 +31,11 @@ namespace NewCss.UIScripts
         private Animator panelAnimator;
 
         [Header("=== SAYFALAR ===")]
-        [SerializeField, Tooltip("Sayfa GameObject'leri (her biri TMP Text içerir)")]
+        [SerializeField, Tooltip("Sayfa GameObject'leri (her biri TMP Text iï¿½erir)")]
         private List<GameObject> pages = new List<GameObject>();
 
         [Header("=== BUTONLAR ===")]
-        [SerializeField, Tooltip("Ýleri butonu")]
+        [SerializeField, Tooltip("ï¿½leri butonu")]
         private Button nextButton;
 
         [SerializeField, Tooltip("Geri butonu")]
@@ -44,19 +44,19 @@ namespace NewCss.UIScripts
         [SerializeField, Tooltip("Kapat butonu (opsiyonel)")]
         private Button closeButton;
 
-        [Header("=== SAYFA GÖSTERGESÝ ===")]
-        [SerializeField, Tooltip("Sayfa göstergesi text'i (opsiyonel)")]
+        [Header("=== SAYFA Gï¿½STERGESï¿½ ===")]
+        [SerializeField, Tooltip("Sayfa gï¿½stergesi text'i (opsiyonel)")]
         private TextMeshProUGUI pageIndicatorText;
 
-        [SerializeField, Tooltip("Sayfa göstergesi formatý")]
+        [SerializeField, Tooltip("Sayfa gï¿½stergesi formatï¿½")]
         private string pageIndicatorFormat = "Sayfa {0} / {1}";
 
         [Header("=== PLAYER SETTINGS ===")]
-        [SerializeField, Tooltip("Panel açýkken oyuncu hareketini kilitle")]
+        [SerializeField, Tooltip("Panel aï¿½ï¿½kken oyuncu hareketini kilitle")]
         private bool lockPlayerMovement = true;
 
         [Header("=== DEBUG ===")]
-        [SerializeField, Tooltip("Debug loglarýný göster")]
+        [SerializeField, Tooltip("Debug loglarï¿½nï¿½ gï¿½ster")]
         private bool showDebugLogs = true;
 
         #endregion
@@ -73,7 +73,7 @@ namespace NewCss.UIScripts
         #region Public Properties
 
         /// <summary>
-        /// Panel açýk mý?
+        /// Panel aï¿½ï¿½k mï¿½?
         /// </summary>
         public bool IsPanelOpen => _isPanelOpen;
 
@@ -88,7 +88,7 @@ namespace NewCss.UIScripts
         public int CurrentPageIndex => _currentPageIndex;
 
         /// <summary>
-        /// Toplam sayfa sayýsý
+        /// Toplam sayfa sayï¿½sï¿½
         /// </summary>
         public int TotalPages => pages.Count;
 
@@ -170,11 +170,11 @@ namespace NewCss.UIScripts
         {
             if (pages == null || pages.Count == 0)
             {
-                LogWarning("Sayfa listesi boþ!");
+                LogWarning("Sayfa listesi boï¿½!");
                 return;
             }
 
-            // Tüm sayfalarý baþlangýçta kapat
+            // Tï¿½m sayfalarï¿½ baï¿½langï¿½ï¿½ta kapat
             for (int i = 0; i < pages.Count; i++)
             {
                 if (pages[i] != null)
@@ -191,13 +191,13 @@ namespace NewCss.UIScripts
         #region Panel Control
 
         /// <summary>
-        /// Paneli açar
+        /// Paneli aï¿½ar
         /// </summary>
         public void OpenPanel()
         {
             if (_isPanelOpen || _isAnimating)
             {
-                LogDebug("Panel zaten açýk veya animasyon devam ediyor");
+                LogDebug("Panel zaten aï¿½ï¿½k veya animasyon devam ediyor");
                 return;
             }
 
@@ -217,7 +217,7 @@ namespace NewCss.UIScripts
                 panelObject.SetActive(true);
             }
 
-            // Sayfa görüntüsünü güncelle
+            // Sayfa gï¿½rï¿½ntï¿½sï¿½nï¿½ gï¿½ncelle
             UpdatePageDisplay();
 
             // Animasyon oynat
@@ -228,18 +228,18 @@ namespace NewCss.UIScripts
             else
             {
                 _isAnimating = false;
-                LogDebug("Panel animasyonsuz açýldý");
+                LogDebug("Panel animasyonsuz aï¿½ï¿½ldï¿½");
             }
         }
 
         /// <summary>
-        /// Paneli kapatýr
+        /// Paneli kapatï¿½r
         /// </summary>
         public void ClosePanel()
         {
             if (!_isPanelOpen || _isAnimating)
             {
-                LogDebug("Panel zaten kapalý veya animasyon devam ediyor");
+                LogDebug("Panel zaten kapalï¿½ veya animasyon devam ediyor");
                 return;
             }
 
@@ -267,13 +267,13 @@ namespace NewCss.UIScripts
                 panelObject.SetActive(false);
             }
 
-            // Oyuncu hareketini serbest býrak
+            // Oyuncu hareketini serbest bï¿½rak
             if (lockPlayerMovement)
             {
                 LockPlayerMovement(false);
             }
 
-            LogDebug("Panel kapatýldý");
+            LogDebug("Panel kapatï¿½ldï¿½");
         }
 
         /// <summary>
@@ -296,7 +296,7 @@ namespace NewCss.UIScripts
         #region Page Navigation
 
         /// <summary>
-        /// Sonraki sayfaya geçer
+        /// Sonraki sayfaya geï¿½er
         /// </summary>
         public void NextPage()
         {
@@ -304,12 +304,12 @@ namespace NewCss.UIScripts
             {
                 _currentPageIndex++;
                 UpdatePageDisplay();
-                LogDebug($"Sonraki sayfaya geçildi: {_currentPageIndex + 1}/{pages.Count}");
+                LogDebug($"Sonraki sayfaya geï¿½ildi: {_currentPageIndex + 1}/{pages.Count}");
             }
         }
 
         /// <summary>
-        /// Önceki sayfaya geçer
+        /// ï¿½nceki sayfaya geï¿½er
         /// </summary>
         public void PreviousPage()
         {
@@ -317,7 +317,7 @@ namespace NewCss.UIScripts
             {
                 _currentPageIndex--;
                 UpdatePageDisplay();
-                LogDebug($"Önceki sayfaya geçildi: {_currentPageIndex + 1}/{pages.Count}");
+                LogDebug($"ï¿½nceki sayfaya geï¿½ildi: {_currentPageIndex + 1}/{pages.Count}");
             }
         }
 
@@ -328,7 +328,7 @@ namespace NewCss.UIScripts
         {
             if (pageIndex < 0 || pageIndex >= pages.Count)
             {
-                LogWarning($"Geçersiz sayfa indexi: {pageIndex}");
+                LogWarning($"Geï¿½ersiz sayfa indexi: {pageIndex}");
                 return;
             }
 
@@ -338,7 +338,7 @@ namespace NewCss.UIScripts
 
         private void UpdatePageDisplay()
         {
-            // Tüm sayfalarý gizle, sadece aktif olaný göster
+            // Tï¿½m sayfalarï¿½ gizle, sadece aktif olanï¿½ gï¿½ster
             for (int i = 0; i < pages.Count; i++)
             {
                 if (pages[i] != null)
@@ -347,10 +347,10 @@ namespace NewCss.UIScripts
                 }
             }
 
-            // Buton durumlarýný güncelle
+            // Buton durumlarï¿½nï¿½ gï¿½ncelle
             UpdateButtonStates();
 
-            // Sayfa göstergesini güncelle
+            // Sayfa gï¿½stergesini gï¿½ncelle
             UpdatePageIndicator();
         }
 
@@ -389,7 +389,7 @@ namespace NewCss.UIScripts
                 ClosePanel();
             }
 
-            // Ok tuþlarý ile sayfa geçiþi
+            // Ok tuï¿½larï¿½ ile sayfa geï¿½iï¿½i
             if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
             {
                 NextPage();
@@ -405,7 +405,7 @@ namespace NewCss.UIScripts
         #region Player Movement Control
 
         /// <summary>
-        /// Oyuncu referansýný ayarlar
+        /// Oyuncu referansï¿½nï¿½ ayarlar
         /// </summary>
         public void SetLocalPlayer(PlayerMovement player)
         {
@@ -416,7 +416,7 @@ namespace NewCss.UIScripts
         {
             if (_localPlayerMovement == null) return;
 
-            _localPlayerMovement.enabled = !locked;
+            _localPlayerMovement.LockMovement(locked);
             LogDebug($"Oyuncu hareketi: {(locked ? "kilitlendi" : "serbest")}");
         }
 
@@ -429,7 +429,7 @@ namespace NewCss.UIScripts
             panelAnimator.SetTrigger("Open");
             yield return new WaitForSeconds(DEFAULT_OPEN_ANIMATION_DURATION);
             _isAnimating = false;
-            LogDebug("Panel açýlýþ animasyonu tamamlandý");
+            LogDebug("Panel aï¿½ï¿½lï¿½ï¿½ animasyonu tamamlandï¿½");
         }
 
         private IEnumerator PlayCloseAnimationCoroutine()

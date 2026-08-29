@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
   m_Name: StringTable_lv
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   m_LocaleId:
     m_Code: lv
   m_SharedData: {fileID: 11400000, guid: 7d8d57bedebf1954db92f72969b59263, type: 2}
@@ -19,851 +19,1441 @@ MonoBehaviour:
     m_Items: []
   m_TableData:
   - m_Id: 88301023232
-    m_Localized: "Spēle tiešsaistē"
+    m_Localized: "Sp\u0113le tie\u0161saist\u0113"
     m_Metadata:
       m_Items: []
   - m_Id: 574282444800
-    m_Localized: "Valoda"
+    m_Localized: Valoda
     m_Metadata:
       m_Items: []
   - m_Id: 26808395673600
-    m_Localized: "Peles jutība"
+    m_Localized: "Peles jut\u012Bba"
     m_Metadata:
       m_Items: []
   - m_Id: 27030165303296
-    m_Localized: "Spēle bezsaistē"
+    m_Localized: "Sp\u0113le bezsaist\u0113"
     m_Metadata:
       m_Items: []
   - m_Id: 27180690485248
-    m_Localized: "Iestatījumi"
+    m_Localized: "Iestat\u012Bjumi"
     m_Metadata:
       m_Items: []
   - m_Id: 27238353776640
-    m_Localized: "Iziet"
+    m_Localized: Iziet
     m_Metadata:
       m_Items: []
   - m_Id: 27356159193088
-    m_Localized: "Vispārīgi"
+    m_Localized: "Visp\u0101r\u012Bgi"
     m_Metadata:
       m_Items: []
   - m_Id: 27414908809216
-    m_Localized: "Grafika"
+    m_Localized: Grafika
     m_Metadata:
       m_Items: []
   - m_Id: 27504130043904
-    m_Localized: "Skaņa"
+    m_Localized: "Ska\u0146a"
     m_Metadata:
       m_Items: []
   - m_Id: 27565803089920
-    m_Localized: "Atpakaļ"
+    m_Localized: "Atpaka\u013C"
     m_Metadata:
       m_Items: []
   - m_Id: 28147393671168
-    m_Localized: "Titri"
+    m_Localized: Titri
     m_Metadata:
       m_Items: []
   - m_Id: 118380277706752
-    m_Localized: "Saglabāt"
+    m_Localized: "Saglab\u0101t"
     m_Metadata:
       m_Items: []
   - m_Id: 4669780596797440
-    m_Localized: "Pielāgot"
+    m_Localized: "Piel\u0101got"
     m_Metadata:
       m_Items: []
   - m_Id: 4669983794049024
-    m_Localized: "Diena"
+    m_Localized: Diena
     m_Metadata:
       m_Items: []
   - m_Id: 4670284437565440
-    m_Localized: "INTENSĪVA DIENA"
+    m_Localized: "INTENS\u012AVA DIENA"
     m_Metadata:
       m_Items: []
   - m_Id: 4670557176377344
-    m_Localized: "PIEGĀDES BONUSS"
+    m_Localized: "PIEG\u0100DES BONUSS"
     m_Metadata:
       m_Items: []
   - m_Id: 4670594551820288
-    m_Localized: "DUSMĪGI KLIENTI"
+    m_Localized: "DUSM\u012AGI KLIENTI"
     m_Metadata:
       m_Items: []
   - m_Id: 4670644065579008
-    m_Localized: "MIERĪGA DIENA"
+    m_Localized: "MIER\u012AGA DIENA"
     m_Metadata:
       m_Items: []
   - m_Id: 4670683781443584
-    m_Localized: "LĒNA LOĢISTIKA"
+    m_Localized: "L\u0112NA LO\u0122ISTIKA"
     m_Metadata:
       m_Items: []
   - m_Id: 4670721878306816
-    m_Localized: "EKSPRESKRAVA"
+    m_Localized: EKSPRESKRAVA
     m_Metadata:
       m_Items: []
   - m_Id: 4670821572718592
-    m_Localized: "SMAGAS KASTES"
+    m_Localized: SMAGAS KASTES
     m_Metadata:
       m_Items: []
   - m_Id: 4670864191041536
-    m_Localized: "ZELTA KASTES DIENA"
+    m_Localized: ZELTA KASTES DIENA
     m_Metadata:
       m_Items: []
   - m_Id: 4670907031662592
-    m_Localized: "IESPĒJU DIENA"
+    m_Localized: "IESP\u0112JU DIENA"
     m_Metadata:
       m_Items: []
   - m_Id: 4670942314147840
-    m_Localized: "NOGURUMA PROBLĒMA"
+    m_Localized: "NOGURUMA PROBL\u0112MA"
     m_Metadata:
       m_Items: []
   - m_Id: 4671003622289408
-    m_Localized: "VIP SERVISS"
+    m_Localized: VIP SERVISS
     m_Metadata:
       m_Items: []
   - m_Id: 4671211781402624
-    m_Localized: "Varoņa pielāgošana"
+    m_Localized: "Varo\u0146a piel\u0101go\u0161ana"
     m_Metadata:
       m_Items: []
   - m_Id: 4671355847356416
-    m_Localized: "Aksesuāri"
+    m_Localized: "Aksesu\u0101ri"
     m_Metadata:
       m_Items: []
   - m_Id: 4671495475736576
-    m_Localized: "Sejas"
+    m_Localized: Sejas
     m_Metadata:
       m_Items: []
   - m_Id: 4671520289239040
-    m_Localized: "Brilles"
+    m_Localized: Brilles
     m_Metadata:
       m_Items: []
   - m_Id: 4671581857427456
-    m_Localized: "Cimdi"
+    m_Localized: Cimdi
     m_Metadata:
       m_Items: []
   - m_Id: 4671685976829952
-    m_Localized: "Frizūras"
+    m_Localized: "Friz\u016Bras"
     m_Metadata:
       m_Items: []
   - m_Id: 4671905867411456
-    m_Localized: "Cepures"
+    m_Localized: Cepures
     m_Metadata:
       m_Items: []
   - m_Id: 4671966126977024
-    m_Localized: "Ūsas"
+    m_Localized: "\u016Asas"
     m_Metadata:
       m_Items: []
   - m_Id: 4672063447412736
-    m_Localized: "Virsdrēbes"
+    m_Localized: "Virsdr\u0113bes"
     m_Metadata:
       m_Items: []
   - m_Id: 4672192313208832
-    m_Localized: "Bikses"
+    m_Localized: Bikses
     m_Metadata:
       m_Items: []
   - m_Id: 4672235917193216
-    m_Localized: "Apavi"
+    m_Localized: Apavi
     m_Metadata:
       m_Items: []
   - m_Id: 4672275557560320
-    m_Localized: "Ādas krāsa"
+    m_Localized: "\u0100das kr\u0101sa"
     m_Metadata:
       m_Items: []
   - m_Id: 4672388858294272
-    m_Localized: "PRESTIŽS"
+    m_Localized: "PRESTI\u017DS"
     m_Metadata:
       m_Items: []
   - m_Id: 4672484777832448
-    m_Localized: "Nākamā diena"
+    m_Localized: "N\u0101kam\u0101 diena"
     m_Metadata:
       m_Items: []
   - m_Id: 4672617426890752
-    m_Localized: "Turpināt"
+    m_Localized: "Turpin\u0101t"
     m_Metadata:
       m_Items: []
   - m_Id: 30567298710810624
-    m_Localized: "Izveidot spēli"
+    m_Localized: "Izveidot sp\u0113li"
     m_Metadata:
       m_Items: []
   - m_Id: 30567344864931840
-    m_Localized: "Pievienoties spēlei"
+    m_Localized: "Pievienoties sp\u0113lei"
     m_Metadata:
       m_Items: []
   - m_Id: 30567847749398528
-    m_Localized: "Sākt"
+    m_Localized: "S\u0101kt"
     m_Metadata:
       m_Items: []
   - m_Id: 30567978871730176
-    m_Localized: "Lobby"
+    m_Localized: Lobby
     m_Metadata:
       m_Items: []
   - m_Id: 30568446771507200
-    m_Localized: "Izvēlēties karti\n(Drīzumā)"
+    m_Localized: "Izv\u0113l\u0113ties karti\n(Dr\u012Bzum\u0101)"
     m_Metadata:
       m_Items: []
   - m_Id: 30568844051787776
-    m_Localized: "Galvenais birojs"
+    m_Localized: Galvenais birojs
     m_Metadata:
       m_Items: []
   - m_Id: 30569701396885504
-    m_Localized: "Spēlēt tiešsaistē"
+    m_Localized: "Sp\u0113l\u0113t tie\u0161saist\u0113"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000001
-    m_Localized: "Spēlētāji vestibilā"
+    m_Localized: "Sp\u0113l\u0113t\u0101ji vestibil\u0101"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000002
-    m_Localized: "Kopā: {0} spēlētāji"
+    m_Localized: "Kop\u0101: {0} sp\u0113l\u0113t\u0101ji"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000003
-    m_Localized: "Atpūtas telpas statuss"
+    m_Localized: "Atp\u016Btas telpas statuss"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000004
-    m_Localized: "Iekšā: {0} / {1} spēlētāji"
+    m_Localized: "Iek\u0161\u0101: {0} / {1} sp\u0113l\u0113t\u0101ji"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000005
-    m_Localized: "Visi ir gatavi!"
+    m_Localized: Visi ir gatavi!
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000006
-    m_Localized: "Gaida {0} spēlētājus..."
+    m_Localized: "Gaida {0} sp\u0113l\u0113t\u0101jus..."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000007
-    m_Localized: "Spēlētāji nav atrasti"
+    m_Localized: "Sp\u0113l\u0113t\u0101ji nav atrasti"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000008
-    m_Localized: "Spēlētājs"
+    m_Localized: "Sp\u0113l\u0113t\u0101js"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000009
-    m_Localized: "Apmācība"
+    m_Localized: "Apm\u0101c\u012Bba"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000010
-    m_Localized: "Tikai spēles saimnieks var izraidīt spēlētājus!"
+    m_Localized: "Tikai sp\u0113les saimnieks var izraid\u012Bt sp\u0113l\u0113t\u0101jus!"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000011
-    m_Localized: "Spēlētājs izraidīts!"
+    m_Localized: "Sp\u0113l\u0113t\u0101js izraid\u012Bts!"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000012
-    m_Localized: "Izraidīšana neizdevās!"
+    m_Localized: "Izraid\u012B\u0161ana neizdev\u0101s!"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000013
-    m_Localized: "Tukša vieta"
+    m_Localized: "Tuk\u0161a vieta"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000014
-    m_Localized: "{0}. diena  {1}:{2} ({3}s)"
+    m_Localized: '{0}. diena  {1}:{2} ({3}s)'
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000015
-    m_Localized: "Diena beigusies. Dodies uz atpūtas telpu."
+    m_Localized: "Diena beigusies. Dodies uz atp\u016Btas telpu."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000016
-    m_Localized: "Nomas maksas diena"
+    m_Localized: Nomas maksas diena
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000017
-    m_Localized: "Līmenis: {0}"
+    m_Localized: "L\u012Bmenis: {0}"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000018
-    m_Localized: "Izmaksas: {0}"
+    m_Localized: 'Izmaksas: {0}'
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000019
-    m_Localized: "Maks"
+    m_Localized: Maks
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000020
-    m_Localized: "Pirkt"
+    m_Localized: Pirkt
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000021
-    m_Localized: "Rinda"
+    m_Localized: Rinda
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000022
-    m_Localized: "Palielina maksimālo klientu rindas garumu."
+    m_Localized: "Palielina maksim\u0101lo klientu rindas garumu."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000023
-    m_Localized: "Izturība"
+    m_Localized: "Iztur\u012Bba"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000024
-    m_Localized: "Palielina izturības atjaunošanās ātrumu."
+    m_Localized: "Palielina iztur\u012Bbas atjauno\u0161an\u0101s \u0101trumu."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000025
-    m_Localized: "Nauda"
+    m_Localized: Nauda
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000026
-    m_Localized: "Palielina atlīdzību par katru piegādāto kasti."
+    m_Localized: "Palielina atl\u012Bdz\u012Bbu par katru pieg\u0101d\u0101to kasti."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000027
-    m_Localized: "Kravas auto"
+    m_Localized: Kravas auto
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000028
-    m_Localized: "Atbloķē papildu kravas auto angārus."
+    m_Localized: "Atblo\u0137\u0113 papildu kravas auto ang\u0101rus."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000029
-    m_Localized: "Uzdevuma līmenis"
+    m_Localized: "Uzdevuma l\u012Bmenis"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000030
-    m_Localized: "Atbloķē augstāka līmeņa uzdevumus."
+    m_Localized: "Atblo\u0137\u0113 augst\u0101ka l\u012Bme\u0146a uzdevumus."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000031
-    m_Localized: "AIZŅEMTA DIENA"
+    m_Localized: "AIZ\u0145EMTA DIENA"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000032
-    m_Localized: "Klientu ierašanās ātrums palielinās par 30%."
+    m_Localized: "Klientu iera\u0161an\u0101s \u0101trums palielin\u0101s par 30%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000033
-    m_Localized: "DUSMĪGI KLIENTI"
+    m_Localized: "DUSM\u012AGI KLIENTI"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000034
-    m_Localized: "Klientu pacietība samazinās par 30%."
+    m_Localized: "Klientu paciet\u012Bba samazin\u0101s par 30%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000035
-    m_Localized: "LĒNA LOĢISTIKA"
+    m_Localized: "L\u0112NA LO\u0122ISTIKA"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000036
-    m_Localized: "Kravas auto pamet vietu par 50% lēnāk."
+    m_Localized: "Kravas auto pamet vietu par 50% l\u0113n\u0101k."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000037
-    m_Localized: "SMAGAS KASTES"
+    m_Localized: SMAGAS KASTES
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000038
-    m_Localized: "Kopējais kustības ātrums samazinās par 20%."
+    m_Localized: "Kop\u0113jais kust\u012Bbas \u0101trums samazin\u0101s par 20%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000039
-    m_Localized: "NOGURUMA PROBLĒMA"
+    m_Localized: "NOGURUMA PROBL\u0112MA"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000040
-    m_Localized: "Izturība atjaunojas par 40% lēnāk, un sprinta ātrums samazinās par 30%."
+    m_Localized: "Iztur\u012Bba atjaunojas par 40% l\u0113n\u0101k, un sprinta \u0101trums
+      samazin\u0101s par 30%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000041
-    m_Localized: "PĀRSTEIGUMA REVĪZIJA"
+    m_Localized: "P\u0100RSTEIGUMA REV\u012AZIJA"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000042
-    m_Localized: "Visas kļūdainās darbības tiek sodītas dubultā."
+    m_Localized: "Visas k\u013C\u016Bdain\u0101s darb\u012Bbas tiek sod\u012Btas
+      dubult\u0101."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000043
-    m_Localized: "MĀRKETINGA DIENA"
+    m_Localized: "M\u0100RKETINGA DIENA"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000044
-    m_Localized: "Par 20% vairāk klientu, bet par 30% mazāk peļņas."
+    m_Localized: "Par 20% vair\u0101k klientu, bet par 30% maz\u0101k pe\u013C\u0146as."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000045
-    m_Localized: "KLIENTU ATBALSTS"
+    m_Localized: KLIENTU ATBALSTS
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000046
-    m_Localized: "Reģistratūras tālrunis zvana par 50% biežāk."
+    m_Localized: "Re\u0123istrat\u016Bras t\u0101lrunis zvana par 50% bie\u017E\u0101k."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000047
-    m_Localized: "PIEGĀDES BONUSS"
+    m_Localized: "PIEG\u0100DES BONUSS"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000048
-    m_Localized: "Nopelni par 20% vairāk naudas par katru piegādi."
+    m_Localized: "Nopelni par 20% vair\u0101k naudas par katru pieg\u0101di."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000049
-    m_Localized: "MIERĪGA DIENA"
+    m_Localized: "MIER\u012AGA DIENA"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000050
-    m_Localized: "Klientu pacietība palielinās par 30%."
+    m_Localized: "Klientu paciet\u012Bba palielin\u0101s par 30%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000051
-    m_Localized: "EKSPRESKRAVA"
+    m_Localized: EKSPRESKRAVA
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000052
-    m_Localized: "Kravas auto pamet vietu par 30% ātrāk."
+    m_Localized: "Kravas auto pamet vietu par 30% \u0101tr\u0101k."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000053
-    m_Localized: "ZELTA KASTES DIENA"
+    m_Localized: ZELTA KASTES DIENA
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000054
-    m_Localized: "Katra pareizi piegādātā kaste dod papildu 30%. Tā arī atnes par 20% vairāk klientu, par 20% ātrāku kravas auto izbraukšanu un par 20% ātrāku kustību, taču izturība atjaunojas par 20% lēnāk."
+    m_Localized: "Katra pareizi pieg\u0101d\u0101t\u0101 kaste dod papildu 30%. T\u0101
+      ar\u012B atnes par 20% vair\u0101k klientu, par 20% \u0101tr\u0101ku kravas
+      auto izbrauk\u0161anu un par 20% \u0101tr\u0101ku kust\u012Bbu, ta\u010Du iztur\u012Bba
+      atjaunojas par 20% l\u0113n\u0101k."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000055
-    m_Localized: "IESPĒJU DIENA"
+    m_Localized: "IESP\u0112JU DIENA"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000056
-    m_Localized: "Uzlabojumu izmaksas samazinās par 20%."
+    m_Localized: "Uzlabojumu izmaksas samazin\u0101s par 20%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000057
-    m_Localized: "KVOTAS DIENA"
+    m_Localized: KVOTAS DIENA
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000058
-    m_Localized: "Visi kravas auto pieprasa tikai vienu kastes krāsu."
+    m_Localized: "Visi kravas auto pieprasa tikai vienu kastes kr\u0101su."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000059
-    m_Localized: "VIP SERVISS"
+    m_Localized: VIP SERVISS
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000060
-    m_Localized: "10% iespēja, ka kaste ir perfekta un dod par 10% vairāk."
+    m_Localized: "10% iesp\u0113ja, ka kaste ir perfekta un dod par 10% vair\u0101k."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000061
-    m_Localized: "LIETAINA DIENA"
+    m_Localized: LIETAINA DIENA
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000062
-    m_Localized: "Ierodas par 20% mazāk klientu."
+    m_Localized: "Ierodas par 20% maz\u0101k klientu."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000063
-    m_Localized: "FESTIVĀLA DIENA"
+    m_Localized: "FESTIV\u0100LA DIENA"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000064
-    m_Localized: "Dienas sākumā tiek iegūts nejaušs bonuss."
+    m_Localized: "Dienas s\u0101kum\u0101 tiek ieg\u016Bts nejau\u0161s bonuss."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000065
-    m_Localized: "Spēlētāji"
+    m_Localized: "Sp\u0113l\u0113t\u0101ji"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000066
-    m_Localized: "({0}/{1} atpūtas telpā)"
+    m_Localized: "({0}/{1} atp\u016Btas telp\u0101)"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000067
-    m_Localized: "Gaidāmie klienti"
+    m_Localized: "Gaid\u0101mie klienti"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000068
-    m_Localized: "Sarkans"
+    m_Localized: Sarkans
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000069
-    m_Localized: "Zils"
+    m_Localized: Zils
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000070
-    m_Localized: "Dzeltens"
+    m_Localized: Dzeltens
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000071
-    m_Localized: "Zaļš"
+    m_Localized: "Za\u013C\u0161"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000072
-    m_Localized: "Nav uzdevuma"
+    m_Localized: Nav uzdevuma
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000073
-    m_Localized: "Atlīdzība"
+    m_Localized: "Atl\u012Bdz\u012Bba"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000074
-    m_Localized: "Sods"
+    m_Localized: Sods
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000075
-    m_Localized: "Pabeigts"
+    m_Localized: Pabeigts
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000076
-    m_Localized: "Neizdevās"
+    m_Localized: "Neizdev\u0101s"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000077
-    m_Localized: "Pabeidz minispēli {0} reizes"
+    m_Localized: "Pabeidz minisp\u0113li {0} reizes"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000078
-    m_Localized: "Novieto {0} kastes plauktā"
+    m_Localized: "Novieto {0} kastes plaukt\u0101"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000079
-    m_Localized: "Novieto {0} {1} kastes plauktā"
+    m_Localized: "Novieto {0} {1} kastes plaukt\u0101"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000080
-    m_Localized: "Pabeidz {0} kravas auto"
+    m_Localized: Pabeidz {0} kravas auto
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000081
-    m_Localized: "Apkalpo {0} klientus"
+    m_Localized: Apkalpo {0} klientus
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000082
-    m_Localized: "Ignorē {0} klientus"
+    m_Localized: "Ignor\u0113 {0} klientus"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000083
-    m_Localized: "Iesaiņo {0} rotaļlietas"
+    m_Localized: "Iesai\u0146o {0} rota\u013Clietas"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000107
-    m_Localized: "Šodien jau esi pieņēmis uzdevumu"
+    m_Localized: "\u0160odien jau esi pie\u0146\u0113mis uzdevumu"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000108
-    m_Localized: "Pieņemt"
+    m_Localized: "Pie\u0146emt"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000084
-    m_Localized: "Kapacitāte 0"
+    m_Localized: "Kapacit\u0101te 0"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000085
-    m_Localized: "Kapacitāte +1"
+    m_Localized: "Kapacit\u0101te +1"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000086
-    m_Localized: "Kapacitāte +2"
+    m_Localized: "Kapacit\u0101te +2"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000087
-    m_Localized: "Kapacitāte +3"
+    m_Localized: "Kapacit\u0101te +3"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000095
-    m_Localized: "Kapacitāte +4"
+    m_Localized: "Kapacit\u0101te +4"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000096
-    m_Localized: "Kapacitāte +5"
+    m_Localized: "Kapacit\u0101te +5"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000097
-    m_Localized: "Kapacitāte +6"
+    m_Localized: "Kapacit\u0101te +6"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000098
-    m_Localized: "Kapacitāte +7"
+    m_Localized: "Kapacit\u0101te +7"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000099
-    m_Localized: "Kapacitāte +8"
+    m_Localized: "Kapacit\u0101te +8"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000100
-    m_Localized: "Kapacitāte +9"
+    m_Localized: "Kapacit\u0101te +9"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000101
-    m_Localized: "Kapacitāte +10"
+    m_Localized: "Kapacit\u0101te +10"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000102
-    m_Localized: "Kapacitāte +11"
+    m_Localized: "Kapacit\u0101te +11"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000103
-    m_Localized: "Kapacitāte +12"
+    m_Localized: "Kapacit\u0101te +12"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000104
-    m_Localized: "Kapacitāte +13"
+    m_Localized: "Kapacit\u0101te +13"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000105
-    m_Localized: "Kapacitāte +14"
+    m_Localized: "Kapacit\u0101te +14"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000106
-    m_Localized: "Kapacitāte +15"
+    m_Localized: "Kapacit\u0101te +15"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000088
-    m_Localized: "Galds 0"
+    m_Localized: Galds 0
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000089
-    m_Localized: "Galds +1"
+    m_Localized: Galds +1
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000090
-    m_Localized: "Galds +2"
+    m_Localized: Galds +2
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000091
-    m_Localized: "Rindas ietilpība 0"
+    m_Localized: "Rindas ietilp\u012Bba 0"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000092
-    m_Localized: "Rindas ietilpība +1"
+    m_Localized: "Rindas ietilp\u012Bba +1"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000093
-    m_Localized: "Rindas ietilpība +2"
+    m_Localized: "Rindas ietilp\u012Bba +2"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000094
-    m_Localized: "Rindas ietilpība +3"
+    m_Localized: "Rindas ietilp\u012Bba +3"
     m_Metadata:
       m_Items: []
   - m_Id: 42431428665192448
-    m_Localized: "VSync (FPS izvēle ir ierobežota)"
+    m_Localized: "VSync (FPS izv\u0113le ir ierobe\u017Eota)"
     m_Metadata:
       m_Items: []
   - m_Id: 42431953292931072
-    m_Localized: "Mūzikas skaļums"
+    m_Localized: "M\u016Bzikas ska\u013Cums"
     m_Metadata:
       m_Items: []
   - m_Id: 42432326804090880
-    m_Localized: "Izšķirtspēja"
+    m_Localized: "Iz\u0161\u0137irtsp\u0113ja"
     m_Metadata:
       m_Items: []
   - m_Id: 42432451492360192
-    m_Localized: "Ekrāna režīms"
+    m_Localized: "Ekr\u0101na re\u017E\u012Bms"
     m_Metadata:
       m_Items: []
   - m_Id: 42432584829284352
-    m_Localized: "Skaņas efektu skaļums"
+    m_Localized: "Ska\u0146as efektu ska\u013Cums"
     m_Metadata:
       m_Items: []
   - m_Id: 42434254002892800
-    m_Localized: "Pamata apmācība"
+    m_Localized: "Pamata apm\u0101c\u012Bba"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194447572992
-    m_Localized: "Sprints"
+    m_Localized: Sprints
     m_Metadata:
       m_Items: []
   - m_Id: 136075194502098944
-    m_Localized: "CARGOR LOĢISTIKAS TERMINĀLIS"
+    m_Localized: "CARGOR LO\u0122ISTIKAS TERMIN\u0100LIS"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194502098945
-    m_Localized: "Enerģijas līmenis"
+    m_Localized: "Ener\u0123ijas l\u012Bmenis"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681856
-    m_Localized: "Kustība augšup/lejup/pa kreisi/pa labi"
+    m_Localized: "Kust\u012Bba aug\u0161up/lejup/pa kreisi/pa labi"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681857
-    m_Localized: "Spēlētājs"
+    m_Localized: "Sp\u0113l\u0113t\u0101js"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681858
-    m_Localized: "Ienākt"
+    m_Localized: "Ien\u0101kt"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681859
-    m_Localized: "Cimdi"
+    m_Localized: Cimdi
     m_Metadata:
       m_Items: []
   - m_Id: 136075194518876160
-    m_Localized: "Seja"
+    m_Localized: Seja
     m_Metadata:
       m_Items: []
   - m_Id: 136075194518876161
-    m_Localized: "Vai tiešām vēlies sākt apmācību?"
+    m_Localized: "Vai tie\u0161\u0101m v\u0113lies s\u0101kt apm\u0101c\u012Bbu?"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070464
-    m_Localized: "Aksesuāri"
+    m_Localized: "Aksesu\u0101ri"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070465
-    m_Localized: "VSync"
+    m_Localized: VSync
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070466
-    m_Localized: "Atpakaļ"
+    m_Localized: "Atpaka\u013C"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070467
-    m_Localized: "Spēlētājs"
+    m_Localized: "Sp\u0113l\u0113t\u0101js"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070468
-    m_Localized: "ECLION\n\nV2.01"
+    m_Localized: 'ECLION
+
+
+      V2.01'
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070469
-    m_Localized: "Nolikt"
+    m_Localized: Nolikt
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070470
-    m_Localized: "ATPAKAĻ"
+    m_Localized: "ATPAKA\u013B"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194527264768
-    m_Localized: "ATKLĀT"
+    m_Localized: "ATKL\u0100T"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459072
-    m_Localized: "ZOOM"
+    m_Localized: ZOOM
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459073
-    m_Localized: "Pacelt"
+    m_Localized: Pacelt
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459074
-    m_Localized: "VIDEO"
+    m_Localized: VIDEO
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459075
-    m_Localized: "SKAŅA"
+    m_Localized: "SKA\u0145A"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653376
-    m_Localized: "Mijiedarboties"
+    m_Localized: Mijiedarboties
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653377
-    m_Localized: "Galvenais birojs"
+    m_Localized: Galvenais birojs
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653378
-    m_Localized: "GRAFIKA"
+    m_Localized: GRAFIKA
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653379
-    m_Localized: "Mati"
+    m_Localized: Mati
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653380
-    m_Localized: "VALODA"
+    m_Localized: VALODA
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653381
-    m_Localized: "MŪZIKAS SKAĻUMS"
+    m_Localized: "M\u016AZIKAS SKA\u013BUMS"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847680
-    m_Localized: "SFX SKAĻUMS"
+    m_Localized: "SFX SKA\u013BUMS"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847681
-    m_Localized: "A opcija"
+    m_Localized: A opcija
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847682
-    m_Localized: "XXXX-XXXX-XXXX-XXXX"
+    m_Localized: XXXX-XXXX-XXXX-XXXX
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847683
-    m_Localized: "Bikses"
+    m_Localized: Bikses
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847684
-    m_Localized: "Apavi"
+    m_Localized: Apavi
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847685
-    m_Localized: "Spēlētājs"
+    m_Localized: "Sp\u0113l\u0113t\u0101js"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847686
-    m_Localized: "KOPĒJAIS SKAĻUMS"
+    m_Localized: "KOP\u0112JAIS SKA\u013BUMS"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236288
-    m_Localized: "Atpakaļ"
+    m_Localized: "Atpaka\u013C"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236289
-    m_Localized: "IZŠĶIRTSPĒJA"
+    m_Localized: "IZ\u0160\u0136IRTSP\u0112JA"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236290
-    m_Localized: "PIEVIENOTIES ISTABAI"
+    m_Localized: PIEVIENOTIES ISTABAI
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236291
-    m_Localized: "Vestibila ID:"
+    m_Localized: 'Vestibila ID:'
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236292
-    m_Localized: "PIELĀGOT"
+    m_Localized: "PIEL\u0100GOT"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236293
-    m_Localized: "A opcija"
+    m_Localized: A opcija
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624896
-    m_Localized: "Spēlētājs"
+    m_Localized: "Sp\u0113l\u0113t\u0101js"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624897
-    m_Localized: "Cepure"
+    m_Localized: Cepure
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624898
-    m_Localized: "Pielāgot"
+    m_Localized: "Piel\u0101got"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624899
-    m_Localized: "Mest"
+    m_Localized: Mest
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624900
-    m_Localized: "Kartes skats"
+    m_Localized: Kartes skats
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624901
-    m_Localized: "VADĪBA"
+    m_Localized: "VAD\u012ABA"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194560819200
-    m_Localized: "Virsdrēbes"
+    m_Localized: "Virsdr\u0113bes"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194560819201
-    m_Localized: "Brilles"
+    m_Localized: Brilles
     m_Metadata:
       m_Items: []
   - m_Id: 141928975156891283
-    m_Localized: "Kreisais klikšķis"
+    m_Localized: "Kreisais klik\u0161\u0137is"
     m_Metadata:
       m_Items: []
   - m_Id: 142557709478291173
-    m_Localized: "Labais klikšķis"
+    m_Localized: "Labais klik\u0161\u0137is"
     m_Metadata:
       m_Items: []
   - m_Id: 144849164114263128
-    m_Localized: "Vidējais klikšķis"
+    m_Localized: "Vid\u0113jais klik\u0161\u0137is"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528492507136
+    m_Localized: "Izv\u0113lne"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528538644480
+    m_Localized: "TUVIN\u0100T"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528538644481
+    m_Localized: Mijiedarboties
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838784
+    m_Localized: UZLABOJUMI
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838785
+    m_Localized: "Kust\u012Bba aug\u0161up/lejup/pa kreisi/pa labi"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838786
+    m_Localized: "Iziet no sp\u0113les"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838787
+    m_Localized: Opcijas
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033088
+    m_Localized: "Skrie\u0161ana"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033089
+    m_Localized: Bankrots!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033090
+    m_Localized: noliktava
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033091
+    m_Localized: kartes skats
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227392
+    m_Localized: "PIE\u0145EMT"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227393
+    m_Localized: paku telpa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227394
+    m_Localized: Darbinieks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227395
+    m_Localized: 1. diena
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528555421696
+    m_Localized: "N\u0101kam\u0101 diena"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528555421697
+    m_Localized: VIDEO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528559616000
+    m_Localized: "p\u0101rmest"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528559616001
+    m_Localized: GRAFIKA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528568004608
+    m_Localized: "Sp\u0113l\u0113t\u0101js3"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528568004609
+    m_Localized: 'XP: 200'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528568004610
+    m_Localized: 'GOLD: 200'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198912
+    m_Localized: Misija - 1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198913
+    m_Localized: 0/1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198914
+    m_Localized: vsync
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198915
+    m_Localized: VALODA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198916
+    m_Localized: "ATIESTAT\u012AT"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587520
+    m_Localized: 'XP: 200 GOLD: 300'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587521
+    m_Localized: AUDIO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587522
+    m_Localized: SATURS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587523
+    m_Localized: "Sp\u0113l\u0113t\u0101js1"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528584781824
+    m_Localized: "kalend\u0101rs"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528584781825
+    m_Localized: "Sp\u0113l\u0113t\u0101js2"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528584781826
+    m_Localized: "SFX SKA\u013B."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528588976128
+    m_Localized: "Sp\u0113l\u0113t\u0101js4"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528588976129
+    m_Localized: "Noliktava plaukst, un visi s\u016Bt\u012Bjumi ir nevainojami \u0161\u0137iroti."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528588976130
+    m_Localized: A opcija
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528593170432
+    m_Localized: CET
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528593170433
+    m_Localized: Nomest
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528593170434
+    m_Localized: "<color=#4B4E6D>2</color>      Laipni l\u016Bdzam Cargor!\n<color=#4B4E6D>3</color>     
+      Pamata kust\u012Bba\n<color=#4B4E6D>4</color>      K\u0101 iepakot preces\n<color=#4B4E6D>5</color>     
+      Novieto\u0161ana plauktos\n<color=#4B4E6D>6</color>      Kravas automa\u0161\u012Bnas
+      un pieg\u0101de\n<color=#4B4E6D>7</color>       Klienti\n<line-height=18><color=#4B4E6D>8</color>     
+      \u012Apa\u0161i piepras\u012Bjumi: atgrie\u0161ana,\ndubultie pas\u016Bt\u012Bjumi,
+      jaukti kravas auto</line-height>\n<color=#4B4E6D>9</color>      \u012Are un
+      j\u016Bsu nauda\n<color=#4B4E6D>10</color>   Uzlabojumi\n<color=#4B4E6D>11</color>   
+      Uzdevumu d\u0113lis\n<color=#4B4E6D>12</color>    T\u0101lru\u0146a l\u012Bnija\n<color=#4B4E6D>13</color>   
+      Atp\u016Btas telpa un dienas beigas\n<color=#4B4E6D>14</color>    Padomi komandas
+      darbam"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528597364736
+    m_Localized: Pacelt
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528597364737
+    m_Localized: CARGOR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559040
+    m_Localized: "ATKL\u0100T"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559041
+    m_Localized: SATURS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559042
+    m_Localized: Titri
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559043
+    m_Localized: "GALV. SKA\u013B."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559044
+    m_Localized: "SV\u0112T"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528609947648
+    m_Localized: "Atp\u016Btas telpa"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528609947649
+    m_Localized: SEST
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528609947650
+    m_Localized: "TRE\u0160"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141952
+    m_Localized: "Pal\u012Bdz\u012Bbas gr\u0101mata"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141953
+    m_Localized: "Izv\u0113lne"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141954
+    m_Localized: "M\u016AZIKAS SKA\u013B."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141955
+    m_Localized: "PAUZES IZV\u0112LNE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528618336256
+    m_Localized: Dienas grafiks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528618336257
+    m_Localized: PIEK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528622530560
+    m_Localized: Uzlabojums
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528626724864
+    m_Localized: Mest
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528626724865
+    m_Localized: "Noliktava ir bankrot\u0113jusi."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528630919168
+    m_Localized: "IZ\u0160\u0136IRTSP\u0112JA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528630919169
+    m_Localized: "VAD\u012ABA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528635113472
+    m_Localized: UZDEVUMS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528635113473
+    m_Localized: "NOLIKTAVAS\nROKASGR\u0100MATA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307776
+    m_Localized: OTR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307777
+    m_Localized: "Presti\u017Es"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307778
+    m_Localized: "Turpin\u0101t"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307779
+    m_Localized: MISIJA PABEIGTA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307780
+    m_Localized: "re\u0123istrat\u016Bra"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528647696384
+    m_Localized: Uzdevums
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528651890688
+    m_Localized: PIRM
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528651890689
+    m_Localized: Nauda
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269394388168704
+    m_Localized: "<b> Uzman\u012Bbu! </b> Uzman\u012Bbu: ja kastes kr\u0101sa neatbilst
+      produktam, iepako\u0161ana neizdodas un kaste sapl\u012Bst tav\u0101 rok\u0101.
+      P\u0101rbaudi kr\u0101su pirms iepako\u0161anas \u2014 net\u0113r\u0113 kasti
+      velt\u012Bgi."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269394430111744
+    m_Localized: "<b> Padoms: </b>Me\u0161ana un \u0137er\u0161ana ietaupa laiku
+      divu cilv\u0113ku stacij\u0101, bet nepadari to par ieradumu \u2014 katra nome\u0161ana
+      tev maks\u0101."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605470711808
+    m_Localized: "PLAUKTU K\u0100RTO\u0160ANA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605474906112
+    m_Localized: "Plaukti ir Cargor dz\u012Bv\u012Bbas asinsvads. Tr\u012Bs tuk\u0161u
+      kastu veidi \u2014 sarkans, dzeltens un zils \u2014 vienm\u0113r tur gaida;
+      kad pa\u0146em vienu, plaukts dr\u012Bz vien atjaunojas, t\u0101p\u0113c tas
+      nekad nepaliek piln\u012Bgi tuk\u0161s. Ja tev ir liek\u0101 kaste vai iesai\u0146ots
+      produkts, ko pa\u0161laik nev\u0113lies n\u0113s\u0101t, vari to nolikt atpaka\u013C
+      plaukt\u0101. Sak\u0101rtots plaukts atvieglo darbu gan tev, gan tavai komandai
+      \u2014 ikviens zina, kur ko atrast."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605474906113
+    m_Localized: "K\u0100 TIEK IEPAKOTI PRODUKTI"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605474906114
+    m_Localized: "PAMATA KUST\u012ABAS"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605483294720
+    m_Localized: "<b>Iet / Skriet</b> \u2013 \u013Cauj p\u0101rvietoties pa noliktavu.\n\n<b>Pacelt
+      / Nolikt</b> \u2013 pa\u0146em priek\u0161metu no gr\u012Bdas, galda vai plaukta,
+      vai noliec to tur, kur st\u0101vi.\n\n<b>Mest</b> \u2013 aizmet t\u0101lu to,
+      ko turi. \u0100tri, bet riskanti: ja tas atsitas pret kaut ko cietu, tas sapl\u012Bst,
+      un tu zaud\u0113 naudu un reput\u0101ciju. Ja to met komandas biedram, kur\u0161
+      to no\u0137er, soda nav \u2014 tas pat ietaupa laiku.\n\n<b>Mijiedarb\u012Bba</b>
+      \u2013 run\u0101\u0161ana ar klientiem, telefona pacel\u0161ana, priek\u0161metu
+      \u0146em\u0161ana no plaukta/galda \u2014 viss notiek ar \u0161o pogu.\n\n<b>Karte
+      / Kr\u0101jumu p\u0101rbaude</b> \u2013 atver noliktavas p\u0101rskatu, lai
+      redz\u0113tu, kas kur atrodas. T\u0101 ner\u0101da komandas biedru poz\u012Bcijas
+      \u2014 tas j\u0101prasa pa r\u0101ciju."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605483294721
+    m_Localized: "K\u0100 TIEK\r\nIEPAKOTI\r\nPRODUKTI"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605483294722
+    m_Localized: "Kad run\u0101 ar klientu, tas l\u016Bdz produktu un atst\u0101j
+      to uz sava galda. Ar to darbs nebeidzas \u2014 produkts v\u0113l nav iepakots.\n\nIepako\u0161anas
+      so\u013Ci:\n\nPa\u0146em klienta atst\u0101to neiesai\u0146oto produktu.\n\nDodies
+      uz tuv\u0101ko iepako\u0161anas galdu.\n\nPa\u0146em no plaukta tuk\u0161u
+      kasti t\u0101d\u0101 pa\u0161\u0101 kr\u0101s\u0101 k\u0101 produkts.\n\nApvieno
+      produktu un kasti uz galda \u2014 vispirms apl\u012Bm\u0113 ar l\u012Bmlenti,
+      tad uzl\u012Bm\u0113 eti\u0137eti, un pakete gatava.\n\nTagad tev ir iepakota
+      kaste. N\u0101kam\u0101 ir pieg\u0101de (skat\u012Bt 6. lappusi)."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859394301952
+    m_Localized: Klienti
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859406884864
+    m_Localized: "Cargor var sp\u0113l\u0113t ar\u012B vienatn\u0113, bet \u012Bst\u0101
+      jautr\u012Bba s\u0101kas komand\u0101. Da\u017Ei praktiski padomi:\n\n- <b>Sadaliet
+      darbu:</b> lai viens paliek pie iepako\u0161anas galda, viens skrien pie kravas
+      ma\u0161\u012Bn\u0101m, viens r\u016Bp\u0113jas par klientiem.\n- <b>Run\u0101jiet
+      sav\u0101 starp\u0101: </b>ja neesat vien\u0101 telp\u0101, iesp\u0113jams,
+      ka neredzat viens otru \u2014 p\u0101rbaudiet karti un ska\u013Ci dalieties,
+      kas kur atrodas.\n- <b>Metiet un \u0137eriet:</b> t\u0101 viet\u0101, lai skrietu
+      turp un atpaka\u013C starp div\u0101m stacij\u0101m, met kasti tie\u0161i komandas
+      biedram.\n- <b>Vienojieties par uzlabojumiem:</b> past\u0101v\u012Bgas izv\u0113les
+      ietekm\u0113 visus, nelem viens pats.\n\nVeiksmi \u2014 laipni l\u016Bdzam
+      Cargor!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859411079168
+    m_Localized: "Laipni l\u016Bdzam Cargor!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859411079169
+    m_Localized: "T\u0101lru\u0146a L\u012Bnija"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859411079170
+    m_Localized: "T\u0101lrunis noliktav\u0101 laiku pa laikam zvana. Ej to pacelt,
+      lai ieg\u016Btu nelielu naudas un reput\u0101cijas balvu. Ja nepace\u013C,
+      ar\u012B neko nezaud\u0113 \u2014 t\u0101lrunis pats galu gal\u0101 apklust.\n\nVai
+      tas zvan\u012Bs, ir piln\u012Bb\u0101 atkar\u012Bgs no nejau\u0161\u012Bbas,
+      bet da\u017E\u0101s dien\u0101s (piem\u0113ram, \u012Bpa\u0161u notikumu dien\u0101s)
+      iesp\u0113jam\u012Bba palielin\u0101s. Paskat\u012Bties gar\u0101m ejot nekait\u0113."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273472
+    m_Localized: "<b> Padoms:  </b>Dienai tuvojoties beig\u0101m, pabeidz to, ko
+      dari, un dodies agri uz atp\u016Btas telpu \u2014 neliec komandai gaid\u012Bt."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273473
+    m_Localized: "\u012Apa\u0161i Piepras\u012Bjumi"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273474
+    m_Localized: "<b> Padoms:  </b>Neizv\u0113lies bez sarunas ar komandu \u2014
+      viena cilv\u0113ka izv\u0113l\u0113ts uzlabojums maina visu sp\u0113li."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273475
+    m_Localized: "Katru dienu pie zi\u0146ojumu d\u0113\u013Ca redz\u0113si vair\u0101kus
+      uzdevumus \u2014 piem\u0113ram, kastes salik\u0161anu plaukt\u0101, produkta
+      iepako\u0161anu, kravas ma\u0161\u012Bnas piepild\u012B\u0161anu vai t\u0101lru\u0146a
+      pacel\u0161anu. Dien\u0101 vari pie\u0146emt tikai vienu.\n\n- Ja pabeidz pie\u0146emto
+      uzdevumu pirms dienas beig\u0101m, tava balva tiek autom\u0101tiski ieskait\u012Bta
+      dienas beig\u0101s.\n\n- Ja to pie\u0146em un atst\u0101j nepabeigtu, dienas
+      beig\u0101s seko sods.\n\nJa nepie\u0146em nevienu, nekas nenotiek \u2014 bet
+      tu ar\u012B palaid gar\u0101m iesp\u0113ju. Izv\u0113lies uzdevumu, kas ir
+      re\u0101listisks attiec\u012Bb\u0101 pret to, ko tobr\u012Bd dari."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273476
+    m_Localized: Komandas Darba Padomi
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273477
+    m_Localized: "\u012Are un Tava Nauda"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859419467776
+    m_Localized: "Cargor uztur\u0113\u0161ana nav bez maksas. Noteikt\u0101s dien\u0101s
+      pien\u0101k \u012Bres maks\u0101jums \u2014 \u0161o dienu sauc par \"\u012Bres
+      dienu\".\n\n- Ja tev ir pietiekami daudz naudas \u012Brei, t\u0101 tiek samaks\u0101ta,
+      un tu turpini.\n\n- Ja termi\u0146\u0101 nevari samaks\u0101t, tev ir vienreiz\u0113ja
+      otr\u0101 izdev\u012Bba: liel\u0101k\u0101 da\u013Ca tavas skaidras naudas
+      tiek at\u0146emta, bet uz\u0146\u0113mums neaizveras.\n\n<b>Nauda </b>n\u0101k
+      no pareiz\u0101m pieg\u0101d\u0113m, telefona zvaniem un pabeigtiem uzdevumiem.
+      Nepareizas pieg\u0101des, nomestas kastes un nepabeigti uzdevumi at\u0146em
+      tev naudu."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859419467777
+    m_Localized: "<b> Neaizmirsti:  </b>tu neesi \u0161eit viens. Cargor ir komandas
+      darbs \u2014 dalies ar slodzi, dari zin\u0101mu."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859419467778
+    m_Localized: "Pieg\u0101d\u0101 pareizo kr\u0101su \u2192 tu nopelni naudu, tava
+      reput\u0101cija paaugstin\u0101s.\n\nPieg\u0101d\u0101 nepareizo kr\u0101su
+      \u2192 tu zaud\u0113 naudu. P\u0101rbaudi kr\u0101sas divreiz.\n\nKatrai kravas
+      ma\u0161\u012Bnai ir ierobe\u017Eots gaid\u012B\u0161anas laiks un ietilp\u012Bba.
+      Kad t\u0101 ir pilna vai laiks beidzies, kravas ma\u0161\u012Bna aizbrauc,
+      un ierodas jauna.\n\nPieaugot noliktavai (ar uzlabojumiem), var atv\u0113rties
+      vair\u0101ki ang\u0101ri \u2014 tad vari apkalpot vair\u0101kas kravas ma\u0161\u012Bnas
+      vienlaikus."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859427856384
+    m_Localized: "<b> Padoms:  </b>Neiekr\u012Bti panik\u0101, ieraugot jauktu kravas
+      ma\u0161\u012Bnu vai dubultu pas\u016Bt\u012Bjumu \u2014 vienk\u0101r\u0161i
+      uztver to k\u0101 divas atsevi\u0161\u0137as pieg\u0101des un veic t\u0101s
+      p\u0113c k\u0101rtas."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859427856385
+    m_Localized: Uzlabojumi
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859427856386
+    m_Localized: "Kad diena beidzas, visiem j\u0101dodas uz atp\u016Btas telpu. Pat
+      ja tikai viens cilv\u0113ks paliek \u0101r\u0101, diena neaizveras \u2014 gaida,
+      kam\u0113r visa komanda sapulc\u0113jas.\n\nKad visi ir telp\u0101, par\u0101d\u0101s
+      dienas kopsavilkums, un s\u0101kas jauna diena. Ja tu sasniedz se\u0161padsmit\u0101s
+      dienas beigas bez bankrota, esi nopeln\u012Bjis svin\u012Bbas."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859432050688
+    m_Localized: "Atp\u016Btas Telpa un Dienas Beigas"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859432050689
+    m_Localized: "Klienti ien\u0101k pa durv\u012Bm, nost\u0101jas rind\u0101 un
+      l\u016Bdz tev kaut ko. Josla virs vi\u0146iem r\u0101da, cik paciet\u012Bgi
+      vi\u0146i ir \u2014 kad t\u0101 izbeidzas, klients dusm\u012Bgi aiziet, un
+      tu zaud\u0113 naudu un reput\u0101ciju.\n\n- Noslodze main\u0101s dienas laik\u0101:
+      pusdienlaiks un vakars ir vissasprindzin\u0101t\u0101kie br\u012B\u017Ei, p\u0113cpusdien\u0101
+      tev ir mazliet atvieglojuma.\n\n- Kad run\u0101 ar klientu (mijiedarb\u012Bbas
+      poga), vi\u0146\u0161 atst\u0101j v\u0113lamo produktu uz sava galda \u2014
+      p\u0113c tam seko iepako\u0161ana un pieg\u0101de (4.-6. lappuse).\n\n- Katrs
+      laik\u0101 apkalpots klients tev nes gan naudu, gan reput\u0101ciju. Jo augst\u0101ka
+      tava reput\u0101cija, jo vair\u0101k nopelni par pieg\u0101di."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859436244992
+    m_Localized: "<b> Padoms:  </b>Neatliec gr\u016Btu uzdevumu uz p\u0113d\u0113jo
+      dienu. Dienas beigas vienm\u0113r pien\u0101k \u0101tr\u0101k, nek\u0101 dom\u0101."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859436244993
+    m_Localized: "Atgrie\u0161ana, Dubultie Pas\u016Bt\u012Bjumi, Jaukt\u0101s Kravas
+      Ma\u0161\u012Bnas"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859436244994
+    m_Localized: "<b> Padoms:  </b>Ja t\u0101lrunis zvana un tas ir pa ce\u013Cam,
+      iegriezies pat ar piln\u0101m rok\u0101m \u2014 \u012Bss p\u0101rtraukums,
+      neliels ieguvums."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633600
+    m_Localized: "LAIPNI L\u016ADZAM!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633601
+    m_Localized: "Uzdevumu D\u0113lis"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633602
+    m_Localized: "Dien\u0101m ejot, darbs k\u013C\u016Bst nedaudz sare\u017E\u0123\u012Bt\u0101ks.
+      Tu sastapsies ar trim jaun\u0101m situ\u0101cij\u0101m:\n\n<b>Atgrie\u0161ana:
+      </b>da\u017Ei klienti negrib produktu \u2014 glu\u017Ei pret\u0113ji, vi\u0146i
+      l\u016Bdz, lai tu atnes vi\u0146iem kasti atpaka\u013C. Kr\u0101sain\u0101
+      lode, kas par\u0101d\u0101s virs vi\u0146iem, r\u0101da, k\u0101das kr\u0101sas
+      kasti vi\u0146i v\u0113las. Pa\u0146em pareizo kr\u0101su no plaukta un aiznes
+      to klientam.\n\n<b>Dubultais pas\u016Bt\u012Bjums: </b>da\u017Ei klienti v\u0113las
+      divas da\u017E\u0101das kr\u0101sas vienlaikus. Darbs nav pabeigts, kam\u0113r
+      abas nav sagatavotas.\n\n<b>Jaukt\u0101 kravas ma\u0161\u012Bna: </b>da\u017Eas
+      kravas ma\u0161\u012Bnas v\u0113las nevis vienu, bet divas da\u017E\u0101das
+      kastu kr\u0101sas. Jaukt\u0101 kr\u0101sa uz virsb\u016Bves (piem\u0113ram,
+      sarkans + dzeltens = oran\u017Es) dod tev nor\u0101di \u2014 t\u0101 r\u0101da,
+      kuras divas kr\u0101sas j\u0101iekrauj."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633603
+    m_Localized: "Ang\u0101r\u0101 gaido\u0161\u0101s kravas ma\u0161\u012Bnas ar
+      virsb\u016Bves kr\u0101su r\u0101da, ko t\u0101s v\u0113las: sarkana kravas
+      ma\u0161\u012Bna v\u0113las sarkanu kasti, dzeltena \u2014 dzeltenu, zila \u2014
+      zilu."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859448827904
+    m_Localized: "Laipni l\u016Bdzam! Tagad tu esi da\u013Ca no Cargor \u0123imenes.
+      \u0160\u012B vieta ir noliktava, veikals un mazliet haosa \u2014 viss vienuviet.\n\nKlienti
+      past\u0101sta, ko vi\u0146i v\u0113las, tu to iepako un uzkrauj pareizaj\u0101
+      kravas ma\u0161\u012Bn\u0101. Izklaus\u0101s vienk\u0101r\u0161i, vai ne? Ja
+      p\u0113c se\u0161padsmit dien\u0101m joproj\u0101m st\u0101vi k\u0101j\u0101s,
+      tu tie\u0161\u0101m esi labi padar\u012Bjis darbu.\n\n\u0160\u012B piez\u012Bmju
+      gr\u0101mati\u0146a tav\u0101s rok\u0101s ir vieta, pie kuras atgriez\u012Bsies,
+      kad aizmirs\u012Bsi smalkumus. Katra lappuse apraksta citu t\u0113mu. Nav j\u0101steidzas
+      \u2014 pirmaj\u0101s dien\u0101s str\u0101d\u0101 l\u0113ni, iepaz\u012Bsti
+      sist\u0113mu. \u0100trums n\u0101ks ar laiku."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859453022208
+    m_Localized: "<b> Padoms:  </b>P\u0101rbaudi savu skaidru naudu pirms \u012Bres
+      dien\u0101m. Neatst\u0101j to uz p\u0113d\u0113jo br\u012Bdi."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859453022209
+    m_Localized: "<b> Uzman\u012Bbu:  </b>Kam\u0113r rinda ir pilna, jauni klienti
+      neierodas, bet tie, kas jau gaida, turpina zaud\u0113t paciet\u012Bbu. Nes\u0101c
+      neko jaunu, kam\u0113r neesi iztuk\u0161ojis rindu."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859453022210
+    m_Localized: "<b> Padoms:  </b>Ja kravas ma\u0161\u012Bnas kr\u0101su vari saskat\u012Bt
+      jau no t\u0101lienes, dod priek\u0161roku tai, kas atbilst kastei, ko nes \u2014
+      nestaig\u0101 velti."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859461410816
+    m_Localized: "KRAVAS MA\u0160\u012ANAS UN PIEG\u0100DE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859465605120
+    m_Localized: "Noteikt\u0101s dien\u0101s tev tiek pied\u0101v\u0101tas vair\u0101kas
+      uzlabojumu iesp\u0113jas \u2014 tu nevari \u0146emt visas, tu izv\u0113lies
+      starp t\u0101m. Vari ieg\u016Bt past\u0101v\u012Bgus uzlabojumus, piem\u0113ram,
+      papildu plauktu, papildu ang\u0101ru, \u0101tr\u0101ku kust\u012Bbu vai ilg\u0101ku
+      klientu paciet\u012Bbu.\n\nR\u016Bp\u012Bgi apsver izv\u0113li: da\u017Ei uzlabojumi
+      izsl\u0113dz viens otru, citi atblo\u0137\u0113jas tikai no noteiktas dienas.
+      Izv\u0113les, kas pa\u0101trina pamatus pirmaj\u0101s dien\u0101s, v\u0113l\u0101k
+      atmaks\u0101jas daudz vair\u0101k."
     m_Metadata:
       m_Items: []
   references:

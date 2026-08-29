@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
   m_Name: StringTable_es
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   m_LocaleId:
     m_Code: es
   m_SharedData: {fileID: 11400000, guid: 7d8d57bedebf1954db92f72969b59263, type: 2}
@@ -19,851 +19,1424 @@ MonoBehaviour:
     m_Items: []
   m_TableData:
   - m_Id: 88301023232
-    m_Localized: "Juego en línea"
+    m_Localized: "Juego en l\xEDnea"
     m_Metadata:
       m_Items: []
   - m_Id: 574282444800
-    m_Localized: "Idioma"
+    m_Localized: Idioma
     m_Metadata:
       m_Items: []
   - m_Id: 26808395673600
-    m_Localized: "Sensibilidad del ratón"
+    m_Localized: "Sensibilidad del rat\xF3n"
     m_Metadata:
       m_Items: []
   - m_Id: 27030165303296
-    m_Localized: "Juego sin conexión"
+    m_Localized: "Juego sin conexi\xF3n"
     m_Metadata:
       m_Items: []
   - m_Id: 27180690485248
-    m_Localized: "Ajustes"
+    m_Localized: Ajustes
     m_Metadata:
       m_Items: []
   - m_Id: 27238353776640
-    m_Localized: "Salir"
+    m_Localized: Salir
     m_Metadata:
       m_Items: []
   - m_Id: 27356159193088
-    m_Localized: "General"
+    m_Localized: General
     m_Metadata:
       m_Items: []
   - m_Id: 27414908809216
-    m_Localized: "Gráficos"
+    m_Localized: "Gr\xE1ficos"
     m_Metadata:
       m_Items: []
   - m_Id: 27504130043904
-    m_Localized: "Audio"
+    m_Localized: Audio
     m_Metadata:
       m_Items: []
   - m_Id: 27565803089920
-    m_Localized: "Atrás"
+    m_Localized: "Atr\xE1s"
     m_Metadata:
       m_Items: []
   - m_Id: 28147393671168
-    m_Localized: "Créditos"
+    m_Localized: "Cr\xE9ditos"
     m_Metadata:
       m_Items: []
   - m_Id: 118380277706752
-    m_Localized: "Guardar"
+    m_Localized: Guardar
     m_Metadata:
       m_Items: []
   - m_Id: 4669780596797440
-    m_Localized: "Personalizar"
+    m_Localized: Personalizar
     m_Metadata:
       m_Items: []
   - m_Id: 4669983794049024
-    m_Localized: "Día"
+    m_Localized: "D\xEDa"
     m_Metadata:
       m_Items: []
   - m_Id: 4670284437565440
-    m_Localized: "DÍA INTENSIVO"
+    m_Localized: "D\xCDA INTENSIVO"
     m_Metadata:
       m_Items: []
   - m_Id: 4670557176377344
-    m_Localized: "BONO DE ENTREGA"
+    m_Localized: BONO DE ENTREGA
     m_Metadata:
       m_Items: []
   - m_Id: 4670594551820288
-    m_Localized: "CLIENTES ENFADADOS"
+    m_Localized: CLIENTES ENFADADOS
     m_Metadata:
       m_Items: []
   - m_Id: 4670644065579008
-    m_Localized: "DÍA RELAJADO"
+    m_Localized: "D\xCDA RELAJADO"
     m_Metadata:
       m_Items: []
   - m_Id: 4670683781443584
-    m_Localized: "LOGÍSTICA LENTA"
+    m_Localized: "LOG\xCDSTICA LENTA"
     m_Metadata:
       m_Items: []
   - m_Id: 4670721878306816
-    m_Localized: "CARGA EXPRÉS"
+    m_Localized: "CARGA EXPR\xC9S"
     m_Metadata:
       m_Items: []
   - m_Id: 4670821572718592
-    m_Localized: "CAJAS PESADAS"
+    m_Localized: CAJAS PESADAS
     m_Metadata:
       m_Items: []
   - m_Id: 4670864191041536
-    m_Localized: "DÍA DE LA CAJA DORADA"
+    m_Localized: "D\xCDA DE LA CAJA DORADA"
     m_Metadata:
       m_Items: []
   - m_Id: 4670907031662592
-    m_Localized: "DÍA DE LA OPORTUNIDAD"
+    m_Localized: "D\xCDA DE LA OPORTUNIDAD"
     m_Metadata:
       m_Items: []
   - m_Id: 4670942314147840
-    m_Localized: "PROBLEMA DE FATIGA"
+    m_Localized: PROBLEMA DE FATIGA
     m_Metadata:
       m_Items: []
   - m_Id: 4671003622289408
-    m_Localized: "SERVICIO VIP"
+    m_Localized: SERVICIO VIP
     m_Metadata:
       m_Items: []
   - m_Id: 4671211781402624
-    m_Localized: "Personalización del personaje"
+    m_Localized: "Personalizaci\xF3n del personaje"
     m_Metadata:
       m_Items: []
   - m_Id: 4671355847356416
-    m_Localized: "Accesorios"
+    m_Localized: Accesorios
     m_Metadata:
       m_Items: []
   - m_Id: 4671495475736576
-    m_Localized: "Caras"
+    m_Localized: Caras
     m_Metadata:
       m_Items: []
   - m_Id: 4671520289239040
-    m_Localized: "Gafas"
+    m_Localized: Gafas
     m_Metadata:
       m_Items: []
   - m_Id: 4671581857427456
-    m_Localized: "Guantes"
+    m_Localized: Guantes
     m_Metadata:
       m_Items: []
   - m_Id: 4671685976829952
-    m_Localized: "Peinados"
+    m_Localized: Peinados
     m_Metadata:
       m_Items: []
   - m_Id: 4671905867411456
-    m_Localized: "Sombreros"
+    m_Localized: Sombreros
     m_Metadata:
       m_Items: []
   - m_Id: 4671966126977024
-    m_Localized: "Bigote"
+    m_Localized: Bigote
     m_Metadata:
       m_Items: []
   - m_Id: 4672063447412736
-    m_Localized: "Ropa exterior"
+    m_Localized: Ropa exterior
     m_Metadata:
       m_Items: []
   - m_Id: 4672192313208832
-    m_Localized: "Pantalones"
+    m_Localized: Pantalones
     m_Metadata:
       m_Items: []
   - m_Id: 4672235917193216
-    m_Localized: "Zapatos"
+    m_Localized: Zapatos
     m_Metadata:
       m_Items: []
   - m_Id: 4672275557560320
-    m_Localized: "Color de piel"
+    m_Localized: Color de piel
     m_Metadata:
       m_Items: []
   - m_Id: 4672388858294272
-    m_Localized: "PRESTIGIO"
+    m_Localized: PRESTIGIO
     m_Metadata:
       m_Items: []
   - m_Id: 4672484777832448
-    m_Localized: "Día siguiente"
+    m_Localized: "D\xEDa siguiente"
     m_Metadata:
       m_Items: []
   - m_Id: 4672617426890752
-    m_Localized: "Continuar"
+    m_Localized: Continuar
     m_Metadata:
       m_Items: []
   - m_Id: 30567298710810624
-    m_Localized: "Alojar partida"
+    m_Localized: Alojar partida
     m_Metadata:
       m_Items: []
   - m_Id: 30567344864931840
-    m_Localized: "Unirse a partida"
+    m_Localized: Unirse a partida
     m_Metadata:
       m_Items: []
   - m_Id: 30567847749398528
-    m_Localized: "Iniciar"
+    m_Localized: Iniciar
     m_Metadata:
       m_Items: []
   - m_Id: 30567978871730176
-    m_Localized: "Lobby"
+    m_Localized: Lobby
     m_Metadata:
       m_Items: []
   - m_Id: 30568446771507200
-    m_Localized: "Elegir el mapa\n(Próximamente)"
+    m_Localized: "Elegir el mapa\n(Pr\xF3ximamente)"
     m_Metadata:
       m_Items: []
   - m_Id: 30568844051787776
-    m_Localized: "La oficina principal"
+    m_Localized: La oficina principal
     m_Metadata:
       m_Items: []
   - m_Id: 30569701396885504
-    m_Localized: "Jugar en línea"
+    m_Localized: "Jugar en l\xEDnea"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000001
-    m_Localized: "Jugadores en la sala"
+    m_Localized: Jugadores en la sala
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000002
-    m_Localized: "Total: {0} jugadores"
+    m_Localized: 'Total: {0} jugadores'
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000003
-    m_Localized: "Estado de la sala de descanso"
+    m_Localized: Estado de la sala de descanso
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000004
-    m_Localized: "Dentro: {0} / {1} jugadores"
+    m_Localized: 'Dentro: {0} / {1} jugadores'
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000005
-    m_Localized: "¡Todos están listos!"
+    m_Localized: "\xA1Todos est\xE1n listos!"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000006
-    m_Localized: "Esperando a {0} jugadores..."
+    m_Localized: Esperando a {0} jugadores...
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000007
-    m_Localized: "No se encontraron jugadores"
+    m_Localized: No se encontraron jugadores
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000008
-    m_Localized: "Jugador"
+    m_Localized: Jugador
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000009
-    m_Localized: "Tutorial"
+    m_Localized: Tutorial
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000010
-    m_Localized: "¡Solo el anfitrión puede expulsar jugadores!"
+    m_Localized: "\xA1Solo el anfitri\xF3n puede expulsar jugadores!"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000011
-    m_Localized: "¡Jugador expulsado!"
+    m_Localized: "\xA1Jugador expulsado!"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000012
-    m_Localized: "¡Error al expulsar!"
+    m_Localized: "\xA1Error al expulsar!"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000013
-    m_Localized: "Espacio vacío"
+    m_Localized: "Espacio vac\xEDo"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000014
-    m_Localized: "Día {0}  {1}:{2} ({3}s)"
+    m_Localized: "D\xEDa {0}  {1}:{2} ({3}s)"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000015
-    m_Localized: "Día terminado. Ve a la sala de descanso."
+    m_Localized: "D\xEDa terminado. Ve a la sala de descanso."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000016
-    m_Localized: "Día de alquiler"
+    m_Localized: "D\xEDa de alquiler"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000017
-    m_Localized: "Nivel: {0}"
+    m_Localized: 'Nivel: {0}'
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000018
-    m_Localized: "Costo: {0}"
+    m_Localized: 'Costo: {0}'
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000019
-    m_Localized: "Máx"
+    m_Localized: "M\xE1x"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000020
-    m_Localized: "Comprar"
+    m_Localized: Comprar
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000021
-    m_Localized: "Cola"
+    m_Localized: Cola
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000022
-    m_Localized: "Aumenta el tamaño máximo de la cola de clientes."
+    m_Localized: "Aumenta el tama\xF1o m\xE1ximo de la cola de clientes."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000023
-    m_Localized: "Resistencia"
+    m_Localized: Resistencia
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000024
-    m_Localized: "Aumenta la velocidad de regeneración de resistencia."
+    m_Localized: "Aumenta la velocidad de regeneraci\xF3n de resistencia."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000025
-    m_Localized: "Dinero"
+    m_Localized: Dinero
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000026
-    m_Localized: "Aumenta la recompensa por caja entregada."
+    m_Localized: Aumenta la recompensa por caja entregada.
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000027
-    m_Localized: "Camión"
+    m_Localized: "Cami\xF3n"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000028
-    m_Localized: "Desbloquea hangares de camiones adicionales."
+    m_Localized: Desbloquea hangares de camiones adicionales.
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000029
-    m_Localized: "Nivel de misión"
+    m_Localized: "Nivel de misi\xF3n"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000030
-    m_Localized: "Desbloquea misiones de nivel superior."
+    m_Localized: Desbloquea misiones de nivel superior.
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000031
-    m_Localized: "DÍA OCUPADO"
+    m_Localized: "D\xCDA OCUPADO"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000032
-    m_Localized: "La tasa de aparición de clientes aumenta un 30%."
+    m_Localized: "La tasa de aparici\xF3n de clientes aumenta un 30%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000033
-    m_Localized: "CLIENTES ENFADADOS"
+    m_Localized: CLIENTES ENFADADOS
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000034
-    m_Localized: "La paciencia de los clientes disminuye un 30%."
+    m_Localized: La paciencia de los clientes disminuye un 30%.
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000035
-    m_Localized: "LOGÍSTICA LENTA"
+    m_Localized: "LOG\xCDSTICA LENTA"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000036
-    m_Localized: "Los camiones abandonan la escena un 50% más lento."
+    m_Localized: "Los camiones abandonan la escena un 50% m\xE1s lento."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000037
-    m_Localized: "CAJAS PESADAS"
+    m_Localized: CAJAS PESADAS
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000038
-    m_Localized: "La velocidad de movimiento general se reduce un 20%."
+    m_Localized: La velocidad de movimiento general se reduce un 20%.
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000039
-    m_Localized: "PROBLEMA DE FATIGA"
+    m_Localized: PROBLEMA DE FATIGA
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000040
-    m_Localized: "La resistencia se regenera un 40% más lento y la velocidad de sprint baja un 30%."
+    m_Localized: "La resistencia se regenera un 40% m\xE1s lento y la velocidad de
+      sprint baja un 30%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000041
-    m_Localized: "AUDITORÍA SORPRESA"
+    m_Localized: "AUDITOR\xCDA SORPRESA"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000042
-    m_Localized: "Todas las operaciones erróneas penalizan el doble."
+    m_Localized: "Todas las operaciones err\xF3neas penalizan el doble."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000043
-    m_Localized: "DÍA DE MARKETING"
+    m_Localized: "D\xCDA DE MARKETING"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000044
-    m_Localized: "20% más de clientes, pero 30% menos de ganancias."
+    m_Localized: "20% m\xE1s de clientes, pero 30% menos de ganancias."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000045
-    m_Localized: "ATENCIÓN AL CLIENTE"
+    m_Localized: "ATENCI\xD3N AL CLIENTE"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000046
-    m_Localized: "El teléfono de recepción suena un 50% más a menudo."
+    m_Localized: "El tel\xE9fono de recepci\xF3n suena un 50% m\xE1s a menudo."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000047
-    m_Localized: "BONO DE ENTREGA"
+    m_Localized: BONO DE ENTREGA
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000048
-    m_Localized: "Gana un 20% más de dinero por entrega."
+    m_Localized: "Gana un 20% m\xE1s de dinero por entrega."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000049
-    m_Localized: "DÍA RELAJADO"
+    m_Localized: "D\xCDA RELAJADO"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000050
-    m_Localized: "La paciencia de los clientes aumenta un 30%."
+    m_Localized: La paciencia de los clientes aumenta un 30%.
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000051
-    m_Localized: "CARGA EXPRÉS"
+    m_Localized: "CARGA EXPR\xC9S"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000052
-    m_Localized: "Los camiones abandonan la escena un 30% más rápido."
+    m_Localized: "Los camiones abandonan la escena un 30% m\xE1s r\xE1pido."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000053
-    m_Localized: "DÍA DE LA CAJA DORADA"
+    m_Localized: "D\xCDA DE LA CAJA DORADA"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000054
-    m_Localized: "Cada caja entregada correctamente gana un 30% extra. También trae un 20% más de clientes, salidas de camión un 20% más rápidas y movimiento un 20% más rápido, pero la resistencia se regenera un 20% más lento."
+    m_Localized: "Cada caja entregada correctamente gana un 30% extra. Tambi\xE9n
+      trae un 20% m\xE1s de clientes, salidas de cami\xF3n un 20% m\xE1s r\xE1pidas
+      y movimiento un 20% m\xE1s r\xE1pido, pero la resistencia se regenera un 20%
+      m\xE1s lento."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000055
-    m_Localized: "DÍA DE LA OPORTUNIDAD"
+    m_Localized: "D\xCDA DE LA OPORTUNIDAD"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000056
-    m_Localized: "El costo de mejoras disminuye un 20%."
+    m_Localized: El costo de mejoras disminuye un 20%.
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000057
-    m_Localized: "DÍA DE CUOTA"
+    m_Localized: "D\xCDA DE CUOTA"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000058
-    m_Localized: "Todos los camiones piden solo un color de caja."
+    m_Localized: Todos los camiones piden solo un color de caja.
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000059
-    m_Localized: "SERVICIO VIP"
+    m_Localized: SERVICIO VIP
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000060
-    m_Localized: "10% de probabilidad de que las cajas sean perfectas y ganen un 10% más."
+    m_Localized: "10% de probabilidad de que las cajas sean perfectas y ganen un
+      10% m\xE1s."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000061
-    m_Localized: "DÍA LLUVIOSO"
+    m_Localized: "D\xCDA LLUVIOSO"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000062
-    m_Localized: "Llegan un 20% menos de clientes."
+    m_Localized: Llegan un 20% menos de clientes.
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000063
-    m_Localized: "DÍA DE FESTIVAL"
+    m_Localized: "D\xCDA DE FESTIVAL"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000064
-    m_Localized: "Se gana un bono aleatorio al inicio del día."
+    m_Localized: "Se gana un bono aleatorio al inicio del d\xEDa."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000065
-    m_Localized: "Jugadores"
+    m_Localized: Jugadores
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000066
-    m_Localized: "({0}/{1} en la sala de descanso)"
+    m_Localized: ({0}/{1} en la sala de descanso)
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000067
-    m_Localized: "Clientes esperados"
+    m_Localized: Clientes esperados
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000068
-    m_Localized: "Rojo"
+    m_Localized: Rojo
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000069
-    m_Localized: "Azul"
+    m_Localized: Azul
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000070
-    m_Localized: "Amarillo"
+    m_Localized: Amarillo
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000071
-    m_Localized: "Verde"
+    m_Localized: Verde
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000072
-    m_Localized: "Sin misión"
+    m_Localized: "Sin misi\xF3n"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000073
-    m_Localized: "Recompensa"
+    m_Localized: Recompensa
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000074
-    m_Localized: "Penalización"
+    m_Localized: "Penalizaci\xF3n"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000075
-    m_Localized: "Completado"
+    m_Localized: Completado
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000076
-    m_Localized: "Fallido"
+    m_Localized: Fallido
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000077
-    m_Localized: "Completa el minijuego {0} veces"
+    m_Localized: Completa el minijuego {0} veces
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000078
-    m_Localized: "Coloca {0} cajas en el estante"
+    m_Localized: Coloca {0} cajas en el estante
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000079
-    m_Localized: "Coloca {0} cajas {1} en el estante"
+    m_Localized: Coloca {0} cajas {1} en el estante
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000080
-    m_Localized: "Completa {0} camiones"
+    m_Localized: Completa {0} camiones
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000081
-    m_Localized: "Atiende a {0} clientes"
+    m_Localized: Atiende a {0} clientes
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000082
-    m_Localized: "Ignora a {0} clientes"
+    m_Localized: Ignora a {0} clientes
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000083
-    m_Localized: "Empaqueta {0} juguetes"
+    m_Localized: Empaqueta {0} juguetes
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000107
-    m_Localized: "Ya aceptaste una misión hoy"
+    m_Localized: "Ya aceptaste una misi\xF3n hoy"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000108
-    m_Localized: "Aceptar"
+    m_Localized: Aceptar
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000084
-    m_Localized: "Capacidad 0"
+    m_Localized: Capacidad 0
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000085
-    m_Localized: "Capacidad +1"
+    m_Localized: Capacidad +1
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000086
-    m_Localized: "Capacidad +2"
+    m_Localized: Capacidad +2
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000087
-    m_Localized: "Capacidad +3"
+    m_Localized: Capacidad +3
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000095
-    m_Localized: "Capacidad +4"
+    m_Localized: Capacidad +4
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000096
-    m_Localized: "Capacidad +5"
+    m_Localized: Capacidad +5
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000097
-    m_Localized: "Capacidad +6"
+    m_Localized: Capacidad +6
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000098
-    m_Localized: "Capacidad +7"
+    m_Localized: Capacidad +7
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000099
-    m_Localized: "Capacidad +8"
+    m_Localized: Capacidad +8
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000100
-    m_Localized: "Capacidad +9"
+    m_Localized: Capacidad +9
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000101
-    m_Localized: "Capacidad +10"
+    m_Localized: Capacidad +10
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000102
-    m_Localized: "Capacidad +11"
+    m_Localized: Capacidad +11
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000103
-    m_Localized: "Capacidad +12"
+    m_Localized: Capacidad +12
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000104
-    m_Localized: "Capacidad +13"
+    m_Localized: Capacidad +13
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000105
-    m_Localized: "Capacidad +14"
+    m_Localized: Capacidad +14
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000106
-    m_Localized: "Capacidad +15"
+    m_Localized: Capacidad +15
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000088
-    m_Localized: "Mesa 0"
+    m_Localized: Mesa 0
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000089
-    m_Localized: "Mesa +1"
+    m_Localized: Mesa +1
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000090
-    m_Localized: "Mesa +2"
+    m_Localized: Mesa +2
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000091
-    m_Localized: "Capacidad de cola 0"
+    m_Localized: Capacidad de cola 0
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000092
-    m_Localized: "Capacidad de cola +1"
+    m_Localized: Capacidad de cola +1
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000093
-    m_Localized: "Capacidad de cola +2"
+    m_Localized: Capacidad de cola +2
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000094
-    m_Localized: "Capacidad de cola +3"
+    m_Localized: Capacidad de cola +3
     m_Metadata:
       m_Items: []
   - m_Id: 42431428665192448
-    m_Localized: "VSync (la selección de FPS está restringida)"
+    m_Localized: "VSync (la selecci\xF3n de FPS est\xE1 restringida)"
     m_Metadata:
       m_Items: []
   - m_Id: 42431953292931072
-    m_Localized: "Volumen de música"
+    m_Localized: "Volumen de m\xFAsica"
     m_Metadata:
       m_Items: []
   - m_Id: 42432326804090880
-    m_Localized: "Resolución"
+    m_Localized: "Resoluci\xF3n"
     m_Metadata:
       m_Items: []
   - m_Id: 42432451492360192
-    m_Localized: "Modo de pantalla"
+    m_Localized: Modo de pantalla
     m_Metadata:
       m_Items: []
   - m_Id: 42432584829284352
-    m_Localized: "Volumen de efectos"
+    m_Localized: Volumen de efectos
     m_Metadata:
       m_Items: []
   - m_Id: 42434254002892800
-    m_Localized: "Tutorial básico"
+    m_Localized: "Tutorial b\xE1sico"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194447572992
-    m_Localized: "Sprint"
+    m_Localized: Sprint
     m_Metadata:
       m_Items: []
   - m_Id: 136075194502098944
-    m_Localized: "TERMINAL LOGÍSTICA CARGOR"
+    m_Localized: "TERMINAL LOG\xCDSTICA CARGOR"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194502098945
-    m_Localized: "Nivel de energía"
+    m_Localized: "Nivel de energ\xEDa"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681856
-    m_Localized: "Moverse arriba/abajo/izquierda/derecha"
+    m_Localized: Moverse arriba/abajo/izquierda/derecha
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681857
-    m_Localized: "Jugador"
+    m_Localized: Jugador
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681858
-    m_Localized: "Entrar"
+    m_Localized: Entrar
     m_Metadata:
       m_Items: []
   - m_Id: 136075194514681859
-    m_Localized: "Guantes"
+    m_Localized: Guantes
     m_Metadata:
       m_Items: []
   - m_Id: 136075194518876160
-    m_Localized: "Cara"
+    m_Localized: Cara
     m_Metadata:
       m_Items: []
   - m_Id: 136075194518876161
-    m_Localized: "¿Seguro que quieres entrar al tutorial?"
+    m_Localized: "\xBFSeguro que quieres entrar al tutorial?"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070464
-    m_Localized: "Accesorios"
+    m_Localized: Accesorios
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070465
-    m_Localized: "VSync"
+    m_Localized: VSync
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070466
-    m_Localized: "Volver"
+    m_Localized: Volver
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070467
-    m_Localized: "Jugador"
+    m_Localized: Jugador
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070468
-    m_Localized: "ECLION\n\nV2.01"
+    m_Localized: 'ECLION
+
+
+      V2.01'
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070469
-    m_Localized: "Soltar"
+    m_Localized: Soltar
     m_Metadata:
       m_Items: []
   - m_Id: 136075194523070470
-    m_Localized: "ATRÁS"
+    m_Localized: "ATR\xC1S"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194527264768
-    m_Localized: "REVELAR"
+    m_Localized: REVELAR
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459072
-    m_Localized: "ZOOM"
+    m_Localized: ZOOM
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459073
-    m_Localized: "Recoger"
+    m_Localized: Recoger
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459074
-    m_Localized: "VÍDEO"
+    m_Localized: "V\xCDDEO"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194531459075
-    m_Localized: "AUDIO"
+    m_Localized: AUDIO
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653376
-    m_Localized: "Interactuar"
+    m_Localized: Interactuar
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653377
-    m_Localized: "Oficina principal"
+    m_Localized: Oficina principal
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653378
-    m_Localized: "GRÁFICOS"
+    m_Localized: "GR\xC1FICOS"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653379
-    m_Localized: "Cabello"
+    m_Localized: Cabello
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653380
-    m_Localized: "IDIOMA"
+    m_Localized: IDIOMA
     m_Metadata:
       m_Items: []
   - m_Id: 136075194535653381
-    m_Localized: "VOL. MÚSICA"
+    m_Localized: "VOL. M\xDASICA"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847680
-    m_Localized: "VOL. EFECTOS"
+    m_Localized: VOL. EFECTOS
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847681
-    m_Localized: "Opción A"
+    m_Localized: "Opci\xF3n A"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847682
-    m_Localized: "XXXX-XXXX-XXXX-XXXX"
+    m_Localized: XXXX-XXXX-XXXX-XXXX
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847683
-    m_Localized: "Pantalones"
+    m_Localized: Pantalones
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847684
-    m_Localized: "Zapatos"
+    m_Localized: Zapatos
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847685
-    m_Localized: "Jugador"
+    m_Localized: Jugador
     m_Metadata:
       m_Items: []
   - m_Id: 136075194539847686
-    m_Localized: "VOL. GENERAL"
+    m_Localized: VOL. GENERAL
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236288
-    m_Localized: "Volver"
+    m_Localized: Volver
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236289
-    m_Localized: "RESOLUCIÓN"
+    m_Localized: "RESOLUCI\xD3N"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236290
-    m_Localized: "UNIRSE A SALA"
+    m_Localized: UNIRSE A SALA
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236291
-    m_Localized: "ID de sala:"
+    m_Localized: 'ID de sala:'
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236292
-    m_Localized: "PERSONALIZAR"
+    m_Localized: PERSONALIZAR
     m_Metadata:
       m_Items: []
   - m_Id: 136075194548236293
-    m_Localized: "Opción A"
+    m_Localized: "Opci\xF3n A"
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624896
-    m_Localized: "Jugador"
+    m_Localized: Jugador
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624897
-    m_Localized: "Sombrero"
+    m_Localized: Sombrero
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624898
-    m_Localized: "Personalizar"
+    m_Localized: Personalizar
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624899
-    m_Localized: "Lanzar"
+    m_Localized: Lanzar
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624900
-    m_Localized: "Vista del mapa"
+    m_Localized: Vista del mapa
     m_Metadata:
       m_Items: []
   - m_Id: 136075194556624901
-    m_Localized: "CONTROLES"
+    m_Localized: CONTROLES
     m_Metadata:
       m_Items: []
   - m_Id: 136075194560819200
-    m_Localized: "Ropa exterior"
+    m_Localized: Ropa exterior
     m_Metadata:
       m_Items: []
   - m_Id: 136075194560819201
-    m_Localized: "Gafas"
+    m_Localized: Gafas
     m_Metadata:
       m_Items: []
   - m_Id: 141928975156891283
-    m_Localized: "Clic izquierdo"
+    m_Localized: Clic izquierdo
     m_Metadata:
       m_Items: []
   - m_Id: 142557709478291173
-    m_Localized: "Clic derecho"
+    m_Localized: Clic derecho
     m_Metadata:
       m_Items: []
   - m_Id: 144849164114263128
-    m_Localized: "Clic central"
+    m_Localized: Clic central
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528492507136
+    m_Localized: "Men\xFA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528538644480
+    m_Localized: ZOOM
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528538644481
+    m_Localized: Interactuar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838784
+    m_Localized: MEJORAS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838785
+    m_Localized: Mover arriba/abajo/izquierda/derecha
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838786
+    m_Localized: Salir del juego
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528542838787
+    m_Localized: Opciones
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033088
+    m_Localized: Correr
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033089
+    m_Localized: "\xA1Bancarrota!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033090
+    m_Localized: "almac\xE9n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528547033091
+    m_Localized: vista del mapa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227392
+    m_Localized: ACEPTAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227393
+    m_Localized: sala de paquetes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227394
+    m_Localized: Empleado
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528551227395
+    m_Localized: "D\xEDa 1"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528555421696
+    m_Localized: "D\xEDa siguiente"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528555421697
+    m_Localized: "V\xCDDEO"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528559616000
+    m_Localized: relanzar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528559616001
+    m_Localized: "GR\xC1FICOS"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528568004608
+    m_Localized: Jugador3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528568004609
+    m_Localized: 'XP: 200'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528568004610
+    m_Localized: 'GOLD: 200'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198912
+    m_Localized: "Misi\xF3n - 1"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198913
+    m_Localized: 0/1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198914
+    m_Localized: vsync
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198915
+    m_Localized: IDIOMA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528572198916
+    m_Localized: REINICIAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587520
+    m_Localized: 'XP: 200 GOLD: 300'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587521
+    m_Localized: AUDIO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587522
+    m_Localized: CONTENIDO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528580587523
+    m_Localized: Jugador1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528584781824
+    m_Localized: calendario
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528584781825
+    m_Localized: Jugador2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528584781826
+    m_Localized: VOL. SFX
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528588976128
+    m_Localized: Jugador4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528588976129
+    m_Localized: "El almac\xE9n est\xE1 prosperando y todos los env\xEDos se han
+      clasificado a la perfecci\xF3n."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528588976130
+    m_Localized: "Opci\xF3n A"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528593170432
+    m_Localized: JUE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528593170433
+    m_Localized: Soltar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528593170434
+    m_Localized: "<color=#4B4E6D>2</color>      \xA1Bienvenido a Cargor!\n<color=#4B4E6D>3</color>     
+      Movimiento b\xE1sico\n<color=#4B4E6D>4</color>      C\xF3mo empaquetar productos\n<color=#4B4E6D>5</color>     
+      Colocaci\xF3n en estantes\n<color=#4B4E6D>6</color>      Camiones y entrega\n<color=#4B4E6D>7</color>      
+      Clientes\n<line-height=18><color=#4B4E6D>8</color>      Pedidos especiales:
+      devoluciones,\npedidos dobles, camiones mixtos</line-height>\n<color=#4B4E6D>9</color>     
+      El alquiler y tu dinero\n<color=#4B4E6D>10</color>   Mejoras\n<color=#4B4E6D>11</color>   
+      Tabl\xF3n de misiones\n<color=#4B4E6D>12</color>    L\xEDnea telef\xF3nica\n<color=#4B4E6D>13</color>   
+      Sala de descanso y fin del d\xEDa\n<color=#4B4E6D>14</color>    Consejos de
+      trabajo en equipo"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528597364736
+    m_Localized: Recoger
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528597364737
+    m_Localized: CARGOR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559040
+    m_Localized: REVELAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559041
+    m_Localized: CONTENIDO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559042
+    m_Localized: "Cr\xE9ditos"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559043
+    m_Localized: VOL. PRINCIPAL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528601559044
+    m_Localized: DOM
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528609947648
+    m_Localized: Sala de descanso
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528609947649
+    m_Localized: "S\xC1B"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528609947650
+    m_Localized: "MI\xC9"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141952
+    m_Localized: Libro de ayuda
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141953
+    m_Localized: "Men\xFA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141954
+    m_Localized: "VOL. M\xDASICA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528614141955
+    m_Localized: "MEN\xDA DE PAUSA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528618336256
+    m_Localized: Turno diario
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528618336257
+    m_Localized: VIE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528622530560
+    m_Localized: Mejora
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528626724864
+    m_Localized: Lanzar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528626724865
+    m_Localized: "El almac\xE9n ha quebrado."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528630919168
+    m_Localized: "RESOLUCI\xD3N"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528630919169
+    m_Localized: CONTROLES
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528635113472
+    m_Localized: "MISI\xD3N"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528635113473
+    m_Localized: "MANUAL\nDEL ALMAC\xC9N"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307776
+    m_Localized: MAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307777
+    m_Localized: Prestigio
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307778
+    m_Localized: Continuar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307779
+    m_Localized: "MISI\xD3N CUMPLIDA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528639307780
+    m_Localized: "recepci\xF3n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528647696384
+    m_Localized: "Misi\xF3n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528651890688
+    m_Localized: LUN
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136808528651890689
+    m_Localized: Dinero
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269394388168704
+    m_Localized: "<b> Atenci\xF3n: </b> Atenci\xF3n: si el color de la caja no coincide
+      con el producto, el empaquetado falla y la caja se rompe en tu mano. Comprueba
+      el color antes de empaquetar \u2014 no desperdicies una caja."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269394430111744
+    m_Localized: "<b> Consejo: </b>Lanzar y atrapar ahorra tiempo en una estaci\xF3n
+      de dos personas, pero no lo conviertas en costumbre \u2014 cada ca\xEDda te
+      sale caro."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605470711808
+    m_Localized: "COLOCACI\xD3N EN LA ESTANTER\xCDA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605474906112
+    m_Localized: "Las estanter\xEDas son el coraz\xF3n de Cargor. Tres tipos de cajas
+      vac\xEDas \u2014 roja, amarilla y azul \u2014 siempre esperan ah\xED; cuando
+      coges una, la estanter\xEDa se repone poco despu\xE9s, as\xED que nunca queda
+      del todo vac\xEDa. Si tienes una caja de sobra o un producto empaquetado que
+      no quieres cargar ahora, puedes devolverlo a la estanter\xEDa. Una estanter\xEDa
+      ordenada facilita el trabajo tuyo y el de tu equipo \u2014 todos saben d\xF3nde
+      encontrar cada cosa."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605474906113
+    m_Localized: "C\xD3MO SE EMPAQUETAN LOS PRODUCTOS"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605474906114
+    m_Localized: "MOVIMIENTOS B\xC1SICOS"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605483294720
+    m_Localized: "<b>Caminar / Correr</b> \u2013 te permite moverte por el almac\xE9n.\n\n<b>Coger
+      / Soltar</b> \u2013 coge un objeto del suelo, una mesa o una estanter\xEDa,
+      o d\xE9jalo donde est\xE1s.\n\n<b>Lanzar</b> \u2013 arroja lo que llevas en
+      la mano. R\xE1pido pero arriesgado: si golpea algo duro se rompe, y pierdes
+      dinero y reputaci\xF3n. Si se lo lanzas a un compa\xF1ero que lo atrapa, no
+      hay penalizaci\xF3n \u2014 incluso ahorra tiempo.\n\n<b>Interactuar</b> \u2013
+      hablar con clientes, contestar el tel\xE9fono, coger objetos de estanter\xEDa/mesa,
+      todo pasa por este bot\xF3n.\n\n<b>Mapa / Control de stock</b> \u2013 abre
+      una vista general del almac\xE9n para ver qu\xE9 hay d\xF3nde. No muestra la
+      posici\xF3n de tus compa\xF1eros de equipo \u2014 tendr\xE1s que preguntarles
+      por radio."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605483294721
+    m_Localized: "C\xD3MO SE\r\nEMPAQUETAN\r\nLOS PRODUCTOS"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137269605483294722
+    m_Localized: "Cuando hablas con un cliente, te pide un producto y lo deja en
+      su mesa. Pero eso no es el final \u2014 el producto a\xFAn no est\xE1 empaquetado.\n\nPasos
+      de empaquetado:\n\nCoge el producto sin empaquetar que dej\xF3 el cliente.\n\nVe
+      a la mesa de empaquetado m\xE1s cercana.\n\nCoge de la estanter\xEDa una caja
+      vac\xEDa del mismo color que el producto.\n\nJunta el producto y la caja en
+      la mesa \u2014 primero p\xE9gala con cinta, luego etiqu\xE9tala, y el paquete
+      est\xE1 listo.\n\nAhora tienes una caja empaquetada. Lo siguiente es la entrega
+      (ver P\xE1gina 6)."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859394301952
+    m_Localized: Clientes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859406884864
+    m_Localized: "Cargor tambi\xE9n se puede jugar en solitario, pero la diversi\xF3n
+      de verdad empieza en equipo. Algunos consejos pr\xE1cticos:\n\n- <b>Repart\xEDos
+      el trabajo:</b> que uno se quede en la mesa de empaquetado, otro corra hacia
+      los camiones, otro atienda a los clientes.\n- <b>Hablad entre vosotros: </b>si
+      no est\xE1is en la misma sala puede que no os ve\xE1is \u2014 miren el mapa
+      y comuniquen en voz alta qu\xE9 hay d\xF3nde.\n- <b>Lanzad y atrapad:</b> en
+      lugar de ir y venir entre dos estaciones, lanza la caja directamente a un compa\xF1ero.\n-
+      <b>Poneos de acuerdo con las mejoras:</b> las elecciones permanentes afectan
+      a todos, no decidas solo.\n\n\xA1Buena suerte \u2014 bienvenido a Cargor!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859411079168
+    m_Localized: "\xA1Bienvenido a Cargor!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859411079169
+    m_Localized: "L\xEDnea telef\xF3nica"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859411079170
+    m_Localized: "El tel\xE9fono del almac\xE9n suena de vez en cuando. Ve y contesta
+      para ganar una peque\xF1a recompensa en dinero y reputaci\xF3n. Si no lo haces,
+      tampoco pierdes nada \u2014 el tel\xE9fono deja de sonar por s\xED solo.\n\nQue
+      suene depende totalmente del azar, aunque en algunos d\xEDas (por ejemplo,
+      en d\xEDas de eventos especiales) la probabilidad aumenta. Echar un vistazo
+      al pasar no hace da\xF1o."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273472
+    m_Localized: "<b> Consejo:  </b>Cuando se acerque el final del d\xEDa, termina
+      lo que est\xE1s haciendo y dir\xEDgete pronto a la sala de descanso \u2014
+      no hagas esperar a tu equipo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273473
+    m_Localized: Peticiones especiales
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273474
+    m_Localized: "<b> Consejo:  </b>No elijas sin hablar con tu equipo \u2014 la
+      mejora que elige una sola persona cambia c\xF3mo juega todo el mundo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273475
+    m_Localized: "Cada d\xEDa ver\xE1s algunas misiones ofrecidas en el tabl\xF3n
+      \u2014 como reponer una caja en la estanter\xEDa, empaquetar un producto, completar
+      un cami\xF3n o contestar el tel\xE9fono. Solo puedes aceptar una por d\xEDa.\n\n-
+      Si completas la misi\xF3n aceptada antes de que termine el d\xEDa, tu recompensa
+      se abona autom\xE1ticamente al final del d\xEDa.\n\n- Si la aceptas y la dejas
+      a medias, recibes una penalizaci\xF3n al final del d\xEDa.\n\nSi no aceptas
+      ninguna, no pasa nada \u2014 pero tambi\xE9n pierdes la oportunidad. Elige
+      una misi\xF3n realista seg\xFAn lo que tengas entre manos."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273476
+    m_Localized: Consejos de trabajo en equipo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859415273477
+    m_Localized: El alquiler y tu dinero
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859419467776
+    m_Localized: "Llevar Cargor no es gratis. En ciertos d\xEDas llega un pago de
+      alquiler \u2014 a ese d\xEDa lo llamamos \xABd\xEDa de alquiler\xBB.\n\n- Si
+      tienes dinero suficiente para el alquiler, se paga y sigues adelante.\n\n-
+      Si no puedes pagarlo en la fecha, tienes una segunda oportunidad, solo una
+      vez: se te retira la mayor parte del efectivo, pero el negocio no cierra.\n\n<b>El
+      dinero </b>viene de las entregas correctas, las llamadas telef\xF3nicas y las
+      misiones completadas. Las entregas equivocadas, las cajas ca\xEDdas y las misiones
+      a medias te quitan dinero."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859419467777
+    m_Localized: "<b> No olvides:  </b>aqu\xED no est\xE1s solo. Cargor es un trabajo
+      en equipo \u2014 comparte la carga, hazte o\xEDr."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859419467778
+    m_Localized: "Entrega el color correcto \u2192 ganas dinero, tu reputaci\xF3n
+      sube.\n\nEntrega el color incorrecto \u2192 pierdes dinero. Mira los colores
+      dos veces.\n\nCada cami\xF3n tiene un tiempo de espera y una capacidad limitados.
+      Cuando se llena o se acaba el tiempo, el cami\xF3n se va y llega uno nuevo.\n\nA
+      medida que el almac\xE9n crece (con mejoras), pueden abrirse varios hangares
+      \u2014 as\xED podr\xE1s abastecer a varios camiones a la vez."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859427856384
+    m_Localized: "<b> Consejo:  </b>No entres en p\xE1nico ante un cami\xF3n mixto
+      o un pedido doble \u2014 piensa en ello como dos entregas separadas y resu\xE9lvelas
+      una tras otra."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859427856385
+    m_Localized: Mejoras
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859427856386
+    m_Localized: "Cuando el d\xEDa termina, todos deben ir a la sala de descanso.
+      Aunque solo quede una persona fuera, el d\xEDa no se cierra \u2014 se espera
+      hasta que todo el equipo est\xE9 reunido.\n\nCuando todos est\xE1n en la sala,
+      aparece un resumen del d\xEDa y comienza uno nuevo. Si llegas al final del
+      decimosexto d\xEDa sin quebrar, te has ganado la celebraci\xF3n."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859432050688
+    m_Localized: "Sala de descanso y fin del d\xEDa"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859432050689
+    m_Localized: "Los clientes entran por la puerta, se ponen en la cola y te piden
+      algo. La barra sobre ellos muestra su paciencia \u2014 si se agota, el cliente
+      se va enfadado y pierdes dinero y reputaci\xF3n.\n\n- La afluencia cambia a
+      lo largo del d\xEDa: el mediod\xEDa y la tarde-noche son los momentos m\xE1s
+      concurridos, por la tarde tienes algo de respiro.\n\n- Cuando hablas con un
+      cliente (bot\xF3n de interacci\xF3n), deja el producto que quiere en su mesa
+      \u2014 despu\xE9s viene el empaquetado y la entrega (P\xE1ginas 4-6).\n\n-
+      Cada cliente al que atiendes a tiempo te da tanto dinero como reputaci\xF3n.
+      Cuanto m\xE1s alta sea tu reputaci\xF3n, m\xE1s ganas por entrega."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859436244992
+    m_Localized: "<b> Consejo:  </b>No dejes una misi\xF3n dif\xEDcil para el \xFAltimo
+      d\xEDa. El final del d\xEDa siempre llega m\xE1s r\xE1pido de lo que esperas."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859436244993
+    m_Localized: Devoluciones, Pedidos dobles, Camiones mixtos
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859436244994
+    m_Localized: "<b> Consejo:  </b>Si el tel\xE9fono suena y te queda de paso, p\xE1sate
+      aunque tengas las manos ocupadas \u2014 un descanso corto, una peque\xF1a ganancia."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633600
+    m_Localized: "\xA1BIENVENIDO!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633601
+    m_Localized: "Tabl\xF3n de misiones"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633602
+    m_Localized: "Con el paso de los d\xEDas, el trabajo se complica un poco. Te
+      encontrar\xE1s con tres situaciones nuevas:\n\n<b>Devoluciones: </b>algunos
+      clientes no quieren un producto \u2014 al contrario, te piden que les devuelvas
+      una caja. La esfera de color que aparece sobre ellos indica qu\xE9 color de
+      caja quieren. Coge el color correcto de la estanter\xEDa y ll\xE9vaselo al
+      cliente.\n\n<b>Pedido doble: </b>algunos clientes quieren dos colores diferentes
+      a la vez. El trabajo no termina hasta que ambos est\xE9n listos.\n\n<b>Cami\xF3n
+      mixto: </b>algunos camiones no quieren un solo color sino dos colores de caja
+      diferentes. El color mezclado en la carrocer\xEDa (por ejemplo, rojo + amarillo
+      = naranja) te da la pista \u2014 muestra qu\xE9 dos colores debes cargar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859444633603
+    m_Localized: "Los camiones que esperan en el hangar te muestran qu\xE9 quieren
+      por el color de su carrocer\xEDa: un cami\xF3n rojo quiere una caja roja, uno
+      amarillo quiere amarilla, uno azul quiere azul."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859448827904
+    m_Localized: "\xA1Bienvenido! Ahora eres parte de la familia Cargor. Este lugar
+      es un almac\xE9n, una tienda y un poco de caos \u2014 todo en uno.\n\nLos clientes
+      te dicen qu\xE9 quieren, t\xFA lo empaquetas y lo cargas en el cami\xF3n correcto.
+      Suena simple, \xBFverdad? Si sigues en pie despu\xE9s de diecis\xE9is d\xEDas,
+      es que has hecho un buen trabajo de verdad.\n\nEste cuaderno que tienes en
+      las manos es al que recurrir\xE1s cuando olvides los detalles. Cada p\xE1gina
+      trata un tema distinto. No hay prisa \u2014 ve despacio los primeros d\xEDas,
+      aprende el sistema. La velocidad llegar\xE1 con el tiempo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859453022208
+    m_Localized: "<b> Consejo:  </b>Comprueba tu efectivo antes de los d\xEDas de
+      alquiler. No lo dejes para el \xFAltimo momento."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859453022209
+    m_Localized: "<b> Atenci\xF3n:  </b>Mientras la cola est\xE9 llena no llegan
+      clientes nuevos, pero los que ya esperan siguen perdiendo paciencia. No empieces
+      algo nuevo antes de vaciar la cola."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859453022210
+    m_Localized: "<b> Consejo:  </b>Si puedes distinguir el color de un cami\xF3n
+      desde lejos, prioriza el que coincida con la caja que llevas \u2014 no camines
+      en vano."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859461410816
+    m_Localized: CAMIONES Y ENTREGA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 137293859465605120
+    m_Localized: "En ciertos d\xEDas se te ofrecen varias opciones de mejora \u2014
+      no puedes llev\xE1rtelas todas, eliges entre ellas. Puedes conseguir mejoras
+      permanentes como una estanter\xEDa extra, un hangar extra, movimiento m\xE1s
+      r\xE1pido o m\xE1s paciencia de los clientes.\n\nPiensa bien tu elecci\xF3n:
+      algunas mejoras se excluyen entre s\xED, otras no se desbloquean hasta cierto
+      d\xEDa. Las elecciones que aceleran lo b\xE1sico en los primeros d\xEDas compensan
+      mucho m\xE1s adelante."
     m_Metadata:
       m_Items: []
   references:

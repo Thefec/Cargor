@@ -870,7 +870,7 @@ flowchart TD
 
 - **16 hücreli ızgara** (16 gün)
 - **İlk 3 gün**: Etkinlik yok (oyuncunun adapte olması için)
-- **3. günden sonra**: Her 1-3 günde bir etkinlik
+- **3. günden sonra**: Her 1-2 günde bir etkinlik
 - **Garanti kuralları**:
   - İlk 2 etkinlik **mutlaka pozitif**
   - 3. etkinlik **mutlaka negatif**
@@ -911,8 +911,8 @@ flowchart TD
 > CUSTOMER SUPPORT · FESTIVAL DAY.
 > Eski GDD'deki **"Quota Day"** etkinliği kodda **yok** (kota sistemiyle birlikte gitti, bkz. §7).
 >
-> **Zamanlama**: ilk **3 gün etkinliksiz** (`INITIAL_EVENT_FREE_DAYS`), sonrasında **1–3 gün**
-> aralıklarla düşer (`EVENT_INTERVAL_MIN/MAX`).
+> **Zamanlama**: ilk **3 gün etkinliksiz** (`INITIAL_EVENT_FREE_DAYS`), sonrasında **1–2 gün**
+> aralıklarla düşer (`EVENT_INTERVAL_MIN/MAX`, 2026-08-25: 1-3 → 1-2, economist onaylı sıkılaştırma).
 >
 > **FAZ 4 düzeltmeleri**: RELAXED DAY'in açıklamada olmayan gizli müşteri cezası (×0.7) kaldırıldı ·
 > RAINY DAY yanlış sınıflandırılmıştı (Pozitif → **Negatif**) · VIP SERVICE'in "tır başına %10 şans"
