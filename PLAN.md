@@ -8,27 +8,30 @@
 
 ## 🎯 Şu an aktif iş
 
-**YOK — kod yazılmıyor.** Üç iş kuyrukta: **play-test** (kullanıcıda), **telsiz** (plan onaylı, uygulama komutu bekliyor) ve **oda-bazlı görünürlük / karartma** (plan onaylı, uygulama komutu bekliyor).
+**✅ `feature/voice-chat` `main`'e merge edildi (2026-08-29) — oda-görünürlük/localization/perk-revival/post-rent artık telsizle AYNI dalda.** Önceki oturumlarda dallar ayrı kalmıştı (voice-chat, main'den `d6132b2`'de ayrılmış — sonraki tüm room-visibility/localization/perk-revival merge'lerini görmüyordu), bu yüzden hangi daldan build alınırsa alınsın diğer yarısı eksik geliyordu. Şimdi tek dal.
 
-> 🕶️ **KARARTMA / ODA-BAZLI GÖRÜNÜRLÜK — plan onaylandı 2026-08-10, KOD YAZILMADI.** Tam plan: **[plans/oda-gorunurluk.md](plans/oda-gorunurluk.md)** · Yeni dal önerisi: **`feature/room-visibility`, `main`'den** (voice-chat dalına bağlama — orada 19 merge'siz commit + açık Dissonance kararı var).
-> **Kilit bulgu:** odalar sahnede **zaten var**; iç duvarlar yarım (1.84 m), çatı yok, kamera 40° eğik → herkes duvar üstünden görüyor. Eksik olan level değil **görünürlük katmanı** → yeni geometri/level bölünmesi **GEREKMİYOR** (planın ilk varsayımı buydu, keşif çürüttü).
-> **Üç sütun:** modüler oda verisi (`RoomVolume`/`RoomRegistry`/`RoomResolver`, kodda sıfır oda sabiti) · **istemci taraflı gizleme** (NetworkHide reddedildi: raf→paketleme→tezgah akışında sürekli oda değişimi = her geçişte despawn/respawn) · **global shader AABB** karartma (materyal duplikasyonu/MPB yok, oda sayısından bağımsız).
-> **Ucuz çıktı:** `positionWS` + `Luminance3()` shader'da hazır (`FlatLitEnvironment.shader:85,:91`) → 3 shader × ~4 satır. Yol üstünde mevcut bir bug da düşüyor: uzak oyuncuların stamina barı ekrana çiziliyor (`NetworkStaminaBarUI`, `IsOwner` gate'i yok).
-> 🙋 **Kullanıcıda bloke eden tek iş: odaları Unity'de elle çizmek (S2).** Ölçülen duvar hatları x = -68.3/-58.5/-43.5/-37.86/-28.86 · z = -17.1/+2.9/+7.9 · zemin y ≈ 3.88.
-> **Bilerek kabul edilen riskler:** pop-in (yarım duvar + eğik kamera → "yok olma" hissi) · görünmeyen oyuncunun ayak sesi duvardan geçiyor (`spatialBlend 0.5` — playtest-1'de DEĞİŞTİRME, ölç) · gölge sızıntısı (kozmetik).
-> **Ekonomi:** playtest öncesi economist turu **zorunlu değil** (hiçbir ekonomik değere dokunulmuyor, etkinin işareti bile belirsiz); yerine 5 dk'lık kota marjı kontrolü. `kutu/dk/oyuncu` %20'den fazla düşerse tur playtest SONRASI zorunlu.
+> 🎙️ **TELSİZ — kod tamam + `kontrol` ONAY, push-talk ikon göstergesi eklendi (2026-08-29).** Basılıyken renkli/bırakınca gri `PushTalkIconIndicator` + `Cargor/UI/Saturation` shader; shader Always Included Shaders'a eklendi (Steam build'inde stripping ile atılıp ikonun hep renkli takılı kalmasına neden oluyordu).
+> Tam plan: **[plans/telsiz-voice-chat.md](plans/telsiz-voice-chat.md)** · 🙋 **Editor işleri: [plans/telsiz-editor-isleri.md](plans/telsiz-editor-isleri.md)** · Hata ayıklama detayı: **[plans/devam.md](plans/devam.md)**
+> 🔴 **AÇIK KALAN 2 SORUN (merge onlarla birlikte geldi, henüz kapanmadı):** (1) **client'ta WASD ölmesi** — geçici `[TESHIS]` dökümü hâlâ `PlayerMovement.cs`'de, kök neden doğrulanmadı; (2) **host→client sesin kesik kesik gelmesi** — build'de ölçüm aracı yok, yalnız öznel yargı var.
+> 🔴🔴 **AÇIK KARAR — [Dissonance](https://assetstore.unity.com/packages/tools/audio/dissonance-voice-chat-70078) (çekirdek $120, NGO entegrasyonu ücretsiz).** Detay: [plans/telsiz-dissonance-karar.md](plans/telsiz-dissonance-karar.md).
 
-> 🎙️ **TELSİZ — kod tamam + `kontrol` ONAY, ama SES KALİTESİ turu bitmedi.** Dal **`feature/voice-chat`**, **15 commit**, **MERGE/PUSH YOK**.
-> Tam plan: **[plans/telsiz-voice-chat.md](plans/telsiz-voice-chat.md)** · 🙋 **Editor işleri: [plans/telsiz-editor-isleri.md](plans/telsiz-editor-isleri.md)** · Hata ayıklama detayı: **[plans/devam.md](plans/devam.md) 2026-08-08**
-> **Doğrulama:** 0 CS · EditMode **60/60** · `EconomyInvariantCheck` **179/179** · editör 6000.5.6f1 headless.
-> **Ses durumu:** loopback'te çalışıyor, "net geliyor". 3 tur hata ayıklama sonucu **`over` 19→0, `under` 24→13**; son tur (drift düzeltmesi) **kullanıcı testini bekliyor**.
-> **Ölçülenler:** ~237 B/paket · ~6.5 KB/s · tepe paket 160 ms → **800 B kapağı güvenli, değişmeyecek** (plan riski #1 kapandı).
-> 🔴 **KALAN EKSİKLER (sabit ayarla çözülmez):** **PLC (paket kaybı gizleme)** + **adaptif buffer**. Ölçülen varyansın tamamı YEREL; gerçek ağda relay jitter'ı üstüne binecek.
-> 🔴🔴 **AÇIK KARAR — [Dissonance](https://assetstore.unity.com/packages/tools/audio/dissonance-voice-chat-70078) ($100, NGO entegrasyonu ücretsiz).** Lethal Company'nin kullandığı middleware; adaptif buffer + PLC + Opus + **oda/kanal sistemi** (2. aşamaya birebir) hazır veriyor, `FacepunchTransport` ile şeffaf çalışır. Geçilirse `V` binding/sahne kapısı/ayarlar/HUD taşınır, ~2500 satır bırakılır.
-> **3 bilinçli kapsam kesintisi:** slotlar+HUD kodda kuruluyor (prefab opsiyonel) · klik SFX yok (null-guard) · per-player mute oturum-içi (`SteamIdHolder` replike değil).
-> Sıradaki 2. aşama: **oda-bazlı görünürlük** → ✅ **planlandı, [plans/oda-gorunurluk.md](plans/oda-gorunurluk.md)** (yukarıdaki blok). Ses tarafı bağımsız doğrulandı: telsiz HUD ekran-uzayı, `spatialBlend = 0` → oda sistemi telsizi etkilemiyor. Dissonance seçilirse oda **kanalları** yine bedava gelir, ama görsel karartma/gizleme her hâlükârda bizim.
+> 🕶️ **KARARTMA / ODA-BAZLI GÖRÜNÜRLÜK — tamamlandı, `main`'e merge edildi (kontrol ONAY x2).** Tam plan: [plans/oda-gorunurluk.md](plans/oda-gorunurluk.md). Kalan tek adım: S7 2-istemci playtest (aşağıya bak).
 
-`main` = `6e945bb`, **origin/main'in 1 önünde (PUSH YOK)**. Ekonomi denge turu 2026-08-06'da merge edildi (`238fd92`, `--no-ff`, 21 commit) — sorun çıkarsa tek noktadan revert edilebilir.
+**✅ 6 ÖLÜ PERK CANLANDIRILDI + KALINTI TEMİZLİĞİ — hepsi `main`'e merge + push edildi.**
+
+> Perkler kalıcı **prefab** alanlarına yazıyordu; tır tarafında `Truck.OnNetworkSpawn` (`Truck.cs:243-250`) her spawn'da SO'dan yeniden okuyup eziyor, oyuncu tarafında ise oyuncu bir kez spawn olduğu için canlıya hiç ulaşmıyordu. Ölü olan 6 perk: `prestige_broker` · `fast_hangar` · `gambler_case` · `agile_crew` · `energetic_crew` · 🔴 `all_in` (**tuzak kart**: faydası ölü, bedeli çalışıyordu). Çözüm `EventEffectManager` deseni: canlı instance'lara uygulama + spawn/late-join kancaları + satın-alma anında event baseline rebase'i. **Sabit değişmedi** (economist: fiyatlar zaten FAZ4 §B.7 ile güncel; `prestige_broker` etkisi bilerek `+0.5/lvl` bırakıldı). Tam teşhis + sözleşme: [plans/perk-revival.md](plans/perk-revival.md).
+> **Kullanıcı playtest yaptı, sorun bildirmedi** — merge onaylandı. Playtest'te izlenmesi önerilen (bloklayıcı değil): `gambler_case`+`high_volatility` çarpımsal birleşiyor (+%27 yerine +%49, dışlama listesinde yok).
+> **Aynı turda ek kapatıldı:** "Dinç Ekip" stamina backbone'u aynı hastalık sınıfıydı (prefab'a yazıyordu) — bağlandı, draft'ta kapalı olduğu için economist gerekmedi. `tools/economy-sim/sim.js` FAZ4 sonrası hiç resync edilmemişti — 11 sabit düzeltildi. 🔴 **Resync bir risk açığa çıkardı:** STRICT bantta 4P artık gün 16'da (son kira) iflas ediyor, Slow/optimistic bantta 2P-4P hepsi gün 16'da iflas ediyor — FAZ4'ün kira eğrisi bu doğru sim ile hiç test edilmemiş olabilir. Kod değişmedi, karar economist'te; playtest'te 4P gün 13-16 nakit akışı izlenmeli. Kök `herhangi` + `Assets/_Recovery` (13 dosya) kullanıcı onayıyla silindi.
+> **Doğrulama (tüm merge'ler sonrası tekrar koşuldu):** 0 CS · EditMode 19/19 · `EconomyInvariantCheck` 179/179 temiz.
+
+> ✅ **2026-08-16'da 3 dal main'e merge edildi:** `feature/room-visibility` · `feature/post-rent-mechanics` · `feature/economy-verification` + N3 break-room fix'i (`cc04901`).
+
+> 🟡 **AÇIK PLAYTEST NOTLARI (kullanıcı genel playtest yaptı, sorun bildirmedi — spesifik maddeler resmi olarak kapatılmadı):**
+> - **Oda-görünürlük S7** — 2 istemcili playtest: SRP Batcher (Frame Debugger önce/sonra) · AABB'lerin geometriyle örtüşmesi · 5 URP/Lit materyalin parlak leke bırakması · pop-in hissi. Sahneye `---ROOMS---` + `RoomVolume`'ler zaten çizili (5 oda). Tam plan: [plans/oda-gorunurluk.md](plans/oda-gorunurluk.md).
+> - **Kira sonrası 3 özellik** — iade göstergesinin görünürlüğü · 2-item akışının tempo hissi · ACES tonemapping altında karışık tır renklerinin doğru görünmesi.
+> - 🔴 **YENİ: 4P gün-16 iflas riski** (yukarı bak) — sim resync'in açığa çıkardığı bulgu, ayrıca izlenmeli.
+
+`main` = 2026-08-19 perk canlandırma + stamina fix + sim resync + temizlik + 2026-08-29 telsiz merge'i ile güncel, **PUSH henüz yapılmadı** (aşağıya bak).
 
 - ✅ **Roguelite draft + RELEASE PUSH FAZ 0/1** — arşiv: [plans/roguelite-draft.md](plans/roguelite-draft.md), [plans/release-push.md](plans/release-push.md)
 - ✅ **Ekonomi sıfırdan yeniden hesaplandı + uygulandı** — 4 faz analiz ([plans/economy-rebuild-2026-07-30*.md](plans/economy-rebuild-2026-07-30-faz4-final.md)), §D#1–#8 tamamı kodda; kalite kapısı 3 turda ONAY
@@ -42,11 +45,12 @@
 1. 🔴 **PLAY-TEST — tek gerçek kapı.** Bu turda kira, prestij, upgrade fiyatları, quest ödülleri, event çarpanları ve telefon ekonomisi değişti; **hiçbiri oyun içinde çalışırken görülmedi.** Makine doğrulaması "derleniyor ve sayılar doğru yerde" der, "oyun iyi hissettiriyor" demez. Checklist tabanı: [plans/playtest-2026-07-19.md](plans/playtest-2026-07-19.md) (bayat, ekonomi kısmı yeniden yazılmalı).
    **Ölçülecekler duyarlılık sırasına göre:** `kutu/dk/oyuncu` (1.2→2.0 ile 1P kümülatifi %117 değişiyor) · masa meşgul süresi S · `agile_crew`'in üretime yansıması · telefon yanıtlamanın oyuncu-saniyesi maliyeti. Bir oyun günü yalnız 200–330 gerçek saniye → **mutlak TL değil oranlarla konuş.**
 2. 🙋 **Kullanıcıda bekleyen 3 iş:** (a) 2. servis masasının mesh/collider yerleşimi — headless doğrulayamıyor; (b) sahnede `endIntensity 0.03→0` plansız değişiklik, istenmiyorsa geri al; (c) `StringTable Shared Data`'daki event açıklamaları eski yüzdelerde kalmış olabilir.
-3. **PERK MİMARİSİ — (a) ✅ KAPANDI / (b) 🟡 AÇIK.**
-   - ✅ **Asset bozulması durdu** — seçenek **B (snapshot + restore)** uygulandı (2026-08-07, `6e945bb`, kontrol ONAY). 13 alan (SO×7 + `Truck` prefab×4 + `PlayerMovement` prefab×2) `UpgradePanel`'de static snapshot'a alınıp `OnNetworkDespawn`+`OnDestroy`'da geri yazılıyor. Denge değişmedi; denetçi 179/179.
-   - 🟡 **AÇIK — seçenek C: 5 ölü perk.** `gambler_case` · `all_in` (ödül kısmı) · `prestige_broker` · `fast_hangar` · `agile_crew` hâlâ etkisiz: perk prefab'a yazıyor ama `Truck.Awake` her spawn'da değerleri SO'dan yeniden okuyor (`Truck.cs:211-218`); `PlayerMovement` de prefab olduğu için mevcut oyunculara ulaşmıyor. Fix = `TruckSpawner`/spawn yolunun aktif perkleri canlı instance'a uygulaması. **⚠️ 5 perk canlanınca ekonomi kayar → economist turu ŞART, ayrı denge turu.** Play-test'ten SONRA yapılmalı (ölçüm tabanı kirlenmesin).
+3. **PERK MİMARİSİ — ✅ İKİ YARISI DA KAPANDI.**
+   - ✅ **Asset bozulması durdu** — seçenek **B (snapshot + restore)** (2026-08-07, `6e945bb`, kontrol ONAY). 13 alan `UpgradePanel`'de static snapshot'a alınıp `OnNetworkDespawn`+`OnDestroy`'da geri yazılıyor. Denetçi 179/179.
+   - ✅ **6 ölü perk canlandı** — seçenek **C** (2026-08-19, dal `feature/perk-revival`, kontrol 1. turda ONAY). Perkler artık canlı tır/oyuncu instance'larına yazıyor. Detay: [plans/perk-revival.md](plans/perk-revival.md).
+
 4. 📖 ~~GDD senkronu~~ ✅ **BİTTİ** (2026-08-07, `bc43773`) — §4/§5/§6/§7/§8/§13/§14/§16/§19/§21/§31 koda hizalandı; §7 Kota Sistemi tamamen kaldırıldı (kodda yok).
-5. 🧹 **Temizlik onayı bekliyor:** kök `herhangi` (0 bayt) + `Assets/_Recovery/0 (1..13).unity` (13 dosya).
+5. ✅ **Temizlik yapıldı** (2026-08-19) — kök `herhangi` (0 bayt) + `Assets/_Recovery/` (13 dosya) silindi, `main`'de.
 
 ### 🟢 Latent / düşük öncelik
 - **Ölü quest tetikleyicileri**: `CompleteMinigame` + `MakePackagingMistake` — `QuestTracker.Notify*` metodlarının gerçek çağıranı yok. 30 asset'in hiçbiri bu tipleri kullanmıyor (hepsi tip 1/2/3/4), o yüzden canlı bug değil; yeni görev tipi eklenirse önce bunlar bağlanmalı.
@@ -74,7 +78,8 @@
 | [plans/economy-rebuild-2026-07-30.md](plans/economy-rebuild-2026-07-30.md) · [-faz2](plans/economy-rebuild-2026-07-30-faz2.md) · [-faz3](plans/economy-rebuild-2026-07-30-faz3.md) | 4 fazlık analiz (envanter, verim modeli, kira/prestij/event, upgrade/quest) | 📖 gerekçe kaynağı |
 | **[plans/playtest-olcum-protokolu.md](plans/playtest-olcum-protokolu.md)** | 🙋 **Oynamadan önce aç** — ölçüm protokolü; tek zorunlu çıktı kutu/dk/oyuncu | 🔴 **bekliyor** |
 | **[plans/telsiz-voice-chat.md](plans/telsiz-voice-chat.md)** | 🎙️ Telsiz (bas-konuş) tam implementasyon planı — mimari, 5 kritik karar, 10 adım, doğrulama A-D, riskler | 🟢 **onaylı — uygulama komutu bekliyor** |
-| **[plans/oda-gorunurluk.md](plans/oda-gorunurluk.md)** | 🕶️ Karartma / oda-bazlı görünürlük — modüler oda verisi, istemci taraflı gizleme, global shader AABB, S0–S8 | 🟢 **onaylı — uygulama komutu bekliyor** |
+| **[plans/oda-gorunurluk.md](plans/oda-gorunurluk.md)** | 🕶️ Karartma / oda-bazlı görünürlük — modüler oda verisi, istemci taraflı gizleme, global shader AABB, S0–S8 | ✅ **merge edildi — kalan tek adım S7 playtest** |
+| **[plans/localization.md](plans/localization.md)** | 🌐 TR/EN çeviri bitirme akışı — wiring kullanıcıda (Editor GUI), EN metin doldurma müdürde | 🔴 **süreç netleşti — kullanıcının sahne seçimi bekleniyor** |
 | [plans/playtest-2026-07-19.md](plans/playtest-2026-07-19.md) | Regresyon checklist'i (27 madde) | 🟡 bayat — ekonomi kısmı FAZ4 öncesi (`maxPrestige 240` yazıyor) |
 | [plans/quest-ekleme-rehberi.md](plans/quest-ekleme-rehberi.md) | 30 görevin Inspector doldurma rehberi + değer tablosu | 📖 referans |
 | [plans/economy-audit-2026-07-20.md](plans/economy-audit-2026-07-20.md) | Holistik ekonomi denetimi (7 sistem) | 📖 tarihsel *(tır penceresi cap bulgusu FAZ4'te ÇÜRÜDÜ — darboğaz tır değil insan üretim hızı)* |

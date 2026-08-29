@@ -239,7 +239,6 @@ public class UnifiedSettingsManager : MonoBehaviour
     private bool _hasUnsavedAudioChanges;
     private bool _hasUnsavedVideoChanges;
     private bool _hasUnsavedControlsChanges;
-    private bool _isLocalizationChanging;
     private float _lastSliderSoundTime;
     private bool _isWaitingForKey;
     private InputBindingManager.GameAction _rebindingAction;
@@ -390,18 +389,6 @@ public class UnifiedSettingsManager : MonoBehaviour
         SetupButtons();
     }
 
-    /// <summary>
-    /// Localization init'ini bekler. Zaten tamamlanmış/serbest bırakılmışsa takılmadan devam eder.
-    /// (Eski `WaitUntil(IsValid() && IsDone)`, init zaten bittiyse IsValid() kalıcı false döndüğü
-    /// için sonsuza kadar bekliyordu.) Dil önizleme akışında (ApplyLocalePreviewCoroutine) kullanılır.
-    /// </summary>
-    private IEnumerator WaitForLocalizationInitialization()
-    {
-        var initOp = LocalizationSettings.InitializationOperation;
-        if (initOp.IsValid() && !initOp.IsDone)
-            yield return initOp;
-    }
-
     #endregion
 
     #region Setup Methods - Dropdowns
@@ -428,7 +415,12 @@ public class UnifiedSettingsManager : MonoBehaviour
 
         languageDropdown.ClearOptions();
 
-        var languageNames = new List<string> { "Türkçe", "English" };
+        var languageNames = new List<string>
+        {
+            "Türkçe", "English", "Deutsch", "Français", "Español", "Português", "Italiano",
+            "Nederlands", "Polski", "Čeština", "Slovenčina", "Hrvatski", "Slovenščina",
+            "Magyar", "Latviešu", "Lietuvių", "Eesti",
+        };
         foreach (string name in languageNames)
         {
             languageDropdown.options.Add(new TMP_Dropdown.OptionData(name));
@@ -1005,7 +997,7 @@ public class UnifiedSettingsManager : MonoBehaviour
     private void HandleLanguageChanged(int newValue)
     {
         _selectedSettings.LocaleID = newValue;
-        StartCoroutine(ApplyLocalePreviewCoroutine(newValue));
+        ApplySelectedLocale(newValue);
         CheckForChanges();
     }
 
@@ -1116,7 +1108,7 @@ public class UnifiedSettingsManager : MonoBehaviour
     private void ApplyAllCurrentSettings()
     {
         ApplyQualitySettings(_savedSettings.QualityLevel);
-        StartCoroutine(ApplyLocalePreviewCoroutine(_savedSettings.LocaleID));
+        ApplySelectedLocale(_savedSettings.LocaleID);
         ApplyScreenMode(_savedSettings.ScreenMode);
         ApplyVSyncSettings(_savedSettings.VSyncEnabled);
         ApplyAudioSettings();
@@ -1187,25 +1179,34 @@ public class UnifiedSettingsManager : MonoBehaviour
         }
     }
 
-    private IEnumerator ApplyLocalePreviewCoroutine(int localeID)
+    /// <summary>
+    /// Seçili dili uygular. BİLEREK SENKRON — eskiden coroutine'di ve `_isLocalizationChanging`
+    /// bool'uyla korunuyordu. O tasarım şöyle kırılıyordu: Start() -> ApplyAllCurrentSettings()
+    /// coroutine'i başlatıp bayrağı true yapıyor, ilk `yield`de askıya alınıyor; ayar paneli
+    /// açılışta kısa süre SetActive(false) edildiği için (bkz. sınıf başındaki NOT) Unity
+    /// coroutine'i ÖLDÜRÜYOR ve sondaki `_isLocalizationChanging = false` satırına HİÇ
+    /// ulaşılmıyordu. Bayrak tüm oturum boyunca true kalıyor, sonraki her dil değişimi
+    /// sessizce iptal ediliyordu -> "dili seçip kaydediyorum ama değişmiyor".
+    /// Senkron sürümde yield yok: ölecek coroutine, takılacak bayrak, korunacak re-entrancy yok.
+    /// Ayrıca `ApplyAllSettingsFromSaved()` OnDisable -> HandleMenuClosed yolundan da çağrılıyor;
+    /// devre dışı bırakılan bir obje üzerinde StartCoroutine zaten çalışmazdı, bu da düzeldi.
+    /// Beklemeye gerek olmamasının sebebi: `AvailableLocales.Locales` getter'ı playmode'da
+    /// `PreloadOperation.WaitForCompletion()` çağırıyor, yani liste her hâlükârda tam dönüyor.
+    /// </summary>
+    private void ApplySelectedLocale(int localeID)
     {
-        if (_isLocalizationChanging) yield break;
-
-        _isLocalizationChanging = true;
-
-        yield return WaitForLocalizationInitialization();
-
         var locales = LocalizationSettings.AvailableLocales.Locales;
-        if (localeID >= 0 && localeID < locales.Count)
+        if (localeID < 0 || localeID >= locales.Count)
         {
-            LocalizationSettings.SelectedLocale = locales[localeID];
-            yield return new WaitForEndOfFrame();
-
-            RefreshAllLocalizedUI();
-            RefreshScreenModeDropdownLocalization();
+            Debug.LogWarning($"{LOG_PREFIX} Geçersiz localeID={localeID} (geçerli aralık 0..{locales.Count - 1}), dil uygulanmadı.");
+            return;
         }
 
-        _isLocalizationChanging = false;
+        LocalizationSettings.SelectedLocale = locales[localeID];
+
+        RefreshAllLocalizedUI();
+        RefreshScreenModeDropdownLocalization();
+        RefreshAllKeyBindingTexts();
     }
 
     #endregion
@@ -1479,7 +1480,7 @@ public class UnifiedSettingsManager : MonoBehaviour
     private void ApplyAllSettingsFromSaved()
     {
         ApplyQualitySettings(_savedSettings.QualityLevel);
-        StartCoroutine(ApplyLocalePreviewCoroutine(_savedSettings.LocaleID));
+        ApplySelectedLocale(_savedSettings.LocaleID);
         ApplyScreenMode(_savedSettings.ScreenMode);
         ApplyVSyncSettings(_savedSettings.VSyncEnabled);
         ApplyAudioSettings();

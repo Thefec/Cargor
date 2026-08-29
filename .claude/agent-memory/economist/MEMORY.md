@@ -1,6 +1,12 @@
 # Economist Agent Memory Index
 
 ## ⭐ EN GÜNCEL TABAN (buradan başla)
+- [Kira büyüme 1.35 açığı + 1.20 önerisi 2026-08-20](rent_growth_1_35_deficit_2026-08-20.md) — ✅DOĞRULANDI: sim-resync sonrası 4P/STRICT gün16'da iflas, kök neden kira/gelir oranının oyun boyunca monotonik artması; g=1.20 parametrik taramayla test edildi (tüm Normal+Slow-optimistic bantlar sağlıklı marjla hayatta); SLOW-STRICT g'den BAĞIMSIZ erken ölüyor (taban kira sorunu, ayrı konu, tek sabitle çözülmez)
+- [sim.js v3.2 resync 2026-08-19](sim_resync_2026-08-19.md) — ✅STALE alanlar KAPANDI (16 sabit güncellendi, dal `fix/sim-resync` commit'siz); ⚠️SONUÇ DEĞİŞTİ: STRICT/Slow'da 4P artık gün16'da iflas ediyor (FAZ4 kira 1.35 hiç sim'le doğrulanmamıştı) — playtest'te 4P gün13-16 nakit akışı izlenmeli; cargo+telefon P-bazlı wiring hâlâ eksik (model gap, raporlandı)
+- [Perk canlandırma ekonomik inceleme 2026-08-19](perk_revival_economic_review_2026-08-19.md) — 6 ölü perkten 5'i FAZ4-kalibreli (dokunma), `prestige_broker` kod hâlâ eski etki taşıyor (dokunma, doubling YAPMA — 18x riski), `gambler_case`+`high_volatility` stacking +49% EV playtest-izle, ⚠️sim.js SRC artık resync edildi (bkz yukarı)
+- [Kalıcı Kart Sistemi değer onayı 2026-08-12](permanent_cards_value_review_2026-08-12.md) — 14 karttan 3'ü değer değişikliği (#6 -%5→-%2, #11 -%15→-%6 [sim: gün+%10 lineer ama net çarpan 0.935 idi], #20 talep+%20 kaldır), #16 güçlendirilmeli
+- [Perk/kart mutlak-atama çakışma riski](perk_card_absolute_assignment_conflict.md) — PerkEffect.cs TÜM perkleri idempotent MUTLAK atama ile yazıyor (+=/*=YASAK); aynı alana yazan kart perk'i SESSİZCE SİLER, biriktirmez — 5 somut çakışma noktası listelendi
+- [Kira-sonrası 3 özellik (iade/2-item/karışık tır) fiyatlandırma](post_rent_features_pricing_2026-08-15.md) — iade %25+parasız, 2-item süre ×1.3, karışık tır düz toplam, gün5/9 DraftPool tier ile ÇAKIŞMA riski
 - [⭐FAZ4 NİHAİ DEĞER SETİ](faz4_final_value_set_2026-07-30.md) — **TEK KAYNAK, FAZ 1/2/3'ün ÜSTÜNE YAZAR**: kira {500,1000,1450,1800}+g1.35, lost −0.4, moneyMult 1.2, maliyet DİZİSİ {1,2,2.95,3.7}
 - [sim.js v3.1 masa çekişmesi](sim_v31_table_contention.md) — interactable 3→5 + masa çekişmesi eklendi; gelir tabanı %7-13 düştü, S=6sn 2. en duyarlı sayı
 - [FAZ2 kararlar: kira+prestij+event+süreler](faz2_prestige_rent_event_2026-07-30.md) — ⚠️KISMEN BAYAT (kira ölçeği/lost cezası/moneyMult FAZ4'te revize); event tablosu ve gerekçeler geçerli

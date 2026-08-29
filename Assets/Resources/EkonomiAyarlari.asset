@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: EkonomiAyarlari
   m_EditorClassIdentifier: Assembly-CSharp::NewCss.GameEconomySettings
   baseRentByPlayerCount: f4010000e8030000aa05000008070000
-  rentGrowthMultiplier: 1.35
+  rentGrowthMultiplier: 1.2
   rentIntervalDays: 4
   gracePaymentPercent: 0.8
   rentScaledMultiplier: 1

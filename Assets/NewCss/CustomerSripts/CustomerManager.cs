@@ -709,6 +709,15 @@ namespace NewCss
             Quest.BuffManager.Instance?.ApplyActiveBuffsTo(customerAI);
 
             networkObject.Spawn();
+
+            // Rastgele kıyafet/görünüm: Spawn() ÇAĞRILDIKTAN SONRA uygulanır. NetworkVariable'lar
+            // Spawn() sırasında InitializeVariables() ile NetworkBehaviour'a bağlanır; bundan önce
+            // .Value set etmek fonksiyonel olarak zararsız olsa da NGO'nun "NetworkVariable is written
+            // to, but doesn't know its NetworkBehaviour yet" uyarısını basıyordu (her customer spawn'ında
+            // ~10 log). Mesh swap zaten OnNetworkSpawn -> ApplyAllCustomizations() ile güncel .Value'yu
+            // okuyup OnValueChanged event'iyle tetiklendiğinden sıralamayı buraya almak sonucu bozmaz.
+            customerObject.GetComponent<CustomerMeshSwapper>()?.RandomizeOutfit();
+
             SetupCustomerClientRpc(networkObject.NetworkObjectId, queueIndex);
 
             _customerQueue.Add(customerAI);
@@ -997,6 +1006,44 @@ namespace NewCss
                 string label = LocalizationHelper.GetLocalizedString("ExpectedCustomers");
                 remainingCustomersText.text = $"{label}\n{remainingCount}";
             }
+        }
+
+        #endregion
+
+        #region Return Box Mode Assignment (Faz A — gün 5 iade)
+
+        /// <summary>
+        /// Bu müşteri İade (BoxRequest) moduna mı girmeli? Gün eşiği + oran kontrolü saf
+        /// <see cref="PostRentFeatureUnlocks.ShouldEnterBoxRequestMode"/> içinde; burada sadece
+        /// gerçek currentDay/roll sağlanır (DraftPool.MaxUnlockedTier çağrı deseniyle aynı).
+        /// </summary>
+        public bool ShouldAssignBoxRequestMode()
+        {
+            int currentDay = DayCycleManager.Instance != null ? DayCycleManager.Instance.currentDay : 0;
+            return PostRentFeatureUnlocks.ShouldEnterBoxRequestMode(currentDay, Random.value);
+        }
+
+        /// <summary>İade modundaki müşterinin isteyeceği kutu rengini rastgele seçer (3 renk, eşit ağırlık).</summary>
+        public BoxInfo.BoxType PickRandomReturnBoxType()
+        {
+            return (BoxInfo.BoxType)Random.Range(0, 3);
+        }
+
+        #endregion
+
+        #region Dual Item Mode Assignment (Faz B — gün 9 2-item)
+
+        /// <summary>
+        /// Bu müşteri 2-item (dual item) modunda mı olmalı? Gün eşiği kontrolü saf
+        /// <see cref="PostRentFeatureUnlocks.IsDualItemUnlocked"/> içinde (gün eşiği çağrı deseni
+        /// ShouldAssignBoxRequestMode ile aynı). ProductSupply/BoxRequest mod seçiminden
+        /// BAĞIMSIZ ayrı bir eksen — bir müşteri hem BoxRequest hem dual-item olabilir, hem
+        /// ProductSupply hem dual-item olabilir.
+        /// </summary>
+        public bool ShouldAssignDualItemMode()
+        {
+            int currentDay = DayCycleManager.Instance != null ? DayCycleManager.Instance.currentDay : 0;
+            return PostRentFeatureUnlocks.IsDualItemUnlocked(currentDay);
         }
 
         #endregion

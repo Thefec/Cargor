@@ -21,7 +21,7 @@ namespace NewCss
         public int[] baseRentByPlayerCount = { 500, 1000, 1450, 1800 };
 
         [Tooltip("Her kira döneminde kira artış çarpanı (örn: 1.3 = %30 artış)")]
-        public float rentGrowthMultiplier = 1.35f;
+        public float rentGrowthMultiplier = 1.20f;
 
         [Tooltip("Kaç günde bir kira alınır")]
         public int rentIntervalDays = 4;

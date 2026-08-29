@@ -1,0 +1,963 @@
+<title>Kira Sonrası Mekanik Havuzu</title>
+
+<style>
+  :root {
+    --ground:      #E7E6E1;
+    --surface:     #F6F6F3;
+    --surface-2:   #DCDBD4;
+    --ink:         #1A1D1B;
+    --ink-muted:   #565C58;
+    --ink-faint:   #858B86;
+    --rule:        #C6C6BE;
+    --rule-strong: #A5A69D;
+
+    --safety:      #B84A14;
+    --safety-bg:   #F7E4D8;
+    --hivis:       #756800;
+    --hivis-bg:    #EFECC0;
+    --steel:       #2C5A7A;
+    --steel-bg:    #DDE8F0;
+    --moss:        #4C6B2E;
+    --moss-bg:     #E4ECD8;
+    --rust:        #A03A2A;
+    --rust-bg:     #F6E1DD;
+
+    --f-display: "Segoe UI", -apple-system, system-ui, "Helvetica Neue", Arial, sans-serif;
+    --f-body:    "Segoe UI", -apple-system, system-ui, "Helvetica Neue", Arial, sans-serif;
+    --f-mono:    ui-monospace, "Cascadia Mono", "Consolas", "SF Mono", "Menlo", monospace;
+
+    --measure: 68ch;
+    --pad: clamp(1.1rem, 4vw, 3.25rem);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #14171A;
+      --surface:     #1C2126;
+      --surface-2:   #262C33;
+      --ink:         #E3E6E4;
+      --ink-muted:   #9AA19D;
+      --ink-faint:   #6E7570;
+      --rule:        #313941;
+      --rule-strong: #454E57;
+
+      --safety:      #E8863F;
+      --safety-bg:   #33200F;
+      --hivis:       #CBBF4E;
+      --hivis-bg:    #2A2711;
+      --steel:       #79A8CC;
+      --steel-bg:    #16252F;
+      --moss:        #9DBE6E;
+      --moss-bg:     #1D2716;
+      --rust:        #E37F70;
+      --rust-bg:     #301A17;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:      #14171A;
+    --surface:     #1C2126;
+    --surface-2:   #262C33;
+    --ink:         #E3E6E4;
+    --ink-muted:   #9AA19D;
+    --ink-faint:   #6E7570;
+    --rule:        #313941;
+    --rule-strong: #454E57;
+
+    --safety:      #E8863F;
+    --safety-bg:   #33200F;
+    --hivis:       #CBBF4E;
+    --hivis-bg:    #2A2711;
+    --steel:       #79A8CC;
+    --steel-bg:    #16252F;
+    --moss:        #9DBE6E;
+    --moss-bg:     #1D2716;
+    --rust:        #E37F70;
+    --rust-bg:     #301A17;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 74rem;
+    margin: 0 auto;
+    padding: var(--pad);
+    display: flex;
+    flex-direction: column;
+    gap: 3.5rem;
+  }
+
+  /* ── Başlık ── */
+
+  .masthead {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    padding-bottom: 2rem;
+    border-bottom: 3px solid var(--ink);
+  }
+
+  .stencil {
+    font-family: var(--f-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--safety);
+    font-weight: 700;
+  }
+
+  h1 {
+    margin: 0;
+    font-family: var(--f-display);
+    font-size: clamp(2rem, 5.5vw, 3.4rem);
+    line-height: 1.02;
+    letter-spacing: -0.025em;
+    font-weight: 800;
+    text-wrap: balance;
+  }
+
+  .standfirst {
+    margin: 0;
+    max-width: var(--measure);
+    font-size: 1.06rem;
+    color: var(--ink-muted);
+  }
+
+  .slotstrip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 0.4rem;
+  }
+
+  .slot {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.6rem 0.9rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--rule-strong);
+  }
+
+  .slot.done { border-left-color: var(--moss); }
+  .slot.open { border-left-color: var(--safety); }
+
+  .slot b {
+    font-family: var(--f-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 700;
+  }
+
+  .slot span { font-size: 0.95rem; font-weight: 600; }
+  .slot.done span { color: var(--moss); }
+  .slot.open span { color: var(--safety); }
+
+  /* ── Bölümler ── */
+
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  h2 {
+    margin: 0;
+    font-family: var(--f-display);
+    font-size: 1.05rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-weight: 800;
+    display: flex;
+    align-items: baseline;
+    gap: 0.85rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  h2 .count {
+    font-family: var(--f-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    color: var(--ink-faint);
+    font-weight: 500;
+    margin-left: auto;
+    text-transform: none;
+  }
+
+  .lede {
+    margin: 0;
+    max-width: var(--measure);
+    color: var(--ink-muted);
+    font-size: 0.97rem;
+  }
+
+  /* ── Kart ızgarası ── */
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+    gap: 1rem;
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    padding: 1rem 1.05rem 1.1rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+  }
+
+  .card.pick {
+    border-color: var(--safety);
+    border-width: 2px;
+    background: var(--safety-bg);
+  }
+
+  .card h3 {
+    margin: 0;
+    font-size: 1.02rem;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+
+  .code {
+    font-family: var(--f-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    color: var(--ink-faint);
+    font-weight: 700;
+  }
+
+  .card p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.52;
+    color: var(--ink-muted);
+  }
+
+  .card p.why {
+    color: var(--ink);
+    padding-left: 0.7rem;
+    border-left: 2px solid var(--rule-strong);
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: auto;
+    padding-top: 0.5rem;
+  }
+
+  .tag {
+    font-family: var(--f-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 0.18rem 0.45rem;
+    border: 1px solid currentColor;
+    white-space: nowrap;
+  }
+
+  .t-low  { color: var(--moss);   background: var(--moss-bg); }
+  .t-mid  { color: var(--hivis);  background: var(--hivis-bg); }
+  .t-high { color: var(--rust);   background: var(--rust-bg); }
+  .t-sys  { color: var(--steel);  background: var(--steel-bg); }
+  .t-coop { color: var(--safety); background: var(--safety-bg); }
+
+  .card.pick .t-coop { background: var(--surface); }
+
+  /* ── Öneri bloğu ── */
+
+  .rec {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    padding: 1.5rem var(--pad) 1.75rem;
+    background: var(--surface-2);
+    border-left: 5px solid var(--safety);
+  }
+
+  .rec h2 { border-bottom-color: var(--rule-strong); }
+  .rec p { margin: 0; max-width: var(--measure); }
+
+  .arc {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 0.9rem;
+  }
+
+  .beat {
+    padding: 0.9rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+  }
+
+  .beat b {
+    display: block;
+    font-family: var(--f-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--safety);
+    margin-bottom: 0.3rem;
+  }
+
+  .beat strong { display: block; font-size: 1rem; margin-bottom: 0.3rem; }
+  .beat span { font-size: 0.88rem; color: var(--ink-muted); }
+
+  /* ── Uyarı ── */
+
+  .note {
+    padding: 0.9rem 1.1rem;
+    background: var(--hivis-bg);
+    border-left: 4px solid var(--hivis);
+    font-size: 0.92rem;
+    max-width: var(--measure);
+  }
+
+  .note b { color: var(--hivis); }
+
+  footer {
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--rule);
+    font-size: 0.85rem;
+    color: var(--ink-faint);
+    font-family: var(--f-mono);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .card { transition: border-color 120ms ease; }
+  }
+
+  .card:hover { border-color: var(--rule-strong); }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="stencil">Cargor · Tasarım Araştırması · 13.08.2026</div>
+    <h1>Kira Sonrası Mekanik Havuzu</h1>
+    <p class="standfirst">
+      Her kira gününden sonra oyuna yeni bir mekanik giriyor. Birincisi belli: iade sistemi.
+      Bu belge ikinci ve üçüncü slot için 58 aday taşıyor — birbirinden bağımsız mekanikler,
+      iade sisteminin devamı değil. Kartlardaki kodlara referans vererek seçebilirsin ("MÜŞ-21 ve ZAM-43").
+    </p>
+    <div class="slotstrip">
+      <div class="slot done"><b>Kira 1 · Gün 5</b><span>İade sistemi — karar verildi</span></div>
+      <div class="slot open"><b>Kira 2 · Gün 9</b><span>Açık</span></div>
+      <div class="slot open"><b>Kira 3 · Gün 13</b><span>Açık</span></div>
+      <div class="slot"><b>Kira 4 · Gün 16</b><span>Yok — oyun bitiyor</span></div>
+    </div>
+  </header>
+
+  <section class="rec">
+    <h2>Müdür önerisi <span class="count">58 adaydan 2'si</span></h2>
+    <p>
+      Havuzun tamamını aşağıda bulacaksın, ama seçimi bana sorarsan üç slotu tek bir ritim olarak
+      okuyorum: <strong>yük → güç → kaos</strong>. Önce oyuncuya yeni bir dert verilir, sonra o derdi
+      kaldırabileceği bir güç, en sonda da her ikisini sınayan bir felaket. Aynı yönde üç kez zorlamak
+      13. günde oyuncuyu yormaktan başka bir şey yapmaz.
+    </p>
+    <div class="arc">
+      <div class="beat">
+        <b>Gün 5 · yük</b>
+        <strong>İade sistemi</strong>
+        <span>Zaten kararlaştırıldı. Döngüye ters yönlü bir akış ekliyor: kutu artık sadece gitmiyor, geri de geliyor.</span>
+      </div>
+      <div class="beat">
+        <b>Gün 9 · güç</b>
+        <strong>TAŞ-02 El arabası</strong>
+        <span>Oyuncuya kapasite verir ama bedava değil: yavaş, dönüşü geniş, kapıda sıkışıyor. "Koşayım mı, doldurayım mı" kararı depo oyununun çekirdeği — ve oda/kapı sistemi zaten kurulu.</span>
+      </div>
+      <div class="beat">
+        <b>Gün 13 · kaos</b>
+        <strong>ZAM-43 Elektrik kesintisi</strong>
+        <span>Maliyetine göre en gösterişli aday: karartma shader'ı, oda kutuları ve global değişkenler zaten yazılmış durumda. Telsizi ilk kez <em>zorunlu</em> kılar.</span>
+      </div>
+    </div>
+    <div class="note">
+      <b>Not:</b> ZAM-43'ü öne çıkarmamın sebebi bedava olması değil, <em>bitmiş altyapıyı ikinci kez satması</em>.
+      Oda görünürlüğü için yazılan karartma sistemi şu an tek bir amaca hizmet ediyor; kesinti onu ikinci bir
+      mekaniğe dönüştürür. Yine de gerçek Unity'de ölçülmemiş bir şey var: karartma her karede aktifken
+      SRP Batcher davranışı. S7 playtest'i bunu söyleyecek.
+    </div>
+  </section>
+
+  <section>
+    <h2>Taşıma ve hareket <span class="count">TAŞ · 10 aday</span></h2>
+    <p class="lede">Kutunun A'dan B'ye gidişini değiştiren fikirler. Oyunun en çok tekrar eden fiili bu olduğu için buradaki her değişiklik gün boyunca hissediliyor — iyi tarafı da kötü tarafı da bu.</p>
+    <div class="grid">
+
+      <article class="card">
+        <div class="code">TAŞ-01</div>
+        <h3>Ağır kutu — iki kişi taşır</h3>
+        <p>Bazı kutular tek başına kaldırılamaz; iki oyuncunun aynı anda tutması gerekir, taşırken ikisi de yavaşlar. Biri bırakırsa kutu düşer.</p>
+        <p class="why">Co-op'u <em>zorunlu</em> kılan tek aday. Diğerleri 4 kişide hızlanır, bu işbirliği olmadan tıkanır.</p>
+        <div class="tags"><span class="tag t-high">Maliyet yüksek</span><span class="tag t-coop">Co-op güçlü</span><span class="tag t-sys">Pickup + ağ</span></div>
+      </article>
+
+      <article class="card pick">
+        <div class="code">TAŞ-02 · önerilen</div>
+        <h3>El arabası / palet</h3>
+        <p>Tek seferde 3-4 kutu taşırsın; araba yavaş, dönüşü geniş, dar geçitte sıkışır ve kapılardan geçirmek dert.</p>
+        <p class="why">"Bir kutu için koş mu, doldurayım da tek sefer mi" kararı. Oyuncuların birbirini engellemesi de bedava komedi.</p>
+        <div class="tags"><span class="tag t-mid">Maliyet orta</span><span class="tag t-coop">Co-op orta</span><span class="tag t-sys">Oda / kapı sistemi</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">TAŞ-03</div>
+        <h3>İstifleme</h3>
+        <p>Üst üste 2-3 kutu taşıyabilirsin, ama koşarsan veya sert dönersen tepedeki düşer.</p>
+        <p class="why">El arabasının ucuz kardeşi: yeni nesne yok, mevcut taşıma sistemine risk katmanı. Hız-güvenlik takası.</p>
+        <div class="tags"><span class="tag t-low">Maliyet düşük</span><span class="tag t-coop">Co-op zayıf</span><span class="tag t-sys">Pickup</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">TAŞ-04</div>
+        <h3>Pas zinciri</h3>
+        <p>Fırlatma zaten var; iki oyuncu arası pas resmî mekanik olur. Havada yakalanan kutu bonus verir, düşen ceza yazar.</p>
+        <p class="why">Var olan bir fiili beceriye çeviriyor. Ustalaşan oyuncular depo-masa arasında insan zinciri kurar.</p>
+        <div class="tags"><span class="tag t-low">Maliyet düşük</span><span class="tag t-coop">Co-op güçlü</span><span class="tag t-sys">Fırlatma</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">TAŞ-05</div>
+        <h3>Kaydırma oluğu</h3>
+        <p>Depodan tezgâha tek yönlü hızlı bir hat. Kutuyu atarsın, aşağıda birikir — ama hangi sırayla çıkacağını kontrol edemezsin.</p>
+        <p class="why">Hız veriyor, düzeni alıyor. Sabit bir yapı olduğu için harita tasarımına da karar kattırıyor.</p>
+        <div class="tags"><span class="tag t-mid">Maliyet orta</span><span class="tag t-coop">Co-op orta</span><span class="tag t-sys">Fizik + harita</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">TAŞ-06</div>
+        <h3>Forklift</h3>
+        <p>Tek kişilik hızlı taşıma aracı. Yanlış kullanınca rafa çarpar, raf devrilir, kutular saçılır.</p>
+        <p class="why">Yüksek tavan, yüksek maliyet: araç fiziği + ağ senkronu + çarpışma hasarı. Arabanın (TAŞ-02) abartılmış hâli.</p>
+        <div class="tags"><span class="tag t-high">Maliyet yüksek</span><span class="tag t-coop">Co-op zayıf</span><span class="tag t-sys">Araç fiziği</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">TAŞ-07</div>
+        <h3>Tıkanma</h3>
+        <p>Yere bırakılan kutular gerçek engel olur; koridora bırakılan üç kutu geçişi kapatır ve toplanana kadar orada durur.</p>
+        <p class="why">Dağınıklığı cezalandırmanın en doğrudan yolu. <em>Risk:</em> yanlış dozda sinir bozucu olur.</p>
+        <div class="tags"><span class="tag t-low">Maliyet düşük</span><span class="tag t-coop">Co-op orta</span><span class="tag t-sys">Collider</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">TAŞ-08</div>
+        <h3>Kaygan zemin</h3>
+        <p>Islak veya yağlı alanda kontrolü kaybedersin, elindeki kutu uçar. Alan gün içinde temizlenebilir.</p>
+        <p class="why">Etkinlik takvimine doğal bağlanır (yağmurlu gün → girişte ıslak zemin) ve haritayı gün gün değiştirir.</p>
+        <div class="tags"><span class="tag t-low">Maliyet düşük</span><span class="tag t-coop">Co-op zayıf</span><span class="tag t-sys">Etkinlik sistemi</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">TAŞ-09</div>
+        <h3>İkinci kat</h3>
+        <p>Depo yukarı doğru büyür; üst kata merdiven veya asansörle çıkılır, asansör beklemesi gerçek bir maliyet.</p>
+        <p class="why">Haritayı büyütür ve oda sistemine yeni bir katman verir. Ama NavMesh, kamera ve yerleşim işi ağır.</p>
+        <div class="tags"><span class="tag t-high">Maliyet yüksek</span><span class="tag t-coop">Co-op orta</span><span class="tag t-sys">Harita + NavMesh</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">TAŞ-10</div>
+        <h3>Yürüyen bant zemin</h3>
+        <p>Belirli koridorlarda zemin seni taşır — doğru yöne gidiyorsan hızlı, ters yöne gidiyorsan sürünüyorsun.</p>
+        <p class="why">Rota planlamayı tek yönlü trafiğe çevirir. Basit görünüyor ama oyuncu hareketiyle çakışması test ister.</p>
+        <div class="tags"><span class="tag t-mid">Maliyet orta</span><span class="tag t-coop">Co-op zayıf</span><span class="tag t-sys">Oyuncu hareketi</span></div>
+      </article>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>Depo ve stok <span class="count">DEP · 10 aday</span></h2>
+    <p class="lede">Şu an depo sonsuz: raftan istediğin rengi istediğin kadar alabiliyorsun. Bu kategori o varsayımı bozan fikirler — en derin sistemik değişiklikler burada, ekonomiyi en çok sarsanlar da.</p>
+    <div class="grid">
+
+      <article class="card">
+        <div class="code">DEP-11</div>
+        <h3>Stok tükenir</h3>
+        <p>Her renkten sınırlı adet vardır. Biten rengi müşteriye veremezsin; sipariş geri çevrilir veya beklemeye girer.</p>
+        <p class="why">Tek başına en büyük tasarım kazancı: raf artık bir kaynak. <em>Uyarı:</em> ekonomiyi baştan aşağı değiştirir, economist turu şart.</p>
+        <div class="tags"><span class="tag t-mid">Maliyet orta</span><span class="tag t-coop">Co-op orta</span><span class="tag t-sys">Raf + ekonomi</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">DEP-12</div>
+        <h3>Tedarik siparişi</h3>
+        <p>Gün sonunda ertesi gün hangi renkten kaç kutu geleceğine sen karar verirsin. Yanlış tahmin = ertesi gün elin boş.</p>
+        <p class="why">Gün dışı bir planlama katmanı. DEP-11 olmadan anlamsız — ikisi tek pakettir.</p>
+        <div class="tags"><span class="tag t-mid">Maliyet orta</span><span class="tag t-coop">Co-op orta</span><span class="tag t-sys">DEP-11'e bağlı</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">DEP-13</div>
+        <h3>Raf yerleşimini sen kur</h3>
+        <p>Hangi rengin hangi rafta duracağına oyuncular karar verir. İyi yerleşim yürüme mesafesini kısaltır.</p>
+        <p class="why">Ekibe ortak bir hafıza ve ortak bir hata kaynağı verir — "mavi neredeydi?" telsizin en çok kullanılacağı cümle olur.</p>
+        <div class="tags"><span class="tag t-mid">Maliyet orta</span><span class="tag t-coop">Co-op güçlü</span><span class="tag t-sys">Raf sistemi</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">DEP-14</div>
+        <h3>Yanlış etiket</h3>
+        <p>Bazı kutuların dışı içini yanlış söyler. Açmadan ya da kontrol etmeden anlayamazsın.</p>
+        <p class="why">Güveni bozarak gerilim yaratır. <em>Risk:</em> oyuncu bunu haksızlık olarak okuyabilir — oranı düşük tutulmalı ve tespit yolu olmalı.</p>
+        <div class="tags"><span class="tag t-low">Maliyet düşük</span><span class="tag t-coop">Co-op zayıf</span><span class="tag t-sys">Kutu verisi</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">DEP-15</div>
+        <h3>Kırılgan mal</h3>
+        <p>Bazı kutular düştüğünde kırılır ve tamamen kaybedilir. Bunlarda fırlatmak intihardır.</p>
+        <p class="why">Var olan düşürme cezasını renklendirir: artık her kutu eşit değil, hangisini taşırken dikkatli olacağını bilmen gerekir.</p>
+        <div class="tags"><span class="tag t-low">Maliyet düşük</span><span class="tag t-coop">Co-op zayıf</span><span class="tag t-sys">Düşürme cezası</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">DEP-16</div>
+        <h3>Bozulabilir mal</h3>
+        <p>Soğuk zincir malı: raftan alındıktan sonra belirli süre içinde teslim edilmezse çürür ve çöpe gider.</p>
+        <p class="why">Kutuya kendi sayacını takıyor. Oyuncuyu "önce hangi işi bitireyim" sıralamasına zorlar.</p>
+        <div class="tags"><span class="tag t-mid">Maliyet orta</span><span class="tag t-coop">Co-op orta</span><span class="tag t-sys">Kutu + zaman</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">DEP-17</div>
+        <h3>Hacimli mal</h3>
+        <p>Büyük kutular rafta iki slot kaplar ve taşırken iki elini birden doldurur — taşırken koşamazsın, kapı dar gelir.</p>
+        <p class="why">TAŞ-01'in ağ maliyeti olmayan hâli: aynı "bu kutu özel" hissini tek oyuncuyla verir.</p>
+        <div class="tags"><span class="tag t-low">Maliyet düşük</span><span class="tag t-coop">Co-op zayıf</span><span class="tag t-sys">Pickup + raf</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">DEP-18</div>
+        <h3>Kayıp kutu</h3>
+        <p>Kutular bazen rafın arkasına düşer veya yanlış rafa karışır; aramak gerekir.</p>
+        <p class="why">Karartma sistemiyle çok iyi çalışır — başka odadaki kutuyu göremezsin, X'e basıp aramak gerçek bir eylem olur.</p>
+        <div class="tags"><span class="tag t-low">Maliyet düşük</span><span class="tag t-coop">Co-op güçlü</span><span class="tag t-sys">Oda görünürlüğü</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">DEP-19</div>
+        <h3>Dağınıklık birikimi</h3>
+        <p>Gün boyunca ambalaj artığı, boş koli ve çöp birikir. Temizlenmezse hareketi yavaşlatır ve prestiji düşürür.</p>
+        <p class="why">Boş anlara iş verir — rush arasındaki ölü zaman artık gerçekten ölü değil.</p>
+        <div class="tags"><span class="tag t-low">Maliyet düşük</span><span class="tag t-coop">Co-op orta</span><span class="tag t-sys">Prestij</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">DEP-20</div>
+        <h3>Envanter sayımı</h3>
+        <p>Gün kapanışında kısa bir sayım fazı: hangi renkten kaç kaldığını doğru bildirirsen bonus, yanlışsa ceza.</p>
+        <p class="why">Gün sonuna bir kapanış ritüeli koyar. DEP-11 ile birlikte anlamlı, tek başına zayıf.</p>
+        <div class="tags"><span class="tag t-low">Maliyet düşük</span><span class="tag t-coop">Co-op orta</span><span class="tag t-sys">Gün döngüsü</span></div>
+      </article>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>Müşteri ve sipariş <span class="count">MÜŞ · 10 aday</span></h2>
+    <p class="lede">Fiiller aynı kalır, ama müşterinin ne istediği değişir. Kategorinin tamamı ucuz: yeni prefab, yeni istasyon, NavMesh işi yok — mevcut müşteri sistemine veri ekleniyor.</p>
+    <div class="grid">
+
+      <article class="card">
+        <div class="code">MÜŞ-21</div>
+        <h3>Çoklu sipariş</h3>
+        <p>Müşteri 2-3 rengi birden ister ve hepsi masada toplanmadan hiçbirini almaz.</p>
+        <p class="why">Hafıza yükü + iş bölümü baskısı. Telsizin asıl parladığı yer burası: "sen kırmızıyı getir, ben maviyi".</p>
+        <div class="tags"><span class="tag t-low">Maliyet düşük</span><span class="tag t-coop">Co-op güçlü</span><span class="tag t-sys">Müşteri AI</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">MÜŞ-22</div>
+        <h3>Sipariş fişi</h3>
+        <p>Müşteri rengi söylemez, eline bir fiş verir. Okumak için durup bakman gerekir; fişi bir yere bırakırsan kaybolur.</p>
+        <p class="why">Bilgiyi taşınabilir bir nesneye çevirir. Ekran köşesine bakıp geçmek yerine gerçekten bir şey taşıyorsun.</p>
+        <div class="tags"><span class="tag t-low">Maliyet düşük</span><span class="tag t-coop">Co-op güçlü</span><span class="tag t-sys">Müşteri + pickup</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">MÜŞ-23</div>
+        <h3>Kararsız müşteri</h3>
+        <p>Sen depoya vardıktan sonra fikrini değiştirir. Tezgâhtaki oyuncunun bunu haber vermesi gerekir.</p>
+        <p class="why">Telsizi <em>zorunlu</em> kılan ikinci mekanik. <em>Risk:</em> sık olursa saf sinir, gün başına bir-iki taneyle sınırlanmalı.</p>
+        <div class="tags"><span class="tag t-low">Maliyet düşük</span><span class="tag t-coop">Co-op güçlü</span><span class="tag t-sys">Müşteri AI + telsiz</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">MÜŞ-24</div>
+        <h3>VIP müşteri</h3>
+        <p>Sabırsız, kuyruğun başına geçer, ödülü büyük. Bekletirsen prestij cezası da büyük.</p>
+        <p class="why">Kuyruğa öncelik kavramı sokar: artık sadece hızlı değil, doğru sırayla çalışman gerekiyor.</p>
+        <div class="tags"><span class="tag t-low">Maliyet düşük</span><span class="tag t-coop">Co-op orta</span><span class="tag t-sys">Kuyruk + prestij</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">MÜŞ-25</div>
+        <h3>Toptancı</h3>
+        <p>Tek müşteri beş kutu ister. Uzun bir iş, tezgâhı kilitler, arkadaki kuyruk birikir.</p>
+        <p class="why">Ekibi bölmeye zorlar: biri toptancıyı bitirirken diğerlerinin normal akışı sürdürmesi gerekir.</p>
+        <div class="tags"><span class="tag t-low">Maliyet düşük</span><span class="tag t-coop">Co-op güçlü</span><span class="tag t-sys">Müşteri AI</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">MÜŞ-26</div>
+        <h3>Randevulu müşteri</h3>
+        <p>Sabah gelir, "14:00'te alacağım" der. O saate kadar siparişi hazırlayıp bekletmen gerekir.</p>
+        <p class="why">Güne bir zaman çizelgesi koyar. Boş anları doldurmanın en zarif yolu — ileriye çalışabilirsin.</p>
+        <div class="tags"><span class="tag t-mid">Maliyet orta</span><span class="tag t-coop">Co-op orta</span><span class="tag t-sys">Gün saati + masa</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">MÜŞ-27</div>
+        <h3>Hırsız</h3>
+        <p>Sıradan bir müşteri gibi görünür, kutuyu alıp ödemeden çıkar. Fark edip durdurman gerekir.</p>
+        <p class="why">Dikkat mekaniği: artık sadece siparişlere değil, salona da bakman gerekiyor. Karartma sistemiyle gerilimli.</p>
+        <div class="tags"><span class="tag t-mid">Maliyet orta</span><span class="tag t-coop">Co-op orta</span><span class="tag t-sys">Müşteri AI + oda</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">MÜŞ-28</div>
+        <h3>Sadık müşteri</h3>
+        <p>Aynı müşteri günlerce geri gelir. Hızlı servis ettikçe bonusu artar, bir kez kaybedersen sıfırlanır.</p>
+        <p class="why">16 günlük runa süreklilik ekler; oyuncular yüz tanımaya başlar. Prestijden farklı, kişisel bir ilerleme.</p>
+        <div class="tags"><span class="tag t-mid">Maliyet orta</span><span class="tag t-coop">Co-op zayıf</span><span class="tag t-sys">Müşteri + prestij</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">MÜŞ-29</div>
+        <h3>Sıra numarası</h3>
+        <p>Müşteriler numara alır. Sırayı atlarsan atlanan müşteri sinirlenir ve sabrı hızla düşer.</p>
+        <p class="why">"En yakındakini servis et" kolaycılığını bozar. Ucuz ama düzen baskısı yaratır.</p>
+        <div class="tags"><span class="tag t-low">Maliyet düşük</span><span class="tag t-coop">Co-op orta</span><span class="tag t-sys">Kuyruk</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">MÜŞ-30</div>
+        <h3>Kalabalık grup</h3>
+        <p>2-3 müşteri birlikte gelir, tek kuyruk yeri kaplar ama ayrı ayrı sipariş verir ve birlikte ayrılır.</p>
+        <p class="why">Kuyruk kapasitesini bozmadan iş yükünü katlar. Biri bekletilirse hepsi kızar.</p>
+        <div class="tags"><span class="tag t-low">Maliyet düşük</span><span class="tag t-coop">Co-op orta</span><span class="tag t-sys">Kuyruk</span></div>
+      </article>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>İstasyon ve işlem <span class="count">İST · 8 aday</span></h2>
+    <p class="lede">Döngüye fiziksel bir durak ekleyen fikirler. En güçlü "Overcooked" hissi burada, ama her biri yeni prefab, yeni etkileşim ve oda yerleşimi demek — üstelik yeni istasyonların oda kutularına girmesi gerekir.</p>
+    <div class="grid">
+
+      <article class="card">
+        <div class="code">İST-31</div>
+        <h3>Kasa / ödeme</h3>
+        <p>Müşteri kutuyu alıp gitmez; kasaya uğrar. Kasada kimse yoksa orada ikinci bir kuyruk birikir.</p>
+        <p class="why">Dördüncü oyuncuya sabit bir rol verir — şu an herkes aynı işi yapıyor. Kategorinin en ucuzu.</p>
+        <div class="tags"><span class="tag t-low">Maliyet düşük</span><span class="tag t-coop">Co-op güçlü</span><span class="tag t-sys">Kuyruk + masa</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">İST-32</div>
+        <h3>Paketleme zorunlu</h3>
+        <p>Kutu doğrudan verilemez; önce paketleme masasından geçer. İstasyon zaten bir upgrade olarak mevcut.</p>
+        <p class="why">Yarısı yazılmış: paketleme istasyonu sahnede var. Onu isteğe bağlı olmaktan çıkarıp döngünün parçası yapıyor.</p>
+        <div class="tags"><span class="tag t-mid">Maliyet orta</span><span class="tag t-coop">Co-op güçlü</span><span class="tag t-sys">Paketleme upgrade'i</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">İST-33</div>
+        <h3>Barkod okutma</h3>
+        <p>Her kutu çıkışta okutulmalı. Kısa, ritmik bir etkileşim — hızlı ama dikkat ister, okutulmayan kutu kayıt dışı kalır.</p>
+        <p class="why">Akışı bozmadan tempo ekler. Tek başına zayıf, DEP-14 veya MÜŞ-27 ile birlikte anlamlanır.</p>
+        <div class="tags"><span class="tag t-low">Maliyet düşük</span><span class="tag t-coop">Co-op zayıf</span><span class="tag t-sys">Masa etkileşimi</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">İST-34</div>
+        <h3>Tartı</h3>
+        <p>Kutunun ağırlığına göre ücret hesaplanır. Yanlış tartılan kutu ya zarar yazar ya müşteriyi kızdırır.</p>
+        <p class="why">Ekonomiye oyuncu becerisiyle oynanan bir kol ekler: doğru tartan ekip daha çok kazanır.</p>
+        <div class="tags"><span class="tag t-low">Maliyet düşük</span><span class="tag t-coop">Co-op zayıf</span><span class="tag t-sys">Ekonomi + masa</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">İST-35</div>
+        <h3>Kalite kontrol</h3>
+        <p>Hasarlı mallar ayıklanmalı. Gözden kaçan hasarlı kutu müşteriye gider ve sorun olarak geri döner.</p>
+        <p class="why">İade sistemine yaslanmadan da çalışır ama onunla birlikte tam bir sebep-sonuç zinciri kurar.</p>
+        <div class="tags"><span class="tag t-low">Maliyet düşük</span><span class="tag t-coop">Co-op orta</span><span class="tag t-sys">Kutu verisi</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">İST-36</div>
+        <h3>Ambalaj malzemesi biter</h3>
+        <p>Bant, köpük ve koli tükenir; ikmal edilmezse paketleme durur.</p>
+        <p class="why">İstasyona kendi kaynak yönetimini ekler. Birinin sürekli ikmalle uğraşması gerekir — yeni bir rol.</p>
+        <div class="tags"><span class="tag t-low">Maliyet düşük</span><span class="tag t-coop">Co-op orta</span><span class="tag t-sys">İST-32'ye bağlı</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">İST-37</div>
+        <h3>Montaj</h3>
+        <p>Bazı siparişler iki ayrı parçanın birleştirilmesini ister; ikisi de doğru olmadan sipariş tamamlanmaz.</p>
+        <p class="why">Tarif mantığı getirir. MÜŞ-21'e (çoklu sipariş) çok benzer ama fiziksel bir işlem adımı ekler.</p>
+        <div class="tags"><span class="tag t-mid">Maliyet orta</span><span class="tag t-coop">Co-op güçlü</span><span class="tag t-sys">Masa + kutu</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">İST-38</div>
+        <h3>Giden / gelen ayrıştırma</h3>
+        <p>Hangar iki yönlü çalışır: gelen mal boşaltılır, giden mal yüklenir, ikisi aynı alanı paylaşır.</p>
+        <p class="why">Tır sistemine gerçek bir darboğaz ekler. Şu an tır penceresi darboğaz değil — bu onu darboğaza çevirir.</p>
+        <div class="tags"><span class="tag t-mid">Maliyet orta</span><span class="tag t-coop">Co-op güçlü</span><span class="tag t-sys">Tır + hangar</span></div>
+      </article>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>Zaman ve gün yapısı <span class="count">ZAM · 5 aday</span></h2>
+    <p class="lede">Günün şeklini değiştiren fikirler. Bunlar tek tek eylemleri değil, bütün bir günün ritmini etkilediği için etkileri en geniş olanlar.</p>
+    <div class="grid">
+
+      <article class="card">
+        <div class="code">ZAM-39</div>
+        <h3>Gece vardiyası</h3>
+        <p>Gün bittikten sonra isteğe bağlı ekstra bir tur. Para getirir, ama ertesi günü yorgun başlarsın.</p>
+        <p class="why">Kira baskısına oyuncunun kendi eliyle çektiği bir kol ekler. Kira gününden önceki gece gerçek bir kumar olur.</p>
+        <div class="tags"><span class="tag t-mid">Maliyet orta</span><span class="tag t-coop">Co-op orta</span><span class="tag t-sys">Gün döngüsü + stamina</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">ZAM-40</div>
+        <h3>Sabah hazırlık fazı</h3>
+        <p>Müşteriler gelmeden önce kısa bir hazırlık penceresi: rafları diz, malzemeyi tazele, yerleşimi düzelt.</p>
+        <p class="why">Güne baskısız bir giriş verir ve ekibin plan yapmasına yer açar. DEP-13 ile birlikte çok güçlü.</p>
+        <div class="tags"><span class="tag t-low">Maliyet düşük</span><span class="tag t-coop">Co-op güçlü</span><span class="tag t-sys">Gün döngüsü</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">ZAM-41</div>
+        <h3>Zorunlu mola</h3>
+        <p>Gün içinde dinlenme odasına uğramazsan performansın düşer. Ama mola verdiğin süre boyunca tezgâh boş kalır.</p>
+        <p class="why">Var olan ama az kullanılan dinlenme odasını canlandırır — yeni sistem yazmadan bir sistemi geri kazanmak.</p>
+        <div class="tags"><span class="tag t-low">Maliyet düşük</span><span class="tag t-coop">Co-op orta</span><span class="tag t-sys">Dinlenme odası</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">ZAM-42</div>
+        <h3>Ekspres saat</h3>
+        <p>Gün içinde habersiz açılan kısa bir pencere: alarm çalar, o süre boyunca her teslimat çift öder.</p>
+        <p class="why">Güne zirve noktası koyar. Etkinlik sistemi zaten var, bu onun gün-içi ve kısa vadeli versiyonu.</p>
+        <div class="tags"><span class="tag t-low">Maliyet düşük</span><span class="tag t-coop">Co-op orta</span><span class="tag t-sys">Etkinlik sistemi</span></div>
+      </article>
+
+      <article class="card pick">
+        <div class="code">ZAM-43 · önerilen</div>
+        <h3>Elektrik kesintisi</h3>
+        <p>Işıklar söner. Sadece el fenerinin gördüğü kadarını görürsün; kimin nerede olduğunu bilmenin tek yolu telsiz kalır.</p>
+        <p class="why">Karartma shader'ı, oda kutuları ve global değişkenler <em>zaten yazılmış</em>. Maliyetine göre en gösterişli aday.</p>
+        <div class="tags"><span class="tag t-mid">Maliyet orta</span><span class="tag t-coop">Co-op güçlü</span><span class="tag t-sys">Oda görünürlüğü + telsiz</span></div>
+      </article>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>Personel ve rol <span class="count">EKİP · 5 aday</span></h2>
+    <p class="lede">Kimin ne iş yaptığına dair fikirler. Şu an dört oyuncu da aynı şeyi yapabiliyor; bu kategori onları farklılaştırıyor.</p>
+    <div class="grid">
+
+      <article class="card">
+        <div class="code">EKİP-44</div>
+        <h3>Stajyer</h3>
+        <p>Para karşılığı bir NPC çalışan tutarsın. Yavaş çalışır, ara sıra yanlış kutu getirir, yönetilmesi gerekir.</p>
+        <p class="why">Tek kişilik oyunu ayakta tutar. Ama iyi bir yardımcı AI yazmak bu listedeki en pahalı iş.</p>
+        <div class="tags"><span class="tag t-high">Maliyet yüksek</span><span class="tag t-coop">Co-op zayıf</span><span class="tag t-sys">Yeni AI</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">EKİP-45</div>
+        <h3>Rol seçimi</h3>
+        <p>Gün başında herkes bir rol alır — depocu, tezgâhtar, yükleyici. Kendi işinde belirgin şekilde hızlısın, diğerlerinde yavaş.</p>
+        <p class="why">İş bölümünü öneriden zorunluluğa çevirir. Ucuz: yeni nesne yok, sadece oyuncu başına çarpanlar.</p>
+        <div class="tags"><span class="tag t-low">Maliyet düşük</span><span class="tag t-coop">Co-op güçlü</span><span class="tag t-sys">Oyuncu hareketi</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">EKİP-46</div>
+        <h3>Müfettiş</h3>
+        <p>Belirli günlerde denetçi gelir: temizlik, etiketleme ve düzen kontrol edilir. Geçemezsen ceza yazılır.</p>
+        <p class="why">DEP-19 veya İST-33 gibi "ihmal edilebilir" mekaniklere diş kazandırır. Tek başına anlamsız.</p>
+        <div class="tags"><span class="tag t-mid">Maliyet orta</span><span class="tag t-coop">Co-op orta</span><span class="tag t-sys">Etkinlik + prestij</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">EKİP-47</div>
+        <h3>Kalıcı yorgunluk</h3>
+        <p>Stamina gün içinde tam dolmaz; günler boyu birikir. Dinlenmeyen ekip 13. güne sürünerek gelir.</p>
+        <p class="why">Mevcut stamina sistemini tek günden bütün runa yayar. ZAM-39 ve ZAM-41 ile aynı ailedendir.</p>
+        <div class="tags"><span class="tag t-low">Maliyet düşük</span><span class="tag t-coop">Co-op orta</span><span class="tag t-sys">Stamina</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">EKİP-48</div>
+        <h3>Telsiz menzili</h3>
+        <p>Telsiz her yerde çalışmaz: bodrum veya uzak depoda cızırdar, kanal değiştirmek gerekir.</p>
+        <p class="why">Sesli iletişim dalı zaten yazılıyor. Ama iletişimi bozmak riskli — eğlenceyi arttırmak yerine sinir bozabilir.</p>
+        <div class="tags"><span class="tag t-mid">Maliyet orta</span><span class="tag t-coop">Co-op güçlü</span><span class="tag t-sys">Telsiz sistemi</span></div>
+      </article>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>Ekipman, kaza, bakım <span class="count">BAK · 5 aday</span></h2>
+    <p class="lede">Mağazanın kendisini kırılabilir hale getiren fikirler. Hepsi aynı temaya hizmet ediyor: her şey çalışırken bir şey bozulur ve birinin gidip ilgilenmesi gerekir.</p>
+    <div class="grid">
+
+      <article class="card">
+        <div class="code">BAK-49</div>
+        <h3>Ekipman arızası</h3>
+        <p>Raf, masa veya hangar kapısı arızalanır; tamir edilene kadar o istasyon kullanılamaz.</p>
+        <p class="why">Kategorinin omurgası. Ekibi anlık olarak bir kişi eksiltir — en yoğun anda gelirse gerçek panik.</p>
+        <div class="tags"><span class="tag t-mid">Maliyet orta</span><span class="tag t-coop">Co-op güçlü</span><span class="tag t-sys">İstasyonlar</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">BAK-50</div>
+        <h3>Yangın</h3>
+        <p>Bir noktada yangın çıkar, söndürülmezse yayılır ve yakınındaki kutuları yakar.</p>
+        <p class="why">En dramatik aday. Ama yayılma mantığı, söndürme aracı, hasar ve VFX — bu liste içindeki en ağır işlerden biri.</p>
+        <div class="tags"><span class="tag t-high">Maliyet yüksek</span><span class="tag t-coop">Co-op güçlü</span><span class="tag t-sys">Yeni sistem + VFX</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">BAK-51</div>
+        <h3>Su sızıntısı</h3>
+        <p>Tavandan sızan su zemini ıslatır; temizlenmezse alan büyür ve oradaki mallar zarar görür.</p>
+        <p class="why">Yangının ucuz ve yavaş versiyonu. TAŞ-08 (kaygan zemin) ile aynı paket olarak yazılabilir.</p>
+        <div class="tags"><span class="tag t-mid">Maliyet orta</span><span class="tag t-coop">Co-op orta</span><span class="tag t-sys">TAŞ-08 ile ortak</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">BAK-52</div>
+        <h3>Raf çökmesi</h3>
+        <p>Aşırı yüklenen raf devrilir, üstündeki her şey yere saçılır ve toplanması gerekir.</p>
+        <p class="why">Rafa taşıma kapasitesi ekler. DEP-11 ile birlikte "nereye ne kadar koyayım" kararı doğar.</p>
+        <div class="tags"><span class="tag t-mid">Maliyet orta</span><span class="tag t-coop">Co-op orta</span><span class="tag t-sys">Raf sistemi</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">BAK-53</div>
+        <h3>Alarm ve kamera</h3>
+        <p>Güvenlik sistemi kurarsın; hırsız yaklaşınca uyarı verir ama yanlış alarmlar da olur.</p>
+        <p class="why">MÜŞ-27 olmadan hiçbir anlamı yok. İkisi tek paket olarak düşünülmeli.</p>
+        <div class="tags"><span class="tag t-mid">Maliyet orta</span><span class="tag t-coop">Co-op orta</span><span class="tag t-sys">MÜŞ-27'ye bağlı</span></div>
+      </article>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>Gün dışı kararlar <span class="count">META · 5 aday</span></h2>
+    <p class="lede">Oynanış sırasında değil, günler arasında verilen kararlar. Bunlar el becerisi değil strateji katmanı ekliyor — ve hepsi doğrudan ekonomiye dokunuyor.</p>
+    <div class="grid">
+
+      <article class="card">
+        <div class="code">META-54</div>
+        <h3>Mağaza yerleşimi</h3>
+        <p>Rafları, masaları ve istasyonları günler arasında taşıyabilirsin; kendi akışını kurarsın.</p>
+        <p class="why">Tavanı en yüksek fikir — ama harita, NavMesh ve oda kutularının hepsi hareketli hale gelir. Çok pahalı.</p>
+        <div class="tags"><span class="tag t-high">Maliyet yüksek</span><span class="tag t-coop">Co-op güçlü</span><span class="tag t-sys">Harita + oda sistemi</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">META-55</div>
+        <h3>Reklam kampanyası</h3>
+        <p>Para verip ertesi günün müşteri profilini etkilersin: daha çok müşteri, ya da daha zengin ama sabırsız müşteri.</p>
+        <p class="why">Ertesi günü şekillendirme kararı. Mevcut müşteri sistemine çarpan uygulamaktan ibaret — çok ucuz.</p>
+        <div class="tags"><span class="tag t-low">Maliyet düşük</span><span class="tag t-coop">Co-op zayıf</span><span class="tag t-sys">Müşteri + ekonomi</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">META-56</div>
+        <h3>Rakip mağaza</h3>
+        <p>Karşıda bir rakip açılır; kötü günlerin ardından müşterilerin bir kısmını ona kaptırırsın.</p>
+        <p class="why">Kötü performansa gecikmeli ve hissedilir bir ceza verir. Ama görünmez bir düşman motive etmek yerine bunaltabilir.</p>
+        <div class="tags"><span class="tag t-mid">Maliyet orta</span><span class="tag t-coop">Co-op zayıf</span><span class="tag t-sys">Müşteri sayısı</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">META-57</div>
+        <h3>Banka kredisi</h3>
+        <p>Kirayı ödeyemeyeceğin gece borç alırsın; sonraki kiralara faiz biner.</p>
+        <p class="why">İflası anında ölümden yavaş ölüme çevirir. <em>Uyarı:</em> kira eğrisi bilerek dik tutuluyor, economist turu şart.</p>
+        <div class="tags"><span class="tag t-low">Maliyet düşük</span><span class="tag t-coop">Co-op zayıf</span><span class="tag t-sys">Kira + ekonomi</span></div>
+      </article>
+
+      <article class="card">
+        <div class="code">META-58</div>
+        <h3>Sigorta</h3>
+        <p>Düzenli prim ödersin; kaza, hasar ve kırılan mal zararının bir kısmını geri alırsın.</p>
+        <p class="why">Yalnızca BAK kategorisinden bir mekanik seçilirse anlamlı. Tek başına ölü bir fikir.</p>
+        <div class="tags"><span class="tag t-low">Maliyet düşük</span><span class="tag t-coop">Co-op zayıf</span><span class="tag t-sys">BAK'a bağlı</span></div>
+      </article>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>Seçerken nelere dikkat ettim <span class="count">Süzgeç</span></h2>
+    <p class="lede">Adayları üç kurala göre değerlendirdim. Kendi seçimini yaparken de aynı süzgeci kullanmak isteyebilirsin.</p>
+    <div class="arc">
+      <div class="beat">
+        <b>Kural 1</b>
+        <strong>Öğretici gerektirmemeli</strong>
+        <span>Özellik oyunun ortasında, 9. veya 13. günde açılıyor. Oyuncunun ne olduğunu tek bakışta anlaması gerekir. Bu yüzden görsel olarak apaçık mekanikler (ağır kutu, el arabası, kesinti) yazılı kural gerektirenlere yeğlenir.</span>
+      </div>
+      <div class="beat">
+        <b>Kural 2</b>
+        <strong>Var olan bir sisteme yaslanmalı</strong>
+        <span>Sıfırdan altyapı gerektiren her fikir (yeni AI, araç fiziği, ikinci kat) diğerlerinin birkaç katı iş demek. Kartlardaki mavi etiket her adayın hangi mevcut sisteme yaslandığını gösteriyor.</span>
+      </div>
+      <div class="beat">
+        <b>Kural 3</b>
+        <strong>Tek kişilik oyunda da çalışmalı</strong>
+        <span>Oyun 1-4 kişilik. Co-op'ta parlayan mekanik tek başına oynayanı duvara toslatmamalı. TAŞ-01 bu yüzden riskli: tek oyuncu için ayrı bir çözüm gerektiriyor.</span>
+      </div>
+    </div>
+    <div class="note">
+      <b>Ekonomik değer taşıyan hiçbir sayı bu belgede yok</b> — kasıtlı. Fiyat, süre, ödül ve çarpanlar
+      economist turunda belirlenir. Özellikle DEP-11, META-57 ve ZAM-39 doğrudan kira dengesine dokunuyor;
+      bunlardan biri seçilirse tasarım onayından sonra ilk iş ekonomi turudur.
+    </div>
+  </section>
+
+  <footer>
+    Cargor · 58 aday · 8 kategori · seçim bekleyen slot: gün 9 ve gün 13
+  </footer>
+
+</div>

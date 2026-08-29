@@ -20,6 +20,7 @@ GameObject:
   - component: {fileID: -6247698686141079616}
   - component: {fileID: 3548956033763372739}
   - component: {fileID: 5204806634434044641}
+  - component: {fileID: 7889077037811200301}
   m_Layer: 7
   m_Name: BlueNGOFull
   m_TagString: Item
@@ -198,6 +199,7 @@ MonoBehaviour:
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
+  <InScenePlaced>k__BackingField: 0
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 1
   SpawnWithObservers: 1
@@ -378,3 +380,15 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &7889077037811200301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3544878022416520156}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cdcb4794450a42b49a29efdb4964f4eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NewCss.RoomItemVisibility

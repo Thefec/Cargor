@@ -22,6 +22,7 @@ GameObject:
   - component: {fileID: -5178031523107943929}
   - component: {fileID: 3578148415390706389}
   - component: {fileID: 5204806634434044641}
+  - component: {fileID: 5641919104338787773}
   m_Layer: 7
   m_Name: BlueNGO
   m_TagString: Item
@@ -200,6 +201,7 @@ MonoBehaviour:
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
+  <InScenePlaced>k__BackingField: 0
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 1
   SpawnWithObservers: 1
@@ -310,7 +312,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7c82736062490f40a06cbe5f3b97b31, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NewCss.BoxFallPenalty
-  dropMoneyPenalty: 1
   economySettings: {fileID: 11400000, guid: 415dc128c56df644f9af98009bf37743, type: 2}
   boxDropSound: {fileID: 8300000, guid: 016732318ef656a4392c44070b4a51aa, type: 3}
   soundVolume: 0.75
@@ -414,3 +415,15 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &5641919104338787773
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3544878022416520156}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cdcb4794450a42b49a29efdb4964f4eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NewCss.RoomItemVisibility

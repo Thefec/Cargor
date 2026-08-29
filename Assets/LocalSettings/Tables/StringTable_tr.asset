@@ -347,7 +347,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000036
-    m_Localized: "Kamyonlar sahneyi %50 daha yava\u015f terk eder."
+    m_Localized: "Kamyonlar sahneyi %50 daha yava\u015F terk eder."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000037
@@ -363,7 +363,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000040
-    m_Localized: "Dayan\u0131kl\u0131l\u0131k %40 daha yava\u015f yenilenir ve ko\u015fu h\u0131z\u0131 %30 azal\u0131r."
+    m_Localized: "Dayan\u0131kl\u0131l\u0131k %40 daha yava\u015F yenilenir ve ko\u015Fu
+      h\u0131z\u0131 %30 azal\u0131r."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000041
@@ -419,7 +420,10 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000054
-    m_Localized: "Do\u011Fru teslim edilen her kutu %30 ekstra kazan\u0131r. Ayr\u0131ca %20 daha fazla m\xFC\u015Fteri gelir, kamyonlar %20 daha h\u0131zl\u0131 \xE7\u0131kar ve hareket h\u0131z\u0131 %20 artar, ancak dayan\u0131kl\u0131l\u0131k %20 daha yava\u015F yenilenir."
+    m_Localized: "Do\u011Fru teslim edilen her kutu %30 ekstra kazan\u0131r. Ayr\u0131ca
+      %20 daha fazla m\xFC\u015Fteri gelir, kamyonlar %20 daha h\u0131zl\u0131 \xE7\u0131kar
+      ve hareket h\u0131z\u0131 %20 artar, ancak dayan\u0131kl\u0131l\u0131k %20
+      daha yava\u015F yenilenir."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000055
@@ -539,7 +543,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000107
-    m_Localized: Bugün zaten bir görev aldın
+    m_Localized: "Bug\xFCn zaten bir g\xF6rev ald\u0131n"
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000108
@@ -660,6 +664,210 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 42434254002892800
     m_Localized: "Temel E\u011Fitim"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194447572992
+    m_Localized: "Koş"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194502098944
+    m_Localized: "CARGOR LOJİSTİK TERMİNALİ"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194502098945
+    m_Localized: "Enerji Seviyesi"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194514681856
+    m_Localized: "Yukarı/Aşağı/Sola/Sağa Hareket Et"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194514681857
+    m_Localized: "Oyuncu"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194514681858
+    m_Localized: "Giriş"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194514681859
+    m_Localized: "Eldivenler"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194518876160
+    m_Localized: "Yüz"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194518876161
+    m_Localized: "Eğitime girmek istediğinden eminmisin?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194523070464
+    m_Localized: "Aksesuarlar"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194523070465
+    m_Localized: "Dikey Senkronizasyon"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194523070466
+    m_Localized: "Geri Dön"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194523070467
+    m_Localized: "Oyuncu"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194523070468
+    m_Localized: "ECLION\n\nV2.01"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194523070469
+    m_Localized: "Bırak"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194523070470
+    m_Localized: "GERİ"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194527264768
+    m_Localized: "GÖSTER"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194531459072
+    m_Localized: "YAKINLAŞTIRMA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194531459073
+    m_Localized: "Al"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194531459074
+    m_Localized: "GÖRÜNTÜ"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194531459075
+    m_Localized: "SES"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194535653376
+    m_Localized: "Etkileşim"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194535653377
+    m_Localized: "Ana Ofis"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194535653378
+    m_Localized: "GRAFİKLER"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194535653379
+    m_Localized: "Saç"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194535653380
+    m_Localized: "DİL"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194535653381
+    m_Localized: "MÜZİK SESİ"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194539847680
+    m_Localized: "EFEKT SESİ"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194539847681
+    m_Localized: "Seçenek A"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194539847682
+    m_Localized: "XXXX-XXXX-XXXX-XXXX"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194539847683
+    m_Localized: "Pantolon"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194539847684
+    m_Localized: "Ayakkabı"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194539847685
+    m_Localized: "Oyuncu"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194539847686
+    m_Localized: "ANA SES DÜZEYİ"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194548236288
+    m_Localized: "Geri Dön"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194548236289
+    m_Localized: "ÇÖZÜNÜRLÜK"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194548236290
+    m_Localized: "ODAYA KATIL"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194548236291
+    m_Localized: "Lobi ID:"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194548236292
+    m_Localized: "ÖZELLEŞTİR"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194548236293
+    m_Localized: "Seçenek A"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194556624896
+    m_Localized: "Oyuncu"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194556624897
+    m_Localized: "Şapka"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194556624898
+    m_Localized: "Özelleştir"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194556624899
+    m_Localized: "Fırlat"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194556624900
+    m_Localized: "Harita Görünümü"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194556624901
+    m_Localized: "KONTROLLER"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194560819200
+    m_Localized: "Dış Giyim"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194560819201
+    m_Localized: "Gözlük"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 141928975156891283
+    m_Localized: "Sol Tık"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 142557709478291173
+    m_Localized: "Sağ Tık"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263128
+    m_Localized: "Orta Tık"
     m_Metadata:
       m_Items: []
   references:

@@ -226,6 +226,17 @@ namespace NewCss
             if (IsOwner)
             {
                 SetupCamera();
+
+                // perk-revival (bkz. plans/perk-revival.md §2): late-join oyuncusu bu ana kadar
+                // satın alınmış agile_crew/energetic_crew perklerini kaçırmasın. F10 fix'teki
+                // BuffManager deseniyle aynı sorun sınıfı, ama kapsam SADECE owned player (her peer
+                // kendi owned player'ını EventEffectManager.GetOwnedPlayer() ile bulduğu gibi) —
+                // bu yüzden IsOwner bloğunun İÇİNDE, BuffManager çağrısının aksine tüm player
+                // instance'ları için değil.
+                // stamina-backbone-live fix: "Dinç Ekip" omurga yükseltmesi de aynı yoldan (bkz.
+                // UpgradePanel.ApplyLivePerksToPlayer) canlı instance'a mutlak yazılıyor — BuffManager
+                // += yapmadan ÖNCE burada olmalı (aksi halde backbone'un mutlak ataması buff'ları silerdi).
+                UpgradePanel.Instance?.ApplyLivePerksToPlayer(this);
             }
 
             // F10 fix: late-join oyuncusu veya BuffManager'ın buff listesi zaten dolmuşken sonradan spawn

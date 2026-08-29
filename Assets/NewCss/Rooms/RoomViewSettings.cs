@@ -1,0 +1,109 @@
+using NewCss.Rooms.Core;
+using UnityEngine;
+
+namespace NewCss
+{
+    /// <summary>
+    /// Oda görünürlük/karartma sisteminin TEK ayar yüzeyi. Sahnede `---ROOMS---` objesine
+    /// takılır ve buradaki değerler diske kaydedilir.
+    ///
+    /// NEDEN AYRI BİR BİLEŞEN: RoomViewController kendini çalışma anında yaratıyor
+    /// (RuntimeInitializeOnLoadMethod), yani onun Inspector'ında yapılan her ayar Play'den
+    /// çıkınca KAYBOLUYORDU. Ayarlar sahnedeki bir bileşene taşınınca kalıcı oluyor: bir kez
+    /// ayarla, biter. Bu yüzden tuning alanları RoomViewController'dan KALDIRILDI — iki ayrı
+    /// yerde ayar olsaydı hangisinin kazandığı belirsiz kalırdı.
+    ///
+    /// Bu bileşen sahnede YOKSA sistem RoomViewController'daki sabit varsayılanlarla çalışır
+    /// (Tutorial ve oda kurulmamış sahneler güvende).
+    ///
+    /// Değişiklikler ANINDA uygulanır — oyun çalışırken kaydırıcıları çevirip sonucu
+    /// gerçek zamanlı görebilirsin.
+    /// </summary>
+    [DisallowMultipleComponent]
+    public class RoomViewSettings : MonoBehaviour
+    {
+        /// <summary>Sahnedeki aktif ayar bileşeni; yoksa null (varsayılanlar kullanılır).</summary>
+        public static RoomViewSettings Active { get; private set; }
+
+        [Header("═══ GEÇİŞ SÜRELERİ ═══")]
+
+        [Tooltip("ODA DEĞİŞİMİ geçiş süresi (saniye). Bir odadan diğerine geçince aydınlık bölgenin " +
+                 "eski odadan yenisine yumuşakça kayma süresi. Küçült = daha çevik, büyüt = daha ağır. " +
+                 "0.05'e çekersen pratikte eski ani sıçrama davranışına dönersin.")]
+        [Range(0.05f, 5f)]
+        public float roomBlendDuration = 0.6f;
+
+        [Tooltip("HARİTA GÖRÜNÜMÜ (X) giriş/çıkış fade süresi (saniye). Kameranın kendi geçişiyle " +
+                 "uyumlu tutulmalı (CameraFollow.mapViewTransitionSpeed = 5, yani ~0.2 sn) — çok " +
+                 "büyütürsen kamera yerine oturur ama dünya hâlâ renklenmeye devam eder.")]
+        [Range(0.05f, 3f)]
+        public float mapFadeDuration = 0.2f;
+
+        [Header("═══ KARARTMA GÖRÜNÜMÜ ═══")]
+
+        [Tooltip("NORMAL OYUN GÖRÜNÜMÜNDE karartma şiddeti (0 = kapalı, yalnız X basılıyken çalışır; " +
+                 "1 = normal oyunda da tam güç). X'e basınca her hâlükârda tam güce çıkar, aradaki " +
+                 "geçiş yumuşaktır. Çok baskın gelirse burayı düşür — aşağıdaki desatürasyon/karartma " +
+                 "değerlerini düşürmek X görünümünü de zayıflatırdı, bu kaydırıcı yalnız normal " +
+                 "görünümü etkiler.")]
+        [Range(0f, 1f)]
+        public float normalViewStrength = 1f;
+
+        [Tooltip("NORMAL OYUN GÖRÜNÜMÜNDE başka odaların renksizleştirilme miktarı. " +
+                 "0 = renkli kalır, 1 = tam gri.")]
+        [Range(0f, 1f)]
+        public float desaturation = 1f;
+
+        [Tooltip("HARİTA GÖRÜNÜMÜNDE (X basılıyken) başka odaların renksizleştirilme miktarı. " +
+                 "Normaldekinden yüksek tutmak X'te renkleri biraz daha soluk gösterir; geçiş " +
+                 "mapFadeDuration süresinde yumuşakça olur. Üstteki değerle aynı yaparsan X'in " +
+                 "renk üzerinde ek etkisi kalmaz.")]
+        [Range(0f, 1f)]
+        public float mapViewDesaturation = 0.6f;
+
+        [Tooltip("Başka odaların karartılma çarpanı. 1 = hiç karartma, 0 = simsiyah.")]
+        [Range(0f, 1f)]
+        public float dim = 0.35f;
+
+        [Tooltip("Açıkken karartma YALNIZ oda kutularının (sarı hacimler) içinde uygulanır — dış mekan, " +
+                 "yeşillik ve tır avlusu kendi renginde kalır. Kapatırsan eski davranışa dönersin: " +
+                 "oyuncunun odası dışındaki HER ŞEY kararır. Bir bölge gri olmuyorsa o bölgeyi kaplayan " +
+                 "bir RoomVolume kutusu yok demektir — kutuyu Scene view'daki tutamaçlarla büyüt.")]
+        public bool dimOnlyInsideRooms = true;
+
+        [Header("═══ GÖRÜNÜRLÜK ═══")]
+
+        [Tooltip("Kapalıysa başka odadaki oyuncular GİZLENMEZ, yalnız harita görünümündeki karartma " +
+                 "çalışır. Karartmayı tek başına ayarlarken ya da görünürlüğün bir sorunun sebebi olup " +
+                 "olmadığını test ederken kapat.")]
+        public bool hideOtherRoomPlayers = true;
+
+        [Tooltip("Kapalıysa başka odadaki eşyalar (kutu/ürün) GİZLENMEZ. Açıkken bile harita " +
+                 "görünümü (X) basılı olduğu sürece eşyalar 'stok kontrolü' istisnasıyla görünür " +
+                 "kalır — yalnız oyuncular gizli kalmaya devam eder, bu ayar onu etkilemez.")]
+        public bool hideOtherRoomItems = true;
+
+        [Header("═══ İLERİ DÜZEY ═══")]
+
+        [Tooltip("KAPI TOLERANSI (metre). Oda kutuları sorgu sırasında bu kadar genişletilir ve " +
+                 "kararsız bölgede mevcut oda korunur — kapı ağzında durunca görünürlüğün titremesini " +
+                 "bu engelliyor. Küçültme: titreme riski. Büyütme: oda değişimi geç algılanır.")]
+        [Range(0f, 2f)]
+        public float doorwayMargin = RoomResolver.DefaultMargin;
+
+        private void OnEnable()
+        {
+            // Son etkinleşen kazanır. [DisallowMultipleComponent] aynı objede ikinciyi engelliyor
+            // ama farklı objelerde iki panel olabilir — o durumda sonuncusu geçerli olur.
+            Active = this;
+        }
+
+        private void OnDisable()
+        {
+            if (Active == this)
+            {
+                Active = null;
+            }
+        }
+    }
+}

@@ -260,9 +260,9 @@ public static class InputBindingManager
         {
             return binding.MouseButton switch
             {
-                0 => "Sol Tık",
-                1 => "Sağ Tık",
-                2 => "Orta Tık",
+                0 => NewCss.LocalizationHelper.GetLocalizedString("LeftClick"),
+                1 => NewCss.LocalizationHelper.GetLocalizedString("RightClick"),
+                2 => NewCss.LocalizationHelper.GetLocalizedString("MiddleClick"),
                 _ => $"Mouse {binding.MouseButton}"
             };
         }
@@ -320,9 +320,9 @@ public static class InputBindingManager
             KeyCode.Escape       => "Esc",
             KeyCode.Tab          => "Tab",
             KeyCode.BackQuote    => "`",
-            KeyCode.Mouse0       => "Sol Tık",
-            KeyCode.Mouse1       => "Sağ Tık",
-            KeyCode.Mouse2       => "Orta Tık",
+            KeyCode.Mouse0       => NewCss.LocalizationHelper.GetLocalizedString("LeftClick"),
+            KeyCode.Mouse1       => NewCss.LocalizationHelper.GetLocalizedString("RightClick"),
+            KeyCode.Mouse2       => NewCss.LocalizationHelper.GetLocalizedString("MiddleClick"),
             _ => key.ToString()
         };
     }

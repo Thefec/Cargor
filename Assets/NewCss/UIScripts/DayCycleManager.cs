@@ -633,12 +633,12 @@ namespace NewCss
             else
             {
                 // Fallback: economySettings atanmamışsa eski sabit değerler
-                // FAZ4 senkronu: asset {500,1000,1450,1800} / g=1.35 ile hizalı (bkz.
-                // plans/economy-rebuild-2026-07-30-faz4-final.md §B.1) — asset yüklenemezse
-                // sessizce eski ekonomiye düşmesin.
+                // Senkron: asset {500,1000,1450,1800} / g=1.20 ile hizalı (bkz.
+                // .claude/agent-memory/economist/rent_growth_1_35_deficit_2026-08-20.md) —
+                // asset yüklenemezse sessizce eski ekonomiye düşmesin.
                 Debug.LogWarning($"{LOG_PREFIX} economySettings atanmamış! Fallback değerler kullanılıyor.");
                 int baseRent    = playerCount == 1 ? 500 : playerCount == 2 ? 1000 : playerCount == 3 ? 1450 : 1800;
-                float scaled    = baseRent * Mathf.Pow(1.35f, _rentPaymentCount);
+                float scaled    = baseRent * Mathf.Pow(1.20f, _rentPaymentCount);
                 finalRent       = scaled;
             }
 
@@ -885,6 +885,23 @@ namespace NewCss
         [ServerRpc(RequireOwnership = false)]
         private void SetBreakRoomReadyServerRpc(bool ready)
         {
+            // N3 server-auth: client'in "herkes break room'da" iddiasina KORU KORUNE guvenme.
+            // Bu RPC server'da calisir; ready=true yalnizca server kendi otoriter presence
+            // verisiyle (BreakRoomManager.IsReady = server-side AreAllPlayersInRoom) + sure-bitti
+            // kosulunu dogrularsa kabul edilir. Aksi halde lag-desync veya hileli client bypass'i
+            // reddedilir (gunu erken atlatamaz).
+            if (ready)
+            {
+                var breakRoom = BreakRoomManager.Instance;
+                if (breakRoom == null || !breakRoom.IsReady || !IsTimeUp)
+                {
+                    Debug.LogWarning($"{LOG_PREFIX} SetBreakRoomReadyServerRpc reddedildi: " +
+                                     $"server presence dogrulamasi basarisiz " +
+                                     $"(BreakRoom={(breakRoom != null ? breakRoom.IsReady.ToString() : "null")}, IsTimeUp={IsTimeUp}).");
+                    return;
+                }
+            }
+
             _networkIsBreakRoomReady.Value = ready;
         }
 

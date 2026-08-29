@@ -421,7 +421,9 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000054
-    m_Localized: Each correct delivered box earns extra 30%. Also brings 20% more customers, 20% faster truck exits and 20% faster movement, but stamina regenerates 20% slower.
+    m_Localized: Each correct delivered box earns extra 30%. Also brings 20% more
+      customers, 20% faster truck exits and 20% faster movement, but stamina regenerates
+      20% slower.
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000055
@@ -662,6 +664,210 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 42434254002892800
     m_Localized: Basic Tutorial
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194447572992
+    m_Localized: "Sprint"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194502098944
+    m_Localized: "CARGOR LOGISTICS TERMINAL"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194502098945
+    m_Localized: "Energy Level"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194514681856
+    m_Localized: "Move up/down/left/right"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194514681857
+    m_Localized: "Player"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194514681858
+    m_Localized: "Enter"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194514681859
+    m_Localized: "Gloves"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194518876160
+    m_Localized: "Face"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194518876161
+    m_Localized: "Are you sure you want to enter the tutorial?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194523070464
+    m_Localized: "Accessories"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194523070465
+    m_Localized: "VSync"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194523070466
+    m_Localized: "Return"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194523070467
+    m_Localized: "Player"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194523070468
+    m_Localized: "ECLION\n\nV2.01"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194523070469
+    m_Localized: "Drop"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194523070470
+    m_Localized: "BACK"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194527264768
+    m_Localized: "REVEAL"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194531459072
+    m_Localized: "ZOOM"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194531459073
+    m_Localized: "Pickup"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194531459074
+    m_Localized: "VIDEO"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194531459075
+    m_Localized: "AUDIO"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194535653376
+    m_Localized: "Interact"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194535653377
+    m_Localized: "Main Office"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194535653378
+    m_Localized: "GRAPHICS"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194535653379
+    m_Localized: "Hair"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194535653380
+    m_Localized: "LANGUAGE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194535653381
+    m_Localized: "MUSIC VOL."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194539847680
+    m_Localized: "SFX VOL."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194539847681
+    m_Localized: "Option A"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194539847682
+    m_Localized: "XXXX-XXXX-XXXX-XXXX"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194539847683
+    m_Localized: "Pants"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194539847684
+    m_Localized: "Shoes"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194539847685
+    m_Localized: "Player"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194539847686
+    m_Localized: "MASTER VOL."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194548236288
+    m_Localized: "Return"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194548236289
+    m_Localized: "RESOLUTION"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194548236290
+    m_Localized: "JOIN ROOM"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194548236291
+    m_Localized: "Lobby ID:"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194548236292
+    m_Localized: "CUSTOMIZE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194548236293
+    m_Localized: "Option A"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194556624896
+    m_Localized: "Player"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194556624897
+    m_Localized: "Hat"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194556624898
+    m_Localized: "Customize"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194556624899
+    m_Localized: "Throw"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194556624900
+    m_Localized: "Map View"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194556624901
+    m_Localized: "CONTROLS"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194560819200
+    m_Localized: "Outerwear"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 136075194560819201
+    m_Localized: "Glasses"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 141928975156891283
+    m_Localized: "Left Click"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 142557709478291173
+    m_Localized: "Right Click"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263128
+    m_Localized: "Middle Click"
     m_Metadata:
       m_Items: []
   references:
