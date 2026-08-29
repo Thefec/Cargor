@@ -280,18 +280,25 @@ namespace NewCss
         private static void ApplyGamblerCaseToTruck(int level, Truck truck, PerkContext ctx)
         {
             if (ctx.Economy == null || level <= 0) return;
-            truck.rewardPerBox = Mathf.RoundToInt(ctx.Economy.rewardPerBox * 1.30f);
+            // PlateUp reward-lever fix (2026-08-29, kontrol turu bulgusu): taban artık düz
+            // rewardPerBox (hep 50) DEĞİL, GetRewardPerBox(playerCount) — aksi halde P3/P4'te
+            // bu perk alınınca ödül 70/88 tabanından değil 50'den yeniden kurulur ve reward-lever
+            // ile kapatılmaya çalışılan gelir açığı geri açılırdı. Desen: ApplyFastHangarToTruck.
+            int pc = DifficultyManager.Instance != null ? DifficultyManager.Instance.PlayerCount : 1;
+            truck.rewardPerBox = Mathf.RoundToInt(ctx.Economy.GetRewardPerBox(pc) * 1.30f);
             truck.penaltyPerBox = Mathf.RoundToInt(ctx.Economy.penaltyPerBox * 1.55f);
         }
 
-        // Telefon Hattı (relic): PhoneCallManager reaktif V3'e geçti (kontenjan kavramı yok,
-        // saatlik çalma OLASILIĞI var). Eski hedef alan (maxCallsPerHour, kaldırıldı) yerine
-        // eski perk gücü (+%50, 2→3) additive bonus olarak phoneRingPerkBonus'a taşındı.
-        // economist onaylı additive model (izole eşdeğer 0.30+0.15=0.45).
+        // Telefon Hattı (relic): PhoneCallManager V4'e geçti (dışarı arama modeli, çalma
+        // olasılığı kavramı tamamen kalktı — bkz. plans/plateup-musteri-telefon.md §D,
+        // 2026-08-29). Eski hedef alan (phoneRingPerkBonus, kaldırıldı) yerine perk artık
+        // telefonun cooldown süresini kısaltıyor. 10f (20s tabanın yarısı) economist onaylı
+        // (2026-08-29) — perk kotayı büyütmediği için ekonomik etkisi yok. Mutlak atama
+        // (idempotent) korunuyor.
         private static void ApplyPhoneLine(int level, PerkContext ctx)
         {
             if (ctx.Economy == null || level <= 0) return;
-            ctx.Economy.phoneRingPerkBonus = 0.15f;
+            ctx.Economy.phoneCooldownPerkBonusSeconds = 10f;
         }
 
         // ─────────────────────────────────────────────────────────────
@@ -335,7 +342,10 @@ namespace NewCss
         private static void ApplyAllInRewardToTruck(int level, Truck truck, PerkContext ctx)
         {
             if (ctx.Economy == null || level <= 0) return;
-            truck.rewardPerBox = Mathf.RoundToInt(ctx.Economy.rewardPerBox * 1.25f);
+            // PlateUp reward-lever fix (2026-08-29) — bkz. ApplyGamblerCaseToTruck üstündeki yorum,
+            // aynı gerekçe: taban GetRewardPerBox(playerCount) olmalı, düz rewardPerBox değil.
+            int pc = DifficultyManager.Instance != null ? DifficultyManager.Instance.PlayerCount : 1;
+            truck.rewardPerBox = Mathf.RoundToInt(ctx.Economy.GetRewardPerBox(pc) * 1.25f);
         }
 
         // DOKUNUŞ-3: Acil Fren (relic). İflası 1 kez önleyen tek-kullanımlık bayrak;

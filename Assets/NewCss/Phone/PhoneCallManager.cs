@@ -4,12 +4,13 @@ using UnityEngine;
 namespace NewCss
 {
     /// <summary>
-    /// Telefon Sistemi V3 - REAKTİF. Sunucu, mesai saatleri içinde her oyun-saati
-    /// değiştiğinde belirli bir olasılıkla telefonu çaldırır (phoneRingChancePerHour,
-    /// CUSTOMER SUPPORT etkinliği günü phoneRingEventMultiplier ile artar).
-    /// Oyuncu telefon alanındayken E'ye basarak açar; açarsa para + prestij ödülü alır.
-    /// Açılmazsa bir süre sonra çalma kendiliğinden durur, CEZA YOK.
-    /// Müşteri spawn'ı ve zaman atlama tamamen kaldırıldı (bkz. eski V2, git geçmişi).
+    /// Telefon Sistemi V4 - DIŞARI ARAMA (PlateUp geçişi, plan §D,
+    /// plans/plateup-musteri-telefon.md, 2026-08-29). Telefon artık ÇALMAZ; oyuncu telefon
+    /// alanındayken E'ye basarak sıradaki müşteriyi hemen çağırır. Bedel: gün saati
+    /// (DayCycleManager.SkipTime) ileri sarılır. Karşılığında küçük bir para + prestij ödülü
+    /// verilir. Spam'i önlemek için server-authoritative bir cooldown var (bkz. commit
+    /// f9a3f1b "bedava-para exploit" — client'a güvenilmez, guard'lar server'da).
+    /// V3'ün saatlik-zar-atma / reaktif çalma modeli tamamen kaldırıldı (git geçmişi).
     /// </summary>
     public class PhoneCallManager : NetworkBehaviour
     {
@@ -17,6 +18,7 @@ namespace NewCss
 
         private const string LOG_PREFIX = "[PhoneCall]";
         private const string PLAYER_TAG = "Character";
+        private const string CUSTOMER_SUPPORT_EVENT = "CUSTOMER SUPPORT";
 
         #endregion
 
@@ -29,47 +31,37 @@ namespace NewCss
         #region Serialized Fields
 
         [Header("=== TIME RESTRICTIONS ===")]
-        [SerializeField, Tooltip("Telefonun calabilecegi baslangic saati")]
+        [SerializeField, Tooltip("Telefonun kullanılabileceği başlangıç saati")]
         private int phoneStartHour = 8;
 
-        [SerializeField, Tooltip("Telefonun calabilecegi bitis saati")]
+        [SerializeField, Tooltip("Telefonun kullanılabileceği bitiş saati")]
         private int phoneEndHour = 18;
-
-        [Header("=== RING SETTINGS ===")]
-        [SerializeField, Tooltip("Acilmayan cagrinin kendiliginden susmasine kadar gecen sure (saniye). Ceza yok.")]
-        private float ringDuration = 15f;
 
         [Header("=== ECONOMY SETTINGS ===")]
         [SerializeField, Tooltip("Tüm ekonomi sabitlerini içeren ScriptableObject")]
         private GameEconomySettings economySettings;
 
-        // Backward-compat fallback'ler — SO atanmamissa hard-coded degerler kullanilir
-        // FAZ4 §B.6: çalma şansı artık P-bazlı. Oyuncu sayısı DifficultyManager'dan okunur; o yoksa
-        // 1P varsayılır (tek kişilik oturum en yaygın fallback, ayrıca en yüksek telefon gelir payı
-        // orada olduğu için güvenli tarafta kalır).
-        private float PhoneRingChancePerHour
+        // Backward-compat fallback'ler — SO atanmamissa hard-coded degerler kullanilir.
+        private float PhoneCooldownSecondsBase => economySettings != null ? economySettings.phoneCooldownSeconds : 20f;
+        private float PhoneCooldownPerkBonusSeconds => economySettings != null ? economySettings.phoneCooldownPerkBonusSeconds : 0f;
+        private int   CallMoneyReward => economySettings != null ? economySettings.callMoneyReward : 20;
+        private float CallPrestigeReward => economySettings != null ? economySettings.callPrestigeReward : 0.4f;
+
+        private float TimeSkipAmountMinutes
         {
             get
             {
-                if (economySettings == null) return 0.20f;
                 int playerCount = DifficultyManager.Instance != null ? DifficultyManager.Instance.PlayerCount : 1;
-                return economySettings.GetPhoneRingChancePerHour(playerCount);
+                return economySettings != null ? economySettings.GetTimeSkipAmountMinutes(playerCount) : 115f;
             }
         }
-        private float PhoneRingEventMultiplier => economySettings != null ? economySettings.phoneRingEventMultiplier : 1.5f;
-        private float PhoneRingPerkBonus => economySettings != null ? economySettings.phoneRingPerkBonus : 0f;
-        private int   CallMoneyReward => economySettings != null ? economySettings.callMoneyReward : 20;
-        private float CallPrestigeReward => economySettings != null ? economySettings.callPrestigeReward : 0.2f;
 
         [Header("=== AUDIO ===")]
-        [SerializeField, Tooltip("Telefon calarken loop calan ses")]
-        private AudioSource ringingSound;
-
-        [SerializeField, Tooltip("Basarili cagri (acildi) sesi")]
+        [SerializeField, Tooltip("Basarili cagri (musteri cagrildi) sesi")]
         private AudioSource successCallSound;
 
         [Header("=== VISUAL INDICATOR ===")]
-        [SerializeField, Tooltip("Telefon caldigini gosteren gorsel isaret (mevcut wait bar altyapisi yeniden kullanilir)")]
+        [SerializeField, Tooltip("Cooldown gostergesi (eski 'calma' bari yeniden kullanildi — artik cooldown doldukca 1->0 dolar)")]
         private PhoneWaitBar phoneWaitBar;
 
         [Header("=== INTERACTION SETTINGS ===")]
@@ -83,13 +75,21 @@ namespace NewCss
 
         #region Network State
 
-        // Server-write, everyone-read: telefon su an caliyor mu?
-        private readonly NetworkVariable<bool> _isRinging = new NetworkVariable<bool>(
+        // Server-write, everyone-read: telefon su an cooldown'da mi? (UI aynasi — asil kapi
+        // kontrolu server-only _cooldownEndTime'a bakar, bkz. asagisi).
+        private readonly NetworkVariable<bool> _isOnCooldown = new NetworkVariable<bool>(
             false,
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server);
 
-        public bool IsRinging => _isRinging.Value;
+        // Gecerli cooldown'un toplam suresi (perk/event'e gore degisebildigi icin sabit degil) —
+        // client bari bununla baslatir (gec katilan da dahil, bkz. OnNetworkSpawn).
+        private readonly NetworkVariable<float> _cooldownDuration = new NetworkVariable<float>(
+            0f,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server);
+
+        public bool IsOnCooldown => _isOnCooldown.Value;
 
         #endregion
 
@@ -98,9 +98,10 @@ namespace NewCss
         private bool _playerInPhoneArea;
         private bool _isNetworkReady;
 
-        // Server-only: saatlik zar atma takibi + calma suresi sayaci
-        private int _lastRingRollHour = -1;
-        private float _ringElapsedTime;
+        // Server-only kaynak: RPC guard'i BUNA bakar (NetworkVariable yalnizca UI aynasi,
+        // bir kare gecikmeli olabilir). Time.time tabanli — yalnizca server kendi degerini
+        // kendi icinde karsilastirir, cross-client senkron gerekmez.
+        private float _cooldownEndTime = -1f;
 
         #endregion
 
@@ -120,7 +121,7 @@ namespace NewCss
 
             if (IsServer)
             {
-                ServerUpdateRinging();
+                ServerUpdateCooldown();
             }
 
             if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsClient)
@@ -155,9 +156,9 @@ namespace NewCss
             SetupPhoneCollider();
             WarnOnMissingReferences();
 
-            _isRinging.OnValueChanged += HandleRingingChanged;
+            _isOnCooldown.OnValueChanged += HandleCooldownChanged;
             // Late-join: netvar zaten true olarak spawn olabilir, OnValueChanged geriye dönük tetiklenmez.
-            HandleRingingChanged(false, _isRinging.Value);
+            HandleCooldownChanged(false, _isOnCooldown.Value);
 
             DayCycleManager.OnNewDay += HandleNewDay;
         }
@@ -165,7 +166,7 @@ namespace NewCss
         public override void OnNetworkDespawn()
         {
             _isNetworkReady = false;
-            _isRinging.OnValueChanged -= HandleRingingChanged;
+            _isOnCooldown.OnValueChanged -= HandleCooldownChanged;
             DayCycleManager.OnNewDay -= HandleNewDay;
             CleanupSingleton();
             base.OnNetworkDespawn();
@@ -231,86 +232,60 @@ namespace NewCss
         /// <summary>
         /// Bagli olmayan inspector alanlarini bir kez uyarir. Bu alanlarin hepsi kullanim
         /// noktasinda null-guard'li: atanmadiklarinda sistem HATA VERMEZ, sadece sessizlesir
-        /// (telefon sessiz calar, bar gorunmez). Bir oyun gunu boyunca "telefon hic calmadi"
-        /// sanilmasinin sebebi tam olarak buydu — bir daha sessizce kaybolmasin.
+        /// (cevaplama sesi calmaz, cooldown bari gorunmez). Bir oyun gunu boyunca "telefon hic
+        /// calmadi" sanilmasinin sebebi tam olarak buydu (2026-08-13) — V4'te de ayni sinif
+        /// sessiz-bug riskini tekrarlamasin diye korunuyor.
         /// </summary>
         private void WarnOnMissingReferences()
         {
-            if (ringingSound == null)
-                Debug.LogWarning(LOG_PREFIX + " ringingSound atanmamis — telefon SESSIZ calacak.");
             if (successCallSound == null)
-                Debug.LogWarning(LOG_PREFIX + " successCallSound atanmamis — cevaplama sesi calmayacak.");
+                Debug.LogWarning(LOG_PREFIX + " successCallSound atanmamis — cagri sesi calmayacak.");
             if (phoneWaitBar == null)
-                Debug.LogWarning(LOG_PREFIX + " phoneWaitBar atanmamis — geri sayim bari gosterilmeyecek.");
+                Debug.LogWarning(LOG_PREFIX + " phoneWaitBar atanmamis — cooldown bari gosterilmeyecek.");
             if (phoneCollider == null)
-                Debug.LogWarning(LOG_PREFIX + " phoneCollider bulunamadi — telefon CEVAPLANAMAZ.");
+                Debug.LogWarning(LOG_PREFIX + " phoneCollider bulunamadi — telefon KULLANILAMAZ.");
         }
 
         #endregion
 
-        #region Server Logic - Ringing
+        #region Server Logic - Cooldown
 
-        private void ServerUpdateRinging()
+        private void ServerUpdateCooldown()
         {
-            if (_isRinging.Value)
+            if (!_isOnCooldown.Value) return;
+            if (Time.time >= _cooldownEndTime)
             {
-                // Mesai bitince aktif calma da sessizce durur (ceza yok).
-                if (!IsWithinBusinessHours())
-                {
-                    StopRinging();
-                    return;
-                }
-
-                _ringElapsedTime += Time.deltaTime;
-                if (_ringElapsedTime >= ringDuration)
-                {
-                    StopRinging();
-                }
-                return;
-            }
-
-            if (!IsWithinBusinessHours()) return;
-            if (DayCycleManager.Instance == null) return;
-
-            int currentHour = DayCycleManager.Instance.CurrentHour;
-            if (currentHour == _lastRingRollHour) return;
-
-            // Saat degisti: bu saat icin bir kez zar at.
-            _lastRingRollHour = currentHour;
-            TryRollRing(currentHour);
-        }
-
-        private void TryRollRing(int currentHour)
-        {
-            float chance = GetEffectiveRingChance();
-            if (Random.value <= chance)
-            {
-                _isRinging.Value = true;
-                _ringElapsedTime = 0f;
-                LogDebug($"Phone starts ringing (chance={chance:P0}, hour={currentHour})");
+                _isOnCooldown.Value = false;
             }
         }
 
-        private float GetEffectiveRingChance()
+        /// <summary>
+        /// Efektif cooldown süresi: taban değer (economist, phoneCooldownSeconds=20 flat) eksi
+        /// phone_line perkinin mutlak-atama azaltması, CUSTOMER SUPPORT günü yarıya iner.
+        /// phoneCooldownPerkBonusSeconds=10f economist onaylı (2026-08-29,
+        /// .claude/agent-memory/economist/phone_cooldown_perk_event_stacking_2026-08-29.md) —
+        /// perk/event kotayı büyütmediğinden ("HasUnspawnedCustomers" tavanına çarpar),
+        /// cooldown kısaltmanın ekonomik etkisi yok, çarpışma riski yok.
+        /// </summary>
+        private float GetEffectiveCooldownSeconds()
         {
-            float baseChance = PhoneRingChancePerHour;
+            float cooldown = Mathf.Max(1f, PhoneCooldownSecondsBase - PhoneCooldownPerkBonusSeconds);
+
             bool eventActive = EventEffectManager.Instance != null &&
-                                EventEffectManager.Instance.IsEventActive("CUSTOMER SUPPORT");
-            float multiplier = eventActive ? PhoneRingEventMultiplier : 1f;
-            return Mathf.Clamp(baseChance * multiplier + PhoneRingPerkBonus, 0f, 0.65f);
-        }
+                                EventEffectManager.Instance.IsEventActive(CUSTOMER_SUPPORT_EVENT);
+            if (eventActive)
+            {
+                cooldown *= 0.5f;
+            }
 
-        private void StopRinging()
-        {
-            _isRinging.Value = false;
-            _ringElapsedTime = 0f;
+            return cooldown;
         }
 
         private void HandleNewDay()
         {
             if (!IsServer) return;
-            StopRinging();
-            _lastRingRollHour = -1;
+            _cooldownEndTime = -1f;
+            _isOnCooldown.Value = false;
         }
 
         private bool IsWithinBusinessHours()
@@ -326,32 +301,76 @@ namespace NewCss
 
         private void HandleInput()
         {
-            if (!IsRinging) return;
+            if (IsOnCooldown) return;
 
             if (InputBindingManager.GetActionDown(InputBindingManager.GameAction.Interact))
             {
-                LogDebug("Answer requested");
-                AnswerServerRpc();
+                LogDebug("Call requested");
+                CallNextCustomerServerRpc();
             }
         }
 
         #endregion
 
-        #region Server Logic - Answer
+        #region Server Logic - Call
 
         [ServerRpc(RequireOwnership = false)]
-        private void AnswerServerRpc(ServerRpcParams rpcParams = default)
+        private void CallNextCustomerServerRpc(ServerRpcParams rpcParams = default)
         {
             ulong clientId = rpcParams.Receive.SenderClientId;
 
-            if (!_isRinging.Value)
+            if (!IsWithinBusinessHours())
             {
-                // Telefon zaten calmiyor (rakip oyuncu once acti / kendiliginden sustu) — sessizce yok say.
-                LogDebug("Answer ignored: phone not ringing (Client " + clientId + ")");
+                LogDebug("Call rejected: outside business hours (Client " + clientId + ")");
                 return;
             }
 
-            StopRinging();
+            if (CustomerManager.Instance == null || !CustomerManager.Instance.HasUnspawnedCustomers)
+            {
+                LogDebug("Call rejected: no unspawned customers left today (Client " + clientId + ")");
+                return;
+            }
+
+            if (CustomerManager.Instance.IsQueueFull)
+            {
+                LogDebug("Call rejected: queue full (Client " + clientId + ")");
+                return;
+            }
+
+            if (Time.time < _cooldownEndTime)
+            {
+                LogDebug("Call rejected: cooldown active (Client " + clientId + ")");
+                return;
+            }
+
+            // Zaman atlaması gunu musteri-cikis saatinin (17:30) otesine sicratacaksa cagriyi
+            // reddet. Aksi halde az once cagrilan musteri, ayni karede CustomerManager'in
+            // gun-sonu kesimine yakalanip servis edilemeden CEZA uretirdi: oyuncu hem +0.4
+            // arama prestijini hem -0.4 kayip cezasini gorurdu (QA bulgusu 2026-08-29).
+            // IsWithinBusinessHours yetmiyor: phoneEndHour=18, cikis esigi ise 17.5.
+            float timeSkipMinutes = TimeSkipAmountMinutes;
+            if (DayCycleManager.Instance != null &&
+                DayCycleManager.Instance.PredictTimeAfterSkip(timeSkipMinutes) >= CustomerManager.CUSTOMER_EXIT_HOUR)
+            {
+                LogDebug("Call rejected: time skip would pass customer exit hour (Client " + clientId + ")");
+                return;
+            }
+
+            bool spawned = CustomerManager.Instance.ForceSpawnNextCustomer();
+            if (!spawned)
+            {
+                // Guard'lar geçti ama spawn yine de başarısız oldu (ör. iç saat penceresi farklı
+                // bir kenar durumu) — plan §D: ödül/cooldown VERME.
+                LogDebug("Call rejected: ForceSpawnNextCustomer returned false (Client " + clientId + ")");
+                return;
+            }
+
+            float effectiveCooldown = GetEffectiveCooldownSeconds();
+            _cooldownEndTime = Time.time + effectiveCooldown;
+            _cooldownDuration.Value = effectiveCooldown;
+            _isOnCooldown.Value = true;
+
+            DayCycleManager.Instance?.SkipTime(timeSkipMinutes);
 
             int moneyReward = CallMoneyReward;
             float prestigeReward = CallPrestigeReward;
@@ -368,12 +387,12 @@ namespace NewCss
 
             CallAnsweredClientRpc(clientId, moneyReward);
 
-            // Quest sistemi: AnswerPhone tetikleyicisi tanımlıydı ama hiçbir yerden çağrılmıyordu.
-            // Burası doğru tek nokta — ServerRpc (server-only) ve yukarıdaki `!_isRinging` guard'ı
-            // rakip oyuncuların aynı çağrıyı ikinci kez saymasını engelliyor.
+            // Quest sistemi: AnswerPhone tetikleyicisi burada — ServerRpc (server-only), rakip
+            // oyuncuların aynı çağrıyı ikinci kez saymasını yukarıdaki cooldown guard'ı engelliyor.
             Quest.QuestTracker.NotifyPhoneAnswered();
 
-            LogDebug("Call answered by Client " + clientId + "! +" + moneyReward + " TL, +" + prestigeReward + " prestij");
+            LogDebug("Call placed by Client " + clientId + "! +" + moneyReward + " TL, +" + prestigeReward +
+                     " prestij, +" + timeSkipMinutes + " dk zaman atladi (cooldown=" + effectiveCooldown + "s).");
         }
 
         #endregion
@@ -393,22 +412,14 @@ namespace NewCss
 
         #region Client Audio/Visual
 
-        private void HandleRingingChanged(bool previousValue, bool currentValue)
+        private void HandleCooldownChanged(bool previousValue, bool currentValue)
         {
             if (currentValue)
             {
-                if (ringingSound != null && !ringingSound.isPlaying)
-                {
-                    ringingSound.Play();
-                }
-                phoneWaitBar?.StartCountdown(ringDuration);
+                phoneWaitBar?.StartCountdown(_cooldownDuration.Value);
             }
             else
             {
-                if (ringingSound != null)
-                {
-                    ringingSound.Stop();
-                }
                 phoneWaitBar?.HideBar();
             }
         }
@@ -445,11 +456,6 @@ namespace NewCss
         #endregion
 
         #region Legacy Compatibility
-
-        // FAZ4 §B.6: `SetCallChance(float)` SILINDI. Bos govdeli stub'di ve DifficultyManager onu
-        // cagirip "Phone call chance set to: %X" diye sahte-yesil log basiyordu. P-olcekleme artik
-        // GameEconomySettings.phoneRingChanceByPlayerCount'ta ve PhoneRingChancePerHour uzerinden
-        // GERCEKTEN okunuyor; DifficultyManager tarafindaki cagri da kaldirildi.
 
         /// <summary>Legacy stub — cagiran yok, imza uyumlulugu icin korunuyor.</summary>
         public void SetCustomerSupportActive(bool active) { }

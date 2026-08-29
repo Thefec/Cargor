@@ -341,8 +341,10 @@ namespace NewCss
                 upgradeCostMultiplier = 1f
             };
 
-            // CUSTOMER SUPPORT: çarpanlar nötr; telefon çalma sıklığı çarpanı PhoneCallManager
-            // tarafından IsEventActive("CUSTOMER SUPPORT") ile okunur (reaktif telefon sistemi).
+            // CUSTOMER SUPPORT: çarpanlar nötr; PhoneCallManager V4 (2026-08-29, dışarı arama
+            // modeli) bu event aktifken IsEventActive("CUSTOMER SUPPORT") ile telefon cooldown'unu
+            // yarıya indirir (bkz. PhoneCallManager.GetEffectiveCooldownSeconds). Eski reaktif
+            // modeldeki "çalma sıklığı ×2" karşılığı budur.
             eventMultipliers["CUSTOMER SUPPORT"] = new EventMultipliers
             {
                 rewardPerBoxMultiplier = 1f,

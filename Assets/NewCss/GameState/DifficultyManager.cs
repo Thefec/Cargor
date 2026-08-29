@@ -35,8 +35,9 @@ namespace NewCss
         [SerializeField, Tooltip("Starting money for single player")]
         private int baseStartingMoney = 500;
 
-        // `basePhoneCallChance` KALDIRILDI (FAZ4 §B.6) — telefon şansının P-ölçeklemesi
-        // GameEconomySettings.phoneRingChanceByPlayerCount'a taşındı, bu alan hiçbir şeyi beslemiyordu.
+        // `basePhoneCallChance` KALDIRILDI (FAZ4 §B.6) — telefon V4'te (2026-08-29, dışarı arama
+        // modeli) çalma şansı kavramı tamamen kalktı. P-ölçeklemesi artık
+        // GameEconomySettings.timeSkipAmountByPlayerCount'ta.
 
         [SerializeField, Tooltip("Customer minimum patience time for single player (seconds)")]
         private float baseMinPatience = 35f;
@@ -126,7 +127,8 @@ namespace NewCss
         public int ScaledStartingMoney => CalculateScaledStartingMoney();
 
         // `ScaledPhoneCallChance` KALDIRILDI (FAZ4 §B.6) — tüketicisi yoktu.
-        // Gerçek kaynak: GameEconomySettings.GetPhoneRingChancePerHour(playerCount).
+        // Telefon V4'te (2026-08-29) çalma şansı kavramı kalktı; gerçek kaynak artık
+        // GameEconomySettings.GetTimeSkipAmountMinutes(playerCount) + phoneCooldownSeconds.
 
         /// <summary>
         /// Ölçeklenmiş müşteri minimum bekleme süresi
@@ -413,7 +415,8 @@ namespace NewCss
             ApplyMoneySettings();
             // ApplyPhoneSettings() KALDIRILDI (FAZ4 §B.6): PhoneCallManager.SetCallChance boş gövdeli
             // stub'dı, yani bu çağrı hiçbir şey yapmadan "chance set to %X" logu basıyordu.
-            // Telefonun P-ölçeklemesi artık GameEconomySettings.phoneRingChanceByPlayerCount'ta.
+            // Telefon V4'te (2026-08-29) çalma şansı kalktı; P-ölçeklemesi artık
+            // GameEconomySettings.timeSkipAmountByPlayerCount'ta.
             ApplyStaminaSettings();
 
             LogDebug($"Applied difficulty settings for {_cachedPlayerCount} players (waited {elapsedTime:F2}s)");
@@ -547,7 +550,8 @@ namespace NewCss
                    $"Customers/Day: {ScaledCustomerCount}\n" +
                    $"Starting Money: {ScaledStartingMoney}\n" +
                    // "Phone Chance" satırı KALDIRILDI (FAZ4 §B.6): gösterdiği değer hiçbir sisteme
-                   // bağlı değildi. Gerçek kaynak: GameEconomySettings.phoneRingChanceByPlayerCount.
+                   // bağlı değildi. Telefon V4'te (2026-08-29) çalma şansı kalktı; gerçek kaynak
+                   // GameEconomySettings.timeSkipAmountByPlayerCount / phoneCooldownSeconds.
                    $"Patience: {ScaledMinPatience:F1}s - {ScaledMaxPatience:F1}s\n" +
                    $"Upgrade Cost: x{UpgradeCostMultiplier:F2}";
         }

@@ -5,7 +5,18 @@ metadata:
   type: project
 ---
 
-**Kod ile doğrulandı (2026-07-20 holistik denetim).** Cargor'da PARA akışı:
+> ⚠️ **KISMEN GÜNCEL DEĞİL (2026-08-29 düzeltme, bkz [[plateup_customer_quota_2026-08-29]]).**
+> "Müşteri talebi parayı DOĞRUDAN sınırlamaz" cümlesi ARTIK YANLIŞ: `CustomerAI.cs:1442-1444`
+> ürünü (para zincirinin hammaddesi) MÜŞTERİNİN KENDİSİ `Instantiate` ediyor; `ShelfState.cs`
+> hiç üretmiyor, sadece depoluyor — yani müşteri sayısı GÜNLÜK KUTU ARZININ (=gelirin) GERÇEK
+> tavanı. Bu, ESKİ kapasite-tabanlı talep modelinde (demand 15-49, truck cap 5-32) talep HER
+> ZAMAN truck cap'in üstünde olduğu için gizli kalmıştı — PlateUp'ın küçük, gerçekçi
+> kota değerleriyle (5-13/gün) artık müşteri sayısı ÇOĞU ZAMAN truck throughput'tan DAHA
+// SIKI bağlayıcı. "Müşteriler PARA VERMEZ" (doğrudan AddMoney çağırmazlar) hâlâ doğru — ama
+> dolaylı olarak parayı SIKI sınırlıyorlar. Gelir kaldıracı ararken artık İKİSİNE BİRDEN
+> bakılmalı: `min(truckThroughput, servisEdilenMüşteri)`.
+
+**Kod ile doğrulandı (2026-07-20 holistik denetim, o turdaki ESKİ kapasite-modeli için hâlâ geçerli).** Cargor'da PARA akışı:
 
 - **Tek para kaynağı = tır teslimi.** `Truck.cs:571 ProcessSuccessfulDelivery` →
   `MoneySystem.AddMoney(CalculateRewardWithPrestige())` = `(rewardPerBox + floor(prestij/prestigePerBonus)*bonusPerTier)`

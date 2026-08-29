@@ -33,13 +33,42 @@ namespace NewCss
         public float rentScaledMultiplier = 1f;
 
         // ─────────────────────────────────────────────────────────────
+        //  MÜŞTERİ KOTASI  (CustomerManager — PlateUp gün-numarası eğrisi)
+        //  plans/plateup-musteri-telefon.md §A/§B, economist v2 2026-08-29
+        //  (.claude/agent-memory/economist/plateup_customer_quota_2026-08-29.md)
+        // ─────────────────────────────────────────────────────────────
+
+        [Header("=== MÜŞTERİ KOTASI (PlateUp) ===")]
+
+        [Tooltip("1 oyunculu günlük müşteri kotası eğrisi. index = gün-1 (gün 1..16). Kapasite (raf/masa) artık etkisiz — kaynak: tools/economy-sim/sim.js plateUpQuota(day,1).")]
+        public int[] dailyCustomerCountP1 = { 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6 };
+
+        [Tooltip("2 oyunculu günlük müşteri kotası eğrisi. index = gün-1.")]
+        public int[] dailyCustomerCountP2 = { 7, 7, 7, 8, 8, 9, 9, 9, 10, 10, 10, 11, 11, 11, 12, 12 };
+
+        [Tooltip("3 oyunculu günlük müşteri kotası eğrisi. index = gün-1.")]
+        public int[] dailyCustomerCountP3 = { 8, 8, 8, 8, 9, 9, 9, 10, 10, 10, 11, 11, 12, 12, 12, 13 };
+
+        [Tooltip("4 oyunculu günlük müşteri kotası eğrisi. index = gün-1. P3 ile neredeyse aynı — yuvarlama hatası değil, 1-istasyon mekanik doygunluğu (economist notu, plateup_customer_quota_2026-08-29.md).")]
+        public int[] dailyCustomerCountP4 = { 8, 8, 8, 8, 9, 9, 9, 10, 10, 10, 11, 11, 12, 12, 12, 13 };
+
+        [Tooltip("Oyuncu sayısına göre müşteriler arası temel varış aralığı (saniye). index = oyuncuSayısı-1. WaveSettings.GetSpawnRateMultiplier bu aralığı ölçekler (rush hour = kısa aralık).")]
+        public float[] customerArrivalIntervalByPlayerCount = { 44f, 22f, 21f, 21f };
+
+        [Tooltip("Kota bitip son müşteri de çıktığında, gün sonuna sarılmadan önceki kapanış payı (saniye) — oyuncuya yarım yüklü tırı taşıma fırsatı tanır (DayCycleManager.FastForwardToEndOfDay).")]
+        public float dayEndGraceSeconds = 30f;
+
+        // ─────────────────────────────────────────────────────────────
         //  TIR / TESLİMAT  (Truck)
         // ─────────────────────────────────────────────────────────────
 
         [Header("=== TIR / TESLİMAT AYARLARI ===")]
 
-        [Tooltip("Doğru kutu tesliminde kutu başına ödül (TL)")]
+        [Tooltip("Doğru kutu tesliminde kutu başına ödül (TL). LEGACY skaler: yalnız rewardPerBoxByPlayerCount boş/null ise fallback olarak kullanılır.")]
         public int rewardPerBox = 50;
+
+        [Tooltip("Oyuncu sayısına göre doğru kutu tesliminde kutu başına ödül (TL). index = oyuncuSayısı-1. Tek servis masası nedeniyle P3/P4 kotası P2 ile aynı kalırken kira 3.6x büyüdüğü için ödül artırıldı (economist plateup_customer_quota_2026-08-29.md).")]
+        public int[] rewardPerBoxByPlayerCount = { 50, 55, 70, 88 };
 
         [Tooltip("Yanlış renk kutu tesliminde kutu başına ceza (TL)")]
         public int penaltyPerBox = 40;
@@ -78,27 +107,25 @@ namespace NewCss
         public int boxDropMoneyPenalty = 5;
 
         // ─────────────────────────────────────────────────────────────
-        //  TELEFON  (PhoneCallManager - REAKTİF V3)
+        //  TELEFON  (PhoneCallManager V4 - DIŞARI ARAMA, PlateUp geçişi)
+        //  plans/plateup-musteri-telefon.md §D, economist v2 2026-08-29
         // ─────────────────────────────────────────────────────────────
 
-        [Header("=== TELEFON AYARLARI ===")]
+        [Header("=== TELEFON AYARLARI (V4) ===")]
 
-        [Tooltip("Mesai saatleri içinde her oyun-saati değiştiğinde telefonun çalma olasılığı (0-1). LEGACY skaler: yalnız phoneRingChanceByPlayerCount boş/null ise fallback olarak kullanılır.")]
-        public float phoneRingChancePerHour = 0.20f;
+        [Tooltip("Oyuncu sayısına göre telefonla müşteri çağrıldığında atlanan oyun-dakikası. index = oyuncuSayısı-1. Kaynak: economist plateup_customer_quota_2026-08-29.md v2 (gün8 referans dönüşümle).")]
+        public float[] timeSkipAmountByPlayerCount = { 115f, 59f, 55f, 55f };
 
-        [Tooltip("Oyuncu sayısına göre saatlik çalma olasılığı (1P,2P,3P,4P). index = oyuncuSayısı-1. FAZ4 §B.6: telefon gelirinin toplam gelirdeki payını 1P %9.2 → 4P %4.9'a taşır; solo yardımı bilinçli korunur.")]
-        public float[] phoneRingChanceByPlayerCount = { 0.20f, 0.25f, 0.30f, 0.35f };
+        [Tooltip("Telefon çağrıları arası server-authoritative cooldown (saniye). Düz — oyuncu sayısından bağımsız (economist: P3/4'te doğal varış aralığıyla neredeyse eşit, marjinal fayda).")]
+        public float phoneCooldownSeconds = 20f;
 
-        [Tooltip("CUSTOMER SUPPORT etkinliği günü çalma olasılığına uygulanan çarpan")]
-        public float phoneRingEventMultiplier = 2.0f;
+        [Tooltip("phone_line perki aktifken cooldown'dan mutlak olarak düşülen saniye (idempotent atama — PerkEffect.ApplyPhoneLine). 10f economist onaylı (2026-08-29): perk kotayı büyütmediği için ekonomik etkisi yok.")]
+        public float phoneCooldownPerkBonusSeconds = 0f;
 
-        [Tooltip("Telefon Hattı perki aktifken saatlik çalma olasılığına eklenen additive bonus")]
-        public float phoneRingPerkBonus = 0f;
-
-        [Tooltip("Telefon açıldığında verilen para ödülü (TL)")]
+        [Tooltip("Telefonla müşteri çağrıldığında verilen para ödülü (TL)")]
         public int callMoneyReward = 20;
 
-        [Tooltip("Telefon açıldığında verilen prestij ödülü")]
+        [Tooltip("Telefonla müşteri çağrıldığında verilen prestij ödülü")]
         public float callPrestigeReward = 0.4f;
 
         // ─────────────────────────────────────────────────────────────
@@ -107,8 +134,11 @@ namespace NewCss
 
         [Header("=== PRESTİJ AYARLARI ===")]
 
-        [Tooltip("Müşteri kaçtığında (bekleme süresi dolunca) uygulanan prestige cezası (negatif olmalı)")]
+        [Tooltip("Müşteri kaçtığında (bekleme süresi dolunca VEYA gün sonunda servis edilmeden çıkarıldığında) uygulanan prestige cezası (negatif olmalı)")]
         public float customerLostPrestigePenalty = -0.4f;
+
+        [Tooltip("Gün sonunda hiç spawn olmamış kalan kota müşterisi başına uygulanan (daha hafif) prestij cezası (negatif olmalı). customerLostPrestigePenalty ile KARIŞTIRILMAZ — bkz. GameStateManager.OnCustomerQuotaMissed. plans/plateup-musteri-telefon.md §E, economist v2 2026-08-29.")]
+        public float customerMissedQuotaPrestigePenalty = -0.2f;
 
         [Tooltip("Müşteriye başarılı servis yapıldığında kazanılan prestige bonusu")]
         public float customerServedPrestigeBonus = 0.4f;
@@ -162,6 +192,19 @@ namespace NewCss
         }
 
         /// <summary>
+        /// Oyuncu sayısına göre doğru kutu tesliminde kutu başına ödülü döndürür.
+        /// playerCount 1-4 arası; dışarıda en yakın uç değer. Dizi boş/null ise legacy
+        /// skaler rewardPerBox'a düşer (güvenli fallback).
+        /// </summary>
+        public int GetRewardPerBox(int playerCount)
+        {
+            if (rewardPerBoxByPlayerCount == null || rewardPerBoxByPlayerCount.Length == 0)
+                return rewardPerBox;
+            int index = Mathf.Clamp(playerCount - 1, 0, rewardPerBoxByPlayerCount.Length - 1);
+            return rewardPerBoxByPlayerCount[index];
+        }
+
+        /// <summary>
         /// Kira dönemine göre hesaplanmış kira miktarını döndürür.
         /// </summary>
         public float CalculateRent(int playerCount, int rentCycle)
@@ -190,16 +233,53 @@ namespace NewCss
         }
 
         /// <summary>
-        /// Oyuncu sayısına göre saatlik telefon çalma olasılığını döndürür. playerCount 1-4 arası;
-        /// dışarıda en yakın uç değer. Dizi boş/null ise legacy skaler phoneRingChancePerHour'a
-        /// düşer (güvenli fallback).
+        /// Oyuncu sayısına göre telefonla müşteri çağrıldığında atlanan oyun-dakikasını döndürür.
+        /// playerCount 1-4 arası; dışarıda en yakın uç değer. Dizi boş/null ise güvenli fallback
+        /// olarak 115 (1P değeri) döner.
         /// </summary>
-        public float GetPhoneRingChancePerHour(int playerCount)
+        public float GetTimeSkipAmountMinutes(int playerCount)
         {
-            if (phoneRingChanceByPlayerCount == null || phoneRingChanceByPlayerCount.Length == 0)
-                return phoneRingChancePerHour;
-            int index = Mathf.Clamp(playerCount - 1, 0, phoneRingChanceByPlayerCount.Length - 1);
-            return phoneRingChanceByPlayerCount[index];
+            if (timeSkipAmountByPlayerCount == null || timeSkipAmountByPlayerCount.Length == 0)
+                return 115f;
+            int index = Mathf.Clamp(playerCount - 1, 0, timeSkipAmountByPlayerCount.Length - 1);
+            return timeSkipAmountByPlayerCount[index];
+        }
+
+        /// <summary>
+        /// Gün numarası ve oyuncu sayısına göre günlük müşteri kotasını döndürür (PlateUp
+        /// gün-numarası eğrisi). day 1-16 arası, playerCount 1-4 arası; dışarıda en yakın uç
+        /// değere clamp'lenir. İlgili dizi boş/null ise güvenli fallback olarak 4 döner.
+        /// </summary>
+        public int GetDailyCustomerCount(int day, int playerCount)
+        {
+            int[] curve = GetQuotaCurve(playerCount);
+            if (curve == null || curve.Length == 0) return 4;
+            int dayIndex = Mathf.Clamp(day - 1, 0, curve.Length - 1);
+            return curve[dayIndex];
+        }
+
+        private int[] GetQuotaCurve(int playerCount)
+        {
+            return Mathf.Clamp(playerCount, 1, 4) switch
+            {
+                1 => dailyCustomerCountP1,
+                2 => dailyCustomerCountP2,
+                3 => dailyCustomerCountP3,
+                _ => dailyCustomerCountP4,
+            };
+        }
+
+        /// <summary>
+        /// Oyuncu sayısına göre müşteriler arası temel varış aralığını (saniye) döndürür.
+        /// playerCount 1-4 arası; dışarıda en yakın uç değer. Dizi boş/null ise güvenli
+        /// fallback 22s (2P referans değeri) döner.
+        /// </summary>
+        public float GetCustomerArrivalIntervalSeconds(int playerCount)
+        {
+            if (customerArrivalIntervalByPlayerCount == null || customerArrivalIntervalByPlayerCount.Length == 0)
+                return 22f;
+            int index = Mathf.Clamp(playerCount - 1, 0, customerArrivalIntervalByPlayerCount.Length - 1);
+            return customerArrivalIntervalByPlayerCount[index];
         }
 
     }

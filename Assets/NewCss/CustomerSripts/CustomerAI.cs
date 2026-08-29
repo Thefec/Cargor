@@ -257,6 +257,23 @@ namespace NewCss
         public bool IsWaitingForService => _state == CustomerState.WaitingInQueue;
 
         /// <summary>
+        /// Müşteri işini bitirip çıkışı bekliyor mu (WaitingForPickup)? PlateUp gün-sonu cezası
+        /// (§E, plans/plateup-musteri-telefon.md, 2026-08-29): CustomerManager.ForceAllCustomersToExit
+        /// bu bayrağı okuyarak servis edilmiş müşteriyi prestij cezasından muaf tutar — işi bitmiş
+        /// müşteri sadece çıkışa zorlanıyor, "kaçırılmış" sayılmıyor.
+        /// </summary>
+        public bool HasFinishedService => _state == CustomerState.WaitingForPickup;
+
+        /// <summary>
+        /// Sabrı dolup HandleTimeUp yolundan geçti mi? PlateUp gün-sonu cezası (§E): bu müşteri
+        /// için OnCustomerLost ZATEN çağrıldı (bkz. HandleTimeUp) — gün-sonu yolu (ForceAllCustomersToExit)
+        /// aynı müşteriyi ikinci kez cezalandırmamalı. Pratikte HandleTimeUp müşteriyi hemen
+        /// kuyruktan çıkardığı için normal akışta bu bayrak zaten kuyruk taramasında görülmez;
+        /// çifte-sayım riskine karşı savunma amaçlı okunur (plan §E'nin açık isteği).
+        /// </summary>
+        public bool HasTimedOut => _hasTimedOut;
+
+        /// <summary>
         /// Bu müşteri İade (BoxRequest) modunda mı? (Faz A, gün 5+). Networked — client'ta da
         /// doğru değeri okur. Graphics-UI departmanı görsel gösterge için bunu kullanabilir.
         /// </summary>

@@ -433,6 +433,41 @@ namespace NewCss
         }
 
         /// <summary>
+        /// SkipTime(minutesToSkip) çağrılsaydı CurrentTime kaç olurdu? Zamanı DEĞİŞTİRMEZ.
+        /// Telefon (PhoneCallManager) bunu, atlamanın günü müşteri-çıkış saatinin ötesine
+        /// sıçratıp sıçratmayacağını çağrıyı KABUL ETMEDEN ÖNCE anlamak için kullanır
+        /// (QA bulgusu 2026-08-29: aksi halde telefonla çağrılan müşteri, aynı karede
+        /// gün-sonu kesimine yakalanıp servis edilemeden ceza üretiyordu).
+        /// SkipTime ile birebir aynı aritmetiği paylaşır — biri değişirse diğeri de değişmeli.
+        /// </summary>
+        public float PredictTimeAfterSkip(float minutesToSkip)
+        {
+            float totalGameHours = endHour - startHour;
+            float secondsPerGameMinute = (realDurationInSeconds / totalGameHours) / 60f;
+            float projectedElapsed = _networkElapsedTime.Value + (minutesToSkip * secondsPerGameMinute);
+
+            float progress = Mathf.Clamp01(projectedElapsed / CurrentDayDuration);
+            return startHour + (progress * totalGameHours);
+        }
+
+        /// <summary>
+        /// PlateUp erken gün-bitişi (plan §C, 2026-08-29): günün müşteri kotası tükenip son
+        /// müşteri de çıktığında (bkz. CustomerManager.CheckEarlyDayCompletion, kısa bir grace
+        /// süresinin ardından) çağrılır. Zamanı doğrudan gün sonuna sarar — ProcessDayEnd()'in
+        /// tek koşulu (elapsedTime >= CurrentDayDuration) doğal yoldan tetiklenir; kira kontrolü/
+        /// break room/gün sonu ekranı/IsTimeUp exploit guard'ı BU METOTLA DEĞİŞMEDEN çalışır.
+        /// İkinci bir gün-bitiş yolu açmaz, SkipTime ile aynı deseni izler.
+        /// </summary>
+        public void FastForwardToEndOfDay()
+        {
+            if (!IsServer) return;
+
+            _networkElapsedTime.Value = CurrentDayDuration;
+
+            Debug.Log($"{LOG_PREFIX} Fast-forwarded to end of day (customer quota completed early).");
+        }
+
+        /// <summary>
         /// Taban süre + perk çarpanı + buff toplamını tek noktadan yeniden hesaplar.
         /// realDurationInSeconds'a yazan TEK yer burasıdır (overtime perki ve BuffManager
         /// DayDuration buff'ı dahil — ikisi de bu metodu çağırır, doğrudan alana yazmaz).

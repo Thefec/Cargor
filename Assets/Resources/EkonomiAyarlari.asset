@@ -17,6 +17,7 @@ MonoBehaviour:
   rentIntervalDays: 4
   gracePaymentPercent: 0.8
   rentScaledMultiplier: 1
+  dayEndGraceSeconds: 30
   rewardPerBox: 50
   penaltyPerBox: 40
   hangarStayDuration: 30

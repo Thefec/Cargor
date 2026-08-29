@@ -549,9 +549,10 @@ namespace NewCss
         {
             // NO-OP (upgrade turu 2026-07-20, economist onaylı): eskiden burada
             // Truck.rewardPerBox = moneyUpgrade.Definition.TruckValue (=15) yazılıyordu — Truck
-            // zaten OnNetworkSpawn'da rewardPerBox'ı economySettings.rewardPerBox'tan (50, doğru
-            // taban) kuruyor (Truck.cs:212). Bu satır rewardPerBox'ı 15'e çekip tabanın ALTINA
-            // düşürüyordu (aktif zararlı — Money kartı teklifteyken bile spawn'da tetiklenirdi).
+            // zaten OnNetworkSpawn'da rewardPerBox'ı economySettings.GetRewardPerBox(playerCount)'tan
+            // (P-bazlı doğru taban, PlateUp reward-lever 2026-08-29) kuruyor. Bu satır rewardPerBox'ı
+            // 15'e çekip tabanın ALTINA düşürüyordu (aktif zararlı — Money kartı teklifteyken bile
+            // spawn'da tetiklenirdi).
             // Money artık draft havuzundan kalıcı olarak çıkarıldı (disabledInDraft, bkz.
             // UpgradeDefinition.disabledInDraft / DraftPool.IsEligible) — reward'a hiç dokunma.
         }
@@ -617,7 +618,7 @@ namespace NewCss
             // ApplyPhoneLine, ApplyLeveragedRent, ApplyAllIn, ApplyHighVolatility
             public float RentGrowthMultiplier;
             public float CustomerServedPrestigeBonus;
-            public float PhoneRingPerkBonus;
+            public float PhoneCooldownPerkBonusSeconds;
             public float RentScaledMultiplier;
             public float GracePaymentPercent;
             public float RewardVolatility;
@@ -660,7 +661,7 @@ namespace NewCss
             {
                 snap.RentGrowthMultiplier = economySettings.rentGrowthMultiplier;
                 snap.CustomerServedPrestigeBonus = economySettings.customerServedPrestigeBonus;
-                snap.PhoneRingPerkBonus = economySettings.phoneRingPerkBonus;
+                snap.PhoneCooldownPerkBonusSeconds = economySettings.phoneCooldownPerkBonusSeconds;
                 snap.RentScaledMultiplier = economySettings.rentScaledMultiplier;
                 snap.GracePaymentPercent = economySettings.gracePaymentPercent;
                 snap.RewardVolatility = economySettings.rewardVolatility;
@@ -711,7 +712,7 @@ namespace NewCss
             {
                 economySettings.rentGrowthMultiplier = snap.RentGrowthMultiplier;
                 economySettings.customerServedPrestigeBonus = snap.CustomerServedPrestigeBonus;
-                economySettings.phoneRingPerkBonus = snap.PhoneRingPerkBonus;
+                economySettings.phoneCooldownPerkBonusSeconds = snap.PhoneCooldownPerkBonusSeconds;
                 economySettings.rentScaledMultiplier = snap.RentScaledMultiplier;
                 economySettings.gracePaymentPercent = snap.GracePaymentPercent;
                 economySettings.rewardVolatility = snap.RewardVolatility;

@@ -654,6 +654,40 @@ namespace NewCss
         }
 
         /// <summary>
+        /// PlateUp gün-sonu cezası (§E, plans/plateup-musteri-telefon.md, 2026-08-29): gün sonunda
+        /// hiç spawn olmamış kalan kota müşterisi başına çağrılır (CustomerManager.ApplyMissedQuotaPenalty).
+        /// OnCustomerLost (-0.4, kaçan/timeout olan müşteri) İLE BİLİNÇLİ OLARAK AYRI — daha hafif
+        /// bir ceza (customerMissedQuotaPrestigePenalty=-0.2) kullanır, o metodu KİRLETMEZ.
+        /// </summary>
+        public void OnCustomerQuotaMissed()
+        {
+            if (gameEnded)
+            {
+                Debug.Log("=== Game already ended, ignoring missed quota ===");
+                return;
+            }
+
+            Debug.Log("=== CUSTOMER QUOTA MISSED - Prestige penalty ===");
+
+            if (PrestigeManager.Instance != null)
+            {
+                float penalty = economySettings != null
+                    ? economySettings.customerMissedQuotaPrestigePenalty
+                    : -0.2f;
+                // SURPRISE AUDIT günü tüm cezalar 2× (yoksa 1×).
+                float penaltyMult = EventEffectManager.Instance != null
+                    ? EventEffectManager.Instance.GetPenaltyMultiplier() : 1f;
+                penalty *= penaltyMult;
+                PrestigeManager.Instance.ModifyPrestige(penalty);
+                Debug.Log($"Missed quota prestige penalty applied: {penalty}");
+            }
+            else
+            {
+                Debug.LogWarning("PrestigeManager not found! Cannot apply penalty.");
+            }
+        }
+
+        /// <summary>
         /// Checks if the player has won after completing day 16 with prestige > 0 and rent paid.
         /// completedDayOverride: DayCycleManager.NextDay kazanma kontrolünü gün sayacını
         /// İLERLETMEDEN önce çalıştırır (zafer anında NetworkVariable mutasyonu replike olmasın

@@ -20,7 +20,11 @@ namespace NewCss
         public const int DEFAULT_QUEUE_SIZE = 2;
         private const float DEFAULT_SPAWN_START_HOUR = 8f;
         private const float DEFAULT_SPAWN_END_HOUR = 17f;
-        private const float CUSTOMER_EXIT_HOUR = 17.5f; // 17:30 - Müşterilerin çıkışa yönlendirileceği saat
+        /// <summary>
+        /// 17:30 — kuyruktaki müşterilerin çıkışa zorlandığı saat. PhoneCallManager de okur:
+        /// zaman atlaması bu eşiği aşacaksa çağrıyı reddeder (QA bulgusu 2026-08-29).
+        /// </summary>
+        public const float CUSTOMER_EXIT_HOUR = 17.5f;
 
         public static event System.Action OnDailyCustomersCalculated;
 
@@ -64,31 +68,24 @@ namespace NewCss
 
         #endregion
 
-        #region Serialized Fields - Capacity-Based Spawn Settings
+        #region Serialized Fields - Economy Settings
 
-        [Header("=== CAPACITY-BASED SPAWN SETTINGS ===")]
-        [SerializeField, Tooltip("Her aktif raf/masa başına müşteri katkısı")]
-        private float _shelfMultiplier = 2f;
+        [Header("=== ECONOMY SETTINGS ===")]
+        [SerializeField, Tooltip("Tüm ekonomi sabitlerini içeren ScriptableObject (kota eğrisi + varış aralığı). Boşsa Resources/EkonomiAyarlari'dan otomatik yüklenir.")]
+        private GameEconomySettings economySettings;
 
-        [SerializeField, Tooltip("Mağaza seviyesi başına müşteri katkısı")]
-        private float _levelMultiplier = 2f;
+        #endregion
 
-        [SerializeField, Tooltip("Mağaza seviyesi (ileride XP sistemine bağlanacak)")]
-        private int _storeLevel = 1;
+        #region Serialized Fields - Quota & Spawn Timing Settings
 
-        [SerializeField, Tooltip("Rastgele sapma alt sınırı")]
-        private int _minVariance = -2;
-
-        [SerializeField, Tooltip("Rastgele sapma üst sınırı")]
-        private int _maxVariance = 3;
-
-        [SerializeField, Tooltip("Günlük minimum müşteri sayısı")]
+        [Header("=== QUOTA & SPAWN TIMING SETTINGS ===")]
+        [SerializeField, Tooltip("Günlük minimum müşteri sayısı (güvenlik clamp'i)")]
         private int _minCustomersPerDay = 1;
 
         [SerializeField, Tooltip("Günlük maksimum müşteri sayısı (Soft Cap - performans koruması)")]
         private int _maxCustomersPerDay = 50;
 
-        [SerializeField, Range(0f, 1f), Tooltip("Spawn zamanı rastgeleliği")]
+        [SerializeField, Range(0f, 1f), Tooltip("Müşteriler arası varış aralığına uygulanan rastgelelik payı (0 = hep aynı aralık, 0.2 = ±%20 jitter). PlateUp geçişi (2026-08-29): mutlak-saat rastgeleliğinden aralık jitter'ına taşındı, alan aynı kaldı.")]
         public float spawnTimeRandomness = 0.2f;
 
         #endregion
@@ -102,7 +99,10 @@ namespace NewCss
         public float eventCustomerMultiplier = 1f;
 
         /// <summary>
-        /// DifficultyManager tarafından set edilen oyuncu sayısı çarpanı
+        /// ARTIK KULLANILMIYOR (PlateUp geçişi 2026-08-29): kota artık GameEconomySettings'teki
+        /// P-indeksli gün eğrisinden (dailyCustomerCountP1..P4) okunuyor, düz çarpan değil.
+        /// Alan yalnızca DifficultyManager.ApplyCustomerSettings:430'un derlenmesi için duruyor —
+        /// orası da bu alanı yazmayı bırakacak şekilde ayrı bir işte temizlenmeli (rapora bakın).
         /// </summary>
         [HideInInspector]
         public float playerCountMultiplier = 1f;
@@ -186,10 +186,15 @@ namespace NewCss
         private int _todaysTotalCustomers;
         private int _customersSpawnedToday;
         private int _customersRemainingToday;
-        private readonly List<float> _scheduledSpawnTimes = new();
-        private int _nextScheduledIndex;
+        // PlateUp geçişi (2026-08-29): mutlak-saat listesi (_scheduledSpawnTimes) yerine
+        // "bir sonraki spawn en erken ne zaman olabilir" eşiği — DayCycleManager.elapsedTime
+        // (real saniye) domeninde. Bkz. AdvanceNextSpawnThreshold.
+        private float _nextSpawnAllowedElapsedTime;
         private bool _dayInitialized;
         private bool _customersExitedToday; // Gün sonu müşteri çıkışı yapıldı mı
+        private bool _dayCompletionGraceStarted; // Erken gün-bitişi kapanış payı başladı mı
+        private bool _dayFastForwarded;          // Gün sonuna sarma bir kez yapıldı mı (tek atış)
+        private float _dayCompletionGraceRemaining;
 
         #endregion
 
@@ -257,7 +262,7 @@ namespace NewCss
         /// <summary>
         /// Sırada henüz spawnlanmamış müşteri var mı? (Telefon sistemi için)
         /// </summary>
-        public bool HasUnspawnedCustomers => _nextScheduledIndex < _scheduledSpawnTimes.Count;
+        public bool HasUnspawnedCustomers => _customersSpawnedToday < _todaysTotalCustomers;
 
         /// <summary>
         /// Kuyruk dolu mu?
@@ -319,6 +324,7 @@ namespace NewCss
             TrySpawnScheduledCustomer();
             AssignFreeServiceStations();
             CheckEndOfDayCustomerExit();
+            TickEarlyDayCompletionGrace();
         }
 
         #endregion
@@ -372,128 +378,91 @@ namespace NewCss
             _todaysTotalCustomers = CalculateTodaysCustomerCount(currentDay);
             _customersSpawnedToday = 0;
             _customersRemainingToday = _todaysTotalCustomers;
-            _nextScheduledIndex = 0;
             _dayInitialized = true;
             _customersExitedToday = false; // Yeni gün için çıkış flag'ini sıfırla
+            _dayCompletionGraceStarted = false;  // Erken gün-bitişi guard'ını sıfırla
+            _dayFastForwarded = false;           // Yeni gün: sarma tek-atış bayrağını sıfırla
+            _dayCompletionGraceRemaining = 0f;
             _customerColorBag.Clear(); // Renk torbasını sıfırla (gün başı yeni torba)
             _consecutiveColorCount = 0; // Renk streak'ini sıfırla (gün başı)
 
-            CalculateSpawnSchedule();
+            InitializeSpawnTiming();
             UpdateRemainingCustomersUI();
 
             LogDebug($"Day {currentDay} - Total customers scheduled: {_todaysTotalCustomers}");
-            LogDebug($"Spawn times calculated between {spawnStartHour:F1} and {spawnEndHour:F1}");
+            LogDebug($"Spawn window {spawnStartHour:F1}-{spawnEndHour:F1}, arrival interval base: {GetCustomerArrivalInterval():F1}s");
 
             OnDailyCustomersCalculated?.Invoke();
         }
 
         /// <summary>
-        /// Kapasite ve itibar bazlı müşteri sayısı hesaplama.
-        /// Formül: (ActiveInteractables × shelfMult + StoreLevel × levelMult + Random) × eventMult × playerMult
-        /// Tüm katsayılar Inspector'dan ayarlanabilir. Server-only çalışır.
+        /// Gün-numarası eğrisine göre müşteri sayısı hesaplama (PlateUp geçişi 2026-08-29).
+        /// Kapasite (raf/masa) etkisi tamamen kalktı — kota artık GameEconomySettings'teki
+        /// P×gün tablosundan (dailyCustomerCountP1..P4) okunuyor. Server-only çalışır.
         /// </summary>
         private int CalculateTodaysCustomerCount(int currentDay)
         {
-            // 1. Sahnedeki aktif etkileşim noktalarını say
-            int activeInteractables = CountActiveInteractables();
+            int playerCount = DifficultyManager.Instance != null ? DifficultyManager.Instance.PlayerCount : 1;
+            var settings = GetEconomySettings();
+            int baseCount = settings != null ? settings.GetDailyCustomerCount(currentDay, playerCount) : 4;
 
-            // 2. Temel kapasite hesabı
-            float capacityBase = (activeInteractables * _shelfMultiplier) + (_storeLevel * _levelMultiplier);
+            // Event çarpanı (örn. INTENSIVE DAY) tabanın üzerine uygulanır.
+            float multipliedCount = baseCount * eventCustomerMultiplier;
 
-            // 3. Rastgele sapma ekle (her gün farklı hissetsin)
-            float randomVariance = Random.Range(_minVariance, _maxVariance + 1);
-
-            // 4. Ham sonuç
-            float rawCount = capacityBase + randomVariance;
-
-            // 5. Event ve oyuncu sayısı çarpanlarını uygula
-            float multipliedCount = rawCount * eventCustomerMultiplier * playerCountMultiplier;
-
-            // 6. Clamp: asla 0/negatif olmasın, soft cap'i aşmasın
+            // Clamp: asla 0/negatif olmasın, soft cap'i aşmasın
             int finalCount = Mathf.Clamp(Mathf.RoundToInt(multipliedCount), _minCustomersPerDay, _maxCustomersPerDay);
 
-            LogDebug($"Capacity calc: interactables={activeInteractables}, level={_storeLevel}, " +
-                     $"capacityBase={capacityBase:F1}, random={randomVariance}, " +
-                     $"eventMult={eventCustomerMultiplier:F2}, playerMult={playerCountMultiplier:F2}, " +
-                     $"raw={multipliedCount:F1}, final={finalCount}");
+            LogDebug($"Quota calc: day={currentDay}, players={playerCount}, base={baseCount}, " +
+                     $"eventMult={eventCustomerMultiplier:F2}, final={finalCount}");
 
             return finalCount;
         }
 
         /// <summary>
-        /// Sahnedeki tüm aktif etkileşim noktalarını (raf + masa) sayar.
-        /// Server-only: Sadece gün başında bir kez çağrılır (performans güvenli).
+        /// Gün başında spawn zamanlamasını sıfırlar. PlateUp geçişi (2026-08-29): mutlak-saat
+        /// listesi yerine "önceki gelişten customerArrivalInterval saniye sonra sıradaki" akışı.
+        /// İlk müşteri, mesai saatleri açılır açılmaz (IsWithinSpawningHours) hemen gelebilsin
+        /// diye eşik "şimdi"ye ayarlanır.
         /// </summary>
-        private int CountActiveInteractables()
+        private void InitializeSpawnTiming()
         {
-            int count = 0;
-
-            // ShelfState: Oyuncunun item koyabileceği raflar
-            var shelves = FindObjectsOfType<ShelfState>();
-            count += shelves.Length;
-
-            // DisplayTable: Müşteri servis masaları
-            var tables = FindObjectsOfType<DisplayTable>();
-            count += tables.Length;
-
-            return count;
+            _nextSpawnAllowedElapsedTime = DayCycleManager.Instance != null ? DayCycleManager.Instance.elapsedTime : 0f;
         }
 
-        private void CalculateSpawnSchedule()
+        /// <summary>
+        /// Oyuncu sayısına göre temel varış aralığını (saniye) döndürür.
+        /// </summary>
+        private float GetCustomerArrivalInterval()
         {
-            _scheduledSpawnTimes.Clear();
-
-            if (_todaysTotalCustomers <= 0)
-            {
-                LogWarning("No customers scheduled for today");
-                return;
-            }
-
-            float spawnWindow = spawnEndHour - spawnStartHour;
-            float baseInterval = spawnWindow / _todaysTotalCustomers;
-
-            for (int i = 0; i < _todaysTotalCustomers; i++)
-            {
-                float spawnTime = CalculateSpawnTime(i, baseInterval);
-                _scheduledSpawnTimes.Add(spawnTime);
-            }
-
-            _scheduledSpawnTimes.Sort();
-
-            LogSpawnTimesDebug();
+            int playerCount = DifficultyManager.Instance != null ? DifficultyManager.Instance.PlayerCount : 1;
+            var settings = GetEconomySettings();
+            return settings != null ? settings.GetCustomerArrivalIntervalSeconds(playerCount) : 22f;
         }
 
-        private float CalculateSpawnTime(int index, float baseInterval)
+        /// <summary>
+        /// Bir müşteri spawn olduktan sonra sıradakinin en erken ne zaman gelebileceğini
+        /// (DayCycleManager.elapsedTime domeninde) hesaplar. Wave sistemi rush hour'da aralığı
+        /// kısaltır (yüksek spawnRateMultiplier = daha sık geliş); spawnTimeRandomness eskiden
+        /// mutlak-saate uygulanan jitter'ı artık doğrudan aralığa uygular.
+        /// </summary>
+        private void AdvanceNextSpawnThreshold()
         {
-            float baseSpawnTime = spawnStartHour + (index * baseInterval) + (baseInterval * 0.5f);
-            float randomOffset = Random.Range(-baseInterval * spawnTimeRandomness, baseInterval * spawnTimeRandomness);
-            float spawnTime = Mathf.Clamp(baseSpawnTime + randomOffset, spawnStartHour, spawnEndHour);
+            float elapsed = DayCycleManager.Instance != null ? DayCycleManager.Instance.elapsedTime : 0f;
+            float baseInterval = GetCustomerArrivalInterval();
 
-            // Apply wave system spawn rate modifier
+            float jitter = Random.Range(-baseInterval * spawnTimeRandomness, baseInterval * spawnTimeRandomness);
+            float interval = Mathf.Max(1f, baseInterval + jitter);
+
             if (enableWaveSystem && waveSettings != null)
             {
-                float spawnRateMultiplier = waveSettings.GetSpawnRateMultiplier(spawnTime);
-                // Higher multiplier = faster spawn = reduce interval
-                if (spawnRateMultiplier > 0)
+                float spawnRateMultiplier = waveSettings.GetSpawnRateMultiplier(GetCurrentTime());
+                if (spawnRateMultiplier > 0f)
                 {
-                    float adjustment = (baseInterval * (1f - (1f / spawnRateMultiplier))) * 0.5f;
-                    spawnTime = Mathf.Clamp(spawnTime - adjustment, spawnStartHour, spawnEndHour);
+                    interval /= spawnRateMultiplier;
                 }
             }
 
-            return spawnTime;
-        }
-
-        private void LogSpawnTimesDebug()
-        {
-            if (!showDebugLogs) return;
-
-            LogDebug("First 5 spawn times:");
-            int displayCount = Mathf.Min(5, _scheduledSpawnTimes.Count);
-            for (int i = 0; i < displayCount; i++)
-            {
-                LogDebug($"  Customer {i + 1}: {_scheduledSpawnTimes[i]:F2}");
-            }
+            _nextSpawnAllowedElapsedTime = elapsed + interval;
         }
 
         #endregion
@@ -504,11 +473,11 @@ namespace NewCss
         {
             if (!CanSpawnScheduledCustomer()) return;
 
-            float currentTime = GetCurrentTime();
+            float elapsed = DayCycleManager.Instance.elapsedTime;
 
-            if (currentTime >= _scheduledSpawnTimes[_nextScheduledIndex])
+            if (elapsed >= _nextSpawnAllowedElapsedTime)
             {
-                TryExecuteSpawn(currentTime);
+                TryExecuteSpawn(GetCurrentTime());
             }
         }
 
@@ -516,7 +485,7 @@ namespace NewCss
         {
             if (DayCycleManager.Instance == null) return false;
             if (!IsWithinSpawningHours()) return false;
-            if (_nextScheduledIndex >= _scheduledSpawnTimes.Count) return false;
+            if (!HasUnspawnedCustomers) return false;
             if (IsQueueFull) return false;
 
             // Check wave system queue limit
@@ -533,17 +502,29 @@ namespace NewCss
             return true;
         }
 
-        private void TryExecuteSpawn(float currentTime)
+        /// <summary>
+        /// Spawn gerçekten yapıldıysa true döner. Dönüş değeri ÖNEMLİ: telefon yolu
+        /// (ForceSpawnNextCustomer → PhoneCallManager) ödülü/cooldown'u yalnız gerçek bir
+        /// spawn olduğunda vermeli. IsQueueFull sayı-tabanlı, GetNextAvailableQueueIndex ise
+        /// pozisyon-tabanlı; ikisi kayarsa guard'lar geçip spawn yine de başarısız olabilir
+        /// (QA bulgusu 2026-08-29 — eskiden burası void'di ve çağıran koşulsuz "başarılı" sayıyordu).
+        /// </summary>
+        private bool TryExecuteSpawn(float currentTime)
         {
             int nextQueueIndex = GetNextAvailableQueueIndex();
 
-            if (nextQueueIndex == -1) return;
+            if (nextQueueIndex == -1)
+            {
+                LogDebug("TryExecuteSpawn: no free queue slot, spawn skipped.");
+                return false;
+            }
 
             SpawnCustomer(nextQueueIndex);
             _customersSpawnedToday++;
-            _nextScheduledIndex++;
+            AdvanceNextSpawnThreshold();
 
             LogDebug($"Customer {_customersSpawnedToday}/{_todaysTotalCustomers} spawned at time {currentTime:F2}");
+            return true;
         }
 
         private bool IsWithinSpawningHours()
@@ -560,6 +541,19 @@ namespace NewCss
         }
 
         /// <summary>
+        /// GameEconomySettings referansını döndürür; Inspector'dan bağlanmamışsa
+        /// Resources/EkonomiAyarlari'dan yükleyip cache'ler (Truck.cs'teki desenle aynı).
+        /// </summary>
+        private GameEconomySettings GetEconomySettings()
+        {
+            if (economySettings == null)
+            {
+                economySettings = Resources.Load<GameEconomySettings>("EkonomiAyarlari");
+            }
+            return economySettings;
+        }
+
+        /// <summary>
         /// Gün sonu yaklaştığında (17:30) tüm müşterileri çıkışa yönlendirir
         /// </summary>
         private void CheckEndOfDayCustomerExit()
@@ -573,13 +567,20 @@ namespace NewCss
             if (currentTime >= CUSTOMER_EXIT_HOUR)
             {
                 ForceAllCustomersToExit();
+                ApplyMissedQuotaPenalty();
                 _customersExitedToday = true;
                 LogDebug($"End of day customer exit triggered at {currentTime:F2}");
             }
         }
 
         /// <summary>
-        /// Kuyruktaki tüm müşterileri çıkışa yönlendirir
+        /// Kuyruktaki tüm müşterileri çıkışa yönlendirir. PlateUp gün-sonu cezası (§E,
+        /// plans/plateup-musteri-telefon.md, 2026-08-29): servis edilmeden (WaitingForPickup
+        /// DEĞİL) çıkışa zorlanan her müşteri için GameStateManager.OnCustomerLost() çağrılır.
+        /// Sabrı bitip HandleTimeUp'tan (zaten OnCustomerLost çağırmış) geçen müşteriler normal
+        /// akışta bu noktaya ulaşmadan önce kuyruktan çıkmış olur (TransitionToExit →
+        /// NotifyCustomerDone senkron olarak kaldırıyor); yine de CustomerAI.HasTimedOut ile
+        /// çifte-sayıma karşı savunma amaçlı kontrol edilir (plan §E'nin açık isteği).
         /// </summary>
         private void ForceAllCustomersToExit()
         {
@@ -587,14 +588,42 @@ namespace NewCss
 
             LogDebug($"Forcing {_customerQueue.Count} customers to exit");
 
-            // Tüm müşterilerin bekleme süresini sıfırla ve çıkışa yönlendir
             foreach (var customer in _customerQueue.ToList())
             {
-                if (customer != null)
+                if (customer == null) continue;
+
+                // ForceExitDueToEndOfDay durumu Exiting'e çevirmeden ÖNCE yakala.
+                bool shouldPenalize = !customer.HasFinishedService && !customer.HasTimedOut;
+
+                customer.ForceExitDueToEndOfDay();
+
+                if (shouldPenalize && GameStateManager.Instance != null)
                 {
-                    customer.ForceExitDueToEndOfDay();
+                    GameStateManager.Instance.OnCustomerLost();
                 }
             }
+        }
+
+        /// <summary>
+        /// PlateUp gün-sonu cezası (§E): hiç spawn olmamış kalan kota müşterileri için, servis
+        /// edilmeden kaçan müşterilerden (customerLostPrestigePenalty=-0.4) AYRI ve daha hafif bir
+        /// prestij cezası (customerMissedQuotaPrestigePenalty=-0.2) uygular. Yalnızca
+        /// CheckEndOfDayCustomerExit'in 17:30 yolundan çağrılır — erken gün bitişinde
+        /// (CheckEarlyDayCompletion) zaten HasUnspawnedCustomers=false şartı arandığı için bu
+        /// yol hiç tetiklenmez.
+        /// </summary>
+        private void ApplyMissedQuotaPenalty()
+        {
+            int missedCount = _todaysTotalCustomers - _customersSpawnedToday;
+            if (missedCount <= 0) return;
+            if (GameStateManager.Instance == null) return;
+
+            for (int i = 0; i < missedCount; i++)
+            {
+                GameStateManager.Instance.OnCustomerQuotaMissed();
+            }
+
+            LogDebug($"Missed quota penalty applied for {missedCount} unspawned customer(s).");
         }
 
         #endregion
@@ -654,7 +683,7 @@ namespace NewCss
                 LogDebug("ForceSpawnNextCustomer: Outside spawning hours.");
                 return false;
             }
-            if (_nextScheduledIndex >= _scheduledSpawnTimes.Count) 
+            if (!HasUnspawnedCustomers)
             {
                 LogDebug("ForceSpawnNextCustomer: No more scheduled customers.");
                 return false;
@@ -667,10 +696,12 @@ namespace NewCss
                  return false;
             }
 
-            // Mevcut zamanı göndererek spawnla
-            TryExecuteSpawn(GetCurrentTime());
-            LogDebug("ForceSpawnNextCustomer: Executed forced spawn.");
-            return true;
+            // Mevcut zamanı göndererek spawnla. Sonucu OLDUĞU GİBİ ilet — eskiden burası
+            // TryExecuteSpawn'ın sessiz başarısızlığını yutup koşulsuz true dönüyordu, yani
+            // telefon hiç müşteri gelmeden ödül+cooldown+zaman-atlaması ödeyebiliyordu.
+            bool spawned = TryExecuteSpawn(GetCurrentTime());
+            LogDebug($"ForceSpawnNextCustomer: spawned={spawned}");
+            return spawned;
         }
 
         private void SpawnCustomer(int queueIndex)
@@ -848,8 +879,54 @@ namespace NewCss
             UpdateRemainingCustomersClientRpc(_customersRemainingToday);
 
             AdvanceQueue();
+            CheckEarlyDayCompletion();
 
             LogDebug($"Customer left.  Remaining today: {_customersRemainingToday}");
+        }
+
+        /// <summary>
+        /// PlateUp erken gün-bitişi (2026-08-29, plan §C): günün kotası tükenip son müşteri de
+        /// çıktığında, kısa bir kapanış payının ardından günü sona sarar. Üç koşul BİRDEN
+        /// aranır (tekil sayaç desenkronize olsa bile güvenli): kalan kota <= 0, kuyruk boş,
+        /// henüz spawn olmamış müşteri yok. İkinci bir gün-bitiş yolu AÇMAZ — yalnızca
+        /// DayCycleManager._networkElapsedTime'ı doldurur, ProcessDayEnd()'in tek koşulunu
+        /// (elapsedTime >= CurrentDayDuration) doğal yoldan tetikler; kira/break room/gün sonu
+        /// ekranı/IsTimeUp exploit guard'ı değişmeden çalışmaya devam eder.
+        /// </summary>
+        private void CheckEarlyDayCompletion()
+        {
+            if (!IsServer) return;
+            if (_dayCompletionGraceStarted) return;
+            if (_customersRemainingToday > 0) return;
+            if (_customerQueue.Count > 0) return;
+            if (HasUnspawnedCustomers) return;
+
+            _dayCompletionGraceStarted = true;
+            _dayCompletionGraceRemaining = GetEconomySettings() != null
+                ? GetEconomySettings().dayEndGraceSeconds
+                : 30f;
+
+            LogDebug($"All customers served/exited — day will fast-forward to end after {_dayCompletionGraceRemaining}s grace period.");
+        }
+
+        /// <summary>
+        /// Kapanış payını Update() üzerinden işletir. BİLİNÇLİ olarak coroutine DEĞİL:
+        /// obje/komponent bir kare deaktif olursa Unity coroutine'i öldürür, ama
+        /// _dayCompletionGraceStarted bayrağı true takılı kalacağı için CheckEarlyDayCompletion
+        /// bir daha hiç denemez ve erken bitiş SESSİZCE ölürdü (aynı sınıf hata:
+        /// UnifiedSettingsManager._isLocalizationChanging, 2026-08-22). Bu dosyadaki
+        /// CheckEndOfDayCustomerExit de aynı Update+bayrak desenini kullanıyor.
+        /// </summary>
+        private void TickEarlyDayCompletionGrace()
+        {
+            if (!_dayCompletionGraceStarted || _dayFastForwarded) return;
+
+            _dayCompletionGraceRemaining -= Time.deltaTime;
+            if (_dayCompletionGraceRemaining > 0f) return;
+
+            _dayFastForwarded = true;
+            DayCycleManager.Instance?.FastForwardToEndOfDay();
+            LogDebug("Grace period over — fast-forwarding to end of day.");
         }
 
         private void AdvanceQueue()
@@ -1382,15 +1459,10 @@ namespace NewCss
         {
             Debug.Log(GetSpawningStatusInfo());
 
-            if (_scheduledSpawnTimes.Count > 0)
-            {
-                Debug.Log("\nScheduled spawn times:");
-                for (int i = 0; i < _scheduledSpawnTimes.Count; i++)
-                {
-                    string status = i < _nextScheduledIndex ? "[SPAWNED]" : "[PENDING]";
-                    Debug.Log($"  Customer {i + 1}: {_scheduledSpawnTimes[i]:F2} {status}");
-                }
-            }
+            float elapsed = DayCycleManager.Instance != null ? DayCycleManager.Instance.elapsedTime : 0f;
+            Debug.Log($"Next spawn allowed at elapsedTime={_nextSpawnAllowedElapsedTime:F1}s " +
+                      $"(current={elapsed:F1}s), HasUnspawnedCustomers={HasUnspawnedCustomers}, " +
+                      $"ArrivalIntervalBase={GetCustomerArrivalInterval():F1}s");
         }
 
         [ContextMenu("Force Spawn Next Customer")]
@@ -1403,11 +1475,7 @@ namespace NewCss
             {
                 SpawnCustomer(availableIndex);
                 _customersSpawnedToday++;
-
-                if (_nextScheduledIndex < _scheduledSpawnTimes.Count)
-                {
-                    _nextScheduledIndex++;
-                }
+                AdvanceNextSpawnThreshold();
             }
         }
 
@@ -1464,7 +1532,7 @@ namespace NewCss
             Debug.Log($"Spawned Today: {_customersSpawnedToday}");
             Debug.Log($"Remaining Today: {_customersRemainingToday}");
             Debug.Log($"Queue Size: {QueueSize}/{maxQueueSize}");
-            Debug.Log($"Next Scheduled Index: {_nextScheduledIndex}/{_scheduledSpawnTimes.Count}");
+            Debug.Log($"Has Unspawned Customers: {HasUnspawnedCustomers} (Next spawn threshold: {_nextSpawnAllowedElapsedTime:F1}s)");
             Debug.Log($"Is Within Spawning Hours: {IsWithinSpawningHours()}");
             Debug.Log($"Is Queue Full: {IsQueueFull}");
             Debug.Log($"Recent Product History: {string.Join(", ", _recentProductIndices)}");

@@ -167,14 +167,16 @@ public static class EconomyInvariantCheck
         if (phone == null) r.Failures.Add("Sahnede PhoneCallManager yok");
         else
         {
-            r.ExpectFloat("sahne PhoneCallManager.ringDuration",
-                          ReadPrivate<float>(phone, "ringDuration"), 15f);
+            // V4 (2026-08-29): ringDuration alanı kalktı (dışarı arama modeli, çalma yok).
+            // phoneStartHour/phoneEndHour hâlâ mesai penceresini sınırlıyor.
+            r.Expect("sahne PhoneCallManager.phoneStartHour", ReadPrivate<int>(phone, "phoneStartHour"), 8);
+            r.Expect("sahne PhoneCallManager.phoneEndHour", ReadPrivate<int>(phone, "phoneEndHour"), 18);
 
-            // SO bağlanmazsa §B.6'nın tamamı inert kalıyor (hard-coded fallback'ler devreye girer).
+            // SO bağlanmazsa §D'nin tamamı inert kalıyor (hard-coded fallback'ler devreye girer).
             var so = ReadPrivate<GameEconomySettings>(phone, "economySettings");
             if (so == null)
                 r.Failures.Add("sahne PhoneCallManager.economySettings BAĞLANMAMIŞ — " +
-                               "P-bazlı çalma şansı, callPrestigeReward ve event çarpanı devre dışı kalır");
+                               "P-bazlı timeSkipAmount, cooldown ve callPrestigeReward devre dışı kalır");
         }
 
         // --- Upgrade listesi (FAZ4 §B.7'de kısılan omurgalar + perk bayrakları) ---
@@ -258,12 +260,37 @@ public static class EconomyInvariantCheck
         r.ExpectFloat("rentGrowthMultiplier", eco.rentGrowthMultiplier, 1.20f);
         r.Expect("rentIntervalDays", eco.rentIntervalDays, 4);
 
+        // PlateUp geçişi §A/§B (2026-08-29, plans/plateup-musteri-telefon.md) — müşteri kotası
+        r.ExpectIntArray("dailyCustomerCountP1", eco.dailyCustomerCountP1,
+                          new[] { 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6 });
+        r.ExpectIntArray("dailyCustomerCountP2", eco.dailyCustomerCountP2,
+                          new[] { 7, 7, 7, 8, 8, 9, 9, 9, 10, 10, 10, 11, 11, 11, 12, 12 });
+        r.ExpectIntArray("dailyCustomerCountP3", eco.dailyCustomerCountP3,
+                          new[] { 8, 8, 8, 8, 9, 9, 9, 10, 10, 10, 11, 11, 12, 12, 12, 13 });
+        r.ExpectIntArray("dailyCustomerCountP4", eco.dailyCustomerCountP4,
+                          new[] { 8, 8, 8, 8, 9, 9, 9, 10, 10, 10, 11, 11, 12, 12, 12, 13 });
+        r.ExpectArray("customerArrivalIntervalByPlayerCount", eco.customerArrivalIntervalByPlayerCount,
+                      new[] { 44f, 22f, 21f, 21f });
+        r.ExpectFloat("dayEndGraceSeconds", eco.dayEndGraceSeconds, 30f);
+
+        r.Expect("GetDailyCustomerCount(1,1)", eco.GetDailyCustomerCount(1, 1), 4);
+        r.Expect("GetDailyCustomerCount(16,1)", eco.GetDailyCustomerCount(16, 1), 6);
+        r.Expect("GetDailyCustomerCount(16,4)", eco.GetDailyCustomerCount(16, 4), 13);
+        r.Expect("GetDailyCustomerCount(99,2) [clamp]", eco.GetDailyCustomerCount(99, 2), 12);
+        r.ExpectFloat("GetCustomerArrivalIntervalSeconds(1)", eco.GetCustomerArrivalIntervalSeconds(1), 44f);
+        r.ExpectFloat("GetCustomerArrivalIntervalSeconds(4)", eco.GetCustomerArrivalIntervalSeconds(4), 21f);
+
         // §B.5 tır
         r.ExpectIntArray("hangarStayDurationByPlayerCount", eco.hangarStayDurationByPlayerCount, new[] { 120, 60, 40, 30 });
         r.ExpectIntArray("truckCargoMinByPlayerCount", eco.truckCargoMinByPlayerCount, new[] { 1, 2, 2, 2 });
         r.ExpectIntArray("truckCargoMaxExclusiveByPlayerCount", eco.truckCargoMaxExclusiveByPlayerCount, new[] { 3, 4, 5, 6 });
         r.Expect("rewardPerBox", eco.rewardPerBox, 50);
         r.Expect("penaltyPerBox", eco.penaltyPerBox, 40);
+        r.ExpectIntArray("rewardPerBoxByPlayerCount", eco.rewardPerBoxByPlayerCount, new[] { 50, 55, 70, 88 });
+        r.Expect("GetRewardPerBox(1)", eco.GetRewardPerBox(1), 50);
+        r.Expect("GetRewardPerBox(2)", eco.GetRewardPerBox(2), 55);
+        r.Expect("GetRewardPerBox(3)", eco.GetRewardPerBox(3), 70);
+        r.Expect("GetRewardPerBox(4)", eco.GetRewardPerBox(4), 88);
 
         // §B.3 prestij
         r.ExpectFloat("prestigePerBonus", eco.prestigePerBonus, 8f);
@@ -274,13 +301,17 @@ public static class EconomyInvariantCheck
         r.ExpectFloat("boxDropPrestigePenalty", eco.boxDropPrestigePenalty, -0.04f);
         r.ExpectFloat("wrongDeliveryPrestigePenalty", eco.wrongDeliveryPrestigePenalty, -0.16f);
 
-        // §B.6 telefon
-        r.ExpectFloat("phoneRingChancePerHour (legacy fallback)", eco.phoneRingChancePerHour, 0.20f);
-        r.ExpectArray("phoneRingChanceByPlayerCount", eco.phoneRingChanceByPlayerCount,
-                      new[] { 0.20f, 0.25f, 0.30f, 0.35f });
-        r.ExpectFloat("phoneRingEventMultiplier", eco.phoneRingEventMultiplier, 2.0f);
+        // §D telefon V4 (PlateUp geçişi, 2026-08-29)
+        r.ExpectArray("timeSkipAmountByPlayerCount", eco.timeSkipAmountByPlayerCount,
+                      new[] { 115f, 59f, 55f, 55f });
+        r.ExpectFloat("phoneCooldownSeconds", eco.phoneCooldownSeconds, 20f);
         r.Expect("callMoneyReward", eco.callMoneyReward, 20);
         r.ExpectFloat("callPrestigeReward", eco.callPrestigeReward, 0.4f);
+        r.ExpectFloat("GetTimeSkipAmountMinutes(1)", eco.GetTimeSkipAmountMinutes(1), 115f);
+        r.ExpectFloat("GetTimeSkipAmountMinutes(4)", eco.GetTimeSkipAmountMinutes(4), 55f);
+
+        // §E gün-sonu cezası
+        r.ExpectFloat("customerMissedQuotaPrestigePenalty", eco.customerMissedQuotaPrestigePenalty, -0.2f);
 
         // Yardımcı metodlar gerçekten doğru okuyor mu (dizi ↔ metod tutarlılığı)
         r.Expect("GetBaseRent(1)", eco.GetBaseRent(1), 500);
@@ -288,7 +319,6 @@ public static class EconomyInvariantCheck
         r.Expect("GetBaseRent(9) [clamp]", eco.GetBaseRent(9), 1800);
         r.Expect("GetBaseRent(0) [clamp]", eco.GetBaseRent(0), 500);
         r.ExpectFloat("GetHangarStayDuration(1)", eco.GetHangarStayDuration(1), 120f);
-        r.ExpectFloat("GetPhoneRingChancePerHour(3)", eco.GetPhoneRingChancePerHour(3), 0.30f);
         r.Expect("GetTruckCargoRange(1)", eco.GetTruckCargoRange(1), (1, 3));
         r.Expect("GetTruckCargoRange(4)", eco.GetTruckCargoRange(4), (2, 6));
 
@@ -303,7 +333,7 @@ public static class EconomyInvariantCheck
         r.ExpectPristine("rentScaledMultiplier", eco.rentScaledMultiplier, 1f, "leveraged_rent");
         r.ExpectPristine("rewardVolatility", eco.rewardVolatility, 0f, "high_volatility");
         r.ExpectPristine("rewardVolatilityMean", eco.rewardVolatilityMean, 1f, "high_volatility");
-        r.ExpectPristine("phoneRingPerkBonus", eco.phoneRingPerkBonus, 0f, "phone_line");
+        r.ExpectPristine("phoneCooldownPerkBonusSeconds", eco.phoneCooldownPerkBonusSeconds, 0f, "phone_line");
     }
 
     // ── DifficultyManager prefab ──────────────────────────────────────────────

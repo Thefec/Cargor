@@ -247,10 +247,10 @@ namespace NewCss
             // SO varsa başlangıç ekonomi değerlerini yükle
             if (economySettings != null)
             {
-                rewardPerBox      = economySettings.rewardPerBox;
+                int currentPlayerCount = DifficultyManager.Instance != null ? DifficultyManager.Instance.PlayerCount : 1;
+                rewardPerBox      = economySettings.GetRewardPerBox(currentPlayerCount);
                 penaltyPerBox     = economySettings.penaltyPerBox;
-                hangarStayDuration= economySettings.GetHangarStayDuration(
-                    DifficultyManager.Instance != null ? DifficultyManager.Instance.PlayerCount : 1);
+                hangarStayDuration= economySettings.GetHangarStayDuration(currentPlayerCount);
                 prestigePerBonus  = economySettings.prestigePerBonus;
                 bonusPerTier      = economySettings.bonusPerTier;
             }

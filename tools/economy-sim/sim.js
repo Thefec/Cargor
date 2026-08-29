@@ -740,6 +740,273 @@ function runSim(playerCount, opts = {}) {
   };
 }
 
+// ============================================================================
+// PLATEUP MUSTERI/TELEFON MODELI (PROPOSED, 2026-08-29)
+// ============================================================================
+// plans/plateup-musteri-telefon.md -- economist turu (kod yazmadan onceki
+// on kosul, "Is 0"). ASAGIDAKI DEGERLER HENUZ KODA/ASSET'E YAZILMADI; bu
+// turun teslim edilecek onerisidir. Gameplay departmanina devredilmeden once
+// burada TEK NOKTADAN hesaplanip dogrulanir.
+//
+// TUReTIM MANTIGI:
+//  - Gun penceresi degismiyor: customerWindowSec(day) (spawnStartHour..spawnEndHour,
+//    canli 8-17, 9 oyun-saati) hala "musteri isinin sigmasi gereken butce".
+//  - SERI SERVIS TAVANI = min(istasyon-tavani, emek-tavani), FAZ2/FAZ1'de
+//    kod-dogrulanan ayni formul (bkz. customerThroughput). STRICT senaryo
+//    (emegin %60'i tira gidiyor) "kotumser ama gercekci" taban olarak alindi.
+//  - Kota = SAFETY(0.85) x STRICT tavan -- yani STRICT oyunda bile %85
+//    dolduruluyor, %15 tampon kaliyor (17:30 baskisi ancak STRICT'ten DAHA
+//    KOTU -- ör. Slow senaryo, event, dikkat dagatan playtest anlarinda -
+//    gercek hale gelir; "her gun kesin ceza" riski yaratmaz).
+//
+// DUZELTME (2026-08-29, koordinator geri bildirimi -- KANITLA DOGRULANDI):
+// "kota-para baglantisi yok" onceki notu HATALIYDI. Kod denetimi:
+//   - `CustomerAI.cs:1442-1444 PlaceProductOnDropOffTable` musterinin KENDISI
+//     `Instantiate(productPrefabs[...])` yapiyor -- ProductSupply modu (cs:77,83).
+//   - `PickUpScripts/ShelfState.cs`: SIFIR Instantiate -- raf sadece DEPOLUYOR,
+//     URETMIYOR.
+//   - `TableScripts/Shelf.cs` (NetworkedShelf) auto-respawn eden BOS kutular
+//     saglıyor (1sn respawn) ama bunlar `boxDropMoneyPenalty` notunun da
+//     dogruladigi gibi ICI BOS/degersiz -- degeri veren PRODUCT, tek kaynagi
+//     musteri. `productPrefabs`/`ProductSupply` grep'i TUM projede sadece 3
+//     dosyada geciyor (CustomerAI, CustomerManager, PostRentFeatureUnlocks) --
+//     bagimsiz bir "restock/warehouse" spawner YOK.
+//   - Zincir: musteri -> urun (Instantiate) -> oyuncu paketler -> tir ->
+//     `Truck.cs:643 AddMoney`. **SONUC: gunluk kota, gunluk kutu arzinin (=
+//     gelirin) GERCEK ust siniri -- truckThroughput() sadece bu arzi ISLEME
+//     HIZINI (emek/masa/hangar) modelliyor, arzin KENDISINI degil.**
+// Asagidaki tum model bu duzeltmeyle YENIDEN kuruldu: `plateUpBoxSupply` =
+// min(mekanik islem tavani, kota) ve `runSimPlateUp` bunu PARAYA baglıyor.
+//
+// KRITIK ON KOSUL DEGISTI: koordinator sahnedeki 2. istasyon bosluğunu
+// (`serviceTables[1]={fileID:0}`) DOGRULADI ve "2. masa eklenmesi garanti
+// degil" dedi -- bu yuzden 1-ISTASYON artik FALLBACK degil, ANA SENARYO.
+// `stations` parametresi asagida SRC.serviceStations (=1, canli) default'u
+// kullanir. P3/P4 icin bu, "istasyon-slotu" P-BAGIMSIZ SABIT bir urun-arzi
+// tavanina carpar (~8-13/gun, P2 ile hemen hemen AYNI) -- yani P3/P4 REVENUE
+// artik P2'den (hemen hemen) FAZLA BUYUYEMEZ sadece musteri sayisiyla. Rent
+// ise P ile 3.6x'e kadar buyudugunden (baseRent 500->1800), bu YAPISAL bir
+// acik yaratir (bkz asagida REWARD_PER_BOX_BY_PLAYER lever'i).
+const PLATEUP = {
+  SAFETY: 0.85,
+  // Davranissal tampon: SAFETY'nin tersi (1/0.85=1.176) -- kota zaten STRICT
+  // tavanin %85'i, yani "tam SAFETY'de oyna" senaryosunda bile gelir ihtiyaci
+  // bunun uzerine +%17.6 pay ister (STRICT'ten DAHA KOTU performans icin).
+  behavioralMargin: 1 / 0.85,
+  callCooldownRealSeconds: 20,     // P-bagimsiz; anti spam-click, ana kilit
+                                    // maxQueueSize=2 + istasyon dolulugu zaten
+  callMoneyReward: 20,             // DEGISMEDI (asset:34) -- artik "bedava"
+                                    // degil: zaman atlama + kuyruk doldurma
+                                    // maliyeti var (bkz rapor §6).
+  callPrestigeReward: 0.4,         // DEGISMEDI (asset:35)
+  dayEndGraceSeconds: 30,          // plan onerisi -- ekonomik etkisi asagida olculdu
+  missedQuotaPrestigePenalty: -0.2, // YENI SABIT. customerLostPrestigePenalty'nin
+                                     // (-0.4) YARISI; SADECE "hic spawn olmadan
+                                     // gun sonunda kalan kota" icin. Sabri
+                                     // dolan/kuyrukta kaybedilen musteri ESKI
+                                     // -0.4'u alir (degismedi, cifte ceza yok).
+  // YENI LEVER (bu turun secimi -- bkz asagidaki gerekce): rewardPerBox artik
+  // P-bazli. baseRentByPlayerCount deseniyle AYNI (int[4] dizi, index=P-1).
+  // Secim gerekcesi: (a) rentGrowthMultiplier 2026-08-20'de 1.35->1.20'ye
+  // KONTROL-onayli dusuruldu, P1/P2 zaten dengede -- global buyume oranini
+  // tekrar oynatmak o turu bozar VE P3/4'un asil sorununu (rent P ile 3.6x
+  // buyuyor ama urun-arzi P3'ten sonra DUZLESIYOR) cozmez. (b) kotayi P3/4
+  // icin daha da buyutmek MEKANIK OLARAK IMKANSIZ -- 1-istasyon tavanina
+  // zaten carpiyorlar. (c) prestij-tier bonusu (`prestigePerBonus`/
+  // `bonusPerTier`) organik yardimci ama ERKEN GUNLERDE (dusuk prestij)
+  // yetersiz kaliyor (asagida runSimPlateUp ile olculdu) ve P'ye gore
+  // FARKLILASTIRILAMIYOR (tek global deger). => rewardPerBoxByPlayerCount
+  // rent'in P ile buyudugu ORANI DOGRUDAN telafi eden TEK surgical lever.
+  rewardPerBoxByPlayerCount: [50, 55, 70, 88],
+};
+
+/** Seri servis tavani (musteri/gun) -- customerThroughput'un ceza/spawn
+ *  ayrimi olmadan salt "mekanik ustsinir" hali. stations verilmezse CANLI
+ *  sahne degeri (SRC.serviceStations=1) kullanilir -- artik ANA senaryo. */
+function plateUpCeiling(day, playerCount, scenario, mode, stations = SRC.serviceStations) {
+  const w = customerWindowSec(day);
+  const slots = (w / ASSUMED.serviceCycleSeconds[scenario]) * stations;
+  const playersOnCust = mode === 'optimistic'
+    ? playerCount
+    : playerCount * (1 - ASSUMED.laborShareTruck);
+  const laborCap = (playersOnCust * w) / ASSUMED.serviceLaborSeconds[scenario];
+  return Math.min(slots, laborCap);
+}
+
+/** Onerilen gunluk kota (dailyCustomerCountByDay'in P-bazli hali). Normal
+ *  senaryo + STRICT emek varsayimi + CANLI istasyon sayisi (1) ile SAFETY
+ *  carpani. P3/P4 bu yuzden P2'ye COK YAKIN cikiyor (istasyon-slotu P3'ten
+ *  itibaren baglayici, labor degil) -- bu bir yuvarlama hatasi DEGIL, gercek
+ *  mekanik doygunluk. Diger senaryolarda (Slow, event, dusuk performans) bu
+ *  SABIT kotanin altinda kalinmasi BEKLENIR VE ISTENIR (bkz plateUpDayOutcome). */
+function plateUpQuota(day, playerCount, stations = SRC.serviceStations) {
+  const c = plateUpCeiling(day, playerCount, 'Normal', 'strict', stations);
+  return Math.max(3, Math.round(PLATEUP.SAFETY * c));
+}
+
+/** P-bazli varis araligi (customerArrivalInterval, saniye). 1-istasyon
+ *  gercekliginde P3/4 icin "labor her zaman baglayici" kapali-formu ARTIK
+ *  GECERSIZ (istasyon-slotu daha erken baglar) -- bu yuzden ampirik olarak
+ *  pencere(day)/kota(day,P) oranindan, GUNLER ARASI ORTALAMA alinarak
+ *  turetildi (oran gunden gune ~±10% oynuyor, tek sabit deger icin yeterince
+ *  stabil -- dogrulama: sim.js CLI 13b). */
+function plateUpArrivalInterval(playerCount, stations = SRC.serviceStations) {
+  let sum = 0;
+  for (let d = 1; d <= 16; d++) sum += customerWindowSec(d) / plateUpQuota(d, playerCount, stations);
+  return sum / 16;
+}
+
+/** Telefonun tek basina atladigi oyun-DAKIKASI miktari (timeSkipAmount).
+ *  Tasarim kurali: telefon dogal "bir sonraki musteri" bekleyisini YERINE
+ *  GECIRIR, ONUNE GECMEZ -- yani atlanan sure DOGAL ARALIGIN oyun-dakikasi
+ *  karsiligina esitlenir (ne bedava sure yaratir ne de cezalandirir).
+ *  referenceDay=8 (orta-oyun) donusum orani kullanilir. */
+function plateUpTimeSkipMinutes(playerCount, referenceDay = 8, stations = SRC.serviceStations) {
+  const intervalSec = plateUpArrivalInterval(playerCount, stations);
+  const secPerGameMinute = secPerGameHour(referenceDay) / 60;
+  return intervalSec / secPerGameMinute;
+}
+
+/** Bir gunun musteri akisi: SABIT kota (Normal+strict+CANLI istasyon sayisiyla
+ *  belirlenmis) verilen scenario/mode altinda ne kadari servis edilebiliyor?
+ *  missedQuota = ne sabri dolan (queue'da) ne de spawn'a hic sira gelmeyen --
+ *  ikisi de gun sonunda TEK ceza kalemi (missedQuotaPrestigePenalty) alir;
+ *  gercek oyunda "sabri dolan" ayrimi CustomerAI tarafinda ayrica -0.4 ile
+ *  ele alinacagi icin bu fonksiyon UST SINIR/OZET amaclidir, cifte saymaz. */
+function plateUpDayOutcome(day, playerCount, scenario, mode, stations = SRC.serviceStations) {
+  const quota = plateUpQuota(day, playerCount, stations);
+  const ceilingActual = plateUpCeiling(day, playerCount, scenario, mode, stations);
+  const served = Math.min(quota, ceilingActual);
+  const missedQuota = Math.max(0, quota - served);
+  const prestigeDelta = served * SRC.customerServedPrestigeBonus
+                       + missedQuota * PLATEUP.missedQuotaPrestigePenalty;
+  return { quota, ceilingActual: +ceilingActual.toFixed(2), served: +served.toFixed(2), missedQuota: +missedQuota.toFixed(2), prestigeDelta: +prestigeDelta.toFixed(2) };
+}
+
+/** GUNLUK KUTU ARZI = min(mekanik islem tavani (truckThroughput -- emek/masa/
+ *  hangar), SERVIS EDILEN musteri sayisi (=urun kaynagi)). Ikinci terim bu
+ *  turun eklentisi -- musteri artik gercek bir ARZ TAVANI (bkz dosya basi not). */
+function plateUpBoxSupply(day, playerCount, boxesPerMin, scenario, mode, numHangars, laborShare, packingTables, stations = SRC.serviceStations) {
+  const tt = truckThroughput(playerCount, boxesPerMin, day, numHangars, mode, laborShare, packingTables);
+  const o = plateUpDayOutcome(day, playerCount, scenario, mode, stations);
+  return { boxSupply: Math.min(tt.boxesPerDay, o.served), tt, outcome: o };
+}
+
+/** runSim'in PlateUp-baglantili varyanti: PARA artik SADECE truckThroughput
+ *  DEGIL, min(truckThroughput, servis-edilen-musteri) ile sinirli. Prestij de
+ *  eski customerDemand/customerThroughput yerine plateUpDayOutcome kullanir.
+ *  Geri kalan HER SEY (kira, grace, quest, telefon, hata oranlari) runSim ile
+ *  BIREBIR AYNI -- karsilastirilabilir olsun diye. */
+function runSimPlateUp(playerCount, opts = {}) {
+  const {
+    scenario = 'Normal', mode = 'optimistic', numHangars = SRC.hangarsAtLevel0,
+    questsEnabled = true, questTier = SRC.questTierStart, phoneEnabled = true,
+    packingTables = SRC.packingTablesAtLevel0, stations = SRC.serviceStations,
+    rewardPerBoxByPlayerCount = PLATEUP.rewardPerBoxByPlayerCount,
+    label = '',
+  } = opts;
+
+  const boxesPerMin = ASSUMED.boxesPerMinPerPlayer[scenario];
+  const laborShare = ASSUMED.laborShareTruck;
+  const baseRent = SRC.baseRentByPlayerCount[playerCount - 1];
+  const rewardPerBoxBase = rewardPerBoxByPlayerCount[playerCount - 1];
+
+  let cash = Math.round(SRC.baseStartingMoney * Math.pow(SRC.moneyMultiplierPerPlayer, playerCount - 1));
+  let prestige = SRC.startingPrestige;
+  let rentCycle = 0, graceUsed = false;
+  let bankrupt = false, bankruptDay = null;
+  let prestigeCapDay = null;
+  let questSettlePending = null;
+  const rows = [];
+
+  for (let day = 1; day <= SRC.maxDays; day++) {
+    let questSettledMoney = 0, questSettledPrestige = 0;
+    if (questSettlePending) {
+      questSettledMoney = questSettlePending.money;
+      questSettledPrestige = questSettlePending.prestige;
+      questSettlePending = null;
+    }
+
+    const bs = plateUpBoxSupply(day, playerCount, boxesPerMin, scenario, mode, numHangars, laborShare, packingTables, stations);
+    const ph = phoneEnabled ? phoneIncome(mode) : { rings: 0, answers: 0, money: 0, prestige: 0 };
+
+    const boxesToTruck = bs.boxSupply;
+    const wrongRate = ASSUMED.wrongDeliveryRate[scenario];
+    const dropRate = ASSUMED.physicalDropRate[scenario];
+    const wrongBoxes = boxesToTruck * wrongRate;
+    const correctBoxes = boxesToTruck - wrongBoxes;
+    const droppedBoxes = boxesToTruck * dropRate;
+
+    const prestigeTier = Math.floor(prestige / SRC.prestigePerBonus);
+    const rewardActual = rewardPerBoxBase + prestigeTier * SRC.bonusPerTier;
+
+    const truckRevenue = correctBoxes * rewardActual;
+    const wrongCost = wrongBoxes * SRC.penaltyPerBox;
+    const dropCost = droppedBoxes * SRC.boxDropMoneyPenalty;
+
+    let questDecision = { accepted: false, money: 0, prestige: 0, pick: null };
+    if (questsEnabled) {
+      const capacity = {
+        trucks: bs.tt.fullTrucksPerDay,
+        shelfPlacements: bs.tt.productionCapPerDay,
+        packedBoxes: bs.tt.productionCapPerDay,
+        phoneAnswers: ph.answers,
+      };
+      questDecision = questDailyDecision(questTier, capacity, mode);
+      if (questDecision.accepted) questSettlePending = { money: questDecision.money, prestige: questDecision.prestige };
+    }
+
+    const grossIncome = truckRevenue + ph.money + questSettledMoney;
+    const grossCost = wrongCost + dropCost;
+    const netEarnings = grossIncome - grossCost;
+    let cashBeforeRent = Math.max(0, cash + netEarnings);
+
+    prestige += bs.outcome.served * SRC.customerServedPrestigeBonus;
+    prestige += bs.outcome.missedQuota * PLATEUP.missedQuotaPrestigePenalty;
+    prestige += wrongBoxes * SRC.wrongDeliveryPrestigePenalty;
+    prestige += droppedBoxes * SRC.boxDropPrestigePenalty;
+    prestige += ph.prestige;
+    prestige += questSettledPrestige;
+    if (prestige >= SRC.maxPrestige && prestigeCapDay === null) prestigeCapDay = day;
+    prestige = Math.max(0, Math.min(SRC.maxPrestige, prestige));
+
+    let rentAmount = 0, rentPaid = 0, event = '';
+    const isRentDay = day % SRC.rentIntervalDays === 0;
+    if (isRentDay) {
+      rentAmount = Math.round(baseRent * Math.pow(SRC.rentGrowthMultiplier, rentCycle) * SRC.rentScaledMultiplier);
+      if (cashBeforeRent >= rentAmount) {
+        rentPaid = rentAmount; cash = cashBeforeRent - rentPaid; rentCycle++;
+      } else if (!graceUsed) {
+        rentPaid = Math.round(cashBeforeRent * SRC.gracePaymentPercent);
+        cash = cashBeforeRent - rentPaid; graceUsed = true; rentCycle++; event = 'GRACE';
+      } else {
+        bankrupt = true; bankruptDay = day; event = 'IFLAS'; cash = cashBeforeRent;
+      }
+    } else {
+      cash = cashBeforeRent;
+    }
+
+    rows.push({
+      gun: day, kota: bs.outcome.quota, servisEdilen: +bs.outcome.served.toFixed(1),
+      kutuArzi: +boxesToTruck.toFixed(1), mekanikTavan: +bs.tt.boxesPerDay.toFixed(1),
+      odulKutu: rewardActual, tirGeliri: Math.round(truckRevenue), telefon: Math.round(ph.money),
+      questYatan: Math.round(questSettledMoney), cezalar: -Math.round(grossCost),
+      netGelir: Math.round(netEarnings), prestij: +prestige.toFixed(2),
+      kira: rentAmount, kasa: Math.round(cash), olay: event,
+    });
+
+    if (bankrupt) break;
+    if (prestige <= 0) { bankrupt = true; bankruptDay = day; break; }
+  }
+
+  const cumNet = rows.reduce((a, r) => a + r.netGelir, 0);
+  return {
+    playerCount, label, scenario, mode, bankrupt, bankruptDay, prestigeCapDay, rows,
+    finalCash: rows[rows.length - 1]?.kasa, finalPrestige: rows[rows.length - 1]?.prestij,
+    cumulativeNet: cumNet, avgDailyNet: +(cumNet / rows.length).toFixed(1),
+  };
+}
+
 module.exports = {
   SRC, ASSUMED, QUEST_ASSETS, CARGO_VALUES, CARGO_AVG,
   OVERHEAD_CODE, OVERHEAD_TOTAL,
@@ -749,6 +1016,9 @@ module.exports = {
   PHONE_ROLLS_PER_DAY,
   // v3.1 masa cekismesi
   tableContentionEfficiency, packingTablesForLevel,
+  // PlateUp modeli (PROPOSED, 2026-08-29, kota-para BAGLANTILI v2)
+  PLATEUP, plateUpCeiling, plateUpQuota, plateUpArrivalInterval,
+  plateUpTimeSkipMinutes, plateUpDayOutcome, plateUpBoxSupply, runSimPlateUp,
 };
 
 // ============================================================================
@@ -957,4 +1227,107 @@ if (require.main === module) {
     { deger: 'gun uzunlugu (gun1 / gun16)', canli: `${dayDurationSec(1)} / ${dayDurationSec(16)} sn`, kaynak: 'unity:15995-15996' },
     { deger: 'oyun-saati basina gercek sure (gun1/16)', canli: `${secPerGameHour(1).toFixed(1)} / ${secPerGameHour(16).toFixed(1)} sn`, kaynak: 'turev' },
   ]);
+
+  console.log(B('13) PLATEUP MODELI v2 (KOTA-PARA BAGLANTILI) -- dailyCustomerCountByDay + aralik + telefon + gelir'));
+  console.log('DUZELTME (koordinator geri bildirimi, dogrulandi): musteri tek urun kaynagi ' +
+              '(CustomerAI.cs:1442-1444 Instantiate, ShelfState.cs 0 Instantiate) -- kota = gunluk kutu/gelir tavani.');
+  console.log('ANA SENARYO ARTIK 1 ISTASYON (SRC.serviceStations=1, sahne dogrulandi -- 2. masa GARANTI DEGIL).');
+
+  console.log('13a) P-bazli KOTA egrisi (dailyCustomerCountByDay), CANLI 1-istasyon ile:');
+  const quotaRows = [];
+  for (let d = 1; d <= 16; d++) {
+    const row = { gun: d, pencereSn: +customerWindowSec(d).toFixed(1) };
+    for (const p of [1, 2, 3, 4]) row[`P${p}`] = plateUpQuota(d, p);
+    quotaRows.push(row);
+  }
+  console.table(quotaRows);
+  console.log('Not: P3/P4 P2ye COK YAKIN -- 1 istasyonda urun-arzi P3ten itibaren istasyon-slotuyla ' +
+              'doyuyor (labor degil). Bu YUVARLAMA HATASI DEGIL, gercek mekanik doygunluk.');
+
+  console.log('13b) Aralik / timeSkip (1-istasyon, ana senaryo):');
+  console.table([1, 2, 3, 4].map(p => ({
+    P: p,
+    customerArrivalInterval_sn: +plateUpArrivalInterval(p).toFixed(1),
+    timeSkipAmount_dk: +plateUpTimeSkipMinutes(p).toFixed(1),
+    gun16_kota: plateUpQuota(16, p),
+    gun16_tavan_strict: +plateUpCeiling(16, p, 'Normal', 'strict').toFixed(1),
+  })));
+
+  console.log('13c) GEREKLI rewardPerBox (P-bazli) -- kira/kota oranindan geriye turetildi ' +
+              '(behavioralMargin=1.176, hata orani Normal wrongDelivery+drop=%17 dusulmus):');
+  {
+    const windows = { 0: [1, 4], 1: [5, 8], 2: [9, 12], 3: [13, 16] };
+    const errorFactor = 1 - ASSUMED.wrongDeliveryRate.Normal - ASSUMED.physicalDropRate.Normal; // 0.83
+    const reqRows = [];
+    for (const p of [1, 2, 3, 4]) {
+      for (const [cyc, [d0, d1]] of Object.entries(windows)) {
+        let sumQ = 0, n = 0;
+        for (let d = d0; d <= d1; d++) { sumQ += plateUpQuota(d, p); n++; }
+        const avgQ = sumQ / n;
+        const rent = Math.round(SRC.baseRentByPlayerCount[p - 1] * Math.pow(SRC.rentGrowthMultiplier, +cyc));
+        const dailyRentReq = rent / SRC.rentIntervalDays;
+        const reqDailyRevenue = dailyRentReq * PLATEUP.behavioralMargin;
+        const reqRewardPerBox = reqDailyRevenue / (avgQ * errorFactor);
+        reqRows.push({ P: p, dongu: +cyc, gunler: `${d0}-${d1}`, avgKota: +avgQ.toFixed(1), kira: rent, gerekliRewardPerBox: +reqRewardPerBox.toFixed(1) });
+      }
+    }
+    console.table(reqRows);
+    console.log('SECILEN rewardPerBoxByPlayerCount:', PLATEUP.rewardPerBoxByPlayerCount, '(en kotu-dongu ihtiyacini karsilayacak sekilde yuvarlandi)');
+  }
+
+  console.log(B('14) runSimPlateUp -- TAM PARA+PRESTIJ DOGRULAMASI (kota gelire baglı, 1-istasyon, flat rewardPerBox=50 KIYASLAMA)'));
+  {
+    const rows = [];
+    for (const scenario of ['Normal', 'Slow']) {
+      for (const mode of ['strict', 'optimistic']) {
+        for (const p of [1, 2, 3, 4]) {
+          const flat = runSimPlateUp(p, { scenario, mode, rewardPerBoxByPlayerCount: [50, 50, 50, 50] });
+          rows.push({
+            senaryo: scenario, bant: mode, P: p, rewardModel: 'flat50',
+            iflas: flat.bankrupt ? `GUN ${flat.bankruptDay}` : 'yok',
+            sonKasa: flat.finalCash, sonPrestij: flat.finalPrestige,
+            kumulatifNet16: Math.round(flat.cumulativeNet),
+          });
+        }
+      }
+    }
+    console.table(rows);
+    console.log('^ flat rewardPerBox=50 (canli deger) ile P3/P4 iflas riskini gosterir -- rent P ile 3.6x buyurken ' +
+                'urun-arzi (kota) P3ten sonra DUZLESIYOR (13a notu).');
+  }
+
+  console.log(B('15) runSimPlateUp -- rewardPerBoxByPlayerCount [50,55,70,88] ile DUZELTILMIS'));
+  {
+    const rows = [];
+    for (const scenario of ['Normal', 'Slow']) {
+      for (const mode of ['strict', 'optimistic']) {
+        for (const p of [1, 2, 3, 4]) {
+          const s = runSimPlateUp(p, { scenario, mode });
+          rows.push({
+            senaryo: scenario, bant: mode, P: p,
+            iflas: s.bankrupt ? `GUN ${s.bankruptDay}` : 'yok',
+            sonKasa: s.finalCash, sonPrestij: s.finalPrestige,
+            kumulatifNet16: Math.round(s.cumulativeNet),
+            prestijTavanGunu: s.prestigeCapDay ?? '-',
+          });
+        }
+      }
+    }
+    console.table(rows);
+  }
+
+  console.log(B('16) runSimPlateUp -- 4P/Slow/strict GUN GUN DETAY (en kotu senaryo, duzeltilmis reward ile)'));
+  console.table(runSimPlateUp(4, { scenario: 'Slow', mode: 'strict' }).rows);
+
+  console.log(B('17) rentGrowthMultiplier=1.20 REGRESYON KONTROLU (2026-08-20 karari BOZULMADI mi?)'));
+  {
+    const rows = [];
+    for (const p of [1, 2, 3, 4]) {
+      const s = runSimPlateUp(p, { scenario: 'Normal', mode: 'strict' });
+      rows.push({ P: p, senaryo: 'Normal-strict', iflas: s.bankrupt ? `GUN ${s.bankruptDay}` : 'yok', sonKasa: s.finalCash });
+    }
+    console.table(rows);
+    console.log('Not: rentGrowthMultiplier bu turda DEGISTIRILMEDI (hala 1.20) -- P1/P2in 2026-08-20da ' +
+                'onaylanan sagliginin YENI kota-para baglantisi ALTINDA da korundugunu dogrular.');
+  }
 }
