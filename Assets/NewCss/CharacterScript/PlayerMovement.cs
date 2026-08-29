@@ -195,7 +195,12 @@ namespace NewCss
         {
             // GEÇİCİ TEŞHİS — kök neden bulunur bulunmaz SİL (bkz. MovementDiagnostics yorumu).
             // IsOwner kontrolünden ÖNCE: "hiç log yok" da bir bilgi (Update hiç koşmuyor demek).
+            // #if UNITY_EDITOR ZORUNLU: MovementDiagnostics/LogMovementDiagnostics tanımları da
+            // aynı guard altında (satır ~709) — guard'sız bırakılırsa Player Build'de (UNITY_EDITOR
+            // tanımsız) derleme kırılır, Editor'de fark edilmez çünkü orada her zaman tanımlı.
+#if UNITY_EDITOR
             if (MovementDiagnostics) LogMovementDiagnostics();
+#endif
 
             if (!IsOwner) return;
 
@@ -401,8 +406,13 @@ namespace NewCss
                 RotateTowardsDirection(direction);
                 // Move()'un dönüşü normalde atılıyor; teşhis için saklanıyor. Her yönde "Sides" dönüp
                 // pozisyon değişmiyorsa oyuncu geometriye/başka bir kapsüle SIKIŞMIŞ demektir —
-                // "girdi ölü" ile "fiziksel engel" ayrımını yapan tek ölçüm bu.
-                _lastMoveFlags = _controller.Move(direction * targetSpeed * Time.deltaTime);
+                // "girdi ölü" ile "fiziksel engel" ayrımını yapan tek ölçüm bu. Move() çağrısının
+                // kendisi HER ZAMAN çalışmalı (gerçek hareket budur) — sadece _lastMoveFlags'e
+                // saklama kısmı Editor-only (_lastMoveFlags tanımı #if UNITY_EDITOR altında, satır ~709).
+                var moveFlags = _controller.Move(direction * targetSpeed * Time.deltaTime);
+#if UNITY_EDITOR
+                _lastMoveFlags = moveFlags;
+#endif
             }
 
             ApplyGravity();
