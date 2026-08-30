@@ -5,6 +5,9 @@
 
 ---
 
+## 2026-08-31
+- **🔀 `feature/plateup-day-cycle` (PlateUp gün döngüsü + 11-round ekonomi dengeleme) `main`'E MERGE EDİLDİ, dal silindi.** Kullanıcı Steam'e test build'i yükleyecek dedi. Merge öncesi 2 ayrı commit daha atıldı: sahne senkronu (`e669e33` — eski V3 telefon "çalma" ses kaynağı kaldırıldı, `phone_line` perk metni V4'e güncellendi, ölü V3 kota alanları temizlendi; incelendi, tamamı bu oturumun işiyle tutarlı, zararsız). Merge **fast-forward, konfliktsiz**. Merge sonrası main'de tekrar doğrulandı: 79/79 EditMode, 200/200 ekonomi invariant, 0 CS. **PUSH YAPILMADI** (kullanıcı istemedi/sormadım, yerel merge yeterliydi — Steam build'i yerelden alınacak). Font/RP-asset/ProjectSettings dosyaları hâlâ "M" görünüyor ama içerik farkı SIFIR (yalnız CRLF/LF flag'i) — zararsız, dokunulmadı.
+
 ## 2026-08-30
 - **📊 TAM KAPSAMLI EKONOMİ DENGELEME — 10/10 round BİTTİ, analiz aşaması KAPANDI. Kod'a hiç uygulanmadı, commit YOK.** Dal `feature/plateup-day-cycle`. Nihai liste: `.claude/agent-memory/economist/economy_full_balance_round10_2026-08-30.md` (**12 UYGULA / 11 UYGULAMA**, hepsi dosya:satır + eski→yeni + gerekçeli). Takip/uygulama planı: `plans/economy-full-balance-2026-08-30.md` alt bölümü **"## SIRADAKİ"** (satır ~576) — 5 adımlı uygulama sırası (değerler→telefon kodu→quest→perk→temizlik) + `EconomyInvariantCheck.cs` güncellenecek satır listesi + playtest gözlem listesi orada.
   **🔴 KULLANICIYA SORULACAK TEK AÇIK KARAR:** `baseRentByPlayerCount` için `{290,650,1140,1630}` (ekonomistin önerisi, Slow/strict marjı 304-612 ama Normal/strict P1 kasası +%115 şişiyor) mi, `{350,730,1190,1650}` (minimum-uygulanabilir, marj 162-197 cliff kenarı, şişme +%82) mi. Bu cevaplanmadan Adım 2 (gameplay uygulama turu) başlamamalı.
