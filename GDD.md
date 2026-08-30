@@ -8,30 +8,46 @@
 > **Oyuncu Sayısı**: 1–4 (Online Co-op)
 > **Motor Sürümü**: Unity 6000.5.6f1 (URP)
 > **Durum**: Geliştirme Aşamasında
-> **Son Güncelleme**: 30 Ağustos 2026 — PlateUp kota + Telefon V4 senkronu (ekonomi Round 9)
+> **Son Güncelleme**: 30 Ağustos 2026 — Ekonomi dengeleme UYGULAMA turu senkronu (Round 10 + Round 11 koda işlendi, commit `bb98ad1`)
 
 ---
 
 > [!IMPORTANT]
 > **Ekonomi bölümleri (§2.2, §3, §4, §5, §6, §7, §8, §9, §10, §13, §14, §15, §16, §19, §31)
 > 30 Ağustos 2026'da koda karşı satır satır yeniden doğrulandı** ("Tam Kapsamlı Ekonomi Dengeleme"
-> turu, Round 9). Referans: `plans/economy-full-balance-2026-08-30.md` ve
+> turu, Round 9 = okuma senkronu, **Round 12 = uygulama-sonrası senkron**). Referans:
+> `plans/economy-full-balance-2026-08-30.md` ve
 > `.claude/agent-memory/economist/economy_full_balance_round*.md`.
 >
-> Bu bölümlerdeki sayılar `Assets/Editor/EconomyInvariantCheck.cs` tarafından **77 `Expect*`
-> iddiasıyla** (dizi kontrolleri tek iddiada birden çok değeri kapsar) denetleniyor — menü
+> Bu bölümlerdeki sayılar `Assets/Editor/EconomyInvariantCheck.cs` tarafından **79 `Expect*`
+> çağrı yeriyle** denetleniyor (dizi kontrolleri tek iddiada birden çok değeri kapsar; 30 quest
+> asset'i döngüde denetlendiği için çalışma anında ~196 kontrol raporlanır) — menü
 > `Cargor / Ekonomi Değerlerini Doğrula`. **Bir değeri değiştirirsen orayı da güncelle**, yoksa
 > denetçi kırmızı yanar.
 >
 > **§7 (eski kutu kotası) kaldırıldı, yerine PlateUp müşteri kotası geldi** — artık bir
 > kaybetme koşulu DEĞİL, günlük müşteri arzı tablosu (bkz. §7).
 
-> [!CAUTION]
-> **Bu belge şu anki CANLI kodu anlatır.** 2026-08-30 dengeleme turunda önerilen ama **henüz
-> uygulanmamış** değerler (kira `{290,650,1140,1630}`, `timeSkipAmountByPlayerCount={115,49,47,47}`,
-> quest prestij ×0.4, `DAILY_QUEST_COUNT=3+tier`) bilinçli olarak **buraya yazılmadı** —
-> uygulama turu (Round 10) sonrası bu belge tekrar senkronlanmalı. Öneri listesi:
-> `plans/economy-full-balance-2026-08-30.md` → "Biriken, henüz KOD'A UYGULANMAMIŞ öneriler".
+> [!IMPORTANT]
+> **Bu belge şu anki CANLI kodu anlatır ve 11 round'luk dengeleme turunun UYGULANMIŞ hâlini
+> yansıtır** (commit `bb98ad1`, 2026-08-30, `kontrol` ONAY). Round 10'un **12 UYGULA** maddesi
+> (kira `{290,650,1140,1630}` · `timeSkipAmountByPlayerCount={115,49,47,47}` ·
+> `phoneTimeSkipPerkMultiplier` · CUSTOMER SUPPORT'un zaman-maliyetine taşınması · quest prestij
+> ×0.4 · telefon quest hedefleri · Görev Kademesi fiyat muafiyeti · `cheap_rent` düzeltmesi ·
+> `wrongProductPrestigePenalty=-0.20` · tip-6 D2 muafiyeti) ve Round 11'in **quest best-of-K
+> teklif seçimi** + ceza dengelemesi koda işlendi.
+>
+> Round 10'un **11 UYGULAMA (ölçümle REDDEDİLEN)** önerisi bilinçli olarak uygulanMADI ve bu
+> belgede de bir "gelecek plan" gibi yazılmadı: `prestigePerBonus` 8→10, `callMoneyReward`
+> değişikliği, `callPrestigeReward` düşürme, `phoneCooldownSeconds` değişikliği, `SkipTime`'ın
+> `CurrentDayDuration`'a çevrilmesi, 2. servis istasyonu, FESTIVAL DAY taban değişikliği, event
+> pozitif/negatif asimetrisi, gün-16 quest settlement "exploit"i, kazanma koşuluna prestij kapısı,
+> `long_queue` "stale baseline" iddiası. Gerekçeleri:
+> `.claude/agent-memory/economist/economy_full_balance_round10_2026-08-30.md` §4.
+>
+> Round 11'in tek uygulanmayan kalemi yok; U6 (`DailyQuestTargetCount = 3 + tier`) uygulandıktan
+> sonra **oyunda no-op olduğu ölçülüp geri alındı** (UI 3 slotta kırpıyor) — yerine best-of-K
+> geldi (bkz. §16.1).
 
 ---
 
@@ -295,14 +311,15 @@ Yeni gün başladığında tetiklenen merkezi event. Aşağıdaki sistemler bu e
 
 Tüm ekonomik değerler tek bir `GameEconomySettings` ScriptableObject'ten yönetilir:
 
-> **Doğrulama**: bu tablonun tamamı `Assets/Editor/EconomyInvariantCheck.cs` tarafından (165 kontrol)
-> koda karşı denetleniyor. Menü: `Cargor / Ekonomi Değerlerini Doğrula`. Değer değiştirirsen orayı da güncelle.
+> **Doğrulama**: bu tablonun tamamı `Assets/Editor/EconomyInvariantCheck.cs` tarafından
+> (79 `Expect*` çağrı yeri, çalışma anında ~196 kontrol) koda karşı denetleniyor. Menü:
+> `Cargor / Ekonomi Değerlerini Doğrula`. Değer değiştirirsen orayı da güncelle.
 
 ```
 📊 GameEconomySettings (EkonomiAyarlari)
 │
 ├── 💸 KİRA AYARLARI
-│   ├── baseRentByPlayerCount: [500, 1000, 1450, 1800]
+│   ├── baseRentByPlayerCount: [290, 650, 1140, 1630]   ← Round 10 U1 (2026-08-30) ile düşürüldü
 │   ├── rentGrowthMultiplier: 1.20 (%20 artış/dönem)
 │   ├── rentScaledMultiplier: 1.0 (varsayılan; leveraged_rent perki 0.75 yapar)
 │   ├── rentIntervalDays: 4 (her 4 günde bir kira)
@@ -325,6 +342,7 @@ Tüm ekonomik değerler tek bir `GameEconomySettings` ScriptableObject'ten yöne
 │   ├── truckCargoMinByPlayerCount: [1, 2, 2, 2]
 │   ├── truckCargoMaxExclusiveByPlayerCount: [3, 4, 5, 6]   ← ÜST SINIR HARİÇ (Random.Range semantiği)
 │   ├── prestigePerBonus: 8 (bonus tier başına prestij; 0-100 skala)
+│   │     ← Round 10 §4-R4: 10'a çıkarma önerisi REDDEDİLDİ (Slow/strict P4'ü iflasa sürüklüyordu)
 │   ├── bonusPerTier: 5 TL (tier başına ek ödül)
 │   ├── rewardVolatility: 0 (high_volatility perki 0.35 yapar)
 │   └── rewardVolatilityMean: 1.0 (high_volatility perki 1.15 yapar)
@@ -333,18 +351,19 @@ Tüm ekonomik değerler tek bir `GameEconomySettings` ScriptableObject'ten yöne
 │   └── boxDropMoneyPenalty: 5 TL
 │
 ├── 📞 TELEFON AYARLARI  (V4 — DIŞARI ARAMA)
-│   ├── timeSkipAmountByPlayerCount: [115, 59, 55, 55] oyun-dakikası   ← asıl bedel
+│   ├── timeSkipAmountByPlayerCount: [115, 49, 47, 47] oyun-dakikası   ← asıl bedel (Round 10 U2; P1 bilerek sabit)
+│   ├── phoneTimeSkipPerkMultiplier: 1.0 (varsayılan; phone_line perki 0.80 yazar → çağrı zaman bedeli −%20)
 │   ├── phoneCooldownSeconds: 3.0 (P-bağımsız düz cooldown)
-│   ├── phoneCooldownPerkBonusSeconds: 0.0 (varsayılan; phone_line perki 10.0 yazar → Mathf.Max(1, 3−10)=1sn)
+│   ├── phoneCooldownPerkBonusSeconds: 0.0 (varsayılan; phone_line perki 1.0 yazar → 3−1 = 2 sn; ekonomik etkisi SIFIR, yalnız his)
 │   ├── phoneDialHoldSeconds: 1.0 (E'yi basılı tutma süresi — UX, ekonomik değer DEĞİL)
-│   ├── callMoneyReward: 20 TL
-│   └── callPrestigeReward: 0.4
+│   ├── callMoneyReward: 20 TL   ← Round 10 §4-R1: 0/10/12/15 denendi, hepsi daha kötü → DEĞİŞMEDİ
+│   └── callPrestigeReward: 0.4  ← Round 10 §4-R2: 0.2/0.3 denendi, 5 hücreyi negatife çeviriyor → DEĞİŞMEDİ
 │
 ├── ⭐ PRESTİJ AYARLARI
 │   ├── customerServedPrestigeBonus: +0.4
 │   ├── customerLostPrestigePenalty: -0.4   (servis edilmeden kaçan/çıkarılan müşteri)
 │   ├── customerMissedQuotaPrestigePenalty: -0.2   (17:30'da HİÇ SPAWN OLMAMIŞ kota müşterisi)
-│   ├── wrongProductPrestigePenalty: -0.08
+│   ├── wrongProductPrestigePenalty: -0.20   ← Round 10 U12 (2026-08-30), eski -0.08
 │   ├── wrongDeliveryPrestigePenalty: -0.16
 │   └── boxDropPrestigePenalty: -0.04
 │
@@ -362,15 +381,25 @@ Tüm ekonomik değerler tek bir `GameEconomySettings` ScriptableObject'ten yöne
 > cezaları (missed-quota HARİÇ), festival min/max. **Kota dizileri, `rewardPerBoxByPlayerCount`,
 > `customerArrivalIntervalByPlayerCount`, tüm V4 telefon alanları ve
 > `customerMissedQuotaPrestigePenalty` asset'te YOK → `.cs` default'ları canlıdır.**
-> Ayrıca asset'te **ölü V3 anahtarları** duruyor (`phoneRingChancePerHour`,
-> `phoneRingEventMultiplier`, `phoneRingPerkBonus`) — sınıfta karşılığı olmadığı için okunmuyor.
+> Asset'teki 3 **ölü V3 anahtarı** (`phoneRingChancePerHour`, `phoneRingEventMultiplier`,
+> `phoneRingPerkBonus`) 2026-08-30'da SİLİNDİ.
 > `float[]`'a elle hex yazmayın: sessizce BOŞ dizi üretir (bkz. `EconomyInvariantCheck` uyarısı).
+> `int[]` hex YAZILABİLİR ve yazılmıştır: `baseRentByPlayerCount` asset'te
+> `220100008a020000740400005e060000` = `{290, 650, 1140, 1630}` (little-endian int32 ×4) — bu
+> anahtarı değiştirirken **hem `.cs` initializer'ı hem asset hex'i** güncellenmeli.
+>
+> ⚠️ `DayCycleManager.CalculateRent` fallback dalı (cs:672-679, `economySettings == null` yolu)
+> hâlâ eski `{500,1000,1450,1800}` sabitlerini taşıyor. Bu yol yalnız SO atanmamışsa çalışır
+> (o durumda zaten `LogWarning` basar), ama senkron dışıdır — düzeltilmesi ucuz bir temizlik.
 
 > [!WARNING]
 > **`PerkEffect` bu ScriptableObject'in alanlarına RUNTIME'DA doğrudan yazıyor ve hiçbir yerde geri almıyor.**
-> Etkilenen 7 alan (`PerkEffect.cs`): `gracePaymentPercent` (:318, :336), `rentScaledMultiplier` (:317),
-> `rentGrowthMultiplier` (:194), `customerServedPrestigeBonus` (:209),
-> **`phoneCooldownPerkBonusSeconds` (:301)**, `rewardVolatility` (:326), `rewardVolatilityMean` (:327).
+> Etkilenen **8 alan** (`PerkEffect.cs`): `gracePaymentPercent` (:326, :344), `rentScaledMultiplier` (:325),
+> `rentGrowthMultiplier` (:198), `customerServedPrestigeBonus` (:213),
+> **`phoneTimeSkipPerkMultiplier` (:308 — Round 10 U4 ile eklendi)**,
+> `phoneCooldownPerkBonusSeconds` (:309), `rewardVolatility` (:334), `rewardVolatilityMean` (:335).
+> `UpgradePanel`'in snapshot/restore listesi (cs:614-730) 8. alanı da kapsayacak şekilde tazelendi —
+> yeni bir `Apply*` yazarı eklenirse snapshot da tazelenmeli, yoksa asset kalıcı bozulur.
 > Editor'de Play mode'dan çıkınca değerler geri gelmiyor, diske yazılıp commit'lenebiliyor.
 > Play-test sonrası `Cargor / Ekonomi Değerlerini Doğrula` çalıştır. **Açık mimari sorun** — bkz. `plans/devam.md` 2026-08-07.
 >
@@ -407,9 +436,11 @@ Tier bonusu **P-bağımsız** (+5 TL/tier), taban ödül **P-bazlı**:
 > 1 prestij puanının marjinal değeri gün 1'de **34.7-91.7 TL**, gün 16'da 2.8-7.8 TL (kalan gün
 > sayısıyla lineer sönüyor). Dolayısıyla her prestij CEZASI aslında gizli bir para cezasıdır.
 >
-> Taban koşumlarda prestij tavanın **%75-92'sine** (tier 9-11) ulaşıyor — `maxPrestige=100` yakın
-> ama nadiren dolu; quest prestij ödülleriyle birlikte 12 hücrenin 6'sında tavan **çarpılıyor**
-> (Round 8 §3). Tavana çarpan hücrede prestij perklerinin marjinal değeri sıfırdır.
+> Eski quest prestij ödülleriyle (Easy +1.4 / Med +3 / Hard +7.5) tavan 16 hücrenin 6'sında
+> **çarpılıyordu** — tavana çarpan hücrede prestij perklerinin marjinal değeri sıfırdır.
+> Round 10 U7'nin ×0.4 kalibrasyonundan sonra tavana çarpan hücre **0/16** (gözlenen en yüksek
+> final prestij 94; tam paket koşumlarında 22-82 bandında). `maxPrestige=100` artık gerçek bir
+> baş boşluğu bırakıyor.
 
 ---
 
@@ -427,33 +458,51 @@ Burada:
 
 ### 5.2 Oyuncu Sayısına Göre Baz Kira
 
-| Oyuncu Sayısı | Baz Kira |
-|--------------|----------|
-| 1 Oyuncu | 500 TL |
-| 2 Oyuncu | 1.000 TL |
-| 3 Oyuncu | 1.450 TL |
-| 4 Oyuncu | 1.800 TL |
+| Oyuncu Sayısı | Baz Kira | Eski (2026-08-30 öncesi) | Kesinti |
+|--------------|----------|--------------------------|---------|
+| 1 Oyuncu | **290 TL** | 500 TL | −%42.0 |
+| 2 Oyuncu | **650 TL** | 1.000 TL | −%35.0 |
+| 3 Oyuncu | **1.140 TL** | 1.450 TL | −%21.4 |
+| 4 Oyuncu | **1.630 TL** | 1.800 TL | −%9.4 |
 
-> Ölçek 1 : 2.00 : 2.90 : 3.60. Ölçülen gelir ölçeği (1 : 1.73 : 2.40 : 2.95) ile birebir aynı DEĞİL —
-> bilinçli: çok oyunculu takım koordinasyon avantajını kirayla geri ödüyor.
+> Ölçek 1 : 2.24 : 3.93 : 5.62. Ölçülen gelir ölçeğinden (1 : 1.73 : 2.40 : 2.95) bilinçli olarak
+> DİK — çok oyunculu takım koordinasyon avantajını kirayla geri ödüyor. Eski ölçek
+> (1 : 2.00 : 2.90 : 3.60) daha yatıktı; kesinti **asimetrik** uygulandı çünkü açık P azaldıkça
+> büyüyordu (1P'de en derin).
 
-> [!CAUTION]
-> **AÇIK DENGE SORUNU (kod DEĞİŞMEDİ, karar Round 10'da).** Ekonomist Round 2/3 ölçümü:
-> **Slow + strict** bandında bu taban kira 16/16 hücrede iflasa yol açıyor (P1 gün 16, P2/P3/P4
-> gün 12). Kök neden **eğim değil SEVİYE**: o bantta kira / 4-günlük-gelir oranı 1.52-1.71
-> (sağlıklı Normal/strict bandında 0.88-1.27 ve düşerek gidiyor). Açık ≈ **%25-30**.
-> Önerilen (henüz uygulanmamış) asimetrik taban: `{290, 650, 1140, 1630}`.
-> Bu belge CANLI değerleri gösterir — öneri uygulanırsa §5.2/§5.3 tabloları güncellenmelidir.
+> [!IMPORTANT]
+> **Bu eğri Round 3'te önerilip Round 10 U1 ile UYGULANDI** (2026-08-30, commit `bb98ad1`).
+> Çözdüğü sorun: eski tabanla **Slow + strict** bandında 4/4 hücre iflas ediyordu (P1 gün 16,
+> P2/P3/P4 gün 12); kök neden eğim değil **SEVİYE** idi (o bantta kira / 4-günlük-gelir oranı
+> 1.52-1.71, sağlıklı Normal/strict'te 0.88-1.27). Yeni tabanla aynı 4 hücre **304-612 TL final
+> kasa** ile hayatta kalıyor (grace VARKEN de YOKKEN de).
+>
+> **Bilinçli kabul edilen yan etki**: Normal bantlar da şişti — Normal/strict P1 final kasa
+> 979 → **2106 TL (+%115)**, P2 +%73, P3 +%41, P4 +%16. Şişme P1'de en büyük çünkü Slow/strict
+> P1'i kurtarmak için 1P tabanının en çok inmesi gerekiyordu ve aynı taban Normal bandı da
+> besliyor. Final kasa bir skor değil **upgrade bütçesi** → Round 4'ün perk/upgrade fiyat
+> analizini de yukarı kaydırır.
+>
+> Playtest'te Normal bant fazla kolay gelirse ikinci tur ayarı hazır: `{350, 730, 1190, 1650}`
+> (Slow/strict'i 162-197 TL marjla, cliff kenarında kurtarır; Normal/strict P1 şişmesi +%82'ye iner).
+>
+> **Yan kazanç**: bu kesinti FESTIVAL DAY outlier'ını da söndürdü — kira-bağlı event bonusu artık
+> geç-gün net gelirinin %25-32'si ve P1→P4 boyunca düz (Round 10 §4-R7; FESTIVAL'e ayrıca
+> dokunulmadı).
 
 ### 5.3 Kira Dönemleri ve Büyüme (tüm oyuncu sayıları)
 
 | Gün | Dönem | 1P | 2P | 3P | 4P |
 |-----|-------|-----|-----|-----|-----|
-| 4 | Dönem 0 | 500 | 1.000 | 1.450 | 1.800 |
-| 8 | Dönem 1 | 600 | 1.200 | 1.740 | 2.160 |
-| 12 | Dönem 2 | 720 | 1.440 | 2.088 | 2.592 |
-| 16 | Dönem 3 | 864 | 1.728 | 2.506 | 3.110 |
-| — | **16 gün toplamı** | **2.684** | **5.368** | **7.784** | **9.662** |
+| 4 | Dönem 0 | 290 | 650 | 1.140 | 1.630 |
+| 8 | Dönem 1 | 348 | 780 | 1.368 | 1.956 |
+| 12 | Dönem 2 | 418 | 936 | 1.642 | 2.347 |
+| 16 | Dönem 3 | 501 | 1.123 | 1.970 | 2.817 |
+| — | **16 gün toplamı** | **1.557** | **3.489** | **6.120** | **8.750** |
+
+> Değerler `Mathf.RoundToInt` sonrasıdır (`DayCycleManager.CalculateRent`). 16 günlük toplam
+> yükün eski tabana göre kesintisi taban kesintisiyle aynıdır (−%42.0 / −%35.0 / −%21.4 / −%9.4),
+> çünkü `rentGrowthMultiplier` değişmedi.
 
 > Eğim `rentGrowthMultiplier = 1.20` (2026-08-20'de 1.35'ten düşürüldü — sim.js FAZ4-sonrası
 > resync'i STRICT bantta 4P'nin ve Slow-optimistic bantta 2P/3P/4P'nin gün 16'da (son kira)
@@ -518,24 +567,27 @@ Burada:
 | Müşteri kaçtı / servis edilmeden çıkarıldı | **-0.4** | Sabır bitti **veya** 17:30'da kuyrukta servis edilmemiş (`customerLostPrestigePenalty`) |
 | **Kota müşterisi hiç gelmedi** | **-0.2** | 17:30'da hâlâ spawn olmamış her kota müşterisi (`customerMissedQuotaPrestigePenalty`) — yukarıdakiyle KARIŞTIRILMAZ |
 | Tıra yanlış renk kutu | **-0.16** | Her yanlış teslimat (ayrıca -40 TL) |
-| Yanlış ürün gösterildi | **-0.08** | Her yanlış ürün (para cezası YOK) |
+| Yanlış ürün gösterildi | **-0.20** | Her yanlış ürün (para cezası YOK) — Round 10 U12, eski −0.08 |
 | Kutu yere düştü | **-0.04** | Her düşürme (≥3 m/s) |
-| Görev ödülü | Easy **+1.4** / Medium **+3** / Hard **+7.5** | Gün sonunda |
-| Görev cezası | Easy **-0.8** / Medium **-1.36** / Hard **-2.66** | Tamamlanmayan kabul edilmiş görev |
+| Görev ödülü | Easy **+0.6** / Medium **+1.2** / Hard **+3.0** | Gün sonunda (Round 10 U7 ile ×0.4) |
+| Görev cezası | Easy **-0.32** / Medium **-0.4** / Hard **-0.6** | Tamamlanmayan kabul edilmiş görev |
 
 > SURPRISE AUDIT etkinliği günü tüm cezalar **×2** (`EventEffectManager.GetPenaltyMultiplier`).
 > Ölçülen etkisi **dekoratif**: en kötü tek gün ek maliyeti −0.07…−1.40 prestij = final prestijin
 > **%0.1-4.6'sı** (Round 6 §7).
 
-> [!CAUTION]
-> **Ceza oranı tersliği — "müşteriyi bilerek boz" baskın stratejisi.** İade/BoxRequest modundaki
-> müşteriye (gün 5+, ~%25 oranında) **yanlış renk kutu vermek** yalnız −0.08 prestije mal oluyor
-> ve müşteri ANINDA çıkıyor (`CustomerAI.cs:1228-1259`, `HandleFailedInteraction` →
-> `TransitionToExit`; `_hasTimedOut=false` kaldığı için 17:30'da tekrar cezalanmıyor).
-> Sabrın dolmasını beklemek ise −0.4 **VE** istasyonu sabır süresince bloke ediyor → yanlış kutu
-> vermek **5 kat ucuz**. Ayrıca `wrongDelivery`'nin (−0.16) yanında 40 TL nakit cezası var,
-> `wrongProduct`'ın (−0.08) yanında hiç yok → aynı sınıf hatanın maliyeti 8 kat farklı.
-> Düzeltme önerildi, **henüz uygulanmadı** (Round 6 §4).
+> [!NOTE]
+> **"Müşteriyi bilerek boz" baskın stratejisi — kısmen kapatıldı (Round 10 U12).**
+> İade/BoxRequest modundaki müşteriye (gün 5+, ~%25 oranında) **yanlış renk kutu vermek** müşteriyi
+> ANINDA çıkarıyor (`CustomerAI.cs:1228-1259`, `HandleFailedInteraction` → `TransitionToExit`;
+> `_hasTimedOut=false` kaldığı için 17:30'da tekrar cezalanmıyor). Sabrın dolmasını beklemek ise
+> −0.4 **VE** istasyonu sabır süresince bloke ediyor. Ceza −0.08 iken "bozmak" **5 kat ucuzdu**;
+> **−0.20**'ye çıkarılınca fark 2 kata indi ve nakit etkisi ölçülen 16 hücrede **%0…−1** çıktı
+> (yani düzeltme bedelsizdi).
+>
+> Kalan (kabul edilen) asimetri: `wrongDelivery`'nin (−0.16) yanında 40 TL nakit cezası var,
+> `wrongProduct`'ın (−0.20) yanında hiç yok. Tercih edilen nihai çözüm hâlâ yanlış ürünü de
+> `OnCustomerLost` yolundan geçirmek — o zaman ayrı sabit gereksiz kalır.
 
 ### 6.3 Prestijin Oyuna Etkisi
 
@@ -559,7 +611,9 @@ Ceza ×2 olan SURPRISE AUDIT gününde bu 15'e düşer.
 Dengeyi tutturmak için:
 - Her 1 kaçırılan müşteriye karşı **1 başarılı servis** yeterli (-0.4 / +0.4 = 1:1)
 - Her 1 yanlış teslimata karşı **0.4 servis** (-0.16 / +0.4)
-- Bir Hard görevi kaçırmak **~7 müşteri kaçırmaya** eşdeğer (-2.66 / -0.4)
+- Bir Hard görevi kaçırmak **1.5 müşteri kaçırmaya** eşdeğer (-0.6 / -0.4) — Round 10 U7'nin
+  quest prestij ×0.4 kalibrasyonundan önce bu oran ~7 idi (görev cezası prestij bütçesinde
+  orantısız yer kaplıyordu)
 
 > [!CAUTION]
 > **Prestij kaybı pratikte ÖLÜ bir kaybetme koşulu.** Ekonomist Round 6 ölçümü: 16 senaryonun
@@ -1004,6 +1058,18 @@ Bir kart birden fazla gruba üye olabilir (`all_in` gibi).
 
 **Etkinlik çarpanı**: OPPORTUNITY DAY = ×0.8.
 
+> [!IMPORTANT]
+> **"Görev Kademesi" (Quest Tier) oyuncu çarpanından MUAF** (`UpgradePanel.GetCostMultiplier`,
+> cs:1632-1644 — Round 10 U9, 2026-08-30). Gerekçe: quest ödülleri **P-DÜZ** (aynı 28/60/150 TL
+> tüm oyuncu sayılarında), fiyatı P-ölçekli kalırsa P3/P4'te net değeri negatife düşüyordu.
+> Muafiyetle L1 net değeri P2/P3/P4'te **+80/+156/+216 TL** iyileşti; net-pozitif hücre L1'de
+> 5/16 → **7/16**, L2'de 5/16 → **8/16**. Etkinlik çarpanı (OPPORTUNITY DAY) bu upgrade'e hâlâ
+> uygulanır; muafiyet yalnız `DifficultyManager.UpgradeCostMultiplier`'ı atlar.
+> Fiyat CANLI: `baseCost=80`, `costStep=20`, `maxLevel=2` → **L1 = 80 TL, L2 = 100 TL
+> (kümülatif 180 TL)**, artık P-bağımsız. (Round 11 §5-X6: fiyatı 60/15 … 30/10 aralığına
+> indirmek net-pozitif hücreyi 10/16 → 11/16 yapıyor ama max ROI'yi 5.0x → **12.9x**'e
+> çıkarıyor = "underpriced no-brainer" tuzağı → **80/20 KALSIN**.)
+
 **Omurga upgrade maxLevel'leri** (FAZ 4'te kısıldı):
 
 | Upgrade | maxLevel | baseCost / costStep | Gerekçe |
@@ -1019,12 +1085,16 @@ Bir kart birden fazla gruba üye olabilir (`all_in` gibi).
 >   fiyat/güç tartışması anlamsız.
 > - **Ek Hangar en aşırı kalem**: değer/maliyet oranı STRICT bantta **9.21×**, OPTIMISTIC bantta
 >   **0×**. Aşırılık fiyatta değil, STRICT'in mekanik hangar-tavanı kapasite tasarımında.
-> - **Görev Kademesi L2 (100 TL dilimi)** strict bantta ölçülebilir değeri sıfırdan da kötü —
->   bkz. §16.2 uyarısı.
-> - **`cheap_rent` perkinde STALE-BASELINE bug'ı**: `PerkEffect.cs:194` formülü
->   `1.15f − 0.03f × level` ile eski taban 1.15'i **hardcode** ediyor; canlı taban 2026-08-20'den
->   beri **1.20** → perk niyet edilenden ~2.7× güçlü. Kira tabanı değişirse bu formül de
->   güncellenmeli.
+> - **Görev Kademesi L2** strict bantta ölçülebilir değeri sıfırdan da kötüydü; Round 10 U9
+>   (fiyat muafiyeti) + Round 11 R11-1 (best-of-K teklif seçimi) ile **düzeltildi** — brüt katkı
+>   artık 16/16 hücrede ≥0. Bkz. §16.1 ve §16.2.
+> - **`cheap_rent` STALE-BASELINE bug'ı DÜZELTİLDİ** (Round 10 U11, 2026-08-30):
+>   `PerkEffect.cs:198` formülü artık `1.20f − 0.03f × level` (eski `1.15f` canlı tabanla senkron
+>   değildi, perk L1'de niyet edilenden **2.55-2.61 kat** güçlüydü). **Kira büyüme tabanı
+>   (`rentGrowthMultiplier`) değişirse bu formülün sabiti de elle güncellenmeli** — kod bunu
+>   dinamik okumuyor.
+> - **`long_queue`'da benzer bir "stale baseline" olduğu iddiası ÇÜRÜDÜ** (Round 10 §4-R11):
+>   `CustomerManager.DEFAULT_QUEUE_SIZE + 2` sabiti tabanı dinamik okuyor, yalnız yorum bayattı.
 > - **`leveraged_rent` (grace'i SİLEN perk) Slow/strict'te P1/P2'yi KAZANDIRIYOR** — kalıcı
 >   %25 kira indirimi, grace'in tek seferlik faydasını aşıyor (uçurum kenarı, 18-32 TL marj).
 
@@ -1063,26 +1133,38 @@ Her upgrade seviyesine karşılık gelen 3D objeler sahnede aktifleşir. Örneğ
 | Kullanım şekli | Telefon alanında **E'yi 1 sn basılı tut** (bar boştan dolar; erken bırakınca iptal) | `phoneDialHoldSeconds = 1f` |
 | Çalışma saatleri | **08:00 – 18:00** | `phoneStartHour` / `phoneEndHour` |
 | Etki | Sıradaki kota müşterisini **hemen** spawn eder (`ForceSpawnNextCustomer`) | — |
-| **Bedel** | Gün saati ileri sarılır: 1P **115** · 2P **59** · 3P **55** · 4P **55** oyun-dakikası | `timeSkipAmountByPlayerCount` |
+| **Bedel** | Gün saati ileri sarılır: 1P **115** · 2P **49** · 3P **47** · 4P **47** oyun-dakikası | `timeSkipAmountByPlayerCount` |
 | Para ödülü | **+20 TL** | `callMoneyReward` |
 | Prestij ödülü | **+0.4** — bir müşteri servisiyle AYNI | `callPrestigeReward` |
 | Cooldown | **3 sn**, P-bağımsız (2026-08-30 kullanıcı isteğiyle 20 → 3) | `phoneCooldownSeconds` |
-| Quest tetikleyicisi | `QuestTracker.NotifyPhoneAnswered()` (cs:469) | `AnswerPhone` görevleri |
+| Quest tetikleyicisi | `QuestTracker.NotifyPhoneAnswered()` (cs:481) | `AnswerPhone` görevleri |
 
-**Çarpanlar**:
-- **CUSTOMER SUPPORT** etkinliği: cooldown **×0.5** (`GetEffectiveCooldownSeconds`, cs:303-309)
-- **`phone_line` perki**: `phoneCooldownPerkBonusSeconds = 10f` mutlak atar →
-  `Mathf.Max(1, 3 − 10) = 1 sn`
+**Çarpanlar** — her iki asıl kaldıraç da 2026-08-30'da **cooldown'dan ZAMAN MALİYETİNE taşındı**:
 
-> [!WARNING]
-> **Her iki çarpan da bugün fiilen ETKİSİZ.** Gerçek kapı cooldown değil,
+| Kaynak | Etki | Kod |
+|--------|------|-----|
+| **CUSTOMER SUPPORT** etkinliği | `TimeSkipAmountMinutes` **×0.5** — bir çağrının zaman bedeli yarıya iner | `GetEffectiveTimeSkipMinutes` (cs:311-323); hem 17:30 guard'ı hem `ExecuteCall` bu metodu kullanır |
+| **`phone_line` perki** (160 TL, relic) | `phoneTimeSkipPerkMultiplier = 0.80f` → zaman bedeli **−%20** | `PerkEffect.ApplyPhoneLine` (cs:308) |
+| `phone_line` perki (ikincil) | `phoneCooldownPerkBonusSeconds = 1f` → cooldown 3 → 2 sn | `PerkEffect.cs:309` |
+
+> [!IMPORTANT]
+> **Neden cooldown DEĞİL zaman maliyeti (Round 10 U3/U4/U5).** Gerçek kapı cooldown değil,
 > `HasUnspawnedCustomers` (günlük kota) ve `IsQueueFull`. Ard arda arama tavanı = kuyruğun
 > boşalma süresi (18-62.5 sn) ≫ 3 sn cooldown → cooldown 16/16 hücrede **bağlayıcı değil**
-> (Round 5 §2). `phone_line` perkinin (160 TL, relic, draft'ta AKTİF) ölçülen ekonomik değeri
-> **sıfır**; sahnedeki `contentText`'i de hâlâ V3'ün "çalma şansı +%15" metnini anlatıyor (bayat).
+> (Round 5 §2). Eski hâlinde:
+> - CUSTOMER SUPPORT mekanik olarak **NO-OP** ama takvimde "POZİTİF" etiketiyle telefon spam'ine
+>   çağırıyordu → net etki **−16…−463 TL/gün**. Yeni hâlinde **+%12-43/gün** (FESTIVAL'in çok
+>   altında, sağlıklı). Takvim metni de güncellendi ("RECEPTION PHONE CALLS SKIP HALF AS MUCH TIME").
+> - `phone_line`'ın eski etkisi (`phoneCooldownPerkBonusSeconds = 10f` → `Mathf.Max(1, 3−10) = 1sn`)
+>   ekonomik olarak **sıfır** değerdeydi. Yeni çarpanla değer/maliyet oranı **0 – 0.62 – 1.51x**
+>   (min/medyan/max, 16 hücre). `0.75` denendi: optimistic bandı %45-85 kullanıma fırlatıp
+>   "dikkatli kullan" dersini çözüyor; `0.85`: 4 hücrede sıfır değer. **0.80 doğru nokta** —
+>   perk zayıf bulunursa kol FİYAT (160→120), çarpan DEĞİL.
+> - `phoneCooldownPerkBonusSeconds` yeni değeri **1f**; ekonomik etkisi hâlâ sıfır, yalnız his
+>   amaçlı — öyle etiketlenmeli.
 >
-> CUSTOMER SUPPORT ayrıca **zararlı**: takvimde "POZİTİF" etiketli ve açıkça bol telefon
-> kullanmayı öneriyor, ama oyuncu o gün oranı yükseltirse net etki **−45…−777 TL/gün**.
+> Sahnedeki `phone_line` `contentText`'i de V3 metninden ("çalma şansı +%15") güncellendi:
+> "Dışarı arama zaman maliyetini %20 azaltır."
 
 ### 14.2 Akış
 
@@ -1138,38 +1220,56 @@ $$\text{gerçekSaniye} = T[P] \times \frac{200}{11 \times 60} = T[P] \times 0{,}
 | Oyuncu | `T[P]` (oyun-dk) | Gerçek maliyet | Doğal varış aralığı | Maliyet / aralık |
 |--------|------------------|----------------|---------------------|------------------|
 | 1P | 115 | **34.8 sn** | 44 sn | %79 |
-| 2P | 59 | **17.9 sn** | 22 sn | %81 |
-| 3P | 55 | **16.7 sn** | 21 sn | %79 |
-| 4P | 55 | **16.7 sn** | 21 sn | %79 |
+| 2P | **49** | **14.8 sn** | 22 sn | **%67** |
+| 3P | **47** | **14.2 sn** | 21 sn | **%68** |
+| 4P | **47** | **14.2 sn** | 21 sn | **%68** |
 
-Yani bir çağrı, "sıradaki müşteriyi beklemek" yerine geçen sürenin yaklaşık **%80'ini** yakar —
-kazanç, kalan **%20'lik** zaman tasarrufu + 20 TL + 0.4 prestij.
+Yani bir çağrı, "sıradaki müşteriyi beklemek" yerine geçen sürenin **%67-79'unu** yakar —
+kazanç, kalan **%21-33'lük** zaman tasarrufu + 20 TL + 0.4 prestij. 1P kasıtlı olarak en pahalı
+bant (tek oyuncunun eğrisi zaten sağlıklıydı, dokunulmadı).
 
 **Gün uzadıkça çağrı ucuzlar** (bedel gerçek-saniye cinsinden sabit, gün ise uzuyor):
 
 | | Gün 1 (200s) | Gün 16 (330s) |
 |--|--------------|---------------|
 | 1P: 34.8 sn = | **115** oyun-dk | **70** oyun-dk |
-| 2P: 17.9 sn = | **59** oyun-dk | **36** oyun-dk |
-| 3P/4P: 16.7 sn = | **55** oyun-dk | **33** oyun-dk |
+| 2P: 14.8 sn = | **49** oyun-dk | **30** oyun-dk |
+| 3P/4P: 14.2 sn = | **47** oyun-dk | **28** oyun-dk |
+
+**Perk / etkinlik indirimleri** (çarpanlar `T[P]` üzerine, çarpımsal):
+
+| Durum | 1P | 2P | 3P/4P |
+|-------|----|----|-------|
+| Taban | 34.8 sn | 14.8 sn | 14.2 sn |
+| `phone_line` perki (×0.80) | 27.9 sn | 11.9 sn | 11.4 sn |
+| CUSTOMER SUPPORT günü (×0.50) | 17.4 sn | 7.4 sn | 7.1 sn |
 
 > [!IMPORTANT]
-> `timeSkipAmountByPlayerCount`'un tooltip'i ("atlanan oyun-dakikası") **yalnız gün 1-3'te
-> doğrudur**. Gün 16'da 115 dakikalık ayar fiilen ~70 oyun-dakikası ilerletir. Bu bir bug DEĞİL:
-> `SkipTime`'ı `CurrentDayDuration`'a çevirmek geç-oyun telefon maliyetini **+%65** artırır ve
-> telefonu beceri-ters bir tuzağa çevirir (ekonomist Round 7 §1). **Davranış korunacak,
-> yalnız tooltip düzeltilecek.**
+> `timeSkipAmountByPlayerCount`'un etiketi ("atlanan oyun-dakikası") **yalnız gün 1-3'te
+> doğrudur**. Gün 16'da 115 dakikalık ayar fiilen ~70 oyun-dakikası ilerletir. Bu bir bug DEĞİL
+> ve **bilinçli olarak KORUNDU** (Round 10 §4-R5): `SkipTime`'ı `CurrentDayDuration`'a çevirmek
+> geç-oyun telefon maliyetini **+%65** artırır (gün 16'da 34.85 → 57.5 sn) ve telefonu
+> beceri-ters bir tuzağa çevirir. Alanın tooltip'i bu davranışı açıklayacak şekilde güncellendi
+> (`GameEconomySettings.cs:116`). **`SkipTime`'ın taban-200s dönüşümüne DOKUNMAYIN.**
 
-**Kullanım rehberi (16 hücre × 5 oran taraması, Round 7 §4):**
-- Sağlıklı bant: müşterilerin **%10-25'ini** telefonla çağırmak (1P günde ~1, 2P-4P günde ~2.5)
-- **"Her fırsatta çevir" (%100) tepe noktanın −%33…−62 altında** — spam edilmemeli
-- Tepe nokta bandın 10/12 hücresinde **%25**
-- Öğretilebilir tek kural: **"her ~4 müşteriden birini telefonla çağır"**
+**Kullanım rehberi (16 hücre × 5 oran taraması, `runFullSim` v5.0 — Round 10):**
+- Sağlıklı bant: müşterilerin **%10-25'ini** telefonla çağırmak
+- **"Her fırsatta çevir" (%100) tepe noktanın belirgin altında** — spam edilmemeli
+- Optimum bant-bağımlı: Normal/strict %15-20, optimistic bantların çoğunda **%0**
+  (Round 7'nin "%25" tablosu servis penceresinin kısalmasını modellemiyordu, fazla iyimserdi)
+- Öğretilebilir tek kural: **"boşta beklerken çevir, kuyruk doluyken çevirme"**
 
-> [!NOTE]
-> `timeSkipAmountByPlayerCount = {115, 49, 47, 47}` **önerildi ama HENÜZ UYGULANMADI**
-> (Round 7 §2; P1 bilerek değişmiyor). Yukarıdaki tablo CANLI `{115, 59, 55, 55}` değerleriyle
-> hesaplanmıştır.
+> [!WARNING]
+> **Telefon oyunun İKİNCİ ve KOŞULSUZ para musluğu.** `PhoneCallManager.ExecuteCall` (cs:469)
+> müşteri servis edilsin edilmesin `AddMoney(20)` yapıyor. Mekanik-bağlı (üretim kapasitesinin
+> düşük olduğu) bantlarda bu, tırdan gelen gelirin ÖNÜNE geçebiliyor: yeni kirayla Slow/strict
+> P1/P2'de optimal telefon oranı **%100** çıkıyor (gün 16, P1: telefon 120 TL vs tır 48 TL).
+> Round 10'da dört farklı `callMoneyReward` (0/10/12/15) denendi; hiçbiri Normal bandı bozmadan
+> çözmüyor → **20 TL korundu**.
+>
+> Kalan yapısal seçenek (öneri değil, not): çağrı para ödülünü yalnız çağrılan müşteri SERVİS
+> EDİLİRSE vermek — o zaman ödül otomatik olarak kapasiteye oranlanır ve spam kendini finanse
+> edemez. Bu, "para yalnız tırdan gelir" invariant'ını da geri getirir.
 
 ---
 
@@ -1203,7 +1303,7 @@ kazanç, kalan **%20'lik** zaman tasarrufu + 20 TL + 0.4 prestij.
 | **RELAXED DAY** | | | **×1.30** | | |
 | **OPPORTUNITY DAY** | | | | | upgrade maliyeti **×0.80** |
 | **FESTIVAL DAY** | | | | | gün başında **kira × %10-20** rastgele para |
-| **CUSTOMER SUPPORT** | | | | | telefon cooldown ×0.5 (bkz. §14.1 uyarısı) |
+| **CUSTOMER SUPPORT** | | | | | telefon **zaman maliyeti ×0.5** (Round 10 U3; eski "cooldown ×0.5" NO-OP idi — bkz. §14.1) |
 
 #### Negatif Etkinlikler 🔴 (8 adet)
 
@@ -1228,9 +1328,11 @@ kazanç, kalan **%20'lik** zaman tasarrufu + 20 TL + 0.4 prestij.
 
 > [!IMPORTANT]
 > **Ekonomist ölçümleri (Round 5) — 4 yapısal bulgu:**
-> 1. **FESTIVAL DAY ~6 kat outlier.** Tek-gün etkisi **+28…+%109** (16 hücre ort. +%61);
->    ikinci sıradaki MARKETING DAY'in (−%19) 3 katı. Sebep: **tek kira-bağlı event**, kira hem
->    P ile hem `1.20^dönem` ile büyürken strict bantta günlük gelir büyümüyor.
+> 1. ~~**FESTIVAL DAY ~6 kat outlier**~~ — **ÇÖZÜLDÜ, event'e dokunmadan.** Round 5'te tek-gün
+>    etkisi +%28…+109 idi (16 hücre ort. +%61) çünkü tek kira-bağlı event olarak eski yüksek
+>    kirayı takip ediyordu. Round 10 U1'in kira kesintisi bunu bedavaya söndürdü: bonus artık
+>    75-423 TL = geç-gün net gelirinin **%25-32'si** ve P1→P4 boyunca **düz**. FESTIVAL tabanına
+>    ayrıca dokunulMADI (Round 10 §4-R7).
 > 2. **Kota çarpanı YUKARI yönde ölü** (BUSY DAY, MARKETING DAY, ANGRY CUSTOMERS, GOLDEN BOX DAY).
 >    Bkz. §7.2 / §9.6 — doğru kol varış aralığını bölmek olurdu. BUSY DAY'in lokalizasyon metni
 >    zaten "SPAWN RATE +35%" vaat ediyor ama kod kotayı çarpıyor.
@@ -1238,6 +1340,8 @@ kazanç, kalan **%20'lik** zaman tasarrufu + 20 TL + 0.4 prestij.
 >    (3.43 pozitif / 2.43 negatif) → pozitifler **%43 daha sık**
 >    (`INITIAL_POSITIVE_EVENT_COUNT=2` vs tek `GUARANTEED_NEGATIVE_EVENT_INDEX=2`).
 >    Net para katkısı +%0.6…+2.7 — ama bunun **%80-100'ü tek başına FESTIVAL DAY'den**.
+>    FESTIVAL sönümlendiği için asimetri de söndü → **düzeltme yapılmadı**, playtest hissine
+>    bırakıldı (Round 10 §4-R8). Enflasyon riski yok.
 > 4. **RELAXED DAY Normal bantta tam sıfır** (16 hücrenin 8'i) — sabır kolu orada hiç çalışmıyor
 >    (bkz. §9.4).
 >
@@ -1267,7 +1371,8 @@ EventEffectManager
 ├── PlayerMovement.sprintSpeed       → playerSprintSpeedMultiplier
 ├── PlayerMovement.staminaRegenRate  → staminaRegenRateMultiplier
 ├── UpgradePanel.costMultiplier      → upgradeCostMultiplier (UpgradePanel.cs:1618 okuyor)
-├── PhoneCallManager                 → IsEventActive("CUSTOMER SUPPORT") ile cooldown ×0.5
+├── PhoneCallManager                 → IsEventActive("CUSTOMER SUPPORT") ile zaman maliyeti ×0.5
+│                                       (GetEffectiveTimeSkipMinutes; çarpan sözlüğü nötr)
 └── PrestigeManager cezaları         → GetPenaltyMultiplier() (SURPRISE AUDIT ×2)
 ```
 
@@ -1291,11 +1396,12 @@ EventEffectManager
 
 | Parametre | Değer |
 |-----------|-------|
-| Günlük teklif sayısı | **3** (`DAILY_QUEST_COUNT`) |
+| Günlük teklif sayısı | **3, SABİT** (`BASE_DAILY_QUEST_COUNT`; `DailyQuestTargetCount` property'si bunu döner) |
+| Sahnedeki UI slotu | **3 `QuestSlotUI`** — `QuestUIController.cs:410` teklif listesini `Mathf.Min(questSlots.Count, DailyQuestCount)` ile kırpar |
 | Havuz | **30 elle yazılmış asset** — Easy 11 · Medium 10 · Hard 9 |
-| Seçim | **Katmanlı** (`SelectDailyQuestsStratified`): her tier'dan en az bir teklif garantili |
+| Seçim | **Katmanlı + best-of-K** (`SelectDailyQuestsStratified`): her açık tier'dan 1 garanti teklif, her teklif K aday arasından seçilir |
 | Zorluk katmanları | Easy (tier 0), Medium (1), Hard (2) |
-| Hard görev kilidi | `Görev Kademesi` upgrade'i ile açılır |
+| Hard görev kilidi | `Görev Kademesi` upgrade'i ile açılır (yalnız-artar, geri alınamaz — `SetQuestTierInternal`) |
 | Günlük kabul limiti | **1** — teklif 3 ama yalnız biri kabul edilebilir |
 
 > **Ödül modeli elle yazım.** Eski rastgele havuz modeli (`rewardPool`/`penaltyPool` + Fisher-Yates)
@@ -1303,35 +1409,110 @@ EventEffectManager
 > alanlarını taşıyor. **Ceza alanları POZİTİF girilir**, kod `-Mathf.Abs()` uygular
 > (eksi yazılırsa çift-negatif olup ceza ödüle dönme tuzağı kapalı).
 
+#### Günlük teklif seçimi — katmanlı + **best-of-K** (Round 11 R11-1, 2026-08-30)
+
+`SelectDailyQuestsStratified` (`QuestManager.cs:583-649`) her açık tier için **K aday çeker ve
+aralarından oyuncunun bugün en yapabileceğini teklif eder**. Slot SAYISI hiç değişmez (hep 3);
+kademe slot **KALİTESİNİ** artırır.
+
+**K tablosu** (birebir, `CalculateCandidateCount`, cs:662-667 — `K = maxTier==0 ? 1 : (t==0 ? 3 : max(1, maxTier−t+1))`):
+
+| `CurrentQuestTier` | Easy slotu | Medium slotu | Hard slotu |
+|---|---|---|---|
+| 0 (başlangıç) | **K=1** (eski davranışla birebir aynı) | — | — |
+| 1 | **K=3** | K=1 | — |
+| 2 | **K=3** | **K=2** | K=1 |
+
+**Fizibilite skoru** (`CalculateFeasibilityScore`, cs:675-700) — **adaptif**:
+
+$$\text{skor} = \frac{\text{dünkü arz (quest tipine göre)}}{\text{effectiveTarget} \times (\text{renk-kilitli ? 3 : 1})}$$
+
+Arz sayaçları (`_shelfToday` / `_trucksToday` / `_packedToday` / `_phoneToday`) gün içinde
+`HandleBoxPlacedOnShelf` / `HandleTruckCompleted` / `HandleToyPacked` / `HandlePhoneAnswered`
+ile artar; `AssignDailyQuests` **önce snapshot alır, sonra sıfırlar** (yani seçimde DÜNKÜ değerler
+kullanılır). **Gün 1'de geçmiş yok → K=1'e düşülür**, seçim eski davranışla birebir aynıdır.
+
+> [!IMPORTANT]
+> **Neden bu tasarım — çözdüğü sorun.** Tier kilidi açıldıkça oyuncunun gördüğü 3 teklifin
+> kompozisyonu `[E,E,E] → [E,M,dolgu] → [E,M,H]` oluyor. Strict bantta Medium/Hard slotları
+> negatif-EV olduğu için fiilen ÖLÜ slot → **kaybedilen şey 3 Easy çekilişinin en iyisiydi**
+> (kayıp her bantta ~3 TL/gün SABİT, kazanç bant-bağımlı: strict +0.3…1.4, optimistic +16).
+> Sonuç: "Görev Kademesi" upgrade'i 4/16 hücrede **T2 < T0** = ödenmiş kötüleştirme idi.
+> Easy'ye K=3 vermek kaybı birebir geri veriyor.
+>
+> **Ölçülen etki (5 farklı koşum senaryosu, 16 hücre):** `T2 < T0` **4/16 → 0/16**,
+> `T1 < T0` **4/16 → 0/16**, min(T2−T0) = +2 TL. `questTier = 0` sonuçları **16/16 hücrede
+> birebir değişmiyor** — upgrade'i hiç almayan oyuncu etkilenmiyor. Enflasyon yok: en yüksek
+> T2 brüt kazancı 868 → 906 TL (**+%4**).
+>
+> **Çeşitlilik korunuyor**: best-of-3 altında en sık teklif edilen Easy quest %24.9, 11 asset'in
+> 8'i hâlâ görünüyor (dejenerasyon riski ölçüldü, yok).
+>
+> **Adaptif skorun statik alternatife üstünlüğü**: statik `effectiveTarget × (renk ? 3 : 1)`
+> skoru T2<T0'ı yalnız 1/16'ya indiriyor ve Slow/strict P2-P4'te tır arzı SIFIRken
+> `Q_Easy_1_Truck`'ı (hedef 1) "en kolay" sayıp sık teklif ediyor. Adaptif skor onu son sıraya
+> atıyor. **Statik skora düşülürse `CompleteTruck` ve `AnswerPhone` tipleri skorlamadan
+> hariç tutulmalı.**
+
+> [!CAUTION]
+> **`DailyQuestTargetCount` UI slot sayısını AŞMAMALI.** Round 10'da denenen
+> `DailyQuestTargetCount = 3 + CurrentQuestTier` oyunda **16/16 hücrede NO-OP** çıktı: garanti
+> tier pick'leri listenin başında olduğu için ilk 3 teklif her tier'da aynı kalıyor, index ≥3'teki
+> quest'ler hiçbir slota bağlanmıyor → `AcceptQuest` çağrılamıyor → `Available` kalıyorlar →
+> `SettleAcceptedQuestsForDayEnd` `Available`'ı atladığı için ceza da vermiyorlar. Tam ölü ağırlık.
+> Geri alındı. `EconomyInvariantCheck` artık **sahnedeki `QuestUIController.questSlots` sayısının
+> `BASE_DAILY_QUEST_COUNT`'a eşit olduğunu** denetliyor (cs:193-195) — bu hata sınıfı bir daha
+> sessizce geçmesin.
+
 ### 16.2 Görev Ödül / Ceza Tablosu
 
 Tablo **tier-düz**: aynı tier'daki her asset aynı ödülü verir (2026-08-06, `975f011` —
 eski base/premium/phone grup ayrımı kaldırıldı).
 
-| Tier | Para ödülü | Para cezası | Prestij ödülü | Prestij cezası | Asset |
-|------|-----------|-------------|---------------|----------------|-------|
-| **Easy** | 28 TL | 15 TL | +1.4 | −0.8 | 11 |
-| **Medium** | 60 TL | 27 TL | +3.0 | −1.36 | 10 |
-| **Hard** | 150 TL | 53 TL | +7.5 | −2.66 | 9 |
+| Tier | Para ödülü | Para cezası | Prestij ödülü | Prestij cezası | Ödül/ceza oranı | Asset |
+|------|-----------|-------------|---------------|----------------|-----------------|-------|
+| **Easy** | 28 TL | 15 TL | +0.6 | −0.32 | 0.54 | 11 |
+| **Medium** | 60 TL | **20 TL** | +1.2 | −0.4 | **0.33** | 10 |
+| **Hard** | 150 TL | **30 TL** | +3.0 | −0.6 | **0.20** | 9 |
 
-> [!IMPORTANT]
-> **Görev PRESTİJİ, para ödülünden büyük olabiliyor.** §4.3'ün dönüşümüyle Hard'ın +7.5 prestiji
-> gün 8'de **34-281 TL** ediyor — optimistic bantta 150 TL'lik para ödülünün **1.7-1.9 katı**.
-> 16 günlük quest prestiji 1.6-**48.1** puan; `maxPrestige=100` tavanına çarpan hücre sayısı
-> quest'siz 3/12 iken quest'li **6/12** (Round 8 §3). Bu terim kart üzerinde görünmediği için
-> oyuncuya **görünmez** bir değer.
+2026-08-30 kalibrasyonu (`bb98ad1`): **para ÖDÜLLERİ değişmedi**; prestij ödül+cezaları **×0.4**
+(Round 10 U7), Medium/Hard **para cezaları** 27→20 ve 53→30 (Round 11 R11-2). Easy satırı hiç
+değişmedi.
+
+> [!NOTE]
+> **Neden prestij ×0.4 (Round 10 U7).** §4.3'ün dönüşümüyle Hard'ın eski +7.5 prestiji gün 8'de
+> **34-281 TL** ediyordu — optimistic bantta 150 TL'lik para ödülünün 1.7-1.9 katı, üstelik kart
+> üzerinde görünmeyen bir değer. `maxPrestige=100` tavanına çarpan hücre sayısı quest yüzünden
+> 3/16 → 6/16'ya çıkıyordu. ×0.4 sonrası tavana çarpan hücre **0/16** (gözlenen max 94) ve quest'in
+> kasa katkısı 146-1189 → **135-675 TL**. Kesilen kısım tamamen görünmez prestij kanalı; para
+> ödülü aynı kaldı.
 >
-> Quest PARASI ise doğru büyüklükte (tır gelirinin %2.1-2.5'i strict, %4.5-7.4'ü optimistic),
+> **Neden Medium/Hard para cezası düştü (Round 11 R11-2).** Ölçüm: **Hard tier, kabul kararını
+> düşünmeden veren ("kartta en yüksek ödül" oyuncusu) için 16/16 hücrede NEGATİF EV** idi — en iyi
+> bantta bile (Normal/optimistic P4) −1.1 TL/gün, en kötüsünde −49.2. Yani 150 TL'lik ödül hiçbir
+> oyuncu için "körü körüne alınabilir" değildi, kartın vaadiyle çelişiyordu. Ceza 30'a inince tablo
+> sağlıklı bir **beceri gradyanına** dönüyor: iyi giden bantlarda (6/16) körü körüne almak kârlı,
+> zorlanan bantlarda değil. Rasyonel oyuncu üzerindeki enflasyon maliyeti +%10-13 ve üst bantta
+> yoğunlaşıyor.
+
+> [!NOTE]
+> Quest PARASI doğru büyüklükte (tır gelirinin %2.1-2.5'i strict, %4.5-7.4'ü optimistic),
 > ama kira brüt geliri süpürdüğü için **final kasaya +%19…+%61 biniyor**.
 
-> [!CAUTION]
-> **"Görev Kademesi" upgrade'i strict bantta ÖDENMİŞ KÖTÜLEŞTİRME.** `DAILY_QUEST_COUNT = 3`
-> **sabit** ve tier kilidi `SetQuestTierInternal` (cs:748) ile **yalnız-artar/geri alınamaz**.
-> Tier açmak havuzu 11'den 30'a çıkarıyor ama strict bantta 19'u negatif-EV → oyuncunun gördüğü
-> "iyi teklif" 3'ten 1'e düşüyor. Ölçüm: 4/4 Normal/strict hücrede **T2 < T0**, üstelik
-> 180 × P-çarpanı TL ödenmişken (L2 net −118…−480). Öneri (henüz uygulanmadı):
-> `DAILY_QUEST_COUNT = 3 + CurrentQuestTier` + upgrade'i `UpgradeCostMultiplier`'dan muaf tutmak
-> (Round 8 §2).
+> [!IMPORTANT]
+> **"Görev Kademesi" upgrade'inin ÖDENMİŞ KÖTÜLEŞTİRME sorunu ÇÖZÜLDÜ.** Tier kilidi
+> `SetQuestTierInternal` (cs:903) ile **yalnız-artar/geri alınamaz**, dolayısıyla upgrade'in net
+> değerinin negatif olması geri dönüşsüz bir tuzaktı. Ölçülen zarar (canlı ödül tablosuyla,
+> `runFullSim` v5.1) `T2 − T0` = **−4…−78 TL**, 4/16 hücrede. İki müdahaleyle kapatıldı:
+> 1. **Round 10 U9** — fiyatın `UpgradeCostMultiplier`'dan muaf tutulması (§13.2).
+> 2. **Round 11 R11-1** — best-of-K teklif seçimi (§16.1) → `T2 < T0` **0/16**.
+>
+> Round 8'in "−118…−480 TL" ve Round 10'un "−30…−87 TL" büyüklükleri **bayat karar modellerinden**
+> geliyordu; yön hep aynıydı, büyüklük 4-6 kat küçüktü.
+>
+> R11-1 sonrası kalan net-negatif hücreler (L2 için 6/16, hepsi strict) bir tuzak DEĞİL, normal
+> **fırsat maliyeti**: brüt katkı 16/16 hücrede ≥0 (en düşük +2 TL), yalnız 180 TL'lik kümülatif
+> fiyat o bantta çıkmıyor.
 
 ### 16.3 Görev Durumları
 
@@ -1352,6 +1533,9 @@ stateDiagram-v2
 > **Gün 16** ayrı bir yol: `NextDay()` win dalı `OnNewDay`'i hiç tetiklemediği için settlement de
 > çalışmıyordu — son günün kabul edilmiş görevi cezasız/ödülsüz kalıyordu.
 > `SettleAcceptedQuestsOnGameEnd()` bunu kapatıyor (idempotent, `IsServer` guard'lı).
+>
+> **Gün-16 settlement'ının "exploit" potansiyeli ölçüldü ve düzeltme önerilmiyor** (Round 10 §4-R9):
+> son günün cezasız/serbest quest kabulünün kasaya katkısı **%0.1-8.2**. Denge riski yok.
 
 ### 16.4 Görev Tipleri
 
@@ -1360,7 +1544,7 @@ stateDiagram-v2
 | 1 | **PlaceBoxOnShelf** | ✅ canlı | **13 asset** |
 | 3 | **PackToy** | ✅ canlı | **12 asset** |
 | 2 | **CompleteTruck** | ✅ canlı | **3 asset** |
-| 4 | **AnswerPhone** | ✅ canlı — tetikleyici `PhoneCallManager.cs:469` (V4 dışarı arama) | **2 asset** (Easy hedef 2, Medium hedef 3) |
+| 4 | **AnswerPhone** | ✅ canlı — tetikleyici `PhoneCallManager.cs:481` (V4 dışarı arama) | **2 asset** (Easy hedef **1**, Medium hedef **2**) |
 | 6 | **CompleteSpecificColorTruck** | ⚠️ tetikleyici CANLI (`Truck.cs:656`) ama asset yok | 0 |
 | 0 | **CompleteMinigame** | 🔴 **ÖLÜ** — `QuestTracker.NotifyMinigameCompleted()` çağıranı yok | 0 |
 | 5 | **MakePackagingMistake** | 🔴 **ÖLÜ** — `NotifyPackagingMistake()` çağıranı yok | 0 |
@@ -1368,18 +1552,22 @@ stateDiagram-v2
 > Ölü tipler canlı bug değil (hiçbir asset kullanmıyor), ama yeni görev tipi eklemeden önce
 > tetikleyicilerinin bağlanması gerekir.
 
-> [!CAUTION]
-> **`AnswerPhone` görevleri §14.4'ün dersinin TERSİNİ ödüllendiriyor.** Ölçüm: telefon quest'inin
-> kasaya katkısı telefon kullanım oranı %0-25'te **−3…−117 TL**, %60-100'de **+20…+148 TL**
-> (Round 8 §5). Yani görev, oyuncuyu ekonomik olarak zararlı olan telefon spam'ine itiyor.
-> Üstelik strict/%60'ta `med_phone_3` havuzdaki **tek pozitif-EV Medium görev**.
-> Öneri (Round 7 uygulandıktan SONRA): Easy hedef **2→1**, Medium hedef **3→2**.
+> [!NOTE]
+> **`AnswerPhone` görevlerinin "telefon spam'ini ödüllendirme" sorunu kapatıldı (Round 10 U8).**
+> Eski hedeflerle (Easy 2, Medium 3) görev, §14.4'ün dersinin TERSİNİ ödüllendiriyordu: kasaya
+> katkısı telefon kullanım oranı %0-20'de **−4…−166 TL**, %60-100'de **+148…+312 TL** idi — yani
+> oyuncuyu ekonomik olarak zararlı olan spam'e itiyordu. Hedefler **Easy 2→1**, **Medium 3→2**
+> yapıldı; u=%20'de katkı 11/16 hücrede sıfıra/pozitife döndü.
+>
+> **İkinci güvenlik ağı**: §16.1'in **adaptif** fizibilite skoru bu riski kendi kendine düzeltiyor —
+> telefonu hiç kullanmayan oyuncuda dünkü telefon arzı 0 olduğu için telefon quest'i skorda son
+> sıraya düşer ve teklif edilmez. (Statik skor alternatifinde bu güvenlik YOK.)
 
 ### 16.5 Hedef Ölçekleme (D2) — şu an etkisiz
 
-`CalculateEffectiveTargetCount` görev hedefini oyuncu sayısıyla ölçeklemek için var, **ama dört
-canlı fiilin dördü de muaf** (`PlaceBoxOnShelf`, `PackToy`, `CompleteTruck`, `AnswerPhone`) →
-mevcut katalogda **tamamen no-op**.
+`CalculateEffectiveTargetCount` (cs:727) görev hedefini oyuncu sayısıyla ölçeklemek için var,
+**ama canlı fiillerin hepsi muaf** (`PlaceBoxOnShelf`, `PackToy`, `CompleteTruck`, `AnswerPhone`
+ve Round 10 U10 ile eklenen `CompleteSpecificColorTruck`) → mevcut katalogda **tamamen no-op**.
 
 Sebep: `targetCount` değerleri 2026-07-29 turunda **zaten tüm P bantlarında** ~%85 tamamlanma
 hedeflenerek kalibre edilmişti. D2 onların üstüne bir kez daha çarpınca sim'de renksiz raf/paket
@@ -1387,10 +1575,11 @@ tamamlanma olasılığı **3P 0.76 → 0.13**, **4P 0.87 → 0.13**'e düşüyor
 
 Mekanizma, arzı oyuncu sayısıyla ölçeklenMEYEN gelecekteki görev tipleri için duruyor.
 
-> [!WARNING]
-> **Muafiyet TİP-BAZLI, kalıcı değil.** `CompleteSpecificColorTruck` (enum 6) muafiyet listesinde
-> **YOK** ve tetikleyicisi canlı — o tipte bir asset eklenirse çifte-ölçekleme bug'ı aynen geri
-> gelir. Öneri: tip 6 da listeye eklensin (`CalculateEffectiveTargetCount`, cs:569-583).
+> [!NOTE]
+> **`CompleteSpecificColorTruck` (enum 6) muafiyet listesine eklendi** (Round 10 U10, 2026-08-30,
+> `QuestManager.cs:735`). Tetikleyicisi canlı (`Truck.cs:656`) ama asset'i yok; o tipte bir asset
+> eklenseydi 2026-08-06'nın çifte-ölçekleme bug'ı aynen geri gelecekti. Ucuz sigorta — muafiyet
+> TİP-BAZLI olduğu için **yeni bir görev tipi eklerken bu liste tekrar gözden geçirilmeli.**
 
 > Kart açıklamasında gösterilen sayı `QuestProgress.targetProgress`'ten gelir (tek doğruluk kaynağı),
 > asset'teki ham `targetCount`'tan değil — aksi halde ölçekleme açılınca kart yanlış hedef gösterirdi.
@@ -1525,11 +1714,12 @@ Gün sonunda tüm oyuncuların dinlenme odasında toplanması gerekmektedir. Bu,
 | Başlangıç parası | `DifficultyManager.moneyMultiplierPerPlayer=1.2` (üstel) | 500 | 600 | 720 | 864 |
 | Stamina tüketimi | `staminaDrainMultiplierPerPlayer=1.1` | ×1.00 | ×1.10 | ×1.21 | ×1.33 |
 | **Upgrade/perk/reroll maliyeti** | `upgradeCostMultiplierByPlayerCount` (**DİZİ**) | ×1.00 | ×2.00 | ×2.95 | ×3.70 |
-| **Kira** | `baseRentByPlayerCount` | 500 | 1.000 | 1.450 | 1.800 |
+| **Kira** | `baseRentByPlayerCount` | 290 | 650 | 1.140 | 1.630 |
 | **Kutu ödülü** | `rewardPerBoxByPlayerCount` | 50 | 55 | 70 | 88 |
 | **Tır kargosu** | `truckCargoMin/MaxExclusive` | 1–2 | 2–3 | 2–4 | 2–5 |
 | **Hangar bekleme** | `hangarStayDurationByPlayerCount` | 120s | 60s | 40s | 30s |
-| **Telefon zaman bedeli** | `timeSkipAmountByPlayerCount` | 115 dk | 59 dk | 55 dk | 55 dk |
+| **Telefon zaman bedeli** | `timeSkipAmountByPlayerCount` | 115 dk | 49 dk | 47 dk | 47 dk |
+| **Görev Kademesi fiyatı** | `UpgradePanel.GetCostMultiplier` **MUAF** | 80/100 | 80/100 | 80/100 | 80/100 |
 
 > [!CAUTION]
 > **`DifficultyManager`'ın müşteri/sabır ölçeklemeleri ÖLÜ KABLO.** `ScaledCustomerCount`,
@@ -1552,8 +1742,10 @@ Gün sonunda tüm oyuncuların dinlenme odasında toplanması gerekmektedir. Bu,
 
 ### 19.2 Ölçülen Gelir Ölçeği
 
-Sim v3.1 ölçümü — **1 : 1.73 : 2.40 : 2.95**. Kira ölçeği (1 : 2.00 : 2.90 : 3.60) bundan
-bilinçli olarak dik: kalabalık takım koordinasyon avantajını kirayla geri ödüyor.
+Sim v3.1 ölçümü — **1 : 1.73 : 2.40 : 2.95**. Kira ölçeği (2026-08-30'dan beri
+**1 : 2.24 : 3.93 : 5.62**, eskiden 1 : 2.00 : 2.90 : 3.60) bundan bilinçli olarak dik: kalabalık
+takım koordinasyon avantajını kirayla geri ödüyor. Yeni eğri daha da dik, çünkü Round 10 U1'in
+kira kesintisi asimetrikti (1P'de −%42, 4P'de −%9.4) — açık P azaldıkça büyüyordu.
 
 ### 19.3 Tasarım Felsefesi
 
@@ -1596,9 +1788,14 @@ $$\text{KAZANDIN} = (\text{Gün} \geq 16)$$
 
 > [!WARNING]
 > **`CheckWinCondition` prestije BAKMIYOR.** Yalnız `currentDay >= MAX_DAYS` kontrol ediliyor
-> (`GameStateManager.cs:696-712`). Prestij kapısı fiilen `PrestigeManager.ModifyPrestige`
-> (cs:154-157) içinde. **Kodun kendi docstring'i (cs:691, 706) bununla ÇELİŞİYOR** —
-> "prestige > 0 and rent paid" diyor. Ya yorum düzeltilmeli ya kontrol gerçekten eklenmeli.
+> (`GameStateManager.cs:699-715`). Prestij kapısı fiilen `PrestigeManager.ModifyPrestige`
+> (cs:154-157) içinde. Kodun docstring'i eskiden "prestige > 0 and rent paid" diyerek kodla
+> çelişiyordu; **2026-08-30'da yorum kodla senkronlandı** (davranış değişmedi).
+>
+> **Kazanma koşuluna prestij kapısı ekleme önerisi ÖLÇÜLDÜ ve REDDEDİLDİ** (Round 10 §4-R10):
+> tam paket sonrası Slow/strict final prestijleri **22 / 40 / 56 / 55**. Bir "prestij ≥ 30"
+> kapısı, kira düzeltmesiyle yeni kurtarılan Slow/strict P1'i (22) tekrar kaybettirirdi.
+> Prestij fail-state'i ölü kalsın ya da eşik ≤15 olsun.
 >
 > İlgili sessiz kaçak: `PrestigeManager.SetPrestige` (cs:231) o kapıdan geçmiyor (clamp var,
 > `TriggerLose` yok). Bugün dış çağıranı yok; ileride bağlanırsa prestij sessizce 0'a inebilir.
@@ -2002,24 +2199,29 @@ flowchart TB
 > `plans/economy-rebuild-2026-07-30{,-faz2,-faz3,-faz4-final}.md` (tarihsel).
 
 > [!CAUTION]
-> **Yalnız `runFullSim(playerCount, opts)` (v4.0) kullanın.** Dosyadaki eski `runSim` /
+> **Yalnız `runFullSim(playerCount, opts)` (v5.1) kullanın.** Dosyadaki eski `runSim` /
 > `runSimPlateUp` fonksiyonları **artık canlı kodu yansıtmıyor** (kapasite-bazlı kota, silinmiş
 > V3 telefonu, sabit gün uzunluğu, "1 müşteri = 1 ürün" — dördü de kırık; sapma −%76…+%540,
 > Slow/strict'te iflas GÜNÜ bile ayrışıyor). Silinmediler ama kullanılmamalılar.
 >
 > **C# içi `RunSimulation()` ContextMenu simülasyonu SİLİNDİ** — sim Unity'den bağımsız.
 
-> [!WARNING]
-> **`runFullSim`'in bilinen 3 model açığı (2026-08-30 itibarıyla düzeltilmedi):**
-> 1. Telefonun `SkipTime` maliyetini TABAN yerine güncel gün süresiyle hesaplıyor (~%31 fazla
->    faturalandırma), erken-gün-bitişinde zaman atlamasını **çift sayıyor**, ve
->    `ForceSpawnNextCustomer`'ı varış kapasitesine kredilemiyor.
-> 2. `QUEST_ASSETS` ödül kolonu **bayat** (2026-08-06 tier-düz tablosuyla senkron değil).
-> 3. `ASSUMED4.phoneUseRate` (strict 0.60 / optimistic 0.10) bayat — gerçekçi davranış her iki
->    bantta da **%10-25**.
+> [!NOTE]
+> **v4.0 → v5.0 → v5.1 (2026-08-30) — 6 model hatası kapandı:** (1) telefonun `SkipTime`
+> maliyeti artık TABAN 200s dönüşümüyle (günden bağımsız sabit gerçek-saniye) hesaplanıyor,
+> (2) erken-gün-bitişindeki çift sayım, (3) `ForceSpawnNextCustomer`'ın varış kapasitesine
+> kredilenmemesi, (4) **atlanan saniyelerin servis penceresini de kısaltması** (v4'te yalnız tır
+> penceresini kısaltıyordu — bu yüzden optimistic bantta telefon "bedava para" görünüyordu),
+> (5) quest karar modeli "en iyi 3'ün ORTALAMASI" yerine **N teklifin MAKSİMUMU** (sıralama
+> istatistiği), (6) v5.1'de UI slot kırpması (`questUiSlots = 3`) ve K-aday teklif üretimi.
+> `QUEST_ASSETS` tablosu ve `SRC4` sabitleri canlı koda resenkronlandı.
 >
-> Ayrıca modellenmeyenler: `wrongProductPrestigePenalty`, oyuncu tepki gecikmesi, dolu
-> DisplayTable'ın ek kayıp kanalı → `lost` / `missedQuota` sayıları **ALT SINIR**.
+> ⚠️ **Round 8 ve Round 10'un quest rakamları bu resenkrondan ÖNCE üretildi, bayattır.**
+>
+> Hâlâ modellenmeyenler: oyuncu tepki gecikmesi, `HandleFailedInteraction` kaskadı, dolu
+> DisplayTable'ın ek kayıp kanalı → `lost` / `missedQuota` sayıları **ALT SINIR**. `wrongProductRate`
+> kanalı v5'te VAR ama varsayılan **0** (kapalı) — açılırsa taban koşum değişir, karşılaştırmalarda
+> aynı değer kullanılmalı.
 
 ### 31.1 Simülasyon Bantları
 
@@ -2037,7 +2239,7 @@ Sim iki uçtan koşturulur; gerçek oyun bu ikisinin arasında bir yerde:
 | 1 | `kutu/dk/oyuncu` | 1.2 ↔ 2.0 arası 1P kümülatif geliri **%117** değiştiriyor |
 | 2 | `tableBusySeconds` (masa meşguliyeti) | 4s ↔ 8s, Paketleme İstasyonu'nun değerini **4×** değiştiriyor |
 | 3 | `agile_crew`'in üretime yansıması | ölçülmedi |
-| 4 | telefon çağrısının gerçek-saniye maliyeti | ✅ **ölçüldü** (Round 7): doğal varış aralığının %79-81'i, bkz. §14.4 |
+| 4 | telefon çağrısının gerçek-saniye maliyeti | ✅ **ölçüldü** (Round 7, Round 10 U2 sonrası): doğal varış aralığının %67-79'u, bkz. §14.4 |
 
 > [!CAUTION]
 > **1. girdi hâlâ ÖLÇÜLMEDİ — tahmin.** Bir oyun günü yalnızca 200–330 gerçek saniye, bu yüzden
@@ -2065,30 +2267,45 @@ Her simülasyon günü şu adımları takip eder:
 > ~~Eski "10 Günlük Kapasite Karşılaştırması" tablosu kaldırıldı~~ — dayandığı kapasite-bazlı
 > müşteri formülü koddan silindi (bkz. §9.6).
 
-`runFullSim` v4.0, 16 senaryo (1-4P × Normal/Slow × strict/optimistic), CANLI kira
-`{500,1000,1450,1800}` / g=1.20:
+`runFullSim` **v5.1**, 16 senaryo (1-4P × Normal/Slow × strict/optimistic), CANLI ayarlarla
+(kira `{290,650,1140,1630}` / g=1.20, telefon `{115,49,47,47}`, quest prestij ×0.4, telefon
+kullanımı %20). **16/16 hücre hayatta**:
 
-| Bant | Sonuç |
-|------|-------|
-| **Normal / optimistic** | Tüm P'ler rahat hayatta |
-| **Normal / strict** | Tüm P'ler hayatta; 1P marjı ince görünüyor ama gerçek tampon **kullanılmamış grace** (kırılma eşiği üretimde −%40) |
-| **Slow / optimistic** | Tüm P'ler hayatta |
-| **Slow / strict** | ❌ **4/4 iflas** — 1P gün 16, 2P/3P/4P gün 12 |
+| Bant | 1P | 2P | 3P | 4P | Önceki kirayla |
+|------|----|----|----|----|----------------|
+| **Normal / strict** | 2.106 | 4.441 | 5.710 | 6.783 | 979 / 2.562 / 4.046 / 5.871 |
+| **Normal / optimistic** | 4.580 | 9.812 | 9.975 | 10.296 | 3.453 / 7.933 / 8.311 / 9.384 |
+| **Slow / strict** | **484** | **612** | **433** | **304** | ❌ **4/4 İFLAS** (1P g16, 2P-4P g12) |
+| **Slow / optimistic** | 2.291 | 4.523 | 3.795 | 3.211 | 1.164 / 2.644 / 2.131 / 2.299 |
 
-**Slow/strict'in anatomisi**: ölüm gün 12'de görünür ama gün 4'te başlar — ilk kira kasayı
-87-201 TL'ye süpürür, gün 8'de grace yanar, gün 12'de ×1.44 kirası karşılıksız kalır
-(açık −265 / −303 / −519 / −595 TL). Kira / 4-günlük-gelir oranı **1.52-1.71**
-(Normal/strict'te 0.88-1.27 ve düşerek gidiyor) → **eğri değil SEVİYE sorunu, açık ≈ %25-30**.
-`rentGrowthMultiplier`'ı 1.10'a indirmek bile kurtarmıyor.
+(TL final kasa. Grace VARKEN ve YOKKEN sonuçlar aynı — yani hayatta kalma tek-seferlik grace'e
+bağlı değil. Final prestij: N/s 43-81, N/o 52-82, S/s 22-56, S/o 50-59.)
+
+**Çözülen sorun — Slow/strict'in anatomisi (tarihsel):** ölüm gün 12'de görünüyordu ama gün 4'te
+başlıyordu — ilk kira kasayı 87-201 TL'ye süpürür, gün 8'de grace yanar, gün 12'de ×1.44 kirası
+karşılıksız kalırdı (açık −265 / −303 / −519 / −595 TL). Kira / 4-günlük-gelir oranı **1.52-1.71**
+(Normal/strict'te 0.88-1.27) → **eğri değil SEVİYE sorunu, açık ≈ %25-30**;
+`rentGrowthMultiplier`'ı 1.10'a indirmek bile kurtarmıyordu. Çözüm taban kirayı asimetrik
+düşürmek oldu (§5.2).
 
 **Kota → para dönüşümü** (Round 2 §4): strict bantta 16/16 gün mekanik-bağlı, kota hiç bağlayıcı
 değil; kutu/kota oranı Normal/strict 0.31-0.47, Slow/strict 0.20-0.31, Normal/optimistic 1.21-1.23.
 
-> Bu tablo Round 3'ün önerdiği kira (`{290,650,1140,1630}`) **uygulanmadan önceki** durumu gösterir.
+> [!WARNING]
+> **Kalan, kabul edilmiş denge açığı**: Slow/strict P1 ve P2'de optimal telefon kullanım oranı
+> **%100** çıkıyor (spam baskın). Kök neden telefon sabitleri değil, o bantta tır veriminin
+> mekanik-bağlı olması: günü kısaltmak hiçbir kutu kaybettirmiyor, düz 20 TL/çağrı ise günlük
+> gelirin %60-70'i oluyor. Round 10'da denenen `callMoneyReward` değişiklikleri (0/10/12/15)
+> Normal bandı bozmadan bunu çözmüyor → **bilinçli olarak açık bırakıldı** (bkz. §14.4 uyarısı).
+
+**Modelin bilinen açıkları** (sonuçların YÖNÜ güvenilir, BÜYÜKLÜĞÜ değil): oyuncu tepki gecikmesi
+ve `HandleFailedInteraction` kaskadı modellenmiyor (`lost`/`missedQuota` sayıları ALT SINIR) ·
+event'ler `runFullSim`'de modellenmiyor (Round 5 ayrı harness'la ölçtü) · `questCompletionProb`
+doygunluk platosu ölçüme dayanmıyor · `wrongProductRate` kanalı varsayılan olarak KAPALI.
 
 ---
 
 
 > **Bu belge, Cargor projesinin canlı bir tasarım referansıdır. Oyun geliştikçe güncellenmelidir.**
 >
-> 📝 *Son güncelleme: 30 Ağustos 2026 — Eclion Software (ekonomi Round 9: PlateUp kota + Telefon V4 senkronu)*
+> 📝 *Son güncelleme: 30 Ağustos 2026 — Eclion Software (ekonomi Round 12: Round 10/11 uygulama-sonrası GDD senkronu, commit `bb98ad1`)*

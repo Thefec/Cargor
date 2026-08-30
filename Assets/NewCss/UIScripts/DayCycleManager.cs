@@ -668,11 +668,11 @@ namespace NewCss
             else
             {
                 // Fallback: economySettings atanmamışsa eski sabit değerler
-                // Senkron: asset {500,1000,1450,1800} / g=1.20 ile hizalı (bkz.
-                // .claude/agent-memory/economist/rent_growth_1_35_deficit_2026-08-20.md) —
+                // Senkron: asset {290,650,1140,1630} / g=1.20 ile hizalı (bkz.
+                // .claude/agent-memory/economist/economy_full_balance_round10_2026-08-30.md) —
                 // asset yüklenemezse sessizce eski ekonomiye düşmesin.
                 Debug.LogWarning($"{LOG_PREFIX} economySettings atanmamış! Fallback değerler kullanılıyor.");
-                int baseRent    = playerCount == 1 ? 500 : playerCount == 2 ? 1000 : playerCount == 3 ? 1450 : 1800;
+                int baseRent    = playerCount == 1 ? 290 : playerCount == 2 ? 650 : playerCount == 3 ? 1140 : 1630;
                 float scaled    = baseRent * Mathf.Pow(1.20f, _rentPaymentCount);
                 finalRent       = scaled;
             }
