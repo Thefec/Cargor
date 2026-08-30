@@ -3103,12 +3103,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 1a76654e61f60394ea6b3919ee2289c3, type: 3}
       insertIndex: -1
       addedObject: {fileID: 424799593}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 1a76654e61f60394ea6b3919ee2289c3, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 424799597}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 1a76654e61f60394ea6b3919ee2289c3, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 424799598}
   m_SourcePrefab: {fileID: 100100000, guid: 1a76654e61f60394ea6b3919ee2289c3, type: 3}
 --- !u!1 &90850324
 GameObject:
@@ -17704,10 +17698,8 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   phoneStartHour: 8
   phoneEndHour: 18
-  ringDuration: 15
   economySettings: {fileID: 11400000, guid: 415dc128c56df644f9af98009bf37743, type: 2}
-  ringingSound: {fileID: 424799597}
-  successCallSound: {fileID: 424799598}
+  successCallSound: {fileID: 0}
   phoneWaitBar: {fileID: 424799593}
   phoneCollider: {fileID: 424799585}
   playerTag: Character
@@ -17756,200 +17748,6 @@ MonoBehaviour:
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
---- !u!82 &424799597
-AudioSource:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 424799584}
-  m_Enabled: 1
-  serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 8300000, guid: d077ec545f7ec04409600beb3b2d9368, type: 3}
-  m_PlayOnAwake: 0
-  m_Volume: 0.6
-  m_Pitch: 1
-  Loop: 1
-  Mute: 0
-  Spatialize: 0
-  SpatializePostEffects: 0
-  Priority: 128
-  DopplerLevel: 1
-  MinDistance: 5
-  MaxDistance: 50
-  Pan2D: 0
-  rolloffMode: 1
-  BypassEffects: 0
-  BypassListenerEffects: 0
-  BypassReverbZones: 0
-  rolloffCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 1
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  panLevelCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  spreadCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  reverbZoneMixCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
---- !u!82 &424799598
-AudioSource:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 424799584}
-  m_Enabled: 1
-  serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 8300000, guid: a488ce2f04a98e34480b044287bb392b, type: 3}
-  m_PlayOnAwake: 0
-  m_Volume: 0.4
-  m_Pitch: 1
-  Loop: 0
-  Mute: 0
-  Spatialize: 0
-  SpatializePostEffects: 0
-  Priority: 128
-  DopplerLevel: 1
-  MinDistance: 1
-  MaxDistance: 15
-  Pan2D: 0
-  rolloffMode: 0
-  BypassEffects: 0
-  BypassListenerEffects: 0
-  BypassReverbZones: 0
-  rolloffCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 1
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  panLevelCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  spreadCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  reverbZoneMixCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
 --- !u!1 &425538936
 GameObject:
   m_ObjectHideFlags: 0
@@ -27595,10 +27393,9 @@ MonoBehaviour:
     levelObjects: []
     garageDoorControllers: []
   - displayName: "Telefon Hatt\u0131"
-    displayNameLocKey: 
-    contentText: "Saatte yapabilece\u011Fin telefon sipari\u015Fi say\u0131s\u0131
-      +1 artar."
-    contentTextLocKey: 
+    displayNameLocKey:
+    contentText: "D\u0131\u015Far\u0131 arama zaman maliyetini %20 azalt\u0131r."
+    contentTextLocKey:
     starterValue: 0
     StaminaValue: 1
     TruckValue: 10
@@ -63314,6 +63111,10 @@ MonoBehaviour:
   musicVolumeText: {fileID: 649159087}
   sfxVolumeSlider: {fileID: 1147275707}
   sfxVolumeText: {fileID: 1656378479}
+  voiceVolumeSlider: {fileID: 0}
+  voiceVolumeText: {fileID: 0}
+  voiceEnabledToggle: {fileID: 0}
+  voiceSelfMonitorToggle: {fileID: 0}
   keyBindingRows:
   - action: 0
     button: {fileID: 1174922532}
@@ -81013,6 +80814,10 @@ MonoBehaviour:
   musicVolumeText: {fileID: 1843704692}
   sfxVolumeSlider: {fileID: 332601399}
   sfxVolumeText: {fileID: 277668826}
+  voiceVolumeSlider: {fileID: 0}
+  voiceVolumeText: {fileID: 0}
+  voiceEnabledToggle: {fileID: 0}
+  voiceSelfMonitorToggle: {fileID: 0}
   keyBindingRows:
   - action: 0
     button: {fileID: 369766234}
@@ -87596,11 +87401,7 @@ MonoBehaviour:
   maxQueueSize: 2
   patienceMultiplier: 1
   interactionTimeMultiplier: 1
-  _shelfMultiplier: 2
-  _levelMultiplier: 2
-  _storeLevel: 1
-  _minVariance: -2
-  _maxVariance: 3
+  economySettings: {fileID: 0}
   _minCustomersPerDay: 1
   _maxCustomersPerDay: 50
   spawnTimeRandomness: 0.2
