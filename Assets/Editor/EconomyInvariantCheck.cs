@@ -179,6 +179,22 @@ public static class EconomyInvariantCheck
                                "P-bazlı timeSkipAmount, cooldown ve callPrestigeReward devre dışı kalır");
         }
 
+        // --- Quest UI slotları (R11 D4 sigortası, 2026-08-30) ---
+        // economy_full_balance_round11_2026-08-30.md §1: QuestManager bir gün en fazla
+        // QuestManager.BASE_DAILY_QUEST_COUNT (3, private const) kadar teklif üretir; sahnede
+        // bundan FAZLA veya AZ QuestSlotUI olursa (a) fazlası hiç gösterilemez - sessiz NO-OP
+        // (round10 U6'nın tam düştüğü tuzak), (b) azı teklifleri kırpar. 3, QuestManager'daki
+        // sabitle EL İLE senkron tutulmalı - burada reflection'la okunamaz (private const, IL'e
+        // gömülür).
+        var questUi = FindInScene<NewCss.Quest.QuestUIController>(roots);
+        if (questUi == null) r.Failures.Add("Sahnede QuestUIController yok");
+        else
+        {
+            var slots = ReadPrivate<List<NewCss.Quest.QuestSlotUI>>(questUi, "questSlots");
+            r.Expect("sahne QuestUIController.questSlots.Count (== QuestManager.BASE_DAILY_QUEST_COUNT)",
+                     slots?.Count ?? -1, 3);
+        }
+
         // --- Upgrade listesi (FAZ4 §B.7'de kısılan omurgalar + perk bayrakları) ---
         var panel = FindInScene<UpgradePanel>(roots);
         if (panel == null) { r.Failures.Add("Sahnede UpgradePanel yok"); return; }
@@ -255,8 +271,9 @@ public static class EconomyInvariantCheck
             return;
         }
 
-        // §B.3 kira
-        r.ExpectIntArray("baseRentByPlayerCount", eco.baseRentByPlayerCount, new[] { 500, 1000, 1450, 1800 });
+        // §B.3 kira — economist round10 U1 (2026-08-30): Slow/strict iflasını kurtarmak için
+        // {500,1000,1450,1800} → {290,650,1140,1630} (bkz. GameEconomySettings.cs tooltip).
+        r.ExpectIntArray("baseRentByPlayerCount", eco.baseRentByPlayerCount, new[] { 290, 650, 1140, 1630 });
         r.ExpectFloat("rentGrowthMultiplier", eco.rentGrowthMultiplier, 1.20f);
         r.Expect("rentIntervalDays", eco.rentIntervalDays, 4);
 
@@ -297,34 +314,34 @@ public static class EconomyInvariantCheck
         r.ExpectFloat("bonusPerTier", eco.bonusPerTier, 5f);
         r.ExpectFloat("customerServedPrestigeBonus", eco.customerServedPrestigeBonus, 0.4f);
         r.ExpectFloat("customerLostPrestigePenalty", eco.customerLostPrestigePenalty, -0.4f);
-        r.ExpectFloat("wrongProductPrestigePenalty", eco.wrongProductPrestigePenalty, -0.08f);
+        r.ExpectFloat("wrongProductPrestigePenalty", eco.wrongProductPrestigePenalty, -0.20f); // U12
         r.ExpectFloat("boxDropPrestigePenalty", eco.boxDropPrestigePenalty, -0.04f);
         r.ExpectFloat("wrongDeliveryPrestigePenalty", eco.wrongDeliveryPrestigePenalty, -0.16f);
 
-        // §D telefon V4 (PlateUp geçişi, 2026-08-29)
+        // §D telefon V4 (PlateUp geçişi, 2026-08-29) — P2-P4 economist round10 U2 (2026-08-30)
         r.ExpectArray("timeSkipAmountByPlayerCount", eco.timeSkipAmountByPlayerCount,
-                      new[] { 115f, 59f, 55f, 55f });
-        r.ExpectFloat("phoneCooldownSeconds", eco.phoneCooldownSeconds, 20f);
+                      new[] { 115f, 49f, 47f, 47f });
+        r.ExpectFloat("phoneCooldownSeconds", eco.phoneCooldownSeconds, 3f); // kullanıcı isteği 2026-08-30, eski 20f çok uzundu
         r.Expect("callMoneyReward", eco.callMoneyReward, 20);
         r.ExpectFloat("callPrestigeReward", eco.callPrestigeReward, 0.4f);
-        r.ExpectFloat("GetTimeSkipAmountMinutes(1)", eco.GetTimeSkipAmountMinutes(1), 115f);
-        r.ExpectFloat("GetTimeSkipAmountMinutes(4)", eco.GetTimeSkipAmountMinutes(4), 55f);
+        r.ExpectFloat("GetTimeSkipAmountMinutes(1)", eco.GetTimeSkipAmountMinutes(1), 115f); // P1 bilerek sabit
+        r.ExpectFloat("GetTimeSkipAmountMinutes(4)", eco.GetTimeSkipAmountMinutes(4), 47f); // U2
 
         // §E gün-sonu cezası
         r.ExpectFloat("customerMissedQuotaPrestigePenalty", eco.customerMissedQuotaPrestigePenalty, -0.2f);
 
-        // Yardımcı metodlar gerçekten doğru okuyor mu (dizi ↔ metod tutarlılığı)
-        r.Expect("GetBaseRent(1)", eco.GetBaseRent(1), 500);
-        r.Expect("GetBaseRent(4)", eco.GetBaseRent(4), 1800);
-        r.Expect("GetBaseRent(9) [clamp]", eco.GetBaseRent(9), 1800);
-        r.Expect("GetBaseRent(0) [clamp]", eco.GetBaseRent(0), 500);
+        // Yardımcı metodlar gerçekten doğru okuyor mu (dizi ↔ metod tutarlılığı) — U1
+        r.Expect("GetBaseRent(1)", eco.GetBaseRent(1), 290);
+        r.Expect("GetBaseRent(4)", eco.GetBaseRent(4), 1630);
+        r.Expect("GetBaseRent(9) [clamp]", eco.GetBaseRent(9), 1630);
+        r.Expect("GetBaseRent(0) [clamp]", eco.GetBaseRent(0), 290);
         r.ExpectFloat("GetHangarStayDuration(1)", eco.GetHangarStayDuration(1), 120f);
         r.Expect("GetTruckCargoRange(1)", eco.GetTruckCargoRange(1), (1, 3));
         r.Expect("GetTruckCargoRange(4)", eco.GetTruckCargoRange(4), (2, 6));
 
-        // Kira formülü: baseRent × growth^cycle × scaledMultiplier
-        r.ExpectFloat("CalculateRent(1P, dönem 0)", eco.CalculateRent(1, 0), 500f, 0.01f);
-        r.ExpectFloat("CalculateRent(4P, dönem 2)", eco.CalculateRent(4, 2), 1800f * 1.20f * 1.20f, 0.5f);
+        // Kira formülü: baseRent × growth^cycle × scaledMultiplier — U1
+        r.ExpectFloat("CalculateRent(1P, dönem 0)", eco.CalculateRent(1, 0), 290f, 0.01f);
+        r.ExpectFloat("CalculateRent(4P, dönem 2)", eco.CalculateRent(4, 2), 1630f * 1.20f * 1.20f, 0.5f);
 
         // ── PERK SIZINTISI ────────────────────────────────────────────────────
         // Bu alanlar PerkEffect tarafından RUNTIME'DA doğrudan yazılıyor ve hiçbir yerde
@@ -334,6 +351,7 @@ public static class EconomyInvariantCheck
         r.ExpectPristine("rewardVolatility", eco.rewardVolatility, 0f, "high_volatility");
         r.ExpectPristine("rewardVolatilityMean", eco.rewardVolatilityMean, 1f, "high_volatility");
         r.ExpectPristine("phoneCooldownPerkBonusSeconds", eco.phoneCooldownPerkBonusSeconds, 0f, "phone_line");
+        r.ExpectPristine("phoneTimeSkipPerkMultiplier", eco.phoneTimeSkipPerkMultiplier, 1f, "phone_line"); // U4
     }
 
     // ── DifficultyManager prefab ──────────────────────────────────────────────
@@ -379,12 +397,19 @@ public static class EconomyInvariantCheck
         r.Expect("quest asset sayısı", quests.Length, 30);
         if (quests.Length == 0) return;
 
-        // §B.9 tier ödül/ceza tablosu
+        // §B.9 tier ödül/ceza tablosu — economist round10 U7 (2026-08-30): prestij ödül+ceza
+        // kolonu ×0.4 (maxPrestige=100 tavanına çarpan hücre 3/16 → 0/16, v5 sim). PARA
+        // kolonu (money/moneyPen) o turda DEĞİŞMEDİ.
+        // R11-2 (economist round11, 2026-08-30): Medium/Hard CEZA kolonu (yalnız ceza — ödüller
+        // sabit): Hard moneyPen 53→30, prestigePen 1.05→0.60; Medium moneyPen 27→20,
+        // prestigePen 0.55→0.40. Gerekçe: koşulsuz kabul eden "naif oyuncu" için Hard tier
+        // 16/16 hücrede negatif EV'ydi (en iyi bantta bile -1.1 TL/gün) — ceza indirimi bunu
+        // sağlıklı bir beceri gradyanına çeviriyor. Easy tier DEĞİŞMEDİ.
         var expected = new Dictionary<int, (float money, float moneyPen, float prestige, float prestigePen)>
         {
-            { 0, (28f, 15f, 1.4f, 0.8f) },
-            { 1, (60f, 27f, 3f, 1.36f) },
-            { 2, (150f, 53f, 7.5f, 2.66f) },
+            { 0, (28f, 15f, 0.6f, 0.32f) },
+            { 1, (60f, 20f, 1.2f, 0.4f) },
+            { 2, (150f, 30f, 3f, 0.6f) },
         };
 
         var tierCounts = new Dictionary<int, int> { { 0, 0 }, { 1, 0 }, { 2, 0 } };

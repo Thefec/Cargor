@@ -41,7 +41,17 @@ dogru yondeydi ama tavanin kendisi artik baglayici degil.)
 gelirini ciddi FAZLA tahmin ediyordu. [[money_comes_only_from_trucks]] icindeki "modelleme
 boslugu / playtest-bagimli" notu bu turda KOD ILE cozuldu: seri servis gercek, tavan gercek.
 
-## ✅ COZUM BULUNDU (2026-07-30, FAZ2) -- 2 PARALEL ISTASYON
+> ⚠️ **2026-08-30 (ROUND 10) — ASAGIDAKI "COZUM" ARTIK GECERLI DEGIL.**
+> `runFullSim` v5 ile PlateUp kota modeli uzerinde olculdu: 2. servis istasyonu
+> **Slow/strict bandini KURTARMIYOR** (P1/P2/P3 hala gun 12-16'da iflas ediyor), cunku
+> o bantta baglayan kol `stationCap` DEGIL `laborCap` (oyuncular tir ile musteri arasinda
+> bolusuyor). Buna karsilik OPTIMISTIC bandi **+%18…+%267** sisiriyor
+> (Slow/opt P4: 2299 -> **8438 TL**). Yani ikinci istasyon bir denge DUZELTMESI degil,
+> tek basina buyuk bir ENFLASYON olayi. Onerilmiyor; onerilecekse ayri bir tur gerektirir.
+> Asagidaki 2026-07-30 tablosu ESKI kapasite-tabanli talep modeline ait — tarihsel kayit.
+> Detay: [[economy_full_balance_round10_2026-08-30]] §4-R6.
+
+## ⚠️ TARIHSEL (2026-07-30, FAZ2) -- 2 PARALEL ISTASYON ONERISI
 Varyant taramasi (gun 8, prestij/gun): mevcut 1.80/2.20/**1.07**/**1.07** ->
 kuyruk 3 tek basina 1.80/2.20/**0.69**/**0.47** (**DAHA KOTU!**) ->
 **2 paralel istasyon 1.80/2.20/2.80/3.20 (MONOTON ARTAN)**. 4 istasyon 2 ile ayni (talep doymus).

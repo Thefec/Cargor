@@ -187,11 +187,15 @@ namespace NewCss
         //  Basit kaldıraç (level-lineer / relic) — task7-prep.md tablo 1
         // ─────────────────────────────────────────────────────────────
 
-        // Ucuz Kira: rentGrowthMultiplier 1.15 → 1.12 → 1.09 → 1.06 (her seviye -0.03)
+        // Ucuz Kira: rentGrowthMultiplier 1.20 → 1.17 → 1.14 → 1.11 (her seviye -0.03).
+        // economist round10 U11 (2026-08-30): eski 1.15f sabiti bayat bir tabana (eski
+        // rentGrowthMultiplier) göre kalibre edilmişti; canlı taban 1.20 olduğu için kod perki
+        // niyet edilenden 2.55-2.61 kat güçlü uyguluyordu (kazanç 171-959 TL, niyet 67-371 TL).
+        // Formül artık canlı tabandan başlıyor.
         private static void ApplyCheapRent(int level, PerkContext ctx)
         {
             if (ctx.Economy == null) return;
-            ctx.Economy.rentGrowthMultiplier = 1.15f - 0.03f * level;
+            ctx.Economy.rentGrowthMultiplier = 1.20f - 0.03f * level;
         }
 
         // Prestij Simsarı: Truck.bonusPerTier 5 → 5.5 → 6 (her seviye +0.5). perk-revival: artık
@@ -291,14 +295,18 @@ namespace NewCss
 
         // Telefon Hattı (relic): PhoneCallManager V4'e geçti (dışarı arama modeli, çalma
         // olasılığı kavramı tamamen kalktı — bkz. plans/plateup-musteri-telefon.md §D,
-        // 2026-08-29). Eski hedef alan (phoneRingPerkBonus, kaldırıldı) yerine perk artık
-        // telefonun cooldown süresini kısaltıyor. 10f (20s tabanın yarısı) economist onaylı
-        // (2026-08-29) — perk kotayı büyütmediği için ekonomik etkisi yok. Mutlak atama
-        // (idempotent) korunuyor.
+        // 2026-08-29). Eski hedef alan (phoneRingPerkBonus, kaldırıldı) yerine perk artık İKİ
+        // alana yazıyor (economist round10 U4/U5, 2026-08-30):
+        //  - phoneTimeSkipPerkMultiplier = 0.80f: GERÇEK ekonomik kaldıraç — çağrı başına zaman
+        //    maliyeti %20 azalır (değer/maliyet 0-0.62-1.51x, v5 sim ile doğrulandı).
+        //  - phoneCooldownPerkBonusSeconds = 1f (eski 10f): taban 3f'e (phoneCooldownSeconds)
+        //    göre zaten Mathf.Max(1, 3-10) ile tabana çakılıyordu — ekonomik değeri SIFIR, yalnız
+        //    his/etiket amaçlı, mutlak atama (idempotent) korunuyor.
         private static void ApplyPhoneLine(int level, PerkContext ctx)
         {
             if (ctx.Economy == null || level <= 0) return;
-            ctx.Economy.phoneCooldownPerkBonusSeconds = 10f;
+            ctx.Economy.phoneTimeSkipPerkMultiplier = 0.80f;
+            ctx.Economy.phoneCooldownPerkBonusSeconds = 1f;
         }
 
         // ─────────────────────────────────────────────────────────────

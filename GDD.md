@@ -8,19 +8,30 @@
 > **Oyuncu Sayısı**: 1–4 (Online Co-op)
 > **Motor Sürümü**: Unity 6000.5.6f1 (URP)
 > **Durum**: Geliştirme Aşamasında
-> **Son Güncelleme**: 7 Ağustos 2026 — FAZ 4 ekonomi senkronu
+> **Son Güncelleme**: 30 Ağustos 2026 — PlateUp kota + Telefon V4 senkronu (ekonomi Round 9)
 
 ---
 
 > [!IMPORTANT]
-> **Ekonomi bölümleri (§4, §5, §6, §8, §13, §14, §16, §19) 7 Ağustos 2026'da koda karşı yeniden
-> doğrulandı.** Referans: `plans/economy-rebuild-2026-07-30-faz4-final.md` §B.
+> **Ekonomi bölümleri (§2.2, §3, §4, §5, §6, §7, §8, §9, §10, §13, §14, §15, §16, §19, §31)
+> 30 Ağustos 2026'da koda karşı satır satır yeniden doğrulandı** ("Tam Kapsamlı Ekonomi Dengeleme"
+> turu, Round 9). Referans: `plans/economy-full-balance-2026-08-30.md` ve
+> `.claude/agent-memory/economist/economy_full_balance_round*.md`.
 >
-> Bu bölümlerdeki sayılar `Assets/Editor/EconomyInvariantCheck.cs` tarafından **165 kontrol** ile
-> denetleniyor — menü `Cargor / Ekonomi Değerlerini Doğrula`. **Bir değeri değiştirirsen orayı da
-> güncelle**, yoksa denetçi kırmızı yanar.
+> Bu bölümlerdeki sayılar `Assets/Editor/EconomyInvariantCheck.cs` tarafından **77 `Expect*`
+> iddiasıyla** (dizi kontrolleri tek iddiada birden çok değeri kapsar) denetleniyor — menü
+> `Cargor / Ekonomi Değerlerini Doğrula`. **Bir değeri değiştirirsen orayı da güncelle**, yoksa
+> denetçi kırmızı yanar.
 >
-> **§7 (Kota Sistemi) tamamen kaldırıldı** — sistem kodda yok.
+> **§7 (eski kutu kotası) kaldırıldı, yerine PlateUp müşteri kotası geldi** — artık bir
+> kaybetme koşulu DEĞİL, günlük müşteri arzı tablosu (bkz. §7).
+
+> [!CAUTION]
+> **Bu belge şu anki CANLI kodu anlatır.** 2026-08-30 dengeleme turunda önerilen ama **henüz
+> uygulanmamış** değerler (kira `{290,650,1140,1630}`, `timeSkipAmountByPlayerCount={115,49,47,47}`,
+> quest prestij ×0.4, `DAILY_QUEST_COUNT=3+tier`) bilinçli olarak **buraya yazılmadı** —
+> uygulama turu (Round 10) sonrası bu belge tekrar senkronlanmalı. Öneri listesi:
+> `plans/economy-full-balance-2026-08-30.md` → "Biriken, henüz KOD'A UYGULANMAMIŞ öneriler".
 
 ---
 
@@ -32,7 +43,7 @@
 4. [Ekonomi Sistemi](#4--ekonomi-sistemi)
 5. [Kira Sistemi](#5--kira-sistemi)
 6. [Prestij Sistemi](#6--prestij-sistemi)
-7. [~~Kota Sistemi~~ — KALDIRILDI](#7--kota-sistemi--kaldirildi)
+7. [Müşteri Kotası (PlateUp modeli)](#7--müşteri-kotası-plateup-modeli)
 8. [Tır / Teslimat Sistemi](#8--tır--teslimat-sistemi)
 9. [Müşteri Sistemi](#9--müşteri-sistemi)
 10. [Kutu ve Eşya Sistemi](#10--kutu-ve-eşya-sistemi)
@@ -80,7 +91,7 @@ Oyuncu, küçük bir kargo mağazasının çalışanıdır. Her gün gelen müş
 
 ### 1.4 Benzersiz Satış Noktaları (USP)
 
-1. **Kapasite-bazlı dinamik müşteri sistemi** — Müşteri sayısı oyuncunun mağaza kapasitesine bağlıdır, güne değil
+1. **PlateUp tarzı günlük müşteri kotası** — Her günün müşteri sayısı önceden belli ve gün numarasına bağlı; oyuncu kotayı bitirince gün erken kapanır (bkz. §7)
 2. **Çok katmanlı ekonomi** — Kira, prestij, görev ödülleri ve oyuncu-sayısına ölçekli upgrade maliyetleri iç içe geçmiş dengeli bir ekonomi
 3. **17 farklı günlük etkinlik** — Her oyun farklı hissettiren rastgele olaylar
 4. **Prestij-bazlı bonus sistemi** — İyi oynamak eksponansiyel ödüller getirir
@@ -124,16 +135,25 @@ flowchart TD
 
 Bir günün dakika dakika akışı:
 
-| Oyun Saati | Gerçek Süre (≈) | Olay |
-|------------|----------------|------|
-| 07:00 | 0s | Gün başlar, etkinlik aktif olur |
-| 08:00 | ~14s | Tırlar gelmeye başlar, müşteriler spawn olur |
-| 10:00 | ~42s | Upgrade paneli açılır |
-| 12:00-14:00 | ~70-98s | **Öğle Rush**: Max 6 eşzamanlı müşteri, ×1.5 spawn hızı |
-| 14:00-15:00 | ~98-112s | Öğleden sonra durgunluk: Max 2 müşteri |
-| 16:00-17:00 | ~126-140s | **Akşam Rush**: Max 4 müşteri, ×1.3 spawn hızı |
-| 17:00 | ~140s | Tırlar son çıkışlarını yapar |
-| 18:00 | ~160s | Gün biter, kira kontrolü yapılır |
+Gerçek süreler **gün uzunluğuna göre esner** (gün 1-3 = 200s, gün 16 = 330s; bkz. §3.2).
+Oyun saati ↔ gerçek saniye dönüşümü lineerdir: `saniye = (saat − 7) / 11 × GünSüresi`.
+
+| Oyun Saati | Gün 1-3 (200s) | Gün 16 (330s) | Olay |
+|------------|----------------|---------------|------|
+| 07:00 | 0s | 0s | Gün başlar, etkinlik aktif olur |
+| 08:00 | ~18s | ~30s | Tırlar gelmeye başlar, müşteriler spawn olur, telefon açılır |
+| 10:00 | ~55s | ~90s | Upgrade paneli açılır (`PANEL_OPEN_HOUR = 10`) |
+| 12:00-14:00 | ~91-127s | ~150-210s | **Öğle Rush**: Max 6 eşzamanlı müşteri, ×1.5 spawn hızı |
+| 14:00-15:00 | ~127-145s | ~210-240s | Öğleden sonra durgunluk: Max 2 müşteri |
+| 16:00-17:00 | ~164-182s | ~270-300s | **Akşam Rush**: Max 4 müşteri, ×1.3 spawn hızı |
+| 17:00 | ~182s | ~300s | Tırlar son çıkışlarını yapar |
+| **17:30** | **~191s** | **~315s** | **Müşteri çıkış saati** (`CUSTOMER_EXIT_HOUR`): kuyruktaki servis edilmemiş müşteriler zorla çıkarılır (−0.4 prestij/müşteri) + hiç spawn olmamış kota müşterileri cezalanır (−0.2/müşteri) |
+| 18:00 | ~200s | ~330s | Gün biter, kira kontrolü yapılır |
+
+> [!NOTE]
+> **Erken gün bitişi**: günün kotası tükenip kuyruk da boşaldığında gün 18:00'i beklemez —
+> `dayEndGraceSeconds = 30s` kapanış payından sonra `FastForwardToEndOfDay()` günü sarar
+> (`CustomerManager.CheckEarlyDayCompletion`). Pay, yarım yüklü tırı tamamlama fırsatı içindir.
 
 ### 2.3 Oyuncu Eylemleri (Tek Seferde)
 
@@ -142,38 +162,51 @@ Bir günün dakika dakika akışı:
 3. **Koy** → Masaya veya yere kutu bırak
 4. **Fırlat** → Kutuyu fırlat (riskli — düşerse ceza)
 5. **Teslim Et** → Tıra doğru renk kutuyu ver
-6. **Telefon Aç** → Ekstra müşteri çağır + zaman atla
+6. **Telefonla Çağır** → E'yi **basılı tut** (1sn), sıradaki müşteriyi öne çek: +20 TL, +0.4 prestij, karşılığında gün saati ileri sarılır (bkz. §14)
 7. **Upgrade Satın Al** → Mağazayı geliştir
 
 ---
 
 ## 3. ⏰ Gün Döngüsü Sistemi
 
-> **Kaynak**: [DayCycleManager.cs](file:///c:/Users/cicek/Documents/GitHub/Cargor/Assets/NewCss/GameState/DayCycleManager.cs)
+> **Kaynak**: [DayCycleManager.cs](file:///c:/Users/cicek/Documents/GitHub/Cargor/Assets/NewCss/UIScripts/DayCycleManager.cs)
+> (dosya `Assets/NewCss/UIScripts/` altında — `GameState/` altında DEĞİL)
 
 ### 3.1 Temel Parametreler
 
 | Parametre | Değer | Açıklama |
 |-----------|-------|----------|
 | Toplam gün sayısı | **16** (`MAX_DAYS`) | Oyunun toplam uzunluğu |
-| Gün başlangıç saati | **07:00** | Oyun içi sabah |
-| Gün bitiş saati | **18:00** | Oyun içi akşam |
-| Baz gün süresi | **160 saniye** | İlk 3 günün gerçek süresi |
-| Günlük süre artışı | **+10 saniye/gün** | 4. günden itibaren her gün uzar |
+| Gün başlangıç saati | **07:00** (`startHour`) | Oyun içi sabah |
+| Gün bitiş saati | **18:00** (`endHour`) | Oyun içi akşam |
+| Baz gün süresi | **200 saniye** (`realDurationInSeconds`) | İlk 3 günün gerçek süresi (sahne override'ı da 200) |
+| Günlük süre artışı | **+10 saniye/gün** (`dailyDurationIncrease`) | 4. günden itibaren her gün uzar (`DYNAMIC_DURATION_START_DAY = 3`) |
 | UI güncelleme hızı | **10 FPS** | Performans için throttle |
+
+> [!WARNING]
+> **`realDurationInSeconds`'a DOĞRUDAN yazmayın.** Tek yazıcı `RecomputeDayDuration()`:
+> `taban × overtime-perk-çarpanı + buff-toplamı`. Taban (`_baseRealDuration`) `Awake`'te,
+> perk/buff uygulanmadan ÖNCE bir kez cache'lenir.
 
 ### 3.2 Gün Süresi Formülü
 
-$$\text{GünSüresi}(g) = \begin{cases} 160\text{s} & g \leq 3 \\ 160 + (g - 3) \times 10\text{s} & g > 3 \end{cases}$$
+$$\text{GünSüresi}(g) = \begin{cases} 200\text{s} & g \leq 3 \\ 200 + (g - 3) \times 10\text{s} & g > 3 \end{cases}$$
 
-| Gün | Süre (saniye) | Süre (dakika) |
+| Gün | Süre (saniye) | Süre (dk:sn) |
 |-----|--------------|---------------|
-| 1-3 | 160s | 2:40 |
-| 4 | 170s | 2:50 |
-| 5 | 180s | 3:00 |
-| 8 | 210s | 3:30 |
-| 12 | 250s | 4:10 |
-| 16 | 290s | 4:50 |
+| 1-3 | 200s | 3:20 |
+| 4 | 210s | 3:30 |
+| 5 | 220s | 3:40 |
+| 8 | 250s | 4:10 |
+| 12 | 290s | 4:50 |
+| 16 | 330s | 5:30 |
+
+> [!IMPORTANT]
+> **Telefonun zaman maliyeti bu tabloyu KULLANMAZ.** `SkipTime` / `PredictTimeAfterSkip`
+> (cs:425, cs:446) saniye ↔ oyun-dakikası dönüşümünü **TABAN** `realDurationInSeconds` (200s) ile
+> yapar, `CurrentDayDuration` ile değil. Sonuç: bir telefon çağrısının **gerçek-saniye** bedeli
+> her gün aynıdır, ama gün uzadıkça o saniyelerin karşılığı olan **oyun-dakikası azalır**
+> (bkz. §14.4). Bu bilinçli davranıştır, düzeltmeyin.
 
 ### 3.3 Gün Sonu Akışı
 
@@ -201,11 +234,18 @@ flowchart TD
 Yeni gün başladığında tetiklenen merkezi event. Aşağıdaki sistemler bu event'e abone olur:
 
 - **TruckSpawner** → Tüm tırları despawn et, yenilerini spawn et
-- **CustomerManager** → Günlük müşteri sayısını sıfırla ve yeniden hesapla
+- **CustomerManager** → Günün kotasını (`GetDailyCustomerCount(gün, P)`) yeniden hesapla, spawn zamanlamasını sıfırla
 - **QuestManager** → Yeni görevler ata, tamamlanmamışlara ceza ver
-- **EventEffectManager** → Günün etkinliğini uygula
+- **EventEffectManager** → Günün etkinliğini uygula (+ FESTIVAL DAY para bonusu)
 - **UpgradePanel** → Bekleyen yükseltmeleri aktifleştir
 - **DayLightController** → Aydınlatmayı sıfırla
+- **PhoneCallManager** → Telefon cooldown'unu sıfırla (`HandleNewDay`, cs:313)
+
+> [!WARNING]
+> `EventEffectManager.OnNewDayHandler` ve `CustomerManager.HandleNewDay` **aynı statik `OnNewDay`
+> event'ine** abone; çağrı sırası deterministik değil. Kota event çarpanı (`eventCustomerMultiplier`)
+> teoride 1 gün geriden gelebilir — playtest'te `Quota calc: ... eventMult=` log'uyla doğrulanmalı
+> (ekonomist Round 5 §7).
 
 ---
 
@@ -215,27 +255,38 @@ Yeni gün başladığında tetiklenen merkezi event. Aşağıdaki sistemler bu e
 
 ### 4.1 Para Sistemi
 
-> **Kaynak**: [MoneySystem.cs](file:///c:/Users/cicek/Documents/GitHub/Cargor/Assets/NewCss/GameState/MoneySystem.cs)
+> **Kaynak**: [MoneySystem.cs](file:///c:/Users/cicek/Documents/GitHub/Cargor/Assets/NewCss/UIScripts/MoneySystem.cs)
+> (dosya `Assets/NewCss/UIScripts/` altında)
 
 | Parametre | Değer |
 |-----------|-------|
-| Başlangıç parası | **500 TL × 1.2^(P−1)** → 1P **500** · 2P **600** · 3P **720** · 4P **864** (kaynak: `DifficultyManager.baseStartingMoney=500`, `moneyMultiplierPerPlayer=1.2`) |
+| Başlangıç parası | **500 TL × 1.2^(P−1)** → 1P **500** · 2P **600** · 3P **720** · 4P **864** (kaynak: `DifficultyManager.baseStartingMoney=500`, `moneyMultiplierPerPlayer=1.2`; `DifficultyManager.cs:455` `moneySystem.startingMoney`'e yazıyor — bu zincir CANLI) |
 | Minimum para | **0 TL** (negatife düşmez) |
 | Senkronizasyon | `NetworkVariable` (server-write, everyone-read) |
+
+> [!IMPORTANT]
+> **Para YALNIZ tırdan gelir.** Müşteriye servis SIFIR para verir (yalnız +0.4 prestij);
+> müşterinin ekonomik işlevi, tıra yüklenecek **ürünü üretmesidir** (`CustomerAI.cs:1442-1444`).
+> Gelir kaldıracı ararken tıra bakın, müşteriye değil.
 
 **Gelir Kaynakları**:
 | Kaynak | Miktar | Koşul |
 |--------|--------|-------|
-| Doğru kutu teslimi | +50 TL/kutu | Tıra doğru renk kutu |
+| Doğru kutu teslimi | **Oyuncu sayısına bağlı** — 1P **50** · 2P **55** · 3P **70** · 4P **88** TL/kutu (`rewardPerBoxByPlayerCount`) | Tıra doğru renk kutu |
 | Prestij bonusu | +5 TL/kutu × tier | Her **8** prestij = 1 tier (`prestigePerBonus`) |
 | Telefon araması | **+20 TL**/arama | Başarılı arama (`callMoneyReward`) |
 | Görev ödülleri | Easy **28** / Medium **60** / Hard **150** TL | Gün sonunda otomatik, tier'a bağlı |
+| FESTIVAL DAY | **o günkü kiranın %10-20'si** (rastgele) | Gün başında bir kez (`EventEffectManager.ApplyFestivalBonus`) |
+
+> `rewardPerBox = 50` skaler alanı yalnız **legacy fallback**'tir (dizi boş/null ise).
+> P3/P4'te ödülün yükseltilmesinin sebebi: tek servis masası yüzünden kota P2 ile aynı kalırken
+> kira 3.6 katına çıkıyordu.
 
 **Gider Kaynakları**:
 | Kaynak | Miktar | Koşul |
 |--------|--------|-------|
-| Yanlış kutu teslimi | -40 TL/kutu | Tıra yanlış renk kutu |
-| Kutu düşürme | **-5 TL**/düşürme | Kutu sert çarpmayla düşerse (`boxDropMoneyPenalty`) |
+| Yanlış kutu teslimi | -40 TL/kutu (P-bağımsız SABİT) | Tıra yanlış renk kutu |
+| Kutu düşürme | **-5 TL**/düşürme | Kutu **≥3 m/s** ile çarparsa (`boxDropMoneyPenalty`) |
 | Görev cezaları | Easy **15** / Medium **27** / Hard **53** TL | Kabul edilip tamamlanmayan görev |
 | Kira ödemesi | Değişken | Her 4 günde bir |
 | Upgrade satın alma | Değişken | Oyuncu tercihiyle (P-bazlı çarpan, bkz. §13) |
@@ -257,9 +308,18 @@ Tüm ekonomik değerler tek bir `GameEconomySettings` ScriptableObject'ten yöne
 │   ├── rentIntervalDays: 4 (her 4 günde bir kira)
 │   └── gracePaymentPercent: 0.8 (%80 affedilme bedeli; leveraged_rent VE all_in perkleri 0 yapar = grace iptal)
 │
+├── 👥 MÜŞTERİ KOTASI (PlateUp — gün-numarası eğrisi, kapasite ETKİSİZ)
+│   ├── dailyCustomerCountP1: [4,4,4,4,4,4,4,5,5,5,5,5,6,6,6,6]      (16 gün toplamı 77)
+│   ├── dailyCustomerCountP2: [7,7,7,8,8,9,9,9,10,10,10,11,11,11,12,12]  (toplam 151)
+│   ├── dailyCustomerCountP3: [8,8,8,8,9,9,9,10,10,10,11,11,12,12,12,13] (toplam 160)
+│   ├── dailyCustomerCountP4: [8,8,8,8,9,9,9,10,10,10,11,11,12,12,12,13] (toplam 160 — P3 ile aynı, bilinçli)
+│   ├── customerArrivalIntervalByPlayerCount: [44, 22, 21, 21] saniye
+│   └── dayEndGraceSeconds: 30 (kota bitince gün sarılmadan önceki kapanış payı)
+│
 ├── 🚚 TIR / TESLİMAT AYARLARI
-│   ├── rewardPerBox: 50 TL (doğru teslimat)
-│   ├── penaltyPerBox: 40 TL (yanlış teslimat)
+│   ├── rewardPerBoxByPlayerCount: [50, 55, 70, 88] TL  ← CANLI ödül (P-bazlı)
+│   ├── rewardPerBox: 50 TL (LEGACY skaler; yalnız dizi boş/null ise fallback)
+│   ├── penaltyPerBox: 40 TL (yanlış teslimat — P-bağımsız)
 │   ├── hangarStayDurationByPlayerCount: [120, 60, 40, 30] saniye
 │   │     (1P uzun: yavaş üretimde tır dolsun; 4P kısa. Legacy skaler hangarStayDuration=30 yalnız dizi boşsa)
 │   ├── truckCargoMinByPlayerCount: [1, 2, 2, 2]
@@ -272,53 +332,84 @@ Tüm ekonomik değerler tek bir `GameEconomySettings` ScriptableObject'ten yöne
 ├── 📦 KUTU DÜŞME
 │   └── boxDropMoneyPenalty: 5 TL
 │
-├── 📞 TELEFON AYARLARI  (REAKTİF V3)
-│   ├── phoneRingChanceByPlayerCount: [0.20, 0.25, 0.30, 0.35]  ← saatlik çalma olasılığı
-│   ├── phoneRingChancePerHour: 0.20 (LEGACY skaler; yalnız dizi boş/null ise)
-│   ├── phoneRingEventMultiplier: 2.0 (CUSTOMER SUPPORT günü)
-│   ├── phoneRingPerkBonus: 0 (phone_line perki 0.15 yapar)
+├── 📞 TELEFON AYARLARI  (V4 — DIŞARI ARAMA)
+│   ├── timeSkipAmountByPlayerCount: [115, 59, 55, 55] oyun-dakikası   ← asıl bedel
+│   ├── phoneCooldownSeconds: 3.0 (P-bağımsız düz cooldown)
+│   ├── phoneCooldownPerkBonusSeconds: 0.0 (varsayılan; phone_line perki 10.0 yazar → Mathf.Max(1, 3−10)=1sn)
+│   ├── phoneDialHoldSeconds: 1.0 (E'yi basılı tutma süresi — UX, ekonomik değer DEĞİL)
 │   ├── callMoneyReward: 20 TL
 │   └── callPrestigeReward: 0.4
 │
 ├── ⭐ PRESTİJ AYARLARI
 │   ├── customerServedPrestigeBonus: +0.4
-│   ├── customerLostPrestigePenalty: -0.4
+│   ├── customerLostPrestigePenalty: -0.4   (servis edilmeden kaçan/çıkarılan müşteri)
+│   ├── customerMissedQuotaPrestigePenalty: -0.2   (17:30'da HİÇ SPAWN OLMAMIŞ kota müşterisi)
 │   ├── wrongProductPrestigePenalty: -0.08
 │   ├── wrongDeliveryPrestigePenalty: -0.16
 │   └── boxDropPrestigePenalty: -0.04
 │
 └── 🎪 ETKİNLİK
-    ├── festivalBonusMin: 100 TL
-    └── festivalBonusMax: 300 TL
+    ├── festivalBonusMin: 100 TL   ← yalnız FALLBACK (DayCycleManager erişilemezse)
+    └── festivalBonusMax: 300 TL   ← yalnız FALLBACK; canlı yol kira×%10-20
 ```
 
 > [!WARNING]
+> **`Assets/Resources/EkonomiAyarlari.asset` bu alanların ÇOĞUNU İÇERMİYOR — bu bir hata değil.**
+> Unity, YAML'da anahtarı olmayan alanları C# field initializer değeriyle kurar. Asset'te YALNIZ
+> şu anahtarlar var: kira 5'lisi, `dayEndGraceSeconds`, `rewardPerBox`, `penaltyPerBox`,
+> `hangarStayDuration(+dizi)`, `prestigePerBonus`, `bonusPerTier`, `rewardVolatility(+Mean)`,
+> tır kargo dizileri, `boxDropMoneyPenalty`, `callMoneyReward`, `callPrestigeReward`, prestij
+> cezaları (missed-quota HARİÇ), festival min/max. **Kota dizileri, `rewardPerBoxByPlayerCount`,
+> `customerArrivalIntervalByPlayerCount`, tüm V4 telefon alanları ve
+> `customerMissedQuotaPrestigePenalty` asset'te YOK → `.cs` default'ları canlıdır.**
+> Ayrıca asset'te **ölü V3 anahtarları** duruyor (`phoneRingChancePerHour`,
+> `phoneRingEventMultiplier`, `phoneRingPerkBonus`) — sınıfta karşılığı olmadığı için okunmuyor.
+> `float[]`'a elle hex yazmayın: sessizce BOŞ dizi üretir (bkz. `EconomyInvariantCheck` uyarısı).
+
+> [!WARNING]
 > **`PerkEffect` bu ScriptableObject'in alanlarına RUNTIME'DA doğrudan yazıyor ve hiçbir yerde geri almıyor.**
-> Etkilenen 7 alan: `gracePaymentPercent`, `rentScaledMultiplier`, `rentGrowthMultiplier`,
-> `customerServedPrestigeBonus`, `phoneRingPerkBonus`, `rewardVolatility`, `rewardVolatilityMean`.
+> Etkilenen 7 alan (`PerkEffect.cs`): `gracePaymentPercent` (:318, :336), `rentScaledMultiplier` (:317),
+> `rentGrowthMultiplier` (:194), `customerServedPrestigeBonus` (:209),
+> **`phoneCooldownPerkBonusSeconds` (:301)**, `rewardVolatility` (:326), `rewardVolatilityMean` (:327).
 > Editor'de Play mode'dan çıkınca değerler geri gelmiyor, diske yazılıp commit'lenebiliyor.
 > Play-test sonrası `Cargor / Ekonomi Değerlerini Doğrula` çalıştır. **Açık mimari sorun** — bkz. `plans/devam.md` 2026-08-07.
+>
+> Yazımlar **mutlak atama** (`=`), toplama/çarpma DEĞİL — aynı alana yazan bir kart, perki
+> sessizce siler (biriktirmez).
 
 > [!NOTE]
 > **`wealthTaxRate` KALDIRILDI** (`9d2c3b0`, FAZ 2 C5 Seçenek A) — kira formülünde artık upgrade-vergisi yok.
-> **Telefon V2 alanları** (`timeSkipAmount`, `postCallCooldown`, `maxCallsPerHour`) da kaldırıldı:
-> reaktif V3'te müşteri spawn'ı ve zaman atlama tamamen çıkarıldı.
+> **V3'ün çalma alanları** (`phoneRingChanceByPlayerCount`, `phoneRingChancePerHour`,
+> `phoneRingEventMultiplier`, `phoneRingPerkBonus`) sınıftan **silindi**: V4'te telefon çalmıyor,
+> oyuncu arıyor (bkz. §14). `timeSkipAmount` V2'den farklı bir alan olarak **geri geldi**
+> (`timeSkipAmountByPlayerCount`, P-bazlı).
 
 ### 4.3 Prestij-Bazlı Gelir Çarpanı
 
-$$\text{KutuBaşıGelir} = \text{rewardPerBox} + \left\lfloor \frac{\text{prestige}}{\text{prestigePerBonus}} \right\rfloor \times \text{bonusPerTier}$$
+$$\text{KutuBaşıGelir} = \text{rewardPerBox}[P] + \left\lfloor \frac{\text{prestige}}{\text{prestigePerBonus}} \right\rfloor \times \text{bonusPerTier}$$
 
-| Prestij | Tier | Kutu Başı Gelir |
-|---------|------|----------------|
-| 0-7 | 0 | 50 TL |
-| 8-15 | 1 | 55 TL |
-| 16-23 | 2 | 60 TL |
-| 24-31 | 3 | 65 TL |
-| 32-39 | 4 | 70 TL |
-| 40+ | 5+ | 75+ TL (tavan 100 prestij → tier 12 → **110 TL**) |
+Tier bonusu **P-bağımsız** (+5 TL/tier), taban ödül **P-bazlı**:
+
+| Prestij | Tier | 1P | 2P | 3P | 4P |
+|---------|------|-----|-----|-----|-----|
+| 0-7 | 0 | 50 | 55 | 70 | 88 |
+| 8-15 | 1 | 55 | 60 | 75 | 93 |
+| 16-23 | 2 | 60 | 65 | 80 | 98 |
+| 24-31 | 3 | 65 | 70 | 85 | 103 |
+| 32-39 | 4 | 70 | 75 | 90 | 108 |
+| 96-100 | **12** (tavan) | **110** | **115** | **130** | **148** |
 
 > Başlangıç prestiji **12** (`PrestigeManager.startingPrestige`, sahnede), yani oyuncu tier 1'de başlar.
-> Ölçümlerde son prestij 1P ~47 / 4P ~37 bandında kalıyor — **`maxPrestige=100` pratikte hiç ulaşılmıyor.**
+
+> [!IMPORTANT]
+> **Prestij bir fail-state değil, gizli bir GELİR ÇARPANI.** Ekonomist Round 6 ölçümü: tier bonusu
+> 16 günde kutu ödülünü **+%20…+%91** şişiriyor ve toplam tır gelirinin **%13-35'ini** oluşturuyor.
+> 1 prestij puanının marjinal değeri gün 1'de **34.7-91.7 TL**, gün 16'da 2.8-7.8 TL (kalan gün
+> sayısıyla lineer sönüyor). Dolayısıyla her prestij CEZASI aslında gizli bir para cezasıdır.
+>
+> Taban koşumlarda prestij tavanın **%75-92'sine** (tier 9-11) ulaşıyor — `maxPrestige=100` yakın
+> ama nadiren dolu; quest prestij ödülleriyle birlikte 12 hücrenin 6'sında tavan **çarpılıyor**
+> (Round 8 §3). Tavana çarpan hücrede prestij perklerinin marjinal değeri sıfırdır.
 
 ---
 
@@ -346,6 +437,14 @@ Burada:
 > Ölçek 1 : 2.00 : 2.90 : 3.60. Ölçülen gelir ölçeği (1 : 1.73 : 2.40 : 2.95) ile birebir aynı DEĞİL —
 > bilinçli: çok oyunculu takım koordinasyon avantajını kirayla geri ödüyor.
 
+> [!CAUTION]
+> **AÇIK DENGE SORUNU (kod DEĞİŞMEDİ, karar Round 10'da).** Ekonomist Round 2/3 ölçümü:
+> **Slow + strict** bandında bu taban kira 16/16 hücrede iflasa yol açıyor (P1 gün 16, P2/P3/P4
+> gün 12). Kök neden **eğim değil SEVİYE**: o bantta kira / 4-günlük-gelir oranı 1.52-1.71
+> (sağlıklı Normal/strict bandında 0.88-1.27 ve düşerek gidiyor). Açık ≈ **%25-30**.
+> Önerilen (henüz uygulanmamış) asimetrik taban: `{290, 650, 1140, 1630}`.
+> Bu belge CANLI değerleri gösterir — öneri uygulanırsa §5.2/§5.3 tabloları güncellenmelidir.
+
 ### 5.3 Kira Dönemleri ve Büyüme (tüm oyuncu sayıları)
 
 | Gün | Dönem | 1P | 2P | 3P | 4P |
@@ -370,6 +469,16 @@ Burada:
 - **İkinci kez ödeyemezse**: **GAME OVER — İFLAS**
 - ⚠️ **`leveraged_rent` ve `all_in` perkleri `gracePaymentPercent`'i 0 yapar** — yani grace period
   tamamen iptal olur. İkisi aynı dışlama grubunda (`EXCLUSIVE_EFFECT_GROUPS`), birlikte teklif edilmezler.
+
+> [!WARNING]
+> **Grace, AÇIĞA değil ELDEKİ NAKDE oranlı** (`DayCycleManager.cs:616-624`) ve ödeme sayılır
+> (`_rentPaymentCount++`). İki sonucu var:
+> 1. **Tampon sınırsız**: açık ne kadar büyük olursa olsun, tek bir kira günü tamamen emiliyor.
+>    Bu yüzden "ince marj" görünen bantlar gerçekte göründüğünden dayanıklı (ekonomist Round 2 §2).
+> 2. **"Fakir kal" exploiti**: kira gününden hemen önce parayı upgrade'e harcayıp kiranın altına
+>    düşmek ≈ **+0.20 × o günkü kira** kazandırıyor (1P +173 … 4P +622 TL, gün 16).
+>    Yan etkisi monotonluk kırılmaları: "daha kötü girdi → daha iyi sonuç". Ekonomi ölçümlerinde
+>    böyle bir anomali görülürse önce grace zamanlamasına bakılmalı.
 
 > [!IMPORTANT]
 > **Gün sonu sırası:** kira kontrolü (`TryProcessMoneyCheck`) görev ödüllerinden **ÖNCE** çalışıyor.
@@ -404,16 +513,29 @@ Burada:
 
 | Eylem | Prestij Değişimi | Sıklık |
 |-------|-----------------|--------|
-| Müşteriye başarılı servis | **+0.4** | Her başarılı servis |
-| Telefon açma | **+0.4** | Her başarılı arama (`callPrestigeReward`) |
-| Müşteri kaçtı (sabır bitti) | **-0.4** | Her kaçan müşteri |
+| Müşteriye başarılı servis | **+0.4** | Her başarılı servis (para vermez!) |
+| Telefonla müşteri çağırma | **+0.4** | Her başarılı arama (`callPrestigeReward`) — bir müşteri servisiyle AYNI değerde |
+| Müşteri kaçtı / servis edilmeden çıkarıldı | **-0.4** | Sabır bitti **veya** 17:30'da kuyrukta servis edilmemiş (`customerLostPrestigePenalty`) |
+| **Kota müşterisi hiç gelmedi** | **-0.2** | 17:30'da hâlâ spawn olmamış her kota müşterisi (`customerMissedQuotaPrestigePenalty`) — yukarıdakiyle KARIŞTIRILMAZ |
 | Tıra yanlış renk kutu | **-0.16** | Her yanlış teslimat (ayrıca -40 TL) |
-| Yanlış ürün gösterildi | **-0.08** | Her yanlış ürün |
-| Kutu yere düştü | **-0.04** | Her düşürme |
+| Yanlış ürün gösterildi | **-0.08** | Her yanlış ürün (para cezası YOK) |
+| Kutu yere düştü | **-0.04** | Her düşürme (≥3 m/s) |
 | Görev ödülü | Easy **+1.4** / Medium **+3** / Hard **+7.5** | Gün sonunda |
 | Görev cezası | Easy **-0.8** / Medium **-1.36** / Hard **-2.66** | Tamamlanmayan kabul edilmiş görev |
 
 > SURPRISE AUDIT etkinliği günü tüm cezalar **×2** (`EventEffectManager.GetPenaltyMultiplier`).
+> Ölçülen etkisi **dekoratif**: en kötü tek gün ek maliyeti −0.07…−1.40 prestij = final prestijin
+> **%0.1-4.6'sı** (Round 6 §7).
+
+> [!CAUTION]
+> **Ceza oranı tersliği — "müşteriyi bilerek boz" baskın stratejisi.** İade/BoxRequest modundaki
+> müşteriye (gün 5+, ~%25 oranında) **yanlış renk kutu vermek** yalnız −0.08 prestije mal oluyor
+> ve müşteri ANINDA çıkıyor (`CustomerAI.cs:1228-1259`, `HandleFailedInteraction` →
+> `TransitionToExit`; `_hasTimedOut=false` kaldığı için 17:30'da tekrar cezalanmıyor).
+> Sabrın dolmasını beklemek ise −0.4 **VE** istasyonu sabır süresince bloke ediyor → yanlış kutu
+> vermek **5 kat ucuz**. Ayrıca `wrongDelivery`'nin (−0.16) yanında 40 TL nakit cezası var,
+> `wrongProduct`'ın (−0.08) yanında hiç yok → aynı sınıf hatanın maliyeti 8 kat farklı.
+> Düzeltme önerildi, **henüz uygulanmadı** (Round 6 §4).
 
 ### 6.3 Prestijin Oyuna Etkisi
 
@@ -431,14 +553,26 @@ flowchart LR
 
 ### 6.4 Prestij Dengesi Analizi
 
-> [!CAUTION]
-> Başlangıç prestiji 12.0; **30 müşteri kaçırma** (30 × -0.4) oyunu bitirir.
-> Ceza ×2 olan SURPRISE AUDIT gününde bu 15'e düşer.
+Aritmetik: başlangıç prestiji 12.0; **30 müşteri kaçırma** (30 × -0.4) oyunu bitirir.
+Ceza ×2 olan SURPRISE AUDIT gününde bu 15'e düşer.
 
 Dengeyi tutturmak için:
 - Her 1 kaçırılan müşteriye karşı **1 başarılı servis** yeterli (-0.4 / +0.4 = 1:1)
 - Her 1 yanlış teslimata karşı **0.4 servis** (-0.16 / +0.4)
 - Bir Hard görevi kaçırmak **~7 müşteri kaçırmaya** eşdeğer (-2.66 / -0.4)
+
+> [!CAUTION]
+> **Prestij kaybı pratikte ÖLÜ bir kaybetme koşulu.** Ekonomist Round 6 ölçümü: 16 senaryonun
+> **16'sında da** prestij hiç 0'a inmiyor; kaybeden 4 hücre (Slow/strict) **NAKİT'ten** iflas
+> ediyor ve o anda bile prestijleri 18.9-43.4. En düşük gözlenen marj **18.87** — uçurum kenarı YOK.
+> Sebep yapısal: `served=+0.4` ile `lost=−0.4` **birebir simetrik**, yani başabaş servis oranı
+> tam **%50** → müşterilerinin yarısını kaçıran oyuncu sonsuza kadar hayatta kalıyor.
+>
+> **P-asimetrisi**: ceza müşteri BAŞINA ama `startingPrestige=12` ve eşik P'den bağımsız →
+> aynı beceriksizlik oranında (kaçırma %75) 4P gün 7'de, 1P gün 13'te ölüyor.
+>
+> `customerMissedQuotaPrestigePenalty` de yapısal bir tehdit DEĞİL: Normal bandın 8 hücresinde
+> **16/16 gün tam sıfır** (varış tavanı kotayı zaten bağlıyor), Slow'da toplam −0.04…−2.06.
 
 > [!IMPORTANT]
 > **Kazanılmış oyun kaybedilemez** (`f013f5d`): gün 16 settlement'i zafer ilan edildikten SONRA
@@ -447,23 +581,72 @@ Dengeyi tutturmak için:
 
 ---
 
-## 7. 📊 ~~Kota Sistemi~~ — KALDIRILDI
+## 7. 📊 Müşteri Kotası (PlateUp modeli)
 
-> [!CAUTION]
-> **Bu sistem tamamen silindi** (commit `0c026ef`). `Assets/NewCss/QuotaManager.cs` dosyası yok
-> ve kodda tek bir referansı kalmadı — `DailyQuota`, `RegisterShippedBox`, `OnQuotaCompleted`,
-> `OnQuotaFailed` sembollerinin hiçbiri mevcut değil.
+> **Kaynaklar**: `GameEconomySettings.GetDailyCustomerCount(day, P)`,
+> [CustomerManager.cs](file:///c:/Users/cicek/Documents/GitHub/Cargor/Assets/NewCss/CustomerSripts/CustomerManager.cs)
+> `CalculateTodaysCustomerCount` (cs:403-419)
 
-Eskiden günlük bir kutu kotası vardı (`toplam müşteri × 0.8`) ve tutturulamazsa **GAME OVER**
-oluyordu. Kaldırılma gerekçesi: kira sistemiyle **çift başarısızlık kapısı** oluşturuyordu —
-oyuncu hem kirayı ödemek hem kotayı tutturmak zorundaydı, bu da erken oyunda ölüm oranını
-tasarlanandan çok yükseltiyordu.
+> [!IMPORTANT]
+> **İki farklı "kota" karıştırılmamalı.**
+> - ~~**Eski kutu kotası**~~ (`QuotaManager`, `toplam müşteri × 0.8`, tutturulamazsa GAME OVER):
+>   commit `0c026ef` ile **tamamen silindi**, kodda tek referansı yok. Kira ile birlikte çift
+>   başarısızlık kapısı oluşturduğu için kaldırılmıştı.
+> - **Yeni müşteri kotası** (2026-08-29, PlateUp geçişi): o günün **kaç müşteri göndereceğini**
+>   belirleyen tablo. **Kaybetme koşulu DEĞİL** — tutturulamayan kısım yalnız hafif bir prestij
+>   cezası doğurur (−0.2/müşteri).
 
-**Bugün oyunu kaybetmenin tek iki yolu var** (bkz. §21):
+### 7.1 Günlük Müşteri Tablosu
+
+Kota artık **gün numarasının** fonksiyonu; raf/masa **kapasitesinin etkisi tamamen kaldırıldı**.
+
+| Gün | 1P | 2P | 3P | 4P |
+|-----|----|----|----|----|
+| 1-3 | 4 | 7 | 8 | 8 |
+| 4 | 4 | 8 | 8 | 8 |
+| 8 | 5 | 9 | 10 | 10 |
+| 12 | 5 | 11 | 11 | 11 |
+| 16 | 6 | 12 | 13 | 13 |
+| **16 gün toplamı** | **77** | **151** | **160** | **160** |
+
+> **P3 ≈ P4 bilinçli**, yuvarlama hatası değil: tek servis istasyonuyla mekanik doygunluk oluşuyor,
+> 4. oyuncu ek müşteri işleyemiyor. Kira 3.6 katına çıktığı için telafi **kutu ödülünden**
+> geliyor (`rewardPerBoxByPlayerCount` P3=70, P4=88).
+
+### 7.2 Kotanın Ekonomik Anlamı
+
+$$\text{GünlükMüşteri} = \text{Clamp}\big(\text{round}(\text{tablo}[gün][P] \times \text{eventCustomerMultiplier}),\ \text{min},\ \text{max}\big)$$
+
+Müşteri = tek ürün kaynağı, ürün = tıra yüklenecek kutu, kutu = tek para kaynağı.
+Yani kota teoride günlük gelirin tavanıdır.
+
+> [!WARNING]
+> **Pratikte kota çoğu bantta bağlayıcı DEĞİL.** Ekonomist ölçümü (Round 2 §4):
+> STRICT bantta 16/16 gün **mekanik-bağlı** (insan işleme hızı), kota hiç tavan olmuyor —
+> kutu/kota oranı Normal/strict'te 0.31-0.47, Slow/strict'te 0.20-0.31. Teslim edilemeyen ürün
+> gün başına 2.8-8.0 birikiyor. OPTIMISTIC bantta oran 1.21-1.23 (orada kota gerçekten tavan).
+>
+> Sonucu: **kota çarpanını YUKARI çeken event'ler (BUSY DAY +%35, MARKETING DAY +%20) ölü kol** —
+> varış aralığı değişmediği için ekstra müşteri zaten spawn olamıyor, yalnız
+> `ApplyMissedQuotaPenalty` yakıtına dönüşüyor (Round 5 §3). Doğru kol
+> `customerArrivalIntervalByPlayerCount`'u BÖLMEK olurdu.
+
+### 7.3 Kotanın Gün Sonu Muhasebesi
+
+17:30'da (`CUSTOMER_EXIT_HOUR`) iki ayrı ceza kanalı çalışır:
+
+| Durum | Ceza | Kod |
+|-------|------|-----|
+| Kuyruktaki müşteri servis edilmeden çıkarıldı | **−0.4** prestij (`OnCustomerLost`) | `ForceAllCustomersToExit` |
+| Kota müşterisi hiç spawn olmadı | **−0.2** prestij (`OnCustomerQuotaMissed`) | `ApplyMissedQuotaPenalty` |
+
+Kota erken tükenirse gün 18:00'i beklemez: `dayEndGraceSeconds = 30s` sonrası
+`FastForwardToEndOfDay()` günü sarar (bkz. §2.2 notu). Bu yolda missed-quota cezası
+**hiç tetiklenmez** (`HasUnspawnedCustomers = false` şartı arandığı için).
+
+**Oyunu kaybetmenin hâlâ tek iki yolu var** (bkz. §21):
 1. Kira gününde ödeyememek (grace period bir kez affeder)
 2. Prestijin sıfıra düşmesi
-
-Bölüm numaraları tarihsel referansları bozmamak için korunuyor.
 
 ---
 
@@ -506,11 +689,11 @@ sequenceDiagram
     participant M as MoneySystem
 
     S->>T: Spawn (renk, kargo miktarı)
-    T->>T: Timer başlar (120s)
+    T->>T: Timer başlar (hangar süresi: 1P 120s … 4P 30s)
     P->>T: Kutu teslim et (HandleDeliveryServerRpc)
     
     alt Doğru Renk
-        T->>M: +50 TL + prestij bonusu
+        T->>M: +rewardPerBox[P] TL + prestij tier bonusu
     else Yanlış Renk
         T->>M: -40 TL
     end
@@ -525,13 +708,18 @@ sequenceDiagram
 
 ### 8.3 Teslimat Ekonomisi
 
-**Doğru teslimat geliri** (prestij = 24 varsayımıyla):
-$$\text{Gelir} = 50 + \left\lfloor \frac{24}{4} \right\rfloor \times 5 = 50 + 30 = 80\ \text{TL/kutu}$$
+**Doğru teslimat geliri** (1 oyuncu, prestij = 24 varsayımıyla; `prestigePerBonus = 8`):
+$$\text{Gelir} = 50 + \left\lfloor \frac{24}{8} \right\rfloor \times 5 = 50 + 15 = 65\ \text{TL/kutu}$$
 
-**Yanlış teslimat cezası**: -40 TL/kutu (sabit)
+Aynı prestijde 4 oyuncu: `88 + 15 = 103 TL/kutu`.
+
+**Yanlış teslimat cezası**: -40 TL/kutu — **sabit ve P-bağımsız**.
 
 > [!IMPORTANT]
-> Yanlış teslimat cezası (40 TL), doğru teslimat baz ödülüne (50 TL) yakındır ama altındadır. Yine de her yanlış teslimat ~0.8 doğru teslimatı siler; oyuncuyu dikkatli olmaya teşvik eder.
+> Ceza/ödül oranı P ile eriyor: 1P'de yanlış teslimat ~0.62 doğru teslimatı siler (40/65),
+> 4P'de yalnız ~0.39'unu (40/103). Yani caydırıcılık yüksek oyuncu sayısında **zayıflıyor** —
+> `penaltyPerBox` P-bazlı yapılmadığı için. Bugün denge riski oluşturmuyor (yanlış teslimat
+> nadir), ama ödül dizisi büyütülürse birlikte gözden geçirilmeli.
 
 ### 8.4 Tır Renk ve Görsel Sistemi
 
@@ -578,41 +766,72 @@ stateDiagram-v2
     Walking --> Waiting: Sıra noktasına ulaşır
     Waiting --> Served: Oyuncu doğru ürünü verir
     Waiting --> Left: Sabır süresi dolar
-    Served --> [*]: +Para, +0.5 Prestij
-    Left --> [*]: -Para, -1.5 Prestij
+    Served --> [*]: +0.4 Prestij (PARA YOK)
+    Left --> [*]: -0.4 Prestij
     
     note right of Waiting: Sabır barı görünür\n(WaitBar UI)
     note right of Left: Müşteri öfkeyle ayrılır
 ```
 
+> Servis edilen müşteri **para vermez** — ürün üretir, para tırdan gelir (bkz. §4.1).
+
 ### 9.4 Müşteri Sabır Sistemi
 
-- **Baz sabır**: 35-55 saniye (rastgele, DifficultyManager'dan)
-- **Etkinlik çarpanları**: Angry Customers (-30%), Relaxed Day (+30%)
+- **Baz sabır**: **15-20 saniye** (rastgele) — `CustomerAI.minWaitTime/maxWaitTime`,
+  gerçek değerler `Customer.prefab`'ta (`minWaitTime: 15`, `maxWaitTime: 20`)
+- **Perk çarpanı**: `CustomerManager.patienceMultiplier` (varsayılan 1.0)
+- **Etkinlik çarpanları**: ANGRY CUSTOMERS ×0.6 · BUSY DAY ×0.85 · RELAXED DAY ×1.3
+- **Sayaç başlangıcı**: müşteri **kuyruğa vardığında** başlar (`CustomerAI.cs:897-900`), spawn'da değil
 - **Görsel gösterge**: Müşterinin üzerinde azalan sabır barı (`WaitBar.cs`)
 - **Billboard**: Sabır barı her zaman kameraya dönük (`Billboard.cs`)
+
+> [!WARNING]
+> **`DifficultyManager`'ın sabır ölçeklemesi ÖLÜ.** `baseMinPatience=35`, `baseMaxPatience=55`,
+> `patienceReductionPerPlayer=5` ve `ScaledMinPatience`/`ScaledMaxPatience` property'lerinin
+> `DifficultyManager.cs` DIŞINDA **tek bir tüketicisi yok** (grep ile doğrulandı). Eski GDD'deki
+> "35-55 saniye, oyuncu başına −2s" tablosu hiçbir zaman canlı olmadı. Sabır **P'ye göre
+> ölçeklenmiyor**.
+>
+> Sonucu: **sabır kolu Normal bantta hiç çalışmıyor** — varış aralığı (21-44s) servis süresinden
+> büyük olduğu için kuyruk birikmiyor, kimse sabırsızlıktan kaçmıyor. RELAXED DAY'in Normal
+> bandın 8 hücresinde ölçülen etkisi **tam sıfır** (Round 5 §5).
 
 ### 9.5 Kuyruk Sistemi
 
 > **Kaynaklar**: [QueueController.cs](file:///c:/Users/cicek/Documents/GitHub/Cargor/Assets/NewCss/CustomerSripts/QueueController.cs), [QueueWaypoint.cs](file:///c:/Users/cicek/Documents/GitHub/Cargor/Assets/NewCss/CustomerSripts/QueueWaypoint.cs)
 
-- **Başlangıç kuyruk boyutu**: Sabit (upgrade ile artırılabilir)
-- **Kuyruk pozisyonları**: `QueueWaypoint` noktaları ile tanımlı
-- **Doluluk kontrolü**: Kuyruk doluysa yeni müşteri spawn olmaz
-- **Event çarpanı**: `eventCustomerMultiplier` ile etkinliklerde müşteri sayısı değişir
+- **Başlangıç kuyruk boyutu**: **2** (`CustomerManager.DEFAULT_QUEUE_SIZE`, sahne override'ı da 2)
+- **Uzun Kuyruk perki**: `maxQueueSize = DEFAULT_QUEUE_SIZE + 2` = **4** (perk şu an `disabledInDraft`)
+- **Kuyruk pozisyonları**: `QueueWaypoint` noktaları ile tanımlı; gerçek tavan `min(WaypointCount, maxQueueSize)`
+- **Doluluk kontrolü**: Kuyruk doluysa yeni müşteri spawn olmaz — telefonla çağırma da reddedilir (`IsQueueFull`)
+- **Event çarpanı**: `eventCustomerMultiplier` kota tabanına uygulanır (bkz. §7.2)
 
-### 9.6 Müşteri Spawn — Kapasite Bazlı Sistem (Yeni)
+### 9.6 Müşteri Spawn — Kota Tablosu + Varış Aralığı (PlateUp, 2026-08-29)
 
-> **Kaynak**: [implementation_plan.md](file:///c:/Users/cicek/Documents/GitHub/Cargor/implementation_plan.md)
+> [!CAUTION]
+> **Eski "kapasite bazlı" formül SİLİNDİ.** `(AktifRaflar × 3) + (MağazaSeviyesi × 2) + Random(-2,+3)`
+> artık kodda YOK — raf/masa kapasitesinin müşteri sayısına etkisi tamamen kaldırıldı
+> (`CustomerManager.CalculateTodaysCustomerCount`, cs:403-419). Kaynak olarak gösterilen
+> `implementation_plan.md` da bayat.
 
-Eski lineer sistem (`base + (gün-1) × artış`) yerine kapasite-bazlı dinamik sistem:
+Bugün spawn iki bağımsız koldan yürür:
 
-$$\text{GünlükMüşteri} = \text{Clamp}\Big((\text{AktifRaflar} \times 3) + (\text{MağazaSeviyesi} \times 2) + \text{Random}(-2, +3),\ 1,\ 50\Big)$$
+| Kol | Ne belirler | Kaynak |
+|-----|-------------|--------|
+| **Kota** | O gün KAÇ müşteri geleceği | `GetDailyCustomerCount(gün, P)` — bkz. §7.1 |
+| **Varış aralığı** | Müşterilerin NE SIKLIKTA geleceği | `customerArrivalIntervalByPlayerCount = [44, 22, 21, 21]` sn |
 
-Bu sayede:
-- Oyuncu gelişmezse müşteri sayısı artmaz (adil)
-- Oyuncu hızlı gelişirse müşteri sayısı hızla artar (ödüllendirici)
-- Soft cap 50 ile performans korunur
+$$\text{sonrakiSpawn} = \text{şimdi} + \frac{\max(1,\ \text{aralık}[P] + \text{jitter})}{\text{dalgaÇarpanı}(\text{saat})}$$
+
+- **Jitter**: `±aralık × spawnTimeRandomness` (sahne: 0.2 → ±%20)
+- **Dalga çarpanı**: `WaveSettings.GetSpawnRateMultiplier` (Öğle Rush ×1.5 → aralık kısalır)
+- **Eşzamanlı tavan**: `WaveSettings.maxCustomers` (dönem bazlı 2-6) + kuyruk boyutu
+
+> [!IMPORTANT]
+> Bu ikilik, ekonominin en sık yanlış anlaşılan yeri: **kotayı çarpmak müşteri sayısını gerçekten
+> artırmaz** çünkü varış aralığı sabit kalır ve gün bitmeden ekstra müşteriler spawn olamaz.
+> Ölçüm: BUSY DAY (+%35 kota, 10→14 müşteri) servis edilen müşteriyi yalnız **+0.00…+0.26**
+> artırıyor, Slow bantta NEGATİF (Round 5 §3).
 
 ---
 
@@ -634,12 +853,15 @@ Her kutunun `isFull` (dolu/boş) bayrağı vardır.
 
 > **Kaynak**: [BoxFallPenalty.cs](file:///c:/Users/cicek/Documents/GitHub/Cargor/Assets/NewCss/BoxScripts/BoxFallPenalty.cs)
 
-| Parametre | Değer |
-|-----------|-------|
-| Para cezası | **-10 TL/düşürme** |
-| Prestij cezası | **-0.05/düşürme** |
-| Tetikleme eşiği | Hız > **1 m/s** ile yere çarpma |
-| Ses efekti | 3D spatial audio |
+| Parametre | Değer | Kaynak |
+|-----------|-------|--------|
+| Para cezası | **-5 TL/düşürme** | `boxDropMoneyPenalty` |
+| Prestij cezası | **-0.04/düşürme** | `boxDropPrestigePenalty` |
+| Tetikleme eşiği | Çarpma hızı **≥ 3 m/s** | `impactSpeedThreshold = 3f` (`BoxFallPenalty.cs:41`) |
+| Ses efekti | 3D spatial audio (hız ≥ 1 m/s'de çalar) | |
+
+> Eşik, kutu kırılma eşiğiyle (`BoxDestroyOnCollisionNetcode.impactSpeedThreshold = 3`)
+> **bilerek hizalı**. Ceza yüzeyden bağımsızdır (yer/duvar/raf aynı) ve kutu/ürün ayrımı yoktur.
 
 > [!TIP]
 > Fırlatma mekaniği riskli ama hızlıdır. Kutuyu fırlattığında yere düşerse ceza alırsın, ama başka bir oyuncuya atıp yakalamasını sağlarsan co-op avantajı elde edersin.
@@ -790,6 +1012,22 @@ Bir kart birden fazla gruba üye olabilir (`all_in` gibi).
 | Paketleme İstasyonu | **1** | 150 | Sahnede `Table` taşıyan tam 2 obje var; seviye 2-3 hiçbir şey açmıyor |
 | Ek Hangar | **1** | 200 | 3. hangar her iki bantta 0 TL katıyor (tır penceresi darboğaz değil) |
 
+> [!NOTE]
+> **Ekonomist Round 4 ölçümleri (fiyat değişikliği ÖNERİLMEDİ, tespit):**
+> - 26 upgrade'in **19'u draft'ta aktif; 6'sı `disabledInDraft=1`** ile hiç satın alınamıyor
+>   (Geniş Kuyruk, Sağlam Kasa, Dinç Ekip, Su Sebili, Güler Yüz, Uzun Kuyruk) — bunlar için
+>   fiyat/güç tartışması anlamsız.
+> - **Ek Hangar en aşırı kalem**: değer/maliyet oranı STRICT bantta **9.21×**, OPTIMISTIC bantta
+>   **0×**. Aşırılık fiyatta değil, STRICT'in mekanik hangar-tavanı kapasite tasarımında.
+> - **Görev Kademesi L2 (100 TL dilimi)** strict bantta ölçülebilir değeri sıfırdan da kötü —
+>   bkz. §16.2 uyarısı.
+> - **`cheap_rent` perkinde STALE-BASELINE bug'ı**: `PerkEffect.cs:194` formülü
+>   `1.15f − 0.03f × level` ile eski taban 1.15'i **hardcode** ediyor; canlı taban 2026-08-20'den
+>   beri **1.20** → perk niyet edilenden ~2.7× güçlü. Kira tabanı değişirse bu formül de
+>   güncellenmeli.
+> - **`leveraged_rent` (grace'i SİLEN perk) Slow/strict'te P1/P2'yi KAZANDIRIYOR** — kalıcı
+>   %25 kira indirimi, grace'in tek seferlik faydasını aşıyor (uçurum kenarı, 18-32 TL marj).
+
 ### 13.3 Ertelenmiş Aktivasyon
 
 > [!IMPORTANT]
@@ -812,53 +1050,126 @@ Her upgrade seviyesine karşılık gelen 3D objeler sahnede aktifleşir. Örneğ
 > **Kaynak**: [PhoneCallManager.cs](file:///c:/Users/cicek/Documents/GitHub/Cargor/Assets/NewCss/Phone/PhoneCallManager.cs)
 
 > [!IMPORTANT]
-> **Sistem V3 (REAKTİF).** Eski V2 tasarımı (oyuncu E'ye basıp arama yapar, müşteri spawn olur,
-> zaman atlar) **tamamen kaldırıldı**. Artık telefonu **sunucu çaldırır**, oyuncu yalnızca açar.
-> `timeSkipAmount`, `postCallCooldown`, `maxCallsPerHour` alanları da yok.
+> **Sistem V4 — DIŞARI ARAMA (PlateUp geçişi, 2026-08-29).**
+> **Telefon artık ÇALMIYOR.** V3'ün "sunucu zar atar, telefon çalar, oyuncu açar" reaktif modeli
+> ve tüm çalma alanları (`phoneRingChanceByPlayerCount`, `phoneRingChancePerHour`,
+> `phoneRingEventMultiplier`, `phoneRingPerkBonus`, `ringDuration`) **koddan silindi**.
+> Bugün oyuncu telefona gidip **E'yi basılı tutarak** sıradaki kota müşterisini öne çeker.
 
-### 14.1 Çalma Mekanikleri
+### 14.1 Parametreler
 
-| Parametre | Değer |
-|-----------|-------|
-| Tetikleme | Sunucu, mesai içinde **her oyun-saati değiştiğinde** zar atar |
-| Çalışma saatleri | **08:00 – 18:00** (`phoneStartHour` / `phoneEndHour`) |
-| Saatlik çalma olasılığı | **Oyuncu sayısına bağlı** — 1P **%20** · 2P **%25** · 3P **%30** · 4P **%35** |
-| Çalma süresi | **15 saniye** (`ringDuration`); açılmazsa kendiliğinden susar |
-| Açılmama cezası | **YOK** |
-| Para ödülü | **+20 TL** (`callMoneyReward`) |
-| Prestij ödülü | **+0.4** (`callPrestigeReward`) |
+| Parametre | Değer | Kaynak |
+|-----------|-------|--------|
+| Kullanım şekli | Telefon alanında **E'yi 1 sn basılı tut** (bar boştan dolar; erken bırakınca iptal) | `phoneDialHoldSeconds = 1f` |
+| Çalışma saatleri | **08:00 – 18:00** | `phoneStartHour` / `phoneEndHour` |
+| Etki | Sıradaki kota müşterisini **hemen** spawn eder (`ForceSpawnNextCustomer`) | — |
+| **Bedel** | Gün saati ileri sarılır: 1P **115** · 2P **59** · 3P **55** · 4P **55** oyun-dakikası | `timeSkipAmountByPlayerCount` |
+| Para ödülü | **+20 TL** | `callMoneyReward` |
+| Prestij ödülü | **+0.4** — bir müşteri servisiyle AYNI | `callPrestigeReward` |
+| Cooldown | **3 sn**, P-bağımsız (2026-08-30 kullanıcı isteğiyle 20 → 3) | `phoneCooldownSeconds` |
+| Quest tetikleyicisi | `QuestTracker.NotifyPhoneAnswered()` (cs:469) | `AnswerPhone` görevleri |
 
-**Çarpanlar**: CUSTOMER SUPPORT etkinliği günü olasılık **×2.0** (`phoneRingEventMultiplier`);
-`phone_line` perki olasılığa **+0.15** toplamsal bonus ekler.
+**Çarpanlar**:
+- **CUSTOMER SUPPORT** etkinliği: cooldown **×0.5** (`GetEffectiveCooldownSeconds`, cs:303-309)
+- **`phone_line` perki**: `phoneCooldownPerkBonusSeconds = 10f` mutlak atar →
+  `Mathf.Max(1, 3 − 10) = 1 sn`
 
-> P-ölçeklemesinin yönü bilinçli: telefonun toplam gelirdeki payı 1P'de **%9.2**, 4P'de **%4.9**.
-> Yani solo oyuncuya yardım eder, kalabalık takımda gürültü olmaz.
+> [!WARNING]
+> **Her iki çarpan da bugün fiilen ETKİSİZ.** Gerçek kapı cooldown değil,
+> `HasUnspawnedCustomers` (günlük kota) ve `IsQueueFull`. Ard arda arama tavanı = kuyruğun
+> boşalma süresi (18-62.5 sn) ≫ 3 sn cooldown → cooldown 16/16 hücrede **bağlayıcı değil**
+> (Round 5 §2). `phone_line` perkinin (160 TL, relic, draft'ta AKTİF) ölçülen ekonomik değeri
+> **sıfır**; sahnedeki `contentText`'i de hâlâ V3'ün "çalma şansı +%15" metnini anlatıyor (bayat).
+>
+> CUSTOMER SUPPORT ayrıca **zararlı**: takvimde "POZİTİF" etiketli ve açıkça bol telefon
+> kullanmayı öneriyor, ama oyuncu o gün oranı yükseltirse net etki **−45…−777 TL/gün**.
 
 ### 14.2 Akış
 
 ```mermaid
 flowchart TD
-    A["⏰ Oyun saati değişti"] --> B{"Mesai içinde mi?\n(08:00-18:00)"}
-    B -->|Hayır| X["— çalma yok"]
-    B -->|Evet| C{"Zar: şans(P) × event × perk"}
-    C -->|Tutmadı| X
-    C -->|Tuttu| D["📞 Telefon çalar\n(15 sn)"]
-    D --> E{"Oyuncu alanda\nE'ye bastı mı?"}
-    E -->|Evet| F["✅ +20 TL, +0.4 prestij"]
-    E -->|Hayır| G["🔇 Susar — CEZA YOK"]
+    A["🧍 Oyuncu telefon alanında E'yi basılı tutar"] --> B["StartDialServerRpc → guard'lar"]
+    B --> G1{"Mesai 08-18?"}
+    G1 -->|Hayır| R["❌ Reddedildi (bar sıfırlanır)"]
+    G1 -->|Evet| G2{"Bugün spawn olmamış kota müşterisi var mı?"}
+    G2 -->|Hayır| R
+    G2 -->|Evet| G3{"Kuyruk dolu mu?"}
+    G3 -->|Evet| R
+    G3 -->|Hayır| G4{"Cooldown bitti mi? (3sn)"}
+    G4 -->|Hayır| R
+    G4 -->|Evet| G5{"Zaman atlaması 17:30'u geçirir mi?\n(PredictTimeAfterSkip)"}
+    G5 -->|Evet| R
+    G5 -->|Hayır| H["⏳ Bar dolar (1 sn)"]
+    H --> C["CompleteDialServerRpc → TÜM guard'lar TEKRAR"]
+    C --> E["ExecuteCall: müşteri spawn + SkipTime + ödül + cooldown"]
+    E --> F["✅ +20 TL, +0.4 prestij, gün saati ileri sardı"]
 ```
+
+> [!NOTE]
+> **17:30 guard'ı** (`CUSTOMER_EXIT_HOUR`) kritik: olmasaydı, çağrılan müşteri aynı karede
+> gün-sonu kesimine yakalanır ve oyuncu hem +0.4 arama prestijini hem −0.4 kayıp cezasını görürdü
+> (QA bulgusu 2026-08-29). `phoneEndHour = 18` bu iş için yetmiyor.
+>
+> **Server-authoritative**: client'ın "yeterince bekledim" beyanına güvenilmez, sunucu kendi
+> zaman damgasından hesaplar (`f9a3f1b` "bedava para" exploit dersi).
 
 ### 14.3 Görsel ve Ses Geri Bildirimi
 
-- **PhoneWaitBar**: çalma süresince geri sayım (salt görsel, her client yerel çalışır)
-- **Başarı sesi**: arama açıldığında
-- **Zil sesi**: çalma süresince
+- **PhoneWaitBar** iki iş yapıyor: (a) basılı tutarken 0→1 dolan çevirme barı,
+  (b) çağrıdan sonra 1→0 inen cooldown barı
+- **Başarı sesi**: çağrı gerçekleştiğinde (`successCallSound`)
+- **Zil sesi YOK** — telefon çalmıyor
+- Telefon **fiziksel olarak mağazada bir yerde**; oyuncunun oraya yürümesi gerekir
+- "Biri şu an çeviriyor" göstergesi **bilinçli olarak kapsam dışı** (yalnız yerel oyuncu görür)
+
+> [!CAUTION]
+> **Bağlanmamış inspector alanları sessizce sistemi öldürüyor.** `successCallSound`,
+> `phoneWaitBar`, `phoneCollider` hepsi null-guard'lı: atanmadıklarında hata VERMEZ, sadece
+> susarlar. "Telefon hiç çalmadı" sanılmasının sebebi tam olarak buydu (2026-08-13).
+> `WarnOnMissingReferences()` artık bir kez uyarı basıyor.
+
+### 14.4 Telefonun Gerçek Ekonomik Bedeli
+
+`SkipTime`, `timeSkipAmountByPlayerCount`'u **TABAN** gün süresiyle (200s) gerçek saniyeye
+çevirir (bkz. §3.2 uyarısı):
+
+$$\text{gerçekSaniye} = T[P] \times \frac{200}{11 \times 60} = T[P] \times 0{,}30303$$
+
+| Oyuncu | `T[P]` (oyun-dk) | Gerçek maliyet | Doğal varış aralığı | Maliyet / aralık |
+|--------|------------------|----------------|---------------------|------------------|
+| 1P | 115 | **34.8 sn** | 44 sn | %79 |
+| 2P | 59 | **17.9 sn** | 22 sn | %81 |
+| 3P | 55 | **16.7 sn** | 21 sn | %79 |
+| 4P | 55 | **16.7 sn** | 21 sn | %79 |
+
+Yani bir çağrı, "sıradaki müşteriyi beklemek" yerine geçen sürenin yaklaşık **%80'ini** yakar —
+kazanç, kalan **%20'lik** zaman tasarrufu + 20 TL + 0.4 prestij.
+
+**Gün uzadıkça çağrı ucuzlar** (bedel gerçek-saniye cinsinden sabit, gün ise uzuyor):
+
+| | Gün 1 (200s) | Gün 16 (330s) |
+|--|--------------|---------------|
+| 1P: 34.8 sn = | **115** oyun-dk | **70** oyun-dk |
+| 2P: 17.9 sn = | **59** oyun-dk | **36** oyun-dk |
+| 3P/4P: 16.7 sn = | **55** oyun-dk | **33** oyun-dk |
+
+> [!IMPORTANT]
+> `timeSkipAmountByPlayerCount`'un tooltip'i ("atlanan oyun-dakikası") **yalnız gün 1-3'te
+> doğrudur**. Gün 16'da 115 dakikalık ayar fiilen ~70 oyun-dakikası ilerletir. Bu bir bug DEĞİL:
+> `SkipTime`'ı `CurrentDayDuration`'a çevirmek geç-oyun telefon maliyetini **+%65** artırır ve
+> telefonu beceri-ters bir tuzağa çevirir (ekonomist Round 7 §1). **Davranış korunacak,
+> yalnız tooltip düzeltilecek.**
+
+**Kullanım rehberi (16 hücre × 5 oran taraması, Round 7 §4):**
+- Sağlıklı bant: müşterilerin **%10-25'ini** telefonla çağırmak (1P günde ~1, 2P-4P günde ~2.5)
+- **"Her fırsatta çevir" (%100) tepe noktanın −%33…−62 altında** — spam edilmemeli
+- Tepe nokta bandın 10/12 hücresinde **%25**
+- Öğretilebilir tek kural: **"her ~4 müşteriden birini telefonla çağır"**
 
 > [!NOTE]
-> `SetCallChance(float)` ve `ApplyPhoneSettings()` **silindi** (2026-08-06): boş gövdeli bir stub'dı ve
-> `DifficultyManager` onu çağırıp "Phone call chance set to %X" diye **sahte-yeşil log** basıyordu.
-> P-ölçeklemesi artık `GameEconomySettings.phoneRingChanceByPlayerCount`'ta ve gerçekten okunuyor.
-- Telefon **fiziksel olarak mağazada bir yerde** konumlandırılmıştır; oyuncunun oraya yürümesi gerekir
+> `timeSkipAmountByPlayerCount = {115, 49, 47, 47}` **önerildi ama HENÜZ UYGULANMADI**
+> (Round 7 §2; P1 bilerek değişmiyor). Yukarıdaki tablo CANLI `{115, 59, 55, 55}` değerleriyle
+> hesaplanmıştır.
 
 ---
 
@@ -876,47 +1187,71 @@ flowchart TD
   - 3. etkinlik **mutlaka negatif**
   - Sonrası rastgele
 
-### 15.2 Etkinlik Kataloğu (17 Etkinlik)
+### 15.2 Etkinlik Kataloğu (16 Etkinlik — kodla birebir)
 
-#### Pozitif Etkinlikler 🟢
+> Değerler `EventEffectManager.InitializeEventMultipliers()` (cs:130-360) ile birebir eşleşir.
+> Boş hücre = ×1.0 (etkisiz).
 
-| Etkinlik | Etki | Detay |
-|----------|------|-------|
-| **Delivery Bonus** | +%20 kutu ödülü | `rewardPerBox × 1.2` |
-| **Relaxed Day** | +%30 sabır, -%30 müşteri | Rahat gün |
-| **Express Cargo** | -%30 tır çıkış gecikmesi | Tırlar daha hızlı döner |
-| **Golden Box Day** | +%30 ödül, +%20 hız, +%20 müşteri | En iyi etkinlik |
-| **Opportunity Day** | -%20 upgrade maliyeti | Stratejik upgrade fırsatı |
-| **VIP Service** | %10 mükemmel kutu şansı | Özel kutular |
-| **Rainy Day** | -%20 müşteri | Yağmurlu gün, sakin tempo |
-| **Festival Day** | Gün başında rastgele bonus | Sürpriz ödül |
+#### Pozitif Etkinlikler 🟢 (8 adet)
 
-#### Negatif Etkinlikler 🔴
+| Etkinlik | Kutu ödülü | Müşteri kotası | Sabır | Tır çıkışı | Diğer |
+|----------|-----------|----------------|-------|-----------|-------|
+| **DELIVERY BONUS** | **×1.20** | | | | |
+| **EXPRESS CARGO** | ×1.08 | | | **×0.70** | |
+| **GOLDEN BOX DAY** | ×1.15 | ×1.15 | | ×0.80 | hareket ×1.08, sprint ×1.20, stamina regen **×0.80** |
+| **VIP SERVICE** | ×1.12 | | | | |
+| **RELAXED DAY** | | | **×1.30** | | |
+| **OPPORTUNITY DAY** | | | | | upgrade maliyeti **×0.80** |
+| **FESTIVAL DAY** | | | | | gün başında **kira × %10-20** rastgele para |
+| **CUSTOMER SUPPORT** | | | | | telefon cooldown ×0.5 (bkz. §14.1 uyarısı) |
 
-| Etkinlik | Etki | Detay |
-|----------|------|-------|
-| **Busy Day** | +%50 müşteri | Kaotik yoğunluk |
-| **Angry Customers** | -%30 sabır | Müşteriler çabuk gider |
-| **Slow Logistics** | +%50 tır çıkış gecikmesi | Tırlar çok yavaş |
-| **Heavy Boxes** | -%20 hareket/sprint hızı | Kutular ağır |
-| **Fatigue Problem** | -%30 sprint, -%40 stamina regen | Yorgunluk |
-| **Surprise Audit** | Çift ceza | Tüm cezalar ×2 |
-| **Marketing Day** | +%20 müşteri, -%30 kazanç | Pazarlama günü |
-| **Customer Support** | +%30 telefon çalması | Telefon kaçınılmaz |
+#### Negatif Etkinlikler 🔴 (8 adet)
+
+| Etkinlik | Kutu ödülü | Müşteri kotası | Sabır | Tır çıkışı | Diğer |
+|----------|-----------|----------------|-------|-----------|-------|
+| **BUSY DAY** | | **×1.35** | ×0.85 | | |
+| **ANGRY CUSTOMERS** | | ×1.10 | **×0.60** | | |
+| **MARKETING DAY** | **×0.70** | ×1.20 | | | |
+| **RAINY DAY** | | ×0.80 | | | |
+| **SLOW LOGISTICS** | ×0.92 | | | **×1.50** | |
+| **HEAVY BOXES** | | | | | hareket ×0.85, sprint ×0.80 |
+| **FATIGUE PROBLEM** | | ×0.85 | | | hareket ×0.90, sprint ×0.70, stamina regen ×0.60 |
+| **SURPRISE AUDIT** | | | | | tüm prestij cezaları **×2** |
 
 > [!NOTE]
-> **Kodda tanımlı 16 etkinlik** (`EventCalendarUI._allEvents`): BUSY DAY · DELIVERY BONUS ·
-> ANGRY CUSTOMERS · RELAXED DAY · SLOW LOGISTICS · EXPRESS CARGO · HEAVY BOXES · GOLDEN BOX DAY ·
-> OPPORTUNITY DAY · FATIGUE PROBLEM · VIP SERVICE · SURPRISE AUDIT · RAINY DAY · MARKETING DAY ·
-> CUSTOMER SUPPORT · FESTIVAL DAY.
-> Eski GDD'deki **"Quota Day"** etkinliği kodda **yok** (kota sistemiyle birlikte gitti, bkz. §7).
+> Eski GDD'nin **"Quota Day"** etkinliği kodda **yok**. `EventCalendarUI._allEvents` tam olarak
+> yukarıdaki 16 kaydı içerir (8 pozitif + 8 negatif; CUSTOMER SUPPORT `EventType.Positive`).
 >
 > **Zamanlama**: ilk **3 gün etkinliksiz** (`INITIAL_EVENT_FREE_DAYS`), sonrasında **1–2 gün**
-> aralıklarla düşer (`EVENT_INTERVAL_MIN/MAX`, 2026-08-25: 1-3 → 1-2, economist onaylı sıkılaştırma).
+> aralıklarla düşer (`EVENT_INTERVAL_MIN/MAX`, 2026-08-25: 1-3 → 1-2). Kira günlerine (4/8/12/16)
+> etkinlik **hiç atanmaz** (`IsRentDay` dışlaması).
+
+> [!IMPORTANT]
+> **Ekonomist ölçümleri (Round 5) — 4 yapısal bulgu:**
+> 1. **FESTIVAL DAY ~6 kat outlier.** Tek-gün etkisi **+28…+%109** (16 hücre ort. +%61);
+>    ikinci sıradaki MARKETING DAY'in (−%19) 3 katı. Sebep: **tek kira-bağlı event**, kira hem
+>    P ile hem `1.20^dönem` ile büyürken strict bantta günlük gelir büyümüyor.
+> 2. **Kota çarpanı YUKARI yönde ölü** (BUSY DAY, MARKETING DAY, ANGRY CUSTOMERS, GOLDEN BOX DAY).
+>    Bkz. §7.2 / §9.6 — doğru kol varış aralığını bölmek olurdu. BUSY DAY'in lokalizasyon metni
+>    zaten "SPAWN RATE +35%" vaat ediyor ama kod kotayı çarpıyor.
+> 3. **Pozitif/negatif asimetrik, oyuncu lehine.** 40k Monte Carlo: 16 günde ort. **5.86 event**
+>    (3.43 pozitif / 2.43 negatif) → pozitifler **%43 daha sık**
+>    (`INITIAL_POSITIVE_EVENT_COUNT=2` vs tek `GUARANTEED_NEGATIVE_EVENT_INDEX=2`).
+>    Net para katkısı +%0.6…+2.7 — ama bunun **%80-100'ü tek başına FESTIVAL DAY'den**.
+> 4. **RELAXED DAY Normal bantta tam sıfır** (16 hücrenin 8'i) — sabır kolu orada hiç çalışmıyor
+>    (bkz. §9.4).
 >
-> **FAZ 4 düzeltmeleri**: RELAXED DAY'in açıklamada olmayan gizli müşteri cezası (×0.7) kaldırıldı ·
-> RAINY DAY yanlış sınıflandırılmıştı (Pozitif → **Negatif**) · VIP SERVICE'in "tır başına %10 şans"
-> RNG'si silinip sabit ×1.12 yapıldı (ölçülen etkisi yalnız +%1.3'tü).
+> **Yerleşim riski**: takvim kira günlerini dışlıyor ama **kira gününden ÖNCEKİ günü (15)**
+> korumuyor — tek-event en kötü hasar hep orada çıkıyor (−255 TL, BUSY DAY, 4P).
+
+> [!NOTE]
+> **Ölü kod**: `EventEffectManager.IsGoldenBoxDay()` (cs:702) ve `IsVIPServiceDay()` (cs:709)
+> tüm `Assets/` içinde **okuyucusuz**. İşlevsel boşluk yok — açıklamalardaki %15/%12 zaten
+> `rewardPerBoxMultiplier`'dan geliyor.
+>
+> **FAZ 4 düzeltmeleri (tarihsel)**: RELAXED DAY'in açıklamada olmayan gizli müşteri cezası
+> (×0.7) kaldırıldı · RAINY DAY yanlış sınıflandırılmıştı (Pozitif → **Negatif**) ·
+> VIP SERVICE'in "tır başına %10 şans" RNG'si silinip sabit ×1.12 yapıldı.
 
 ### 15.3 Etkinlik Uygulama Mekanizması
 
@@ -924,14 +1259,24 @@ flowchart TD
 
 ```
 EventEffectManager
-├── Truck.rewardPerBox → Çarpan uygula
-├── CustomerAI.waitTime → Çarpan uygula
-├── PlayerMovement.moveSpeed → Çarpan uygula
-├── PlayerMovement.staminaRegenRate → Çarpan uygula
-└── UpgradePanel.costMultiplier → Çarpan uygula
+├── Truck.rewardPerBox               → rewardPerBoxMultiplier
+├── Truck çıkış gecikmesi            → exitDelayMultiplier
+├── CustomerAI.waitTime              → customerWaitTimeMultiplier
+├── CustomerManager.eventCustomerMultiplier → dailyCustomerMultiplier (kota tabanına)
+├── PlayerMovement.moveSpeed         → playerMoveSpeedMultiplier
+├── PlayerMovement.sprintSpeed       → playerSprintSpeedMultiplier
+├── PlayerMovement.staminaRegenRate  → staminaRegenRateMultiplier
+├── UpgradePanel.costMultiplier      → upgradeCostMultiplier (UpgradePanel.cs:1618 okuyor)
+├── PhoneCallManager                 → IsEventActive("CUSTOMER SUPPORT") ile cooldown ×0.5
+└── PrestigeManager cezaları         → GetPenaltyMultiplier() (SURPRISE AUDIT ×2)
 ```
 
 **Geri yükleme**: Orijinal değerler saklanır ve etkinlik sona erdiğinde (yeni gün başladığında) geri yüklenir.
+
+> [!WARNING]
+> Perk sistemi de aynı alanların bir kısmına yazıyor ve etkinlik geri-yüklemesi
+> **snapshot tabanlı** — snapshot'a yeni bir yazar eklenirse snapshot da tazelenmeli
+> (bkz. `.claude/agent-memory/economist/perk_card_absolute_assignment_conflict.md`).
 
 ---
 
@@ -960,11 +1305,33 @@ EventEffectManager
 
 ### 16.2 Görev Ödül / Ceza Tablosu
 
-| Tier | Para ödülü | Para cezası | Prestij ödülü | Prestij cezası |
-|------|-----------|-------------|---------------|----------------|
-| **Easy** | 28 TL | 15 TL | +1.4 | −0.8 |
-| **Medium** | 60 TL | 27 TL | +3.0 | −1.36 |
-| **Hard** | 150 TL | 53 TL | +7.5 | −2.66 |
+Tablo **tier-düz**: aynı tier'daki her asset aynı ödülü verir (2026-08-06, `975f011` —
+eski base/premium/phone grup ayrımı kaldırıldı).
+
+| Tier | Para ödülü | Para cezası | Prestij ödülü | Prestij cezası | Asset |
+|------|-----------|-------------|---------------|----------------|-------|
+| **Easy** | 28 TL | 15 TL | +1.4 | −0.8 | 11 |
+| **Medium** | 60 TL | 27 TL | +3.0 | −1.36 | 10 |
+| **Hard** | 150 TL | 53 TL | +7.5 | −2.66 | 9 |
+
+> [!IMPORTANT]
+> **Görev PRESTİJİ, para ödülünden büyük olabiliyor.** §4.3'ün dönüşümüyle Hard'ın +7.5 prestiji
+> gün 8'de **34-281 TL** ediyor — optimistic bantta 150 TL'lik para ödülünün **1.7-1.9 katı**.
+> 16 günlük quest prestiji 1.6-**48.1** puan; `maxPrestige=100` tavanına çarpan hücre sayısı
+> quest'siz 3/12 iken quest'li **6/12** (Round 8 §3). Bu terim kart üzerinde görünmediği için
+> oyuncuya **görünmez** bir değer.
+>
+> Quest PARASI ise doğru büyüklükte (tır gelirinin %2.1-2.5'i strict, %4.5-7.4'ü optimistic),
+> ama kira brüt geliri süpürdüğü için **final kasaya +%19…+%61 biniyor**.
+
+> [!CAUTION]
+> **"Görev Kademesi" upgrade'i strict bantta ÖDENMİŞ KÖTÜLEŞTİRME.** `DAILY_QUEST_COUNT = 3`
+> **sabit** ve tier kilidi `SetQuestTierInternal` (cs:748) ile **yalnız-artar/geri alınamaz**.
+> Tier açmak havuzu 11'den 30'a çıkarıyor ama strict bantta 19'u negatif-EV → oyuncunun gördüğü
+> "iyi teklif" 3'ten 1'e düşüyor. Ölçüm: 4/4 Normal/strict hücrede **T2 < T0**, üstelik
+> 180 × P-çarpanı TL ödenmişken (L2 net −118…−480). Öneri (henüz uygulanmadı):
+> `DAILY_QUEST_COUNT = 3 + CurrentQuestTier` + upgrade'i `UpgradeCostMultiplier`'dan muaf tutmak
+> (Round 8 §2).
 
 ### 16.3 Görev Durumları
 
@@ -993,13 +1360,20 @@ stateDiagram-v2
 | 1 | **PlaceBoxOnShelf** | ✅ canlı | **13 asset** |
 | 3 | **PackToy** | ✅ canlı | **12 asset** |
 | 2 | **CompleteTruck** | ✅ canlı | **3 asset** |
-| 4 | **AnswerPhone** | ✅ canlı | **2 asset** |
-| 6 | **CompleteSpecificColorTruck** | ⚠️ bağlı ama kullanılmıyor | 0 |
+| 4 | **AnswerPhone** | ✅ canlı — tetikleyici `PhoneCallManager.cs:469` (V4 dışarı arama) | **2 asset** (Easy hedef 2, Medium hedef 3) |
+| 6 | **CompleteSpecificColorTruck** | ⚠️ tetikleyici CANLI (`Truck.cs:656`) ama asset yok | 0 |
 | 0 | **CompleteMinigame** | 🔴 **ÖLÜ** — `QuestTracker.NotifyMinigameCompleted()` çağıranı yok | 0 |
 | 5 | **MakePackagingMistake** | 🔴 **ÖLÜ** — `NotifyPackagingMistake()` çağıranı yok | 0 |
 
 > Ölü tipler canlı bug değil (hiçbir asset kullanmıyor), ama yeni görev tipi eklemeden önce
 > tetikleyicilerinin bağlanması gerekir.
+
+> [!CAUTION]
+> **`AnswerPhone` görevleri §14.4'ün dersinin TERSİNİ ödüllendiriyor.** Ölçüm: telefon quest'inin
+> kasaya katkısı telefon kullanım oranı %0-25'te **−3…−117 TL**, %60-100'de **+20…+148 TL**
+> (Round 8 §5). Yani görev, oyuncuyu ekonomik olarak zararlı olan telefon spam'ine itiyor.
+> Üstelik strict/%60'ta `med_phone_3` havuzdaki **tek pozitif-EV Medium görev**.
+> Öneri (Round 7 uygulandıktan SONRA): Easy hedef **2→1**, Medium hedef **3→2**.
 
 ### 16.5 Hedef Ölçekleme (D2) — şu an etkisiz
 
@@ -1012,6 +1386,11 @@ hedeflenerek kalibre edilmişti. D2 onların üstüne bir kez daha çarpınca si
 tamamlanma olasılığı **3P 0.76 → 0.13**, **4P 0.87 → 0.13**'e düşüyordu (çifte ölçekleme).
 
 Mekanizma, arzı oyuncu sayısıyla ölçeklenMEYEN gelecekteki görev tipleri için duruyor.
+
+> [!WARNING]
+> **Muafiyet TİP-BAZLI, kalıcı değil.** `CompleteSpecificColorTruck` (enum 6) muafiyet listesinde
+> **YOK** ve tetikleyicisi canlı — o tipte bir asset eklenirse çifte-ölçekleme bug'ı aynen geri
+> gelir. Öneri: tip 6 da listeye eklensin (`CalculateEffectiveTargetCount`, cs:569-583).
 
 > Kart açıklamasında gösterilen sayı `QuestProgress.targetProgress`'ten gelir (tek doğruluk kaynağı),
 > asset'teki ham `targetCount`'tan değil — aksi halde ölçekleme açılınca kart yanlış hedef gösterirdi.
@@ -1137,25 +1516,39 @@ Gün sonunda tüm oyuncuların dinlenme odasında toplanması gerekmektedir. Bu,
 
 ### 19.1 Oyuncu Sayısına Göre Ölçekleme
 
-Her ek oyuncu için uygulanan değişiklikler:
+**CANLI (gerçekten okunan) P-ölçeklemeleri:**
 
 | Parametre | Kaynak | 1P | 2P | 3P | 4P |
 |-----------|--------|-----|-----|-----|-----|
-| Müşteri sayısı | `customerCountPerPlayer=2` | 10 | 12 | 14 | 16 |
-| Başlangıç parası | `moneyMultiplierPerPlayer=1.2` (üstel) | 500 | 600 | 720 | 864 |
-| Müşteri sabrı | `patienceReductionPerPlayer=2` | 8-14s | 6-12s | 4-10s | 2-8s |
-| Stamina tüketimi | `staminaDrainMultiplierPerPlayer=1.1` | ×1.0 | ×1.1 | ×1.21 | ×1.33 |
-| **Upgrade maliyeti** | `upgradeCostMultiplierByPlayerCount` (**DİZİ**) | ×1.00 | ×2.00 | ×2.95 | ×3.70 |
+| **Günlük müşteri kotası** (gün 16) | `GameEconomySettings.dailyCustomerCountP*` | 6 | 12 | 13 | 13 |
+| **Müşteri varış aralığı** | `customerArrivalIntervalByPlayerCount` | 44s | 22s | 21s | 21s |
+| Başlangıç parası | `DifficultyManager.moneyMultiplierPerPlayer=1.2` (üstel) | 500 | 600 | 720 | 864 |
+| Stamina tüketimi | `staminaDrainMultiplierPerPlayer=1.1` | ×1.00 | ×1.10 | ×1.21 | ×1.33 |
+| **Upgrade/perk/reroll maliyeti** | `upgradeCostMultiplierByPlayerCount` (**DİZİ**) | ×1.00 | ×2.00 | ×2.95 | ×3.70 |
 | **Kira** | `baseRentByPlayerCount` | 500 | 1.000 | 1.450 | 1.800 |
+| **Kutu ödülü** | `rewardPerBoxByPlayerCount` | 50 | 55 | 70 | 88 |
 | **Tır kargosu** | `truckCargoMin/MaxExclusive` | 1–2 | 2–3 | 2–4 | 2–5 |
 | **Hangar bekleme** | `hangarStayDurationByPlayerCount` | 120s | 60s | 40s | 30s |
-| **Telefon şansı** | `phoneRingChanceByPlayerCount` | %20 | %25 | %30 | %35 |
+| **Telefon zaman bedeli** | `timeSkipAmountByPlayerCount` | 115 dk | 59 dk | 55 dk | 55 dk |
+
+> [!CAUTION]
+> **`DifficultyManager`'ın müşteri/sabır ölçeklemeleri ÖLÜ KABLO.** `ScaledCustomerCount`,
+> `ScaledMinPatience`, `ScaledMaxPatience`, `ScaledStaminaRegenRate` property'lerinin
+> `DifficultyManager.cs` **DIŞINDA tek bir tüketicisi yok** (grep ile doğrulandı; yalnız
+> `GetDifficultyInfo()` log'a basıyor). Dolayısıyla `baseCustomerCount=10`,
+> `customerCountPerPlayer=5`, `baseMinPatience=35`, `baseMaxPatience=55`,
+> `patienceReductionPerPlayer=5` alanları **hiçbir şey yapmıyor**:
+> - Müşteri sayısını `GameEconomySettings` kota tablosu belirliyor (§7.1)
+> - Sabri `Customer.prefab`'ın `minWaitTime=15` / `maxWaitTime=20` alanları belirliyor (§9.4)
+>
+> `ScaledStartingMoney` ise CANLI (`DifficultyManager.cs:455` → `MoneySystem.startingMoney`).
+> Eski GDD'nin "müşteri 10/12/14/16" ve "sabır 8-14s → 2-8s" satırları hiçbir zaman canlı olmadı.
 
 > [!NOTE]
-> **Telefon şansı ve upgrade maliyeti artık `DifficultyManager`'da DEĞİL.**
+> **Telefon ve upgrade maliyeti artık `DifficultyManager`'da DEĞİL.**
 > `basePhoneCallChance`, `phoneChancePerPlayer`, `ScaledPhoneCallChance` ve
-> `upgradeCostMultiplierPerPlayer` (tek float) **silindi** — ilk üçü hiçbir sisteme bağlı değildi.
-> Telefon `GameEconomySettings`'e, upgrade maliyeti diziye taşındı.
+> `upgradeCostMultiplierPerPlayer` (tek float) **silindi**. Telefon P-ölçeklemesi
+> `GameEconomySettings.timeSkipAmountByPlayerCount`'ta, upgrade maliyeti dizide.
 
 ### 19.2 Ölçülen Gelir Ölçeği
 
@@ -1202,9 +1595,13 @@ $$\text{KAZANDIN} = (\text{Gün} \geq 16)$$
 16. günü tamamlamak — yani prestij sıfırlanmadan ve iflas etmeden o güne ulaşmak.
 
 > [!WARNING]
-> **`CheckWinCondition` prestije BAKMIYOR.** Yalnız `currentDay >= MAX_DAYS` kontrol ediliyor.
-> Prestij zaten sıfıra düşünce oyun anında bittiği için pratikte fark yaratmıyor, ama
-> dokümandaki eski "∧ Prestij > 0" ifadesi kodda karşılığı olmayan bir koşuldu.
+> **`CheckWinCondition` prestije BAKMIYOR.** Yalnız `currentDay >= MAX_DAYS` kontrol ediliyor
+> (`GameStateManager.cs:696-712`). Prestij kapısı fiilen `PrestigeManager.ModifyPrestige`
+> (cs:154-157) içinde. **Kodun kendi docstring'i (cs:691, 706) bununla ÇELİŞİYOR** —
+> "prestige > 0 and rent paid" diyor. Ya yorum düzeltilmeli ya kontrol gerçekten eklenmeli.
+>
+> İlgili sessiz kaçak: `PrestigeManager.SetPrestige` (cs:231) o kapıdan geçmiyor (clamp var,
+> `TriggerLose` yok). Bugün dış çağıranı yok; ileride bağlanırsa prestij sessizce 0'a inebilir.
 
 ### 21.2 Kaybetme Koşulları (2 Yol)
 
@@ -1213,7 +1610,13 @@ $$\text{KAZANDIN} = (\text{Gün} \geq 16)$$
 | 1 | **İflas** | Kira ödeyememe (2. kez) | Grace period kullanılmış + yine ödeyemiyor |
 | 2 | **Prestij sıfırlanması** | Prestij ≤ 0 (**clamp öncesi ham değer**) | Çok fazla müşteri kaçırma/hata/görev cezası |
 
-> ~~3. Kota başarısızlığı~~ — **kaldırıldı**, `QuotaManager` tamamen silindi (bkz. §7).
+> ~~3. Kota başarısızlığı~~ — **kaldırıldı**, `QuotaManager` tamamen silindi. 2026-08-29'da gelen
+> yeni müşteri kotası bir kaybetme koşulu DEĞİLDİR, yalnız hafif prestij cezası verir (bkz. §7).
+
+> [!IMPORTANT]
+> **Pratikte kaybetmenin tek yolu 1. madde.** Ekonomist Round 6 ölçümü: 16/16 senaryoda prestij
+> hiç 0'a inmiyor, kaybeden hücreler NAKİT'ten iflas ediyor ve o anda bile prestijleri 18.9-43.4
+> (bkz. §6.4). Prestij kaybı bugün ayırt edici bir fail-state değil.
 
 > [!IMPORTANT]
 > **Kazanılmış oyun kaybedilemez.** `TriggerWin` ve `TriggerLose` artık `gameEnded` guard'lı
@@ -1595,12 +1998,28 @@ flowchart TB
 ## 31. 📊 Ekonomi Simülasyon Verileri
 
 > **Kaynak**: `tools/economy-sim/sim.js` (Node — `node tools/economy-sim/sim.js`).
-> Analiz raporları: `plans/economy-rebuild-2026-07-30{,-faz2,-faz3,-faz4-final}.md`.
+> Analiz raporları: `plans/economy-full-balance-2026-08-30.md` (güncel tur) ve
+> `plans/economy-rebuild-2026-07-30{,-faz2,-faz3,-faz4-final}.md` (tarihsel).
 
-> [!NOTE]
-> **C# içi `RunSimulation()` ContextMenu simülasyonu SİLİNDİ.** Sim artık Unity'den bağımsız,
-> Node tarafında yaşıyor ve **v3.1** sürümünde. Başlığındaki her değer `dosya:satır` ile belgeli —
-> denetimden önce gerçek koda karşı doğrula.
+> [!CAUTION]
+> **Yalnız `runFullSim(playerCount, opts)` (v4.0) kullanın.** Dosyadaki eski `runSim` /
+> `runSimPlateUp` fonksiyonları **artık canlı kodu yansıtmıyor** (kapasite-bazlı kota, silinmiş
+> V3 telefonu, sabit gün uzunluğu, "1 müşteri = 1 ürün" — dördü de kırık; sapma −%76…+%540,
+> Slow/strict'te iflas GÜNÜ bile ayrışıyor). Silinmediler ama kullanılmamalılar.
+>
+> **C# içi `RunSimulation()` ContextMenu simülasyonu SİLİNDİ** — sim Unity'den bağımsız.
+
+> [!WARNING]
+> **`runFullSim`'in bilinen 3 model açığı (2026-08-30 itibarıyla düzeltilmedi):**
+> 1. Telefonun `SkipTime` maliyetini TABAN yerine güncel gün süresiyle hesaplıyor (~%31 fazla
+>    faturalandırma), erken-gün-bitişinde zaman atlamasını **çift sayıyor**, ve
+>    `ForceSpawnNextCustomer`'ı varış kapasitesine kredilemiyor.
+> 2. `QUEST_ASSETS` ödül kolonu **bayat** (2026-08-06 tier-düz tablosuyla senkron değil).
+> 3. `ASSUMED4.phoneUseRate` (strict 0.60 / optimistic 0.10) bayat — gerçekçi davranış her iki
+>    bantta da **%10-25**.
+>
+> Ayrıca modellenmeyenler: `wrongProductPrestigePenalty`, oyuncu tepki gecikmesi, dolu
+> DisplayTable'ın ek kayıp kanalı → `lost` / `missedQuota` sayıları **ALT SINIR**.
 
 ### 31.1 Simülasyon Bantları
 
@@ -1618,7 +2037,7 @@ Sim iki uçtan koşturulur; gerçek oyun bu ikisinin arasında bir yerde:
 | 1 | `kutu/dk/oyuncu` | 1.2 ↔ 2.0 arası 1P kümülatif geliri **%117** değiştiriyor |
 | 2 | `tableBusySeconds` (masa meşguliyeti) | 4s ↔ 8s, Paketleme İstasyonu'nun değerini **4×** değiştiriyor |
 | 3 | `agile_crew`'in üretime yansıması | ölçülmedi |
-| 4 | telefon yanıtlamanın oyuncu-saniyesi maliyeti | ölçülmedi |
+| 4 | telefon çağrısının gerçek-saniye maliyeti | ✅ **ölçüldü** (Round 7): doğal varış aralığının %79-81'i, bkz. §14.4 |
 
 > [!CAUTION]
 > **1. girdi hâlâ ÖLÇÜLMEDİ — tahmin.** Bir oyun günü yalnızca 200–330 gerçek saniye, bu yüzden
@@ -1629,8 +2048,9 @@ Sim iki uçtan koşturulur; gerçek oyun bu ikisinin arasında bir yerde:
 
 Her simülasyon günü şu adımları takip eder:
 
-1. **Gün süresi**: `realDurationInSeconds = 200s` (sahne değeri; `.cs` default'u da 200'e hizalandı)
-2. **Beklenen müşteri**: oyuncu sayısına göre `10 / 12 / 14 / 16`
+1. **Gün süresi**: `200s + max(0, gün−3) × 10s` (sahne değeri; `.cs` default'u da 200'e hizalı)
+2. **Beklenen müşteri**: `GetDailyCustomerCount(gün, P)` kota tablosu (§7.1) × event çarpanı —
+   **eski `10 / 12 / 14 / 16` sabitleri artık geçersiz**
 3. **Üretim kapasitesi**: `kutu/dk/oyuncu × süre × oyuncu` — **modelin en duyarlı girdisi**
 4. **Masa çekişmesi**: sahnede `Table` taşıyan tam 2 obje var, ikisi de Paketleme İstasyonu
    `levelObjects`'i → **sv0'da TEK masa**. `tableBusySeconds` 2. en duyarlı girdi
@@ -1640,26 +2060,35 @@ Her simülasyon günü şu adımları takip eder:
 8. **Kira kontrolü**: gün % 4 == 0 → hesapla ve öde / grace / iflas
 9. **Upgrade**: Kira günü değilse ve kasa > 200 → fazlasının %50'si upgrade'e
 
-### 31.3 10 Günlük Karşılaştırma (Yeni Kapasite Sistemi)
+### 31.3 Bant Sağlığı (2026-08-30, CANLI değerlerle)
 
-Senaryo: Oyuncu her 2 günde 1 raf ekler, mağaza seviyesi her 3 günde 1 artar.
+> ~~Eski "10 Günlük Kapasite Karşılaştırması" tablosu kaldırıldı~~ — dayandığı kapasite-bazlı
+> müşteri formülü koddan silindi (bkz. §9.6).
 
-| Gün | Raf+Masa | Seviye | Eski Sistem | Yeni (Solo) | Yeni (2 Oyuncu, ×1.3) |
-|-----|----------|--------|------------|-------------|----------------------|
-| 1 | 3 | 1 | 10 | 9-14 | 12-18 |
-| 2 | 3 | 1 | 12 | 9-14 | 12-18 |
-| 3 | 4 | 2 | 14 | 16-21 | 21-27 |
-| 4 | 4 | 2 | 16 | 16-21 | 21-27 |
-| 5 | 5 | 2 | 18 | 19-24 | 25-31 |
-| 6 | 5 | 3 | 20 | 21-26 | 27-34 |
-| 7 | 6 | 3 | 22 | 24-29 | 31-38 |
-| 8 | 6 | 3 | 24 | 24-29 | 31-38 |
-| 9 | 7 | 4 | 26 | 29-34 | 38-44 |
-| 10 | 7 | 4 | 28 | 29-34 | 38-44 |
+`runFullSim` v4.0, 16 senaryo (1-4P × Normal/Slow × strict/optimistic), CANLI kira
+`{500,1000,1450,1800}` / g=1.20:
+
+| Bant | Sonuç |
+|------|-------|
+| **Normal / optimistic** | Tüm P'ler rahat hayatta |
+| **Normal / strict** | Tüm P'ler hayatta; 1P marjı ince görünüyor ama gerçek tampon **kullanılmamış grace** (kırılma eşiği üretimde −%40) |
+| **Slow / optimistic** | Tüm P'ler hayatta |
+| **Slow / strict** | ❌ **4/4 iflas** — 1P gün 16, 2P/3P/4P gün 12 |
+
+**Slow/strict'in anatomisi**: ölüm gün 12'de görünür ama gün 4'te başlar — ilk kira kasayı
+87-201 TL'ye süpürür, gün 8'de grace yanar, gün 12'de ×1.44 kirası karşılıksız kalır
+(açık −265 / −303 / −519 / −595 TL). Kira / 4-günlük-gelir oranı **1.52-1.71**
+(Normal/strict'te 0.88-1.27 ve düşerek gidiyor) → **eğri değil SEVİYE sorunu, açık ≈ %25-30**.
+`rentGrowthMultiplier`'ı 1.10'a indirmek bile kurtarmıyor.
+
+**Kota → para dönüşümü** (Round 2 §4): strict bantta 16/16 gün mekanik-bağlı, kota hiç bağlayıcı
+değil; kutu/kota oranı Normal/strict 0.31-0.47, Slow/strict 0.20-0.31, Normal/optimistic 1.21-1.23.
+
+> Bu tablo Round 3'ün önerdiği kira (`{290,650,1140,1630}`) **uygulanmadan önceki** durumu gösterir.
 
 ---
 
 
 > **Bu belge, Cargor projesinin canlı bir tasarım referansıdır. Oyun geliştikçe güncellenmelidir.**
 >
-> 📝 *Son güncelleme: 6 Temmuz 2026 — Eclion Software*
+> 📝 *Son güncelleme: 30 Ağustos 2026 — Eclion Software (ekonomi Round 9: PlateUp kota + Telefon V4 senkronu)*

@@ -342,9 +342,9 @@ namespace NewCss
             };
 
             // CUSTOMER SUPPORT: çarpanlar nötr; PhoneCallManager V4 (2026-08-29, dışarı arama
-            // modeli) bu event aktifken IsEventActive("CUSTOMER SUPPORT") ile telefon cooldown'unu
-            // yarıya indirir (bkz. PhoneCallManager.GetEffectiveCooldownSeconds). Eski reaktif
-            // modeldeki "çalma sıklığı ×2" karşılığı budur.
+            // modeli) bu event aktifken IsEventActive("CUSTOMER SUPPORT") ile bir aramanın zaman
+            // maliyetini (time-skip dakikası) yarıya indirir (bkz. PhoneCallManager.
+            // GetEffectiveTimeSkipMinutes). Eski reaktif modeldeki "çalma sıklığı ×2" karşılığı budur.
             eventMultipliers["CUSTOMER SUPPORT"] = new EventMultipliers
             {
                 rewardPerBoxMultiplier = 1f,

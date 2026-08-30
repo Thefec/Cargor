@@ -5,6 +5,13 @@ metadata:
   type: project
 ---
 
+> ✅ **2026-08-30 (Round 8) DOĞRULAMA — KARAR UYGULANMIŞ, D2 BUGÜN TAM NO-OP.**
+> `QuestManager.CalculateEffectiveTargetCount` (cs:569-583) dört tipi de (1/2/3/4) muaf tutuyor;
+> canlı 30 asset'in HEPSİ bu dört tipten → `targetCount`'lar 2026-07-29 değerlerinde kaldı.
+> ⚠️ Muafiyet TİP-BAZLI: `CompleteSpecificColorTruck`(6) muaf DEĞİL ve tetikleyicisi CANLI
+> (`Truck.cs:656`), yalnız asset'i yok — renk-kilitli tır quest'i eklenirse bug AYNEN geri gelir.
+> Detay: [[economy-full-balance-round8-2026-08-30]] §7.
+
 **Bağlam**: Kontrol kapısı D2'yi (`plans/economy-rebuild-2026-07-30-faz4-final.md` §B.9,
 `etkinHedef = target × ECONOMY_SCALE[P]`) [[quest_hard_targetcount_retune_2026-07-29]]'daki
 flat `targetCount` (Hard 12/5, Medium 7/3, Easy 4/2) üzerine uygularsa çifte ölçekleme

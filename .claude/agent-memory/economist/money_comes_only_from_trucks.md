@@ -16,6 +16,15 @@ metadata:
 > dolaylı olarak parayı SIKI sınırlıyorlar. Gelir kaldıracı ararken artık İKİSİNE BİRDEN
 > bakılmalı: `min(truckThroughput, servisEdilenMüşteri)`.
 
+> ⚠️ **İKİNCİ DÜZELTME (2026-08-30, ROUND 10): "TEK para kaynağı tır" ARTIK DOĞRU DEĞİL.**
+> `PhoneCallManager.ExecuteCall` (`Assets/NewCss/Phone/PhoneCallManager.cs:451-457`) her
+> başarılı dışarı-aramada **koşulsuz** `MoneySystem.AddMoney(callMoneyReward=20)` yapıyor —
+> müşterinin servis edilip edilmediğine BAKMADAN. Bu, oyunun **ikinci ve koşulsuz para
+> musluğu**. Mekanik-bağlı bantlarda (Slow/strict) birinci gelir kaynağına dönüşebiliyor:
+> gün 16, P1, u=%100'de telefon 120 TL/gün vs tır 48 TL/gün. Bu yüzden o bantta
+> "telefonu spam'le" baskın strateji oluyor. Ölçüm ve reddedilen 4 alternatif
+> (`callMoneyReward` 0/10/12/15) için bkz. [[economy_full_balance_round10_2026-08-30]] §6.3 / §4-R1.
+
 **Kod ile doğrulandı (2026-07-20 holistik denetim, o turdaki ESKİ kapasite-modeli için hâlâ geçerli).** Cargor'da PARA akışı:
 
 - **Tek para kaynağı = tır teslimi.** `Truck.cs:571 ProcessSuccessfulDelivery` →

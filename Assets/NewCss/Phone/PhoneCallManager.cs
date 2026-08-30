@@ -6,10 +6,15 @@ namespace NewCss
     /// <summary>
     /// Telefon Sistemi V4 - DIŞARI ARAMA (PlateUp geçişi, plan §D,
     /// plans/plateup-musteri-telefon.md, 2026-08-29). Telefon artık ÇALMAZ; oyuncu telefon
-    /// alanındayken E'ye basarak sıradaki müşteriyi hemen çağırır. Bedel: gün saati
-    /// (DayCycleManager.SkipTime) ileri sarılır. Karşılığında küçük bir para + prestij ödülü
-    /// verilir. Spam'i önlemek için server-authoritative bir cooldown var (bkz. commit
-    /// f9a3f1b "bedava-para exploit" — client'a güvenilmez, guard'lar server'da).
+    /// alanındayken E'yi BASILI TUTARAK (feature/plateup-day-cycle, 2026-08-30 — eskiden tek
+    /// basış anında çağırıyordu, kullanıcı bunu yanlış anlaşılabilir buldu) sıradaki müşteriyi
+    /// çağırır: bar boştan dolmaya başlar (StartDialServerRpc/CompleteDialServerRpc,
+    /// phoneDialHoldSeconds), erken bırakılırsa iptal olur (CancelDialServerRpc). Dolunca
+    /// çağrı gerçekleşir: bedel gün saatinin (DayCycleManager.SkipTime) ileri sarılması,
+    /// karşılığında küçük bir para + prestij ödülü. Çağrı sonrası, ARDINDAN, mevcut
+    /// server-authoritative cooldown (3s taban, kullanıcı isteği 2026-08-30) devreye girer —
+    /// aynı bar dolu'dan boşa döner
+    /// (bkz. commit f9a3f1b "bedava-para exploit" — client'a güvenilmez, guard'lar server'da).
     /// V3'ün saatlik-zar-atma / reaktif çalma modeli tamamen kaldırıldı (git geçmişi).
     /// </summary>
     public class PhoneCallManager : NetworkBehaviour
@@ -42,10 +47,13 @@ namespace NewCss
         private GameEconomySettings economySettings;
 
         // Backward-compat fallback'ler — SO atanmamissa hard-coded degerler kullanilir.
-        private float PhoneCooldownSecondsBase => economySettings != null ? economySettings.phoneCooldownSeconds : 20f;
+        private float PhoneCooldownSecondsBase => economySettings != null ? economySettings.phoneCooldownSeconds : 3f;
         private float PhoneCooldownPerkBonusSeconds => economySettings != null ? economySettings.phoneCooldownPerkBonusSeconds : 0f;
         private int   CallMoneyReward => economySettings != null ? economySettings.callMoneyReward : 20;
         private float CallPrestigeReward => economySettings != null ? economySettings.callPrestigeReward : 0.4f;
+
+        // UX/his parametresi (EKONOMİK DEĞİL — para/süre/ödül/multiplier değil, saf input-timing).
+        private float PhoneDialHoldSeconds => economySettings != null ? economySettings.phoneDialHoldSeconds : 1f;
 
         private float TimeSkipAmountMinutes
         {
@@ -102,6 +110,16 @@ namespace NewCss
         // bir kare gecikmeli olabilir). Time.time tabanli — yalnizca server kendi degerini
         // kendi icinde karsilastirir, cross-client senkron gerekmez.
         private float _cooldownEndTime = -1f;
+
+        // Server-only "basili tutma" (dialing) kilidi. NetworkVariable DEGIL — diger client'larin
+        // "biri ceviriyor" gormesi bilincli olarak kapsam disi (basitlik icin, plan
+        // feature/plateup-day-cycle 2026-08-30). ulong.MaxValue = kimse cevirmiyor.
+        private ulong _dialingClientId = ulong.MaxValue;
+        private float _dialStartTime = -1f;
+
+        // Client-only: yalnizca YEREL oyuncunun kendi bar animasyonu icin.
+        private bool _isDialingLocally;
+        private float _localDialStartTime;
 
         #endregion
 
@@ -252,33 +270,56 @@ namespace NewCss
 
         private void ServerUpdateCooldown()
         {
-            if (!_isOnCooldown.Value) return;
-            if (Time.time >= _cooldownEndTime)
+            if (_isOnCooldown.Value && Time.time >= _cooldownEndTime)
             {
                 _isOnCooldown.Value = false;
+            }
+
+            // Savunma agi: Complete/Cancel hic gelmediyse (ör. client disconnect oldu, basili tutma
+            // sirasinda) dialing kilidi sonsuza dek takili kalmasin. +2f tolerans pay: normal
+            // akiste Complete, hold suresi dolar dolmaz gelir; bu yalnizca kacan paket/disconnect
+            // senaryosu icin son çare.
+            if (_dialingClientId != ulong.MaxValue && Time.time - _dialStartTime > PhoneDialHoldSeconds + 2f)
+            {
+                LogDebug("Dial lock force-released (Client " + _dialingClientId + " — timeout/disconnect?).");
+                _dialingClientId = ulong.MaxValue;
             }
         }
 
         /// <summary>
-        /// Efektif cooldown süresi: taban değer (economist, phoneCooldownSeconds=20 flat) eksi
-        /// phone_line perkinin mutlak-atama azaltması, CUSTOMER SUPPORT günü yarıya iner.
-        /// phoneCooldownPerkBonusSeconds=10f economist onaylı (2026-08-29,
-        /// .claude/agent-memory/economist/phone_cooldown_perk_event_stacking_2026-08-29.md) —
-        /// perk/event kotayı büyütmediğinden ("HasUnspawnedCustomers" tavanına çarpar),
-        /// cooldown kısaltmanın ekonomik etkisi yok, çarpışma riski yok.
+        /// Efektif cooldown süresi: taban değer (phoneCooldownSeconds, 3f — kullanıcı isteği
+        /// 2026-08-30, eski 20f çok uzundu) eksi phone_line perkinin mutlak-atama azaltması
+        /// (phoneCooldownPerkBonusSeconds=1f — economist round10 U5, 2026-08-30). CUSTOMER
+        /// SUPPORT ARTIK BURAYA DOKUNMUYOR (economist round10 U3, 2026-08-30): cooldown ×0.5
+        /// mekanik olarak NO-OP idi (HasUnspawnedCustomers günlük kota tavanı cooldown süresinden
+        /// bağımsız, bkz. phone_cooldown_perk_event_stacking_2026-08-29.md) ama "pozitif" event
+        /// tabelasıyla oyuncuyu spam'e çağırıyordu. Event etkisi artık GetEffectiveTimeSkipMinutes
+        /// üzerinden GERÇEK bir kaldıraca (zaman maliyeti ×0.5) taşındı.
         /// </summary>
         private float GetEffectiveCooldownSeconds()
         {
-            float cooldown = Mathf.Max(1f, PhoneCooldownSecondsBase - PhoneCooldownPerkBonusSeconds);
+            return Mathf.Max(1f, PhoneCooldownSecondsBase - PhoneCooldownPerkBonusSeconds);
+        }
+
+        /// <summary>
+        /// Efektif zaman-atlama miktarı (dakika): TimeSkipAmountMinutes (P-bazlı taban ×
+        /// phoneTimeSkipPerkMultiplier, phone_line perki dahil), CUSTOMER SUPPORT günü ayrıca
+        /// ×0.5 (economist round10 U3, 2026-08-30 — eski cooldown-indirimi NO-OP'un yerine geçti).
+        /// ValidateCallGuards (17:30 guard) VE ExecuteCall (gerçek SkipTime çağrısı) İKİSİ DE bu
+        /// metodu kullanmalı — aksi halde guard yanlış hesaplar (bkz. round10 §2 U3 notu).
+        /// </summary>
+        private float GetEffectiveTimeSkipMinutes()
+        {
+            float minutes = TimeSkipAmountMinutes;
 
             bool eventActive = EventEffectManager.Instance != null &&
                                 EventEffectManager.Instance.IsEventActive(CUSTOMER_SUPPORT_EVENT);
             if (eventActive)
             {
-                cooldown *= 0.5f;
+                minutes *= 0.5f;
             }
 
-            return cooldown;
+            return minutes;
         }
 
         private void HandleNewDay()
@@ -301,12 +342,46 @@ namespace NewCss
 
         private void HandleInput()
         {
+            if (_isDialingLocally)
+            {
+                UpdateLocalDial();
+                return;
+            }
+
             if (IsOnCooldown) return;
 
             if (InputBindingManager.GetActionDown(InputBindingManager.GameAction.Interact))
             {
-                LogDebug("Call requested");
-                CallNextCustomerServerRpc();
+                LogDebug("Dial started (hold)");
+                _isDialingLocally = true;
+                _localDialStartTime = Time.time;
+                StartDialServerRpc();
+            }
+        }
+
+        /// <summary>
+        /// Basili-tutma karesi: E hala basiliysa (GetAction, GetActionDown DEGIL) bari doldur;
+        /// dolunca CompleteDialServerRpc gonder. Birakildiysa CancelDialServerRpc ile iptal et.
+        /// Sunucu reddederse (DialRejectedClientRpc) bu bayrak disaridan da false'a cekilir.
+        /// </summary>
+        private void UpdateLocalDial()
+        {
+            if (InputBindingManager.GetAction(InputBindingManager.GameAction.Interact))
+            {
+                float fill = Mathf.Clamp01((Time.time - _localDialStartTime) / PhoneDialHoldSeconds);
+                phoneWaitBar?.SetFillAmount(fill);
+
+                if (fill >= 1f)
+                {
+                    _isDialingLocally = false;
+                    CompleteDialServerRpc();
+                }
+            }
+            else
+            {
+                _isDialingLocally = false;
+                CancelDialServerRpc();
+                phoneWaitBar?.HideBar();
             }
         }
 
@@ -314,33 +389,35 @@ namespace NewCss
 
         #region Server Logic - Call
 
-        [ServerRpc(RequireOwnership = false)]
-        private void CallNextCustomerServerRpc(ServerRpcParams rpcParams = default)
+        /// <summary>
+        /// Cagri yapilabilir mi? Hem StartDial (basili tutmaya baslarken) hem CompleteDial
+        /// (basili tutma bitince, dunya durumu degismis olabilecegi icin TEKRAR) tarafindan
+        /// cagrilir — guard sirasi/mantigi V4'ten (tek-basisli-cagri) BIREBIR korunuyor.
+        /// </summary>
+        private bool ValidateCallGuards(ulong clientId, string context)
         {
-            ulong clientId = rpcParams.Receive.SenderClientId;
-
             if (!IsWithinBusinessHours())
             {
-                LogDebug("Call rejected: outside business hours (Client " + clientId + ")");
-                return;
+                LogDebug("Call rejected (" + context + "): outside business hours (Client " + clientId + ")");
+                return false;
             }
 
             if (CustomerManager.Instance == null || !CustomerManager.Instance.HasUnspawnedCustomers)
             {
-                LogDebug("Call rejected: no unspawned customers left today (Client " + clientId + ")");
-                return;
+                LogDebug("Call rejected (" + context + "): no unspawned customers left today (Client " + clientId + ")");
+                return false;
             }
 
             if (CustomerManager.Instance.IsQueueFull)
             {
-                LogDebug("Call rejected: queue full (Client " + clientId + ")");
-                return;
+                LogDebug("Call rejected (" + context + "): queue full (Client " + clientId + ")");
+                return false;
             }
 
             if (Time.time < _cooldownEndTime)
             {
-                LogDebug("Call rejected: cooldown active (Client " + clientId + ")");
-                return;
+                LogDebug("Call rejected (" + context + "): cooldown active (Client " + clientId + ")");
+                return false;
             }
 
             // Zaman atlaması gunu musteri-cikis saatinin (17:30) otesine sicratacaksa cagriyi
@@ -348,13 +425,25 @@ namespace NewCss
             // gun-sonu kesimine yakalanip servis edilemeden CEZA uretirdi: oyuncu hem +0.4
             // arama prestijini hem -0.4 kayip cezasini gorurdu (QA bulgusu 2026-08-29).
             // IsWithinBusinessHours yetmiyor: phoneEndHour=18, cikis esigi ise 17.5.
-            float timeSkipMinutes = TimeSkipAmountMinutes;
+            float timeSkipMinutes = GetEffectiveTimeSkipMinutes();
             if (DayCycleManager.Instance != null &&
                 DayCycleManager.Instance.PredictTimeAfterSkip(timeSkipMinutes) >= CustomerManager.CUSTOMER_EXIT_HOUR)
             {
-                LogDebug("Call rejected: time skip would pass customer exit hour (Client " + clientId + ")");
-                return;
+                LogDebug("Call rejected (" + context + "): time skip would pass customer exit hour (Client " + clientId + ")");
+                return false;
             }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Guard'lar gectikten SONRA gercek cagriyi yapar: spawn, zaman atlamasi, odul,
+        /// cooldown baslatma. Eski V4 CallNextCustomerServerRpc'nin govdesi — kod tekrarini
+        /// onlemek icin buraya cikarildi (feature/plateup-day-cycle, 2026-08-30).
+        /// </summary>
+        private void ExecuteCall(ulong clientId)
+        {
+            float timeSkipMinutes = GetEffectiveTimeSkipMinutes();
 
             bool spawned = CustomerManager.Instance.ForceSpawnNextCustomer();
             if (!spawned)
@@ -393,6 +482,118 @@ namespace NewCss
 
             LogDebug("Call placed by Client " + clientId + "! +" + moneyReward + " TL, +" + prestigeReward +
                      " prestij, +" + timeSkipMinutes + " dk zaman atladi (cooldown=" + effectiveCooldown + "s).");
+        }
+
+        /// <summary>
+        /// LEGACY (V4 tek-basis) — artik hicbir client bunu cagirmiyor (basili-tutma modeli
+        /// StartDial/CompleteDial kullaniyor), ama imza uyumlulugu icin silinmedi.
+        /// </summary>
+        [ServerRpc(RequireOwnership = false)]
+        private void CallNextCustomerServerRpc(ServerRpcParams rpcParams = default)
+        {
+            ulong clientId = rpcParams.Receive.SenderClientId;
+            if (!ValidateCallGuards(clientId, "legacy-instant")) return;
+            ExecuteCall(clientId);
+        }
+
+        #endregion
+
+        #region Server Logic - Dial (basili tutma)
+
+        [ServerRpc(RequireOwnership = false)]
+        private void StartDialServerRpc(ServerRpcParams rpcParams = default)
+        {
+            ulong clientId = rpcParams.Receive.SenderClientId;
+
+            if (_dialingClientId != ulong.MaxValue)
+            {
+                LogDebug("Dial rejected: another client is already dialing (Client " + clientId + ")");
+                RejectDial(clientId);
+                return;
+            }
+
+            if (!ValidateCallGuards(clientId, "start-dial"))
+            {
+                RejectDial(clientId);
+                return;
+            }
+
+            _dialingClientId = clientId;
+            _dialStartTime = Time.time;
+            LogDebug("Dial started by Client " + clientId);
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        private void CompleteDialServerRpc(ServerRpcParams rpcParams = default)
+        {
+            ulong clientId = rpcParams.Receive.SenderClientId;
+
+            if (clientId != _dialingClientId)
+            {
+                // Yetkisiz tamamlama denemesi (cevireni baskasi degistirmis olabilir, ya da
+                // StartDial hic kabul edilmemisti — client bunu bilmiyor olabilir). Sessizce yok say.
+                LogDebug("Complete-dial rejected: Client " + clientId + " is not the current dialer.");
+                return;
+            }
+
+            // KRİTİK (f9a3f1b dersi): client'in "yeterince bekledim" beyanina GUVENME, sunucu
+            // kendi zaman damgasindan hesaplasin. -0.05f tolerans: RTT/frame kaymasi icin kucuk pay.
+            if (Time.time - _dialStartTime < PhoneDialHoldSeconds - 0.05f)
+            {
+                LogDebug("Complete-dial rejected: held for less than required time (Client " + clientId + ") — possible early-complete cheat.");
+                _dialingClientId = ulong.MaxValue; // kilit takili kalmasin
+                return;
+            }
+
+            // Basili tutma sirasinda dunya durumu degismis olabilir (kuyruk dolmus, kota
+            // bitmis, saat ilerlemis) — TUM guard'lari TEKRAR kontrol et.
+            if (!ValidateCallGuards(clientId, "complete-dial"))
+            {
+                _dialingClientId = ulong.MaxValue;
+                RejectDial(clientId); // client'in bari 1'de takili kalmasin
+                return;
+            }
+
+            _dialingClientId = ulong.MaxValue;
+            ExecuteCall(clientId);
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        private void CancelDialServerRpc(ServerRpcParams rpcParams = default)
+        {
+            ulong clientId = rpcParams.Receive.SenderClientId;
+
+            if (clientId == _dialingClientId)
+            {
+                _dialingClientId = ulong.MaxValue;
+                _dialStartTime = -1f;
+                LogDebug("Dial cancelled by Client " + clientId);
+            }
+            // Yetkisiz/gec-gelen iptal cagrisi (baskasi ceviriyor, ya da zaten cozulmus) — sessizce yok say.
+        }
+
+        /// <summary>
+        /// StartDial veya CompleteDial sunucuda reddedildiginde, isteyen client'a (SADECE ONA)
+        /// bildirir — aksi halde client'in local bari StartDial'in kabul edildigini varsayip
+        /// dolmaya devam eder, CompleteDial da sessizce reddedilir ve bar 1'de takili kalir.
+        /// </summary>
+        private void RejectDial(ulong clientId)
+        {
+            var clientRpcParams = new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams { TargetClientIds = new[] { clientId } }
+            };
+            DialRejectedClientRpc(clientRpcParams);
+        }
+
+        [ClientRpc]
+        private void DialRejectedClientRpc(ClientRpcParams rpcParams = default)
+        {
+            if (!_isDialingLocally) return;
+
+            _isDialingLocally = false;
+            phoneWaitBar?.HideBar();
+            LogDebug("Dial rejected by server — local bar reset.");
         }
 
         #endregion
@@ -443,6 +644,16 @@ namespace NewCss
             {
                 _playerInPhoneArea = false;
                 LogDebug("Player exited phone area");
+
+                // Oyuncu basili tutarken alandan cikarsa Update() artik HandleInput'u cagirmaz
+                // (yukarida _playerInPhoneArea guard'i var) — dial burada elle iptal edilmezse
+                // sunucu tarafinda kilit yalnizca +2f timeout savunma agiyla acilirdi.
+                if (_isDialingLocally)
+                {
+                    _isDialingLocally = false;
+                    CancelDialServerRpc();
+                    phoneWaitBar?.HideBar();
+                }
             }
         }
 

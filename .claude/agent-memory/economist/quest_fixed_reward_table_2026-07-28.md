@@ -5,6 +5,14 @@ metadata:
   type: project
 ---
 
+> ⚠️ **2026-08-30 (Round 8): AŞAĞIDAKİ ÖDÜL/CEZA TABLOSU ARTIK CANLI DEĞİL.**
+> `975f011` (2026-08-06, FAZ4 §D#6) grup ayrımını (base/premium/phone) KALDIRDI, tier başına DÜZ
+> tabloya geçti: **Easy 28/1.4 (ceza 15/0.8) · Medium 60/3.0 (27/1.36) · Hard 150/7.5 (53/2.66)**.
+> Prestij ödülleri ×3.5-5 büyüdü. Ayrıca gün-16 exploit'i KAPANDI
+> (`SettleAcceptedQuestsOnGameEnd`). Geçerliliğini KORUYAN tespitler: 11/10/9 dağılım,
+> Hard'da telefon yok, hepsinde `hasBuff:0`, tier gate 19/30, settlement'ın ertesi gün başında
+> yatması. Güncel analiz: [[economy-full-balance-round8-2026-08-30]].
+
 ## 2026-07-30 ASSET-DOGRULAMA (30 asset birebir okundu)
 Odul/ceza degerleri tablo ile ESLESIYOR. Duzeltmeler:
 - Tier dagilimi **esit DEGIL**: Easy **11** / Medium **10** / Hard **9** (7/tier degil).

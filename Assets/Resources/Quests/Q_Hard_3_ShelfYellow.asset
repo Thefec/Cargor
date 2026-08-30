@@ -25,9 +25,9 @@ MonoBehaviour:
     requireSpecificTruckColor: 0
     requiredTruckColor: 0
   moneyReward: 150
-  prestigeReward: 7.5
-  moneyPenalty: 53
-  prestigePenalty: 2.66
+  prestigeReward: 3
+  moneyPenalty: 30
+  prestigePenalty: 0.6
   hasBuff: 0
   buffType: 9
   buffAmount: 0

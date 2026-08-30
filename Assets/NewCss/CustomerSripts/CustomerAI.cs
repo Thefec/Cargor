@@ -1387,7 +1387,7 @@ namespace NewCss
         {
             if (PrestigeManager.Instance != null)
             {
-                float penalty = economySettings != null ? economySettings.wrongProductPrestigePenalty : -0.04f;
+                float penalty = economySettings != null ? economySettings.wrongProductPrestigePenalty : -0.20f;
                 // SURPRISE AUDIT günü tüm cezalar 2× (yoksa 1×).
                 float penaltyMult = EventEffectManager.Instance != null
                     ? EventEffectManager.Instance.GetPenaltyMultiplier() : 1f;

@@ -688,7 +688,10 @@ namespace NewCss
         }
 
         /// <summary>
-        /// Checks if the player has won after completing day 16 with prestige > 0 and rent paid.
+        /// Checks if the player has won. Kod yalnızca currentDay &gt;= MAX_DAYS'e bakıyor — prestij
+        /// veya kira ödenmiş olması ayrı bir şart DEĞİL (economist round10 §2b, 2026-08-30: eski
+        /// docstring bunu iddia ediyordu, kodla çelişiyordu; iflas/prestij fail-state'i zaten
+        /// ayrı yollardan — TriggerLose — işleniyor).
         /// completedDayOverride: DayCycleManager.NextDay kazanma kontrolünü gün sayacını
         /// İLERLETMEDEN önce çalıştırır (zafer anında NetworkVariable mutasyonu replike olmasın
         /// diye); ulaşılacak gün değerini buradan geçer. null ise canlı sayaç okunur (debug yolu).
@@ -702,8 +705,8 @@ namespace NewCss
             }
 
             int currentDay = completedDayOverride ?? DayCycleManager.Instance?.currentDay ?? 1;
-            
-            // Win condition: Reach day 16 with prestige > 0
+
+            // Win condition: reach MAX_DAYS. (Prestij/kira ayrı bir şart değil — bkz. yukarıdaki not.)
             if (currentDay >= DayCycleManager.MAX_DAYS)
             {
                 Debug.Log($"=== Day {currentDay} completed - VICTORY! ===");

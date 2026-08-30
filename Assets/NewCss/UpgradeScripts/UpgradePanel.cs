@@ -614,11 +614,16 @@ namespace NewCss
             public bool HasTruck = true;
             public bool HasPlayerMovement = true;
 
-            // GameEconomySettings (7 alan) — PerkEffect.cs: ApplyCheapRent, ApplyPrestigeMaster,
-            // ApplyPhoneLine, ApplyLeveragedRent, ApplyAllIn, ApplyHighVolatility
+            // GameEconomySettings (8 alan) — PerkEffect.cs: ApplyCheapRent, ApplyPrestigeMaster,
+            // ApplyPhoneLine, ApplyLeveragedRent, ApplyAllIn, ApplyHighVolatility.
+            // PhoneTimeSkipPerkMultiplier: economist round10 U4 (2026-08-30) ile ApplyPhoneLine'ın
+            // YENİ yazdığı alan — perk-mutates-persistent-assets dersi: yeni bir Apply* yazarı
+            // eklenince snapshot'ı da tazelemek gerekiyor, aksi halde Play Mode sonrası asset kalıcı
+            // bozulur (bkz. .claude/agent-memory/gameplay veya kök hafıza perk_mutates_persistent_assets notu).
             public float RentGrowthMultiplier;
             public float CustomerServedPrestigeBonus;
             public float PhoneCooldownPerkBonusSeconds;
+            public float PhoneTimeSkipPerkMultiplier;
             public float RentScaledMultiplier;
             public float GracePaymentPercent;
             public float RewardVolatility;
@@ -662,6 +667,7 @@ namespace NewCss
                 snap.RentGrowthMultiplier = economySettings.rentGrowthMultiplier;
                 snap.CustomerServedPrestigeBonus = economySettings.customerServedPrestigeBonus;
                 snap.PhoneCooldownPerkBonusSeconds = economySettings.phoneCooldownPerkBonusSeconds;
+                snap.PhoneTimeSkipPerkMultiplier = economySettings.phoneTimeSkipPerkMultiplier;
                 snap.RentScaledMultiplier = economySettings.rentScaledMultiplier;
                 snap.GracePaymentPercent = economySettings.gracePaymentPercent;
                 snap.RewardVolatility = economySettings.rewardVolatility;
@@ -713,6 +719,7 @@ namespace NewCss
                 economySettings.rentGrowthMultiplier = snap.RentGrowthMultiplier;
                 economySettings.customerServedPrestigeBonus = snap.CustomerServedPrestigeBonus;
                 economySettings.phoneCooldownPerkBonusSeconds = snap.PhoneCooldownPerkBonusSeconds;
+                economySettings.phoneTimeSkipPerkMultiplier = snap.PhoneTimeSkipPerkMultiplier;
                 economySettings.rentScaledMultiplier = snap.RentScaledMultiplier;
                 economySettings.gracePaymentPercent = snap.GracePaymentPercent;
                 economySettings.rewardVolatility = snap.RewardVolatility;
@@ -1596,7 +1603,7 @@ namespace NewCss
 
         private int CalculateFinalCost(int upgradeIndex, UpgradeDefinition upgrade, int currentLevel)
         {
-            float costMultiplier = GetCostMultiplier();
+            float costMultiplier = GetCostMultiplier(upgrade);
             int baseCost = upgrade.baseCost + currentLevel * upgrade.costStep;
 
             // Toplu Alım (bulk_buy) perki: sonraki taslakta işaretlenen 1 kart -%50.
@@ -1608,7 +1615,11 @@ namespace NewCss
             return Mathf.RoundToInt(baseCost * costMultiplier);
         }
 
-        private float GetCostMultiplier()
+        /// <summary>
+        /// upgrade parametresi opsiyonel (default null) — GetRerollCost gibi belirli bir omurgaya
+        /// bağlı olmayan çağıranlar hâlâ eski (P-ölçekli) davranışı alır.
+        /// </summary>
+        private float GetCostMultiplier(UpgradeDefinition upgrade = null)
         {
             float multiplier = 1f;
 
@@ -1618,8 +1629,16 @@ namespace NewCss
                 multiplier *= eventEffectManager.GetUpgradeCostMultiplier();
             }
 
+            // economist round10 U9 (2026-08-30): "Görev Kademesi" (Quest Tier) ödülleri
+            // P-DÜZ'dür (aynı miktar tüm oyuncu sayılarında, QuestManager/quest asset'leri
+            // P'ye göre ölçeklenmez) — fiyatı P-ÖLÇEKLİ kalırsa P3/P4'te net değeri negatife
+            // düşürüyordu (L1 net pozitif hücre 5/16 → muafiyetle 7/16, L2 5/16 → 8/16, v5 sim).
+            // Quest Tier bu yüzden DifficultyManager çarpanından MUAF; event çarpanı (Opportunity
+            // Day vb.) hâlâ uygulanır.
+            bool isQuestTierUpgrade = upgrade != null && ResolveUpgradeKey(upgrade) == UPGRADE_QUEST_TIER;
+
             // Apply difficulty-based cost multiplier
-            if (DifficultyManager.Instance != null)
+            if (!isQuestTierUpgrade && DifficultyManager.Instance != null)
             {
                 multiplier *= DifficultyManager.Instance.UpgradeCostMultiplier;
             }

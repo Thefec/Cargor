@@ -14,7 +14,15 @@ namespace NewCss.Quest
         #region Constants
 
         private const string LOG_PREFIX = "[QuestManager]";
-        private const int DAILY_QUEST_COUNT = 3;
+
+        /// <summary>
+        /// Günlük teklif sayısı — SABİT 3. economist round11 (2026-08-30): round10 U6'nın
+        /// "3 + CurrentQuestTier" formülü sahnede yalnızca 3 QuestSlotUI olduğu için OYUNDA
+        /// NO-OP kanıtlandı (index ≥3'teki teklifler hiçbir slota bağlanamıyordu, bkz.
+        /// economy_full_balance_round11_2026-08-30.md §1) — geri alındı. Kademe artık slot
+        /// SAYISINI değil slot KALİTESİNİ artırıyor, bkz. SelectDailyQuestsStratified.
+        /// </summary>
+        private const int BASE_DAILY_QUEST_COUNT = 3;
 
         /// <summary>Quest asset'lerinin kanonik klasörü (Assets/Resources/&lt;bu&gt;).</summary>
         private const string QUEST_RESOURCE_FOLDER = "Quests";
@@ -92,6 +100,32 @@ namespace NewCss.Quest
         private Dictionary<string, QuestData> _questDatabase;
         private bool _isSubscribedToDayCycle;
 
+        /// <summary>
+        /// R11-1 (economist round11, 2026-08-30): dünkü arz sayaçları. K-aday çekilişinde
+        /// "bugün en yapabileceği" teklifi seçmek için kullanılır (fizibilite skoru).
+        /// Yalnız server'da tutulur (event handler'lar zaten IsServer korumalı), network'lenmez —
+        /// AssignDailyQuests içinde her gün başında OKUNUP sıfırlanır.
+        /// </summary>
+        private int _shelfToday;
+        private int _trucksToday;
+        private int _packedToday;
+        private int _phoneToday;
+
+        /// <summary>Gün 1'de dünkü sayaç yok — o gün K=1'e (mevcut/eski davranış) düşülür.</summary>
+        private bool _hasQuestSupplyHistory;
+
+        /// <summary>
+        /// QA fix (R11 sonrası, 2026-08-30): host'ta DayCycleManager.OnNewDay çift-tetiklenir
+        /// (bkz. EventEffectManager.cs:18, aynı desen: doğrudan Invoke + ClientRpc yerel alıcı,
+        /// _networkCurrentDay.Value++ HER İKİ çağrıdan ÖNCE yapıldığı için ikisi de aynı
+        /// currentDay'i görür). AssignDailyQuests bu çift-tetiklemede İKİNCİ kez çalışırsa
+        /// _shelfToday vb. sayaçlar zaten sıfırlanmış olduğundan K-aday fizibilite skoru
+        /// sıfır/eşit veriye düşer ve 1. çağrının doğru seçimini _dailyQuests.Clear() ile ezer
+        /// (round11'in T2&lt;T0 kazanımını sessizce iptal eder). EventEffectManager._lastFestivalBonusDay
+        /// ile aynı idempotency deseni: aynı currentDay için ikinci çağrı en baştan no-op.
+        /// </summary>
+        private int _lastQuestAssignDay = -1;
+
         #endregion
 
         #region Public Properties
@@ -105,6 +139,15 @@ namespace NewCss.Quest
         /// Günlük görev sayısı
         /// </summary>
         public int DailyQuestCount => _dailyQuests?.Count ?? 0;
+
+        /// <summary>
+        /// Günlük hedef teklif sayısı: SABİT <see cref="BASE_DAILY_QUEST_COUNT"/> (3). economist
+        /// round11 (2026-08-30): round10 U6'nın "3 + CurrentQuestTier" formülü geri alındı — sahnede
+        /// yalnız 3 <c>QuestSlotUI</c> var, index ≥3'teki teklifler hiç gösterilemiyordu (16/16
+        /// hücrede ölçümle NO-OP kanıtlandı). Kademe artık <see cref="SelectDailyQuestsStratified"/>
+        /// içindeki K-aday çekilişiyle slot KALİTESİNİ artırıyor, SAYISINI değil.
+        /// </summary>
+        private int DailyQuestTargetCount => BASE_DAILY_QUEST_COUNT;
 
         /// <summary>
         /// Havuzda oynanabilir en az bir quest var mı? <see cref="UpgradePanel"/> bunu
@@ -386,18 +429,24 @@ namespace NewCss.Quest
         private void HandleBoxPlacedOnShelf(BoxInfo.BoxType boxType)
         {
             if (!IsServer) return;
+            // R11-1: fizibilite skoru için günlük arz sayacı (raf).
+            _shelfToday++;
             UpdateQuestProgress(QuestType.PlaceBoxOnShelf, boxType, 1);
         }
 
         private void HandleTruckCompleted()
         {
             if (!IsServer) return;
+            // R11-1: fizibilite skoru için günlük arz sayacı (tır).
+            _trucksToday++;
             UpdateQuestProgress(QuestType.CompleteTruck, BoxInfo.BoxType.Red, 1);
         }
 
         private void HandleToyPacked(BoxInfo.BoxType boxType)
         {
             if (!IsServer) return;
+            // R11-1: fizibilite skoru için günlük arz sayacı (paketleme).
+            _packedToday++;
             UpdateQuestProgress(QuestType.PackToy, boxType, 1);
         }
 
@@ -405,6 +454,8 @@ namespace NewCss.Quest
         private void HandlePhoneAnswered()
         {
             if (!IsServer) return;
+            // R11-1: fizibilite skoru için günlük arz sayacı (telefon).
+            _phoneToday++;
             UpdateQuestProgress(QuestType.AnswerPhone, BoxInfo.BoxType.Red, 1);
         }
 
@@ -428,6 +479,17 @@ namespace NewCss.Quest
         {
             if (!IsServer) return;
 
+            // QA fix: çift-tetikleme guard'ı (bkz. _lastQuestAssignDay tanımındaki yorum).
+            // Aynı currentDay için ikinci çağrı hiçbir şey yapmadan (snapshot/sıfırlama/seçim
+            // hiçbiri çalışmadan) döner, ta ki gerçekten yeni bir gün gelene kadar.
+            int currentDay = DayCycleManager.Instance != null ? DayCycleManager.Instance.currentDay : -1;
+            if (currentDay != -1 && currentDay == _lastQuestAssignDay)
+            {
+                LogDebug($"AssignDailyQuests no-op: currentDay={currentDay} zaten atandı (çift-tetikleme guard'ı).");
+                return;
+            }
+            _lastQuestAssignDay = currentDay;
+
             // Q6 fix: yeni atama = yeni generation. Bu satırdan sonra gelen (eski generation'lı)
             // Accept istekleri AcceptQuestInternal tarafından reddedilir.
             _questGeneration.Value++;
@@ -437,6 +499,20 @@ namespace NewCss.Quest
 
             // Yeni gün -> günlük kabul limiti sıfırlanır
             _hasAcceptedToday.Value = false;
+
+            // R11-1: dünkü arz sayaçları ÖNCE snapshot alınır (bugünün seçiminde kullanılacak),
+            // SONRA sıfırlanır. Gün 1'de _hasQuestSupplyHistory hâlâ false -> K=1'e düşülür.
+            int shelfYesterday = _shelfToday;
+            int trucksYesterday = _trucksToday;
+            int packedYesterday = _packedToday;
+            int phoneYesterday = _phoneToday;
+            bool hasSupplyHistory = _hasQuestSupplyHistory;
+
+            _shelfToday = 0;
+            _trucksToday = 0;
+            _packedToday = 0;
+            _phoneToday = 0;
+            _hasQuestSupplyHistory = true;
 
             // Get available quests based on tier
             var availableQuests = GetAvailableQuestsForTier();
@@ -449,8 +525,11 @@ namespace NewCss.Quest
 
             // D1 (Faz4 §B.9): her teklif FARKLI bir tier'dan gelsin - üst tier açılınca alt
             // tier'ların havuzu seyrelip Hard ödülü hiç masaya gelmesin diye tier başına en az
-            // bir teklif garantiye alınır.
-            var selectedQuests = SelectDailyQuestsStratified(_currentQuestTier.Value);
+            // bir teklif garantiye alınır. R11-1 (economist round11): tek çekiliş yerine tier
+            // başına K aday çekilip en fizibıl olanı teklif ediliyor (bkz. SelectDailyQuestsStratified).
+            var selectedQuests = SelectDailyQuestsStratified(
+                _currentQuestTier.Value, hasSupplyHistory,
+                shelfYesterday, trucksYesterday, packedYesterday, phoneYesterday);
 
             foreach (var quest in selectedQuests)
             {
@@ -489,11 +568,21 @@ namespace NewCss.Quest
         }
 
         /// <summary>
-        /// D1 (Faz4 §B.9): 3 günlük teklifin her biri FARKLI tier'dan seçilir (maxTier=Hard iken
-        /// 1 Easy + 1 Medium + 1 Hard). Henüz üst tier'lar kilitliyse (maxTier &lt; Hard) kalan
-        /// slotlar açık tier'ların havuzundan rastgele doldurulur - eski davranışla aynı sonuç.
+        /// D1 (Faz4 §B.9): günlük teklifin (DailyQuestTargetCount = <see cref="BASE_DAILY_QUEST_COUNT"/>,
+        /// SABİT 3) her biri FARKLI tier'dan seçilir (maxTier=Hard iken 1 Easy + 1 Medium + 1 Hard).
+        /// Henüz üst tier'lar kilitliyse (maxTier &lt; Hard) kalan slotlar açık tier'ların
+        /// havuzundan rastgele doldurulur - eski davranışla aynı sonuç.
+        ///
+        /// R11-1 (economist round11, 2026-08-30): her tier slotu artık TEK çekiliş değil, **K aday
+        /// çekilip en fizibıl (en yüksek skorlu) olanı teklif edilen** bir "best-of-K" çekiliş.
+        /// K, o tier'ın üst tier'lara kaptırdığı çekiliş sayısı kadardır (<see cref="CalculateCandidateCount"/>) —
+        /// böylece kademe slot SAYISI değil slot KALİTESİ artırır (bkz. §3, economy_full_balance_round11_2026-08-30.md).
+        /// Gün 1'de (<paramref name="hasSupplyHistory"/> false) dünkü arz verisi yok -> K=1'e düşülür,
+        /// yani mevcut (eski) tek-çekiliş davranışıyla birebir aynı olur.
         /// </summary>
-        private List<QuestData> SelectDailyQuestsStratified(int maxTier)
+        private List<QuestData> SelectDailyQuestsStratified(
+            int maxTier, bool hasSupplyHistory,
+            int shelfYesterday, int trucksYesterday, int packedYesterday, int phoneYesterday)
         {
             var selected = new List<QuestData>();
             var usedIds = new HashSet<string>();
@@ -513,12 +602,32 @@ namespace NewCss.Quest
 
                 if (tierPool.Count == 0) continue;
 
-                var pick = tierPool[UnityEngine.Random.Range(0, tierPool.Count)];
-                selected.Add(pick);
-                usedIds.Add(pick.questId);
+                int candidateCount = hasSupplyHistory ? CalculateCandidateCount(t, maxTier) : 1;
+
+                QuestData best = null;
+                float bestScore = float.NegativeInfinity;
+
+                // Best-of-K: K aday RASTGELE (yerine koyarak) çekilir - aynı quest'e denk gelinirse
+                // doğal olarak tek aday gibi davranır. En yüksek fizibilite skorlu aday teklif edilir.
+                for (int i = 0; i < candidateCount; i++)
+                {
+                    var candidate = tierPool[UnityEngine.Random.Range(0, tierPool.Count)];
+                    float score = hasSupplyHistory
+                        ? CalculateFeasibilityScore(candidate, shelfYesterday, trucksYesterday, packedYesterday, phoneYesterday)
+                        : 0f;
+
+                    if (best == null || score > bestScore)
+                    {
+                        best = candidate;
+                        bestScore = score;
+                    }
+                }
+
+                selected.Add(best);
+                usedIds.Add(best.questId);
             }
 
-            if (selected.Count < DAILY_QUEST_COUNT)
+            if (selected.Count < DailyQuestTargetCount)
             {
                 var remainingPool = new List<QuestData>();
                 foreach (var quest in allQuests)
@@ -529,7 +638,7 @@ namespace NewCss.Quest
                     }
                 }
 
-                int need = DAILY_QUEST_COUNT - selected.Count;
+                int need = DailyQuestTargetCount - selected.Count;
                 for (int i = 0; i < need && remainingPool.Count > 0; i++)
                 {
                     int randomIndex = UnityEngine.Random.Range(0, remainingPool.Count);
@@ -541,6 +650,51 @@ namespace NewCss.Quest
             }
 
             return selected;
+        }
+
+        /// <summary>
+        /// R11-1 (economist round11, 2026-08-30): tier slotu için kaç aday çekileceği.
+        /// K tablosu (BİREBİR, formül değil — economy_full_balance_round11_2026-08-30.md §3):
+        /// tier 0: {Easy: K=1} · tier 1: {Easy: K=3, Medium: K=1} · tier 2: {Easy: K=3, Medium: K=2, Hard: K=1}.
+        /// Easy'nin K=3 olması T0'daki (yalnız Easy açıkken) 3 çekilişi birebir geri verir; her tier
+        /// üst tier'lara kaptırdığı slot sayısı kadar K alır (Hard hiç kaptırmaz -> K=1, vitrin kalır).
+        /// </summary>
+        private static int CalculateCandidateCount(int tier, int maxTier)
+        {
+            if (maxTier == 0) return 1;
+            if (tier == 0) return 3;
+            return Mathf.Max(1, maxTier - tier + 1);
+        }
+
+        /// <summary>
+        /// R11-1: bir quest adayının "bugün ne kadar yapılabilir" olduğunu ölçen fizibilite skoru.
+        /// skor = dünkü arz(tipe göre) / (effectiveTarget × (renk-kilitli ? 3 : 1)).
+        /// Yüksek skor = düşük hedef + yüksek dünkü arz = bugün tamamlanması muhtemel. Adaptif —
+        /// telefon kullanmayan bir oyuncuda telefon quest'i arz=0 -> otomatik son sıraya düşer.
+        /// </summary>
+        private float CalculateFeasibilityScore(
+            QuestData quest, int shelfYesterday, int trucksYesterday, int packedYesterday, int phoneYesterday)
+        {
+            int effectiveTarget = CalculateEffectiveTargetCount(quest);
+            if (effectiveTarget <= 0) return 0f;
+
+            int supply = quest.questType switch
+            {
+                QuestType.PlaceBoxOnShelf => shelfYesterday,
+                QuestType.CompleteTruck => trucksYesterday,
+                QuestType.PackToy => packedYesterday,
+                QuestType.AnswerPhone => phoneYesterday,
+                // CompleteMinigame / MakePackagingMistake / CompleteSpecificColorTruck: şu an bu
+                // tiplerde canlı quest asset'i yok (bkz. CalculateEffectiveTargetCount doc'u); arz
+                // sayacı tutulmuyor. Skor 0 = en düşük öncelik - biri eklenirse sayaç da eklenmeli.
+                _ => 0
+            };
+
+            bool colorLocked = quest.requirement != null &&
+                                (quest.requirement.requireSpecificBoxType || quest.requirement.requireSpecificTruckColor);
+
+            float denominator = effectiveTarget * (colorLocked ? 3f : 1f);
+            return supply / denominator;
         }
 
         /// <summary>
@@ -559,6 +713,10 @@ namespace NewCss.Quest
         ///   CompleteTruck     - tır kargosu P ile zaten küçülüyor.
         ///   PlaceBoxOnShelf   - raflama hızı doğrudan oyuncu sayısıyla artıyor.
         ///   PackToy           - paketleme masası çekişmesi P ile zaten dengeleniyor.
+        ///   CompleteSpecificColorTruck - CompleteTruck ile aynı gerekçe (tır kargosu P ile
+        ///     küçülüyor); economist round10 U10 (2026-08-30) — ucuz sigorta: tetikleyici CANLI
+        ///     (Truck.cs:656) ama şu an renk-kilitli tır quest asset'i yok; biri eklenirse D2
+        ///     çifte-ölçekleme bug'ı (2026-08-06 kontrol bulgusu) aynen geri gelirdi.
         ///
         /// Mekanizma, arzı P ile ölçeklenMEYEN gelecekteki görev tipleri için duruyor. Yeni bir
         /// tip eklerken önce economist'e sor: arzı P'den bağımsızsa muafiyet listesine EKLEME.
@@ -573,7 +731,8 @@ namespace NewCss.Quest
             if (quest.questType == QuestType.AnswerPhone ||
                 quest.questType == QuestType.CompleteTruck ||
                 quest.questType == QuestType.PlaceBoxOnShelf ||
-                quest.questType == QuestType.PackToy)
+                quest.questType == QuestType.PackToy ||
+                quest.questType == QuestType.CompleteSpecificColorTruck)
             {
                 return baseTarget;
             }
@@ -1024,6 +1183,9 @@ namespace NewCss.Quest
         {
             if (IsServer)
             {
+                // QA fix guard'ı (_lastQuestAssignDay) aynı gün içinde tekrar tekrar
+                // manuel test amaçlı zorlanabilsin diye burada bilinçli olarak bypass edilir.
+                _lastQuestAssignDay = -1;
                 AssignDailyQuests();
             }
         }

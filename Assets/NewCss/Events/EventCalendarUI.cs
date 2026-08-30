@@ -175,7 +175,7 @@ namespace NewCss
             new GameEvent("SURPRISE AUDIT", "EventSurpriseAudit", EventType.Negative, "ALL FAULTY OPERATIONS PENALIZE DOUBLE.", "EventSurpriseAuditDesc"),
             new GameEvent("RAINY DAY", "EventRainyDay", EventType.Negative, "20% FEWER CUSTOMERS ARRIVE.", "EventRainyDayDesc"),
             new GameEvent("MARKETING DAY", "EventMarketingDay", EventType.Negative, "20% MORE CUSTOMERS, BUT 30% LESS EARNINGS.", "EventMarketingDayDesc"),
-            new GameEvent("CUSTOMER SUPPORT", "EventCustomerSupport", EventType.Positive, "RECEPTION PHONE COOLDOWN IS CUT IN HALF.", "EventCustomerSupportDesc"),
+            new GameEvent("CUSTOMER SUPPORT", "EventCustomerSupport", EventType.Positive, "RECEPTION PHONE CALLS SKIP HALF AS MUCH TIME.", "EventCustomerSupportDesc"),
             new GameEvent("FESTIVAL DAY", "EventFestivalDay", EventType.Positive, "RANDOM BONUS IS EARNED AT DAY START.", "EventFestivalDayDesc")
         };
 

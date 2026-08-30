@@ -17,8 +17,8 @@ namespace NewCss
 
         [Header("=== KİRA AYARLARI ===")]
 
-        [Tooltip("Oyuncu sayısına göre temel kira miktarları (1P, 2P, 3P, 4P)")]
-        public int[] baseRentByPlayerCount = { 500, 1000, 1450, 1800 };
+        [Tooltip("Oyuncu sayısına göre temel kira miktarları (1P, 2P, 3P, 4P). economist round10 U1 (2026-08-30): Slow/strict bandın 4/4 hücresi eski {500,1000,1450,1800} tabanıyla iflas ediyordu (grace VARKEN de YOKKEN de); yeni taban final kasayı 304-612 TL'ye çıkarıp kurtarıyor. Yan etki: Normal/strict bant +%16-115 şişiyor (bkz. economy_full_balance_round10_2026-08-30.md §3) — playtest'te fazla kolay gelirse ikinci tur ayarı {350,730,1190,1650}.")]
+        public int[] baseRentByPlayerCount = { 290, 650, 1140, 1630 };
 
         [Tooltip("Her kira döneminde kira artış çarpanı (örn: 1.3 = %30 artış)")]
         public float rentGrowthMultiplier = 1.20f;
@@ -113,13 +113,16 @@ namespace NewCss
 
         [Header("=== TELEFON AYARLARI (V4) ===")]
 
-        [Tooltip("Oyuncu sayısına göre telefonla müşteri çağrıldığında atlanan oyun-dakikası. index = oyuncuSayısı-1. Kaynak: economist plateup_customer_quota_2026-08-29.md v2 (gün8 referans dönüşümle).")]
-        public float[] timeSkipAmountByPlayerCount = { 115f, 59f, 55f, 55f };
+        [Tooltip("Oyuncu sayısına göre telefonla müşteri çağrıldığında atlanan oyun-dakikası. index = oyuncuSayısı-1. Kaynak: economist plateup_customer_quota_2026-08-29.md v2 (gün8 referans dönüşümle); P2-P4 economist round10 U2 (2026-08-30) ile küçültüldü — v5 sim'de Normal/strict u=%20 kazancı +18/15/8% → +29/22/14%'e çıkıyor, u=%100 cezası pozitife dönüyor. P1 BİLEREK sabit (eğrisi zaten sağlıklı). NOT: bu 'atlanan oyun-dakikası' etiketi yalnız gün 1-3'te tam doğru — SkipTime taban 200s (gün 1 süresi) üzerinden dönüşüm yapar, gün 16'da (daha uzun gün) aynı 115dk fiilen ~70 oyun-dakikasına denk gelir (bilinçli tasarım, bkz. PhoneCallManager sınıf yorumu — DOKUNULMADI).")]
+        public float[] timeSkipAmountByPlayerCount = { 115f, 49f, 47f, 47f };
 
-        [Tooltip("Telefon çağrıları arası server-authoritative cooldown (saniye). Düz — oyuncu sayısından bağımsız (economist: P3/4'te doğal varış aralığıyla neredeyse eşit, marjinal fayda).")]
-        public float phoneCooldownSeconds = 20f;
+        [Tooltip("phone_line perki aktifken TimeSkipAmountMinutes'a uygulanan mutlak çarpan (idempotent atama — PerkEffect.ApplyPhoneLine). Varsayılan 1f (perk yok). economist round10 U4 (2026-08-30): perk satın alınınca 0.80f — çağrı başına zaman maliyeti %20 azalır (değer/maliyet 0–0.62–1.51x, v5 sim ile doğrulandı).")]
+        public float phoneTimeSkipPerkMultiplier = 1f;
 
-        [Tooltip("phone_line perki aktifken cooldown'dan mutlak olarak düşülen saniye (idempotent atama — PerkEffect.ApplyPhoneLine). 10f economist onaylı (2026-08-29): perk kotayı büyütmediği için ekonomik etkisi yok.")]
+        [Tooltip("Telefon çağrıları arası server-authoritative cooldown (saniye). Düz — oyuncu sayısından bağımsız. 3f: kullanıcı isteği (2026-08-30, 20f çok uzun hissettirdi). Ekonomik risk düşük: economist 20/10/5sn aralığını test edip HasUnspawnedCustomers günlük kota tavanının cooldown süresinden bağımsız sabit bir üst sınır koyduğunu, cooldown kısaldıkça ek çağrı sayısının ARTMADIĞINI doğruladı (phone_cooldown_perk_event_stacking_2026-08-29.md) — 3f bu aralığın devamı, ayrıca sim koşulmadı.")]
+        public float phoneCooldownSeconds = 3f;
+
+        [Tooltip("phone_line perki aktifken cooldown'dan mutlak olarak düşülen saniye (idempotent atama — PerkEffect.ApplyPhoneLine). economist round10 U5 (2026-08-30): 10f taban 3f'e (phoneCooldownSeconds) göre Mathf.Max(1, 3-10) ile zaten tabana çakılıyordu (ekonomik değeri SIFIR) — perk artık 1f atıyor, yalnız his/etiket amaçlı, ekonomik etkisi hâlâ yok.")]
         public float phoneCooldownPerkBonusSeconds = 0f;
 
         [Tooltip("Telefonla müşteri çağrıldığında verilen para ödülü (TL)")]
@@ -127,6 +130,9 @@ namespace NewCss
 
         [Tooltip("Telefonla müşteri çağrıldığında verilen prestij ödülü")]
         public float callPrestigeReward = 0.4f;
+
+        [Tooltip("E'yi basılı tutup çağrıyı başlatana kadar geçmesi gereken süre (saniye). EKONOMİK DEĞER DEĞİL — para/süre-atlama/ödül/multiplier değil, saf input-timing/UX hissi; economist onayı GEREKMEZ (feature/plateup-day-cycle, 2026-08-30).")]
+        public float phoneDialHoldSeconds = 1f;
 
         // ─────────────────────────────────────────────────────────────
         //  PRESTİJ CEZA / ÖDÜL  (GameStateManager, CustomerAI, BoxFallPenalty)
@@ -143,8 +149,8 @@ namespace NewCss
         [Tooltip("Müşteriye başarılı servis yapıldığında kazanılan prestige bonusu")]
         public float customerServedPrestigeBonus = 0.4f;
 
-        [Tooltip("Müşteriye yanlış ürün gösterildiğinde uygulanan prestige cezası (negatif olmalı)")]
-        public float wrongProductPrestigePenalty = -0.08f;
+        [Tooltip("Müşteriye yanlış ürün gösterildiğinde uygulanan prestige cezası (negatif olmalı). economist round10 U12 (2026-08-30): -0.08 → -0.20 — eskisi müşteri kaybının (-0.4) 5x altındaydı ve müşteri ANINDA çıktığı için 'bilerek yanlış ürün ver' iade modunda baskın stratejiye dönüşüyordu; nakit etkisi %0-1 (ölçülen, bkz. economy_full_balance_round10_2026-08-30.md §2 U12).")]
+        public float wrongProductPrestigePenalty = -0.20f;
 
         [Tooltip("Kutu yere düştüğünde uygulanan prestige cezası (negatif olmalı)")]
         public float boxDropPrestigePenalty = -0.04f;
@@ -235,14 +241,23 @@ namespace NewCss
         /// <summary>
         /// Oyuncu sayısına göre telefonla müşteri çağrıldığında atlanan oyun-dakikasını döndürür.
         /// playerCount 1-4 arası; dışarıda en yakın uç değer. Dizi boş/null ise güvenli fallback
-        /// olarak 115 (1P değeri) döner.
+        /// olarak 115 (1P değeri) döner. Taban P-eğrisi <c>phoneTimeSkipPerkMultiplier</c> ile
+        /// çarpılır (varsayılan 1f = perk yok; phone_line perki 0.80f atar — economist round10 U4,
+        /// 2026-08-30).
         /// </summary>
         public float GetTimeSkipAmountMinutes(int playerCount)
         {
+            float baseMinutes;
             if (timeSkipAmountByPlayerCount == null || timeSkipAmountByPlayerCount.Length == 0)
-                return 115f;
-            int index = Mathf.Clamp(playerCount - 1, 0, timeSkipAmountByPlayerCount.Length - 1);
-            return timeSkipAmountByPlayerCount[index];
+            {
+                baseMinutes = 115f;
+            }
+            else
+            {
+                int index = Mathf.Clamp(playerCount - 1, 0, timeSkipAmountByPlayerCount.Length - 1);
+                baseMinutes = timeSkipAmountByPlayerCount[index];
+            }
+            return baseMinutes * phoneTimeSkipPerkMultiplier;
         }
 
         /// <summary>

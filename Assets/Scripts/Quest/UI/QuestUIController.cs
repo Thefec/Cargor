@@ -15,7 +15,6 @@ namespace NewCss.Quest
         #region Constants
 
         private const string LOG_PREFIX = "[QuestUIController]";
-        private const int QUEST_SLOT_COUNT = 3;
         private const float DEFAULT_OPEN_ANIMATION_DURATION = 0.5f;
         private const float DEFAULT_CLOSE_ANIMATION_DURATION = 0.3f;
 
@@ -402,7 +401,14 @@ namespace NewCss.Quest
                 return;
             }
 
-            for (int i = 0; i < questSlots.Count && i < QUEST_SLOT_COUNT; i++)
+            // Sahnede bağlı slot sayısı ile QuestManager'ın günlük teklif sayısının küçüğü kadar
+            // slot dolduruluyor. economist round11 (2026-08-30): DailyQuestCount artık SABİT 3
+            // (bkz. QuestManager.DailyQuestTargetCount) - tier arttıkça büyümüyor, çünkü sahnede
+            // yalnız 3 QuestSlotUI var ve fazlası hiç gösterilemiyordu (round10 U6, NO-OP kanıtlandı).
+            // Tier artık slot SAYISINI değil, QuestManager'daki K-aday çekilişiyle slot KALİTESİNİ
+            // artırıyor. Sahneye yeni QuestSlotUI eklenirse burası otomatik uyum sağlar.
+            int slotCount = Mathf.Min(questSlots.Count, QuestManager.Instance.DailyQuestCount);
+            for (int i = 0; i < slotCount; i++)
             {
                 if (questSlots[i] == null) continue;
 

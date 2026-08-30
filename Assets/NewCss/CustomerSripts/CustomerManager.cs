@@ -93,7 +93,7 @@ namespace NewCss
         #region Runtime Multipliers (set by other systems)
 
         /// <summary>
-        /// Event sistemi tarafından set edilen müşteri çarpanı (örn: INTENSIVE DAY = 1.5)
+        /// Event sistemi tarafından set edilen müşteri çarpanı (örn: MARKETING DAY = +%20)
         /// </summary>
         [HideInInspector]
         public float eventCustomerMultiplier = 1f;
@@ -406,7 +406,7 @@ namespace NewCss
             var settings = GetEconomySettings();
             int baseCount = settings != null ? settings.GetDailyCustomerCount(currentDay, playerCount) : 4;
 
-            // Event çarpanı (örn. INTENSIVE DAY) tabanın üzerine uygulanır.
+            // Event çarpanı (örn. MARKETING DAY) tabanın üzerine uygulanır.
             float multipliedCount = baseCount * eventCustomerMultiplier;
 
             // Clamp: asla 0/negatif olmasın, soft cap'i aşmasın
