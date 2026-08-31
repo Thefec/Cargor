@@ -58,7 +58,7 @@ Dal-sonu tek toplu ONAY kapısı, en fazla 3 tur.
 - [x] Adım 1 — klasör birleştirme (`af65bf1`, 6 script + meta, guid doğrulandı, 0 CS)
 - [x] Adım 2 — sadeleştirme (`d234880`, BoxType tooltip + kapsam dışı condition notu)
 - [x] Adım 3 — graphics-ui cila (`5dbae9e`, stale `_currentStep` sonrası tutorial-bitti bug'ı düzeltildi — CompleteTutorial'da null atanmıyordu, skip/dil-değiştirme ile tekrar tetiklenebiliyordu)
-- [ ] Adım 4 — qa
-- [ ] Adım 5 — kontrol ONAY
-- [ ] Adım 6 — kullanıcı Editor işleri
+- [x] Adım 4 — qa (temiz PASS, 1 bloklayıcı-olmayan not: `DebugCompleteTutorial()` context-menu debug aracı, dal-öncesi zaten var olan davranış)
+- [x] Adım 5 — kontrol ONAY (bağımsız doğrulandı: guid, content-preserving taşıma, `_currentStep=null` fix, kapsam taşması yok, BoxType tooltip doğruluğu, headless derleme, departman ayrımı — bulgu yok)
+- [ ] Adım 6 — kullanıcı Editor işleri (aşağıya bak)
 - [ ] Adım 7 — playtest
