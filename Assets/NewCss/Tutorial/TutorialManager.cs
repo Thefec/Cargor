@@ -9,8 +9,17 @@ using UnityEngine.Localization.Settings;
 using NewCss;
 
 /// <summary>
-/// Tutorial yönetim sistemi - adım adım tutorial akışı, UI yönetimi ve koşul kontrollerini sağlar. 
+/// Tutorial yönetim sistemi - adım adım tutorial akışı, UI yönetimi ve koşul kontrollerini sağlar.
 /// Typewriter efekti, highlight sistemi, kapı entegrasyonu ve çoklu dil desteği içerir.
+///
+/// Çekirdek döngü kapsamı (bkz plans/tutorial-rewrite.md) — önerilen ~8 adımlık akış:
+///   1. Hareket (WASD/PressKey)          5. Masaya koy (PlaceOnTable)
+///   2. Kutu al (PickupItem)             6. Masadan al (TakeFromTable)
+///   3. Rafa koy (PlaceOnShelf)          7. Tıra teslim et (DeliverToTruck)
+///   4. Raftan al (TakeFromShelf)        8. Tamamlanma
+/// Bu liste yalnız referans/öneridir — `tutorialSteps` alanı koddan YAML/kod
+/// üzerinden doldurulmaz; adımların Inspector'da elle eklenmesi/sıralanması
+/// gerekir (Unity Editor işi, bu script'in kapsamı dışında).
 /// </summary>
 public class TutorialManager : NetworkBehaviour
 {
@@ -696,6 +705,9 @@ public class TutorialManager : NetworkBehaviour
             TutorialConditionType.TakeFromShelf => CheckTakeFromShelfCondition(),
             TutorialConditionType.DeliverToTruck => CheckDeliverToTruckCondition(),
             TutorialConditionType.WaitForTime => CheckWaitTimeCondition(),
+            // CompleteMinigame ve Custom: kapsam dışı, çekirdek-döngü tutorial'ında
+            // kullanılmıyor (bkz plans/tutorial-rewrite.md). Enum'dan silinmedi,
+            // ileride minigame/özel adım eklenirse hazır kalsın diye.
             TutorialConditionType.CompleteMinigame => _currentStep.isCompleted,
             TutorialConditionType.Custom => _currentStep.isCompleted,
             _ => false
@@ -930,6 +942,8 @@ public class TutorialManager : NetworkBehaviour
     /// </summary>
     public void OnMinigameCompleted()
     {
+        // Kapsam dışı, çekirdek-döngü tutorial'ında kullanılmıyor
+        // (bkz plans/tutorial-rewrite.md) — çağrılmıyor ama kaldırılmadı.
         if (_currentStep == null) return;
         if (_currentStep.conditionType != TutorialConditionType.CompleteMinigame) return;
 

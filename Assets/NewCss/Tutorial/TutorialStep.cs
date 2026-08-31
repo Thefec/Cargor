@@ -105,7 +105,12 @@ public class TutorialStep
     [Tooltip("TakeFromShelf koşulu için belirli kutu türü gerekiyor mu? ")]
     public bool requiresSpecificBoxType;
 
-    [Tooltip("Gerekli kutu türü (Red, Yellow, Blue)")]
+    [Tooltip("Gerekli kutu türü (RAF içi tip). DİKKAT: NewCss.NetworkedShelf.BoxType " +
+        "enum sırası (Red=0, Blue=1, Yellow=2) ile aşağıdaki requiredTruckBoxType alanının " +
+        "tipi olan NewCss.BoxInfo.BoxType (Yellow=0, Blue=1, Red=2) FARKLI SIRADA. " +
+        "Bu iki enum arasında ASLA int cast yapma (örn. (BoxInfo.BoxType)(int)requiredBoxType) " +
+        "— renkler karışır. Karşılaştırma/dönüşüm gerekiyorsa isim (.ToString()) veya " +
+        "açık switch-case eşlemesi kullan.")]
     public NewCss.NetworkedShelf.BoxType requiredBoxType;
 
     #endregion
