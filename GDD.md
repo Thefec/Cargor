@@ -388,9 +388,12 @@ Tüm ekonomik değerler tek bir `GameEconomySettings` ScriptableObject'ten yöne
 > `220100008a020000740400005e060000` = `{290, 650, 1140, 1630}` (little-endian int32 ×4) — bu
 > anahtarı değiştirirken **hem `.cs` initializer'ı hem asset hex'i** güncellenmeli.
 >
-> ⚠️ `DayCycleManager.CalculateRent` fallback dalı (cs:672-679, `economySettings == null` yolu)
-> hâlâ eski `{500,1000,1450,1800}` sabitlerini taşıyor. Bu yol yalnız SO atanmamışsa çalışır
-> (o durumda zaten `LogWarning` basar), ama senkron dışıdır — düzeltilmesi ucuz bir temizlik.
+> ✅ `DayCycleManager.CalculateRent` fallback dalı (`cs:675`, `economySettings == null` yolu)
+> 2026-08-30'da (`93acda3`) senkronlandı — artık o da `{290,650,1140,1630}` taşıyor.
+> Kira değeri değişirse **dört yer birden** güncellenmeli: `GameEconomySettings.cs:21`
+> initializer · `EkonomiAyarlari.asset:15` hex'i · `DayCycleManager.cs:675` fallback'i ·
+> `GameEconomySettings.FallbackBaseRent` (dizi boş/null kalırsa). Beşinci yer
+> `EconomyInvariantCheck.cs:276` ama o sessiz değil — unutulursa denetçi kırmızı yanar.
 
 > [!WARNING]
 > **`PerkEffect` bu ScriptableObject'in alanlarına RUNTIME'DA doğrudan yazıyor ve hiçbir yerde geri almıyor.**

@@ -424,15 +424,9 @@ namespace NewCss
 
         private void ApplyCustomerSettings()
         {
-            // Kapasite bazlı sisteme oyuncu sayısı çarpanını set et
-            var customerManager = FindObjectOfType<CustomerManager>();
-            if (customerManager != null)
-            {
-                // Oyuncu sayısına göre çarpan: 1P=1.0, 2P=1.3, 3P=1.6, 4P=2.0
-                float playerMultiplier = 1f + ((_cachedPlayerCount - 1) * 0.3f);
-                customerManager.playerCountMultiplier = playerMultiplier;
-                LogDebug($"Player count multiplier set to: {playerMultiplier:F2} ({_cachedPlayerCount} players)");
-            }
+            // NOT: Eskiden burada CustomerManager.playerCountMultiplier yazılıyordu. PlateUp
+            // geçişinde (2026-08-29) kota P-indeksli gün eğrisine taşındı, çarpanın okuyucusu
+            // kalmadı; yazan taraf da 2026-08-31'de kaldırıldı.
 
             // Find CustomerAI prefabs and update patience
             var customerAIs = FindObjectsOfType<CustomerAI>();

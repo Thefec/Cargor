@@ -195,10 +195,12 @@ namespace NewCss
         {
             // GEÇİCİ TEŞHİS — kök neden bulunur bulunmaz SİL (bkz. MovementDiagnostics yorumu).
             // IsOwner kontrolünden ÖNCE: "hiç log yok" da bir bilgi (Update hiç koşmuyor demek).
-            // #if UNITY_EDITOR ZORUNLU: MovementDiagnostics/LogMovementDiagnostics tanımları da
-            // aynı guard altında (satır ~709) — guard'sız bırakılırsa Player Build'de (UNITY_EDITOR
-            // tanımsız) derleme kırılır, Editor'de fark edilmez çünkü orada her zaman tanımlı.
-#if UNITY_EDITOR
+            // GUARD ZORUNLU: MovementDiagnostics/LogMovementDiagnostics tanımları da aynı guard
+            // altında — guard'sız bırakılırsa Release Player Build'de derleme kırılır.
+            // 2026-08-31: guard UNITY_EDITOR'dan DEVELOPMENT_BUILD'i de kapsayacak şekilde
+            // genişletildi. Eskisi ile çift makine testinden VERİ ÇIKMIYORDU: ikinci makinedeki
+            // client standalone koşuyorsa UNITY_EDITOR tanımsızdır, log hiç derlenmezdi.
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
             if (MovementDiagnostics) LogMovementDiagnostics();
 #endif
 
@@ -419,9 +421,9 @@ namespace NewCss
                 // pozisyon değişmiyorsa oyuncu geometriye/başka bir kapsüle SIKIŞMIŞ demektir —
                 // "girdi ölü" ile "fiziksel engel" ayrımını yapan tek ölçüm bu. Move() çağrısının
                 // kendisi HER ZAMAN çalışmalı (gerçek hareket budur) — sadece _lastMoveFlags'e
-                // saklama kısmı Editor-only (_lastMoveFlags tanımı #if UNITY_EDITOR altında, satır ~709).
+                // saklama kısmı teşhis-only (_lastMoveFlags tanımı aynı guard altında).
                 var moveFlags = _controller.Move(direction * targetSpeed * Time.deltaTime);
-#if UNITY_EDITOR
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
                 _lastMoveFlags = moveFlags;
 #endif
             }
@@ -663,6 +665,17 @@ namespace NewCss
         /// </summary>
         public void LockMovement(bool locked)
         {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            // GEÇİCİ TEŞHİS (2026-08-31) — kök neden bulununca SİL.
+            // "locked=True" bilgisi tek başına yetmiyor: break-room kilidi, müşteri etkileşimi
+            // kilidi ve panel kilidi aynı bayrağı yazıyor. Ayıran tek şey ÇAĞIRAN.
+            if (MovementDiagnostics && IsLocalPlayer)
+            {
+                Debug.Log($"{LOG_PREFIX} [TESHIS] LockMovement({locked}) cagiran:\n" +
+                          StackTraceUtility.ExtractStackTrace());
+            }
+#endif
+
             _isMovementLocked = locked;
 
             if (locked && IsOwner)
@@ -727,7 +740,9 @@ namespace NewCss
 
         #region Editor Debug
 
-#if UNITY_EDITOR
+// DEVELOPMENT_BUILD de kapsanıyor: WASD teşhisi (aşağıdaki GEÇİCİ TEŞHİS bölgesi) çift makine
+// testinde Development Build alınan client'ta da log basabilsin diye. Release build'e girmez.
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         [ContextMenu("Refill Stamina")]
         private void DebugRefillStamina()
         {
@@ -789,7 +804,15 @@ namespace NewCss
                       $"input=({input.x:0.##},{input.y:0.##}) speed={GetCurrentSpeed():0.##} " +
                       $"cooldown={_isInCooldown} stamina={_currentStamina:0.##} timeScale={Time.timeScale:0.##} " +
                       $"pos={pos.x:0.##},{pos.y:0.##},{pos.z:0.##} delta1s={(pos - _diagLastPos).magnitude:0.###} " +
-                      $"moveFlags={_lastMoveFlags}");
+                      $"moveFlags={_lastMoveFlags} " +
+                      // Ayıraçlar: interactionsLocked → müşteri etkileşimi kilidi mi (o ikisini
+                      // birlikte set eder) · rawWASD+focus → girdi hiç okunmuyor mu · moveSpeed →
+                      // hız çarpanı üst üste binip 0'a mı yaklaştı · spawn/owner → sahiplik bozuk mu.
+                      $"interactionsLocked={_interactionsLocked} moveSpeed={moveSpeed:0.##} " +
+                      $"rawWASD={Input.GetKey(KeyCode.W)}{Input.GetKey(KeyCode.A)}{Input.GetKey(KeyCode.S)}{Input.GetKey(KeyCode.D)} " +
+                      $"focus={Application.isFocused} spawned={IsSpawned} ownerId={OwnerClientId} " +
+                      $"localId={(NetworkManager.Singleton != null ? NetworkManager.Singleton.LocalClientId : ulong.MaxValue)} " +
+                      $"isLocalPlayer={IsLocalPlayer}");
 
             _diagLastPos = pos;
         }

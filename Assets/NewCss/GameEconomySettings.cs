@@ -175,11 +175,24 @@ namespace NewCss
         // ─────────────────────────────────────────────────────────────
 
         /// <summary>
+        /// baseRentByPlayerCount asset'te elle hex yazılan tek dizi; bozulur/boş kalırsa
+        /// GetBaseRent buraya düşer. Değerler DayCycleManager.CalculateRent fallback'i ile aynı.
+        /// </summary>
+        private static readonly int[] FallbackBaseRent = { 290, 650, 1140, 1630 };
+
+        /// <summary>
         /// Oyuncu sayısına göre temel kira miktarını döndürür.
         /// playerCount 1-4 arası olmalıdır. Dışarıdaki değerlerde en yakın uç değer kullanılır.
+        /// Dizi boş/null ise güvenli sabite düşer (kardeş getter'larla aynı desen) — kira
+        /// ödeme yolu gün sonunda çalıştığı için burada exception atmak günü kaybettirir.
         /// </summary>
         public int GetBaseRent(int playerCount)
         {
+            if (baseRentByPlayerCount == null || baseRentByPlayerCount.Length == 0)
+            {
+                int fallbackIndex = Mathf.Clamp(playerCount - 1, 0, FallbackBaseRent.Length - 1);
+                return FallbackBaseRent[fallbackIndex];
+            }
             int index = Mathf.Clamp(playerCount - 1, 0, baseRentByPlayerCount.Length - 1);
             return baseRentByPlayerCount[index];
         }

@@ -41,6 +41,8 @@
 
 ### ⏭️ Sıradaki adım
 
+> 🎮 **PLAYTEST İÇİN TEK LİSTE: [plans/playtest-checklist.md](plans/playtest-checklist.md)** (derlendi 2026-08-31) — 5 ayrı yere dağılmış tüm açık playtest maddeleri (ekonomi Adım 5, oda-görünürlük S7, kira-sonrası 3 özellik, telefon collider, telsiz + client WASD hatası) tek oturumda koşulacak hâlde toplandı. Aşağıdaki dağınık playtest notlarından ÖNCE bunu aç.
+
 0. 📏 **Ölçüm protokolü hazır: [plans/playtest-olcum-protokolu.md](plans/playtest-olcum-protokolu.md)** — oynamadan önce bunu aç. Tek zorunlu çıktı **kutu/dakika/oyuncu**. Oturum öncesi VE sonrası `Cargor / Ekonomi Değerlerini Doğrula` çalıştır (perk asset bozulmasını yakalar).
 1. 🔴 **PLAY-TEST — tek gerçek kapı.** Bu turda kira, prestij, upgrade fiyatları, quest ödülleri, event çarpanları ve telefon ekonomisi değişti; **hiçbiri oyun içinde çalışırken görülmedi.** Makine doğrulaması "derleniyor ve sayılar doğru yerde" der, "oyun iyi hissettiriyor" demez. Checklist tabanı: [plans/playtest-2026-07-19.md](plans/playtest-2026-07-19.md) (bayat, ekonomi kısmı yeniden yazılmalı).
    **Ölçülecekler duyarlılık sırasına göre:** `kutu/dk/oyuncu` (1.2→2.0 ile 1P kümülatifi %117 değişiyor) · masa meşgul süresi S · `agile_crew`'in üretime yansıması · telefon yanıtlamanın oyuncu-saniyesi maliyeti. Bir oyun günü yalnız 200–330 gerçek saniye → **mutlak TL değil oranlarla konuş.**

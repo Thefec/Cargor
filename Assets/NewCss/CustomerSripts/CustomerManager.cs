@@ -98,15 +98,6 @@ namespace NewCss
         [HideInInspector]
         public float eventCustomerMultiplier = 1f;
 
-        /// <summary>
-        /// ARTIK KULLANILMIYOR (PlateUp geçişi 2026-08-29): kota artık GameEconomySettings'teki
-        /// P-indeksli gün eğrisinden (dailyCustomerCountP1..P4) okunuyor, düz çarpan değil.
-        /// Alan yalnızca DifficultyManager.ApplyCustomerSettings:430'un derlenmesi için duruyor —
-        /// orası da bu alanı yazmayı bırakacak şekilde ayrı bir işte temizlenmeli (rapora bakın).
-        /// </summary>
-        [HideInInspector]
-        public float playerCountMultiplier = 1f;
-
         #endregion
 
 
