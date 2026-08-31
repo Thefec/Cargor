@@ -93,6 +93,7 @@ aylardır sessizdi, geri bağlandı. Ayrıca `GetBaseRent` boş-dizi guard'ı, b
 |---|---|---|
 | **[plans/devam.md](plans/devam.md)** | Oturum logu — oturum başında ÖNCE bunu oku | 🚧 **canlı — gerçek kaynak** |
 | **[plans/playtest-checklist.md](plans/playtest-checklist.md)** | 🎮 Tüm açık playtest maddeleri tek listede (A: tek oyuncu · B: 2 istemci + WASD karar tablosu · C: konsol log avı) | 🔴 **bekliyor — kullanıcıda** |
+| **[plans/teknik-borc.md](plans/teknik-borc.md)** | 🧹 Teknik borç envanteri — 2026-08-31 denetim turunun kapanan/açık kalan tüm bulguları, çürütülen şüpheler dahil | 📖 **envanter — iş almadan önce doğrula** |
 | **[plans/economy-rebuild-2026-07-30-faz4-final.md](plans/economy-rebuild-2026-07-30-faz4-final.md)** | Uygulanan nihai değer seti (§A gelir · §B değerler · §D sıra · §E ölçülecekler) | ✅ **uygulandı — play-test referansı** |
 | [plans/economy-rebuild-2026-07-30.md](plans/economy-rebuild-2026-07-30.md) · [-faz2](plans/economy-rebuild-2026-07-30-faz2.md) · [-faz3](plans/economy-rebuild-2026-07-30-faz3.md) | 4 fazlık analiz (envanter, verim modeli, kira/prestij/event, upgrade/quest) | 📖 gerekçe kaynağı |
 | **[plans/playtest-olcum-protokolu.md](plans/playtest-olcum-protokolu.md)** | 🙋 **Oynamadan önce aç** — ölçüm protokolü; tek zorunlu çıktı kutu/dk/oyuncu | 🔴 **bekliyor** |
