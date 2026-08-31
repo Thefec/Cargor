@@ -8,11 +8,20 @@
 
 ## 🎯 Şu an aktif iş
 
-**🎓 TUTORIAL SİSTEMİ SIFIRDAN YENİDEN YAZILIYOR** (2026-08-31, dal `feature/tutorial-rewrite`).
-Ana harita işleri bitti, kullanıcı boşalan kapasiteyi Tutorial'a yönlendirdi. Kapsam: script mimarisi
-(mevcut TutorialManager/TutorialStep temel alınır, sadeleştirilir) + çekirdek-döngü adım akışı +
-iki dağınık script klasörünün (`Tutorialassets`+`NewCss/Tutorial`) birleştirilmesi. Telefon/quest/
-oda-görünürlük öğretimi kapsam DIŞI. Tam plan: **[plans/tutorial-rewrite.md](plans/tutorial-rewrite.md)**.
+**🎓 TUTORIAL SİSTEMİ SIFIRDAN YENİDEN YAZILIYOR — Adım 1-5 BİTTİ, `kontrol` ONAY.** (2026-08-31, dal
+`feature/tutorial-rewrite`, commit YOK push, 6 commit merge'siz). Ana harita işleri bitti, kullanıcı
+boşalan kapasiteyi Tutorial'a yönlendirdi. Yapılanlar: 6 script `Assets/Tutorialassets/`'ten
+`Assets/NewCss/Tutorial/`'a guid korunarak taşındı (klasör ikiliği kapandı) · BoxType karışıklığı
+(`NetworkedShelf.BoxType` vs `BoxInfo.BoxType`, farklı enum sırası) tooltip'le netleştirildi ·
+kapsam dışı condition tipleri işaretlendi · gerçek bir bug bulundu+kapatıldı (`CompleteTutorial()`
+`_currentStep`'i null'lamıyordu, skip/dil-değişimi tamamlanma akışını tekrar tetikleyebiliyordu).
+qa + kontrol ikisi de temiz ONAY (bağımsız doğrulandı: guid, content-preserving taşıma, kapsam
+taşması yok, headless derleme 0 CS). **SIRADAKİ: kullanıcı Unity Editor'de manuel işler** (adım
+listesini Inspector'da doldurma, highlight/trigger referansları bağlama — kod ajanı sahneye obje
+yerleştiremiyor), sonra `plans/playtest-checklist.md` yeni **T-serisi** (T1-T9). Tam plan:
+**[plans/tutorial-rewrite.md](plans/tutorial-rewrite.md)**. Level tasarımı (mevcut statik FBX
+korunuyor) ve içerik (sadece çekirdek döngü — telefon/quest/oda-görünürlük öğretimi kapsam DIŞI)
+bu turun kapsamıydı.
 
 **🟢 Ana harita: kodlanmış bekleyen iş YOK — her şey `main`'de, tek kalan kapı PLAYTEST.** (2026-08-31)
 
