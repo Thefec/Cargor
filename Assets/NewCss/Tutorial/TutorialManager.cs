@@ -658,6 +658,12 @@ public class TutorialManager : NetworkBehaviour
             skipHintText.gameObject.SetActive(false);
         }
 
+        // _currentStep tamamlanmadan sonra null'lanmazsa Update() içindeki
+        // HandleSkipInput/CheckLocaleChange bayat referansla çalışmaya devam eder
+        // (skip tuşu tamamlama mantığını tekrar tetikler, dil değişimi
+        // "Tutorial completed!" mesajını eski adım metniyle ezer).
+        _currentStep = null;
+
         OnTutorialCompleted?.Invoke();
     }
 
