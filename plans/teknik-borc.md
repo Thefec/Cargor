@@ -91,9 +91,17 @@ tasarım kararı mı yoksa bug mı, kullanıcıya sorulmalı.
 
 ---
 
-## 🛡️ Önerilen sigorta (tekrarı önler)
+## 🛡️ Sigorta — ✅ KURULDU (2026-08-31)
 
-`EconomyInvariantCheck` sahneyi `OpenScene` ile zaten açıyor ama yalnız
-`PhoneCallManager.economySettings` bağını denetliyor. **"Kritik SerializeField bağlı mı"**
-assert'i eklenirse `successCallSound` sınıfı sessiz ölümler bir daha kaçmaz — bu proje bu hatayı
-2026-08-13 ve 2026-08-31'de iki kez yedi.
+Bu proje `successCallSound` sınıfı bir sessiz ölümü **iki kez** yedi (2026-08-13 hiç
+bağlanmamıştı; 2026-08-31 `e669e33` AudioSource'u sildi). Üçüncüyü önlemek için
+`EconomyInvariantCheck`'e — sahneyi zaten `OpenScene` ile açtığı için maliyeti sıfır —
+`successCallSound` bağlılık assert'i eklendi.
+
+**Assert'in gerçekten ateşlediği kontrollü deneyle kanıtlandı:** alan sahnede kasıtlı olarak
+`{fileID: 0}` yapıldı → denetçi `❌ DEĞER SAPMASI — 1 kontrol` verdi ve tam nedeni yazdı;
+sonra sahne geri alındı, denetçi yeniden `✅ 200 kontrol temiz`. ("Assert yazıldı" ≠ "assert
+ateşliyor" — bu projede ayar sabitlerine yazılan assert'lerin hiç çalışmadığı görülmüştü.)
+
+**Genişletilebilir:** aynı desen `PhoneWaitBar.barContainer`, quest kart alanları, garaj kapısı
+`requestedCargoText` gibi "bağlanmazsa sessizce ölen" alanlar için de tekrarlanabilir.

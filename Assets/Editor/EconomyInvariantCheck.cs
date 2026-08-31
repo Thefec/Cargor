@@ -177,6 +177,18 @@ public static class EconomyInvariantCheck
             if (so == null)
                 r.Failures.Add("sahne PhoneCallManager.economySettings BAĞLANMAMIŞ — " +
                                "P-bazlı timeSkipAmount, cooldown ve callPrestigeReward devre dışı kalır");
+
+            // SESSİZ ÖLÜM SİGORTASI (2026-08-31). Bu alan İKİ KEZ koptu ve iki kez de aylarca
+            // fark edilmedi: (1) 2026-08-13 hiç bağlanmamıştı, (2) 2026-08-31 — `e669e33`
+            // sahneyi V4 için yeniden serileştirirken AudioSource'u (&424799598) sildi, alan
+            // {fileID: 0}'a düştü. Kullanım yeri null-guard'lı (PhoneCallManager.cs:606) →
+            // ne hata ne uyarı, sadece sessizlik. Telefon V4'te ANA etkileşim olduğu için
+            // ses geri bildiriminin kaybı gerçek bir oyun kusuru.
+            // Ekonomik bir değer değil ama denetçi sahneyi zaten açtığı için en ucuz yer burası.
+            if (ReadPrivate<AudioSource>(phone, "successCallSound") == null)
+                r.Failures.Add("sahne PhoneCallManager.successCallSound BAĞLANMAMIŞ — " +
+                               "başarılı arama sesi çalmaz, kod null-guard'lı olduğu için " +
+                               "hiçbir hata vermeden SESSİZCE ölür (bkz. e669e33 regresyonu)");
         }
 
         // --- Quest UI slotları (R11 D4 sigortası, 2026-08-30) ---
