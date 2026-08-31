@@ -1,227 +1,78 @@
 // ============================================================================
-// Cargor 16-gun ekonomi simulasyonu -- v3.1
+// Cargor 16-gun ekonomi simulasyonu -- v5.1  (TEK MODEL)
 // ============================================================================
-// Tarih: 2026-07-30. Selef: v2 (2026-07-18/20), quest modeli + gun suresi bayatti.
 // Calistirma: node tools/economy-sim/sim.js
 //
+// !! BU DOSYADA TEK BIR OYUN GERCEKLIGI VARDIR: `SRC4` + `runFullSim`.
+//
+// 2026-08-31 TEMIZLIGI -- NEDEN: dosya bu tarihe kadar IKI ayri oyun modeli
+// tasiyordu ve ikisi de CANLI KODDA ARTIK VAR OLMAYAN mekanikleri simule
+// ediyordu. Yanlis blogun okunmasi sessizce hatali analiz uretiyordu:
+//   * `const SRC` + `runSim`          = v3.1, PlateUp ONCESI model
+//   * `const PLATEUP` + `runSimPlateUp` = 2026-08-29 oneri modeli
+// Somut bayatliklar (2026-08-31'de kaynaktan dogrulandi):
+//   - `SRC.baseRentByPlayerCount = [500,1000,1450,1800]` -> CANLI deger
+//     [290,650,1140,1630] (GameEconomySettings.cs:21; asset:15 hex
+//     22010000/8a020000/74040000/5e060000 = 290/650/1140/1630).
+//   - `phoneRingChancePerHour` / `phoneRingEventMultiplier` / `phoneRingPerkBonus`
+//     (V3 "calan telefonu ac" modeli) -> GameEconomySettings.cs'te DE
+//     Assets/Resources/EkonomiAyarlari.asset'te DE ARTIK YOK; PhoneCallManager'da
+//     `ringDuration` alani da yok. Telefon V4: oyuncu DISARI arar ve SkipTime
+//     gunun GERCEK saniyelerini yakar.
+//   - `shelfMultiplier` / `levelMultiplier` / `playerCountMultCoeff` (kapasite
+//     tabanli musteri talebi) -> `CustomerManager.CountActiveInteractables`
+//     SILINDI; kota artik gun egrisinden geliyor
+//     (`GameEconomySettings.GetDailyCustomerCount(day, P)`, CustomerManager.cs:398).
+// Bu iki blok ve YALNIZ onlara dayanan her sey SILINDI. Silinen semboller:
+//   SRC, PLATEUP, runSim, runSimPlateUp, plateUpCeiling/Quota/ArrivalInterval/
+//   TimeSkipMinutes/DayOutcome/BoxSupply, truckThroughput, customerDemand,
+//   customerThroughput, phoneIncome, packingTablesForLevel, hangarStayFor,
+//   dayDurationSec/secPerGameHour/truckWindowSec/customerWindowSec,
+//   CARGO_VALUES/CARGO_AVG, PHONE_ROLLS_PER_DAY, GAME/TRUCK/CUSTOMER_GAME_HOURS,
+//   ASSUMED.phoneAnswerRate, ASSUMED.startingActiveInteractables.
+// Gecmis analizler icin: .claude/agent-memory/economist/ (Round 1-12 raporlari).
+//
 // ---------------------------------------------------------------------------
-// v3.1 (FAZ 4 uzlastirma) -- FAZ 3'un buldugu IKI MODELLEME HATASI duzeltildi.
-// Ikisi de bagimsiz olarak sahne+kod ile YENIDEN dogrulandi (FAZ3 iddiasi olarak
-// kabul edilmedi):
-//   D1. `startingActiveInteractables` 3 -> 5.
-//       KANIT: sahnede ShelfState = 13 ornek (guid d02b1bd2...), bunlarin 10'u
-//       "Genis Ambar" levelObjects'i (unity:21193-21202); kalan 3 bagimsiz raf
-//       (fileID 1031163660/1630707798/749946192) m_IsActive:1. DisplayTable = 1.
-//       `UpgradePanel.UpdateLevelObjects` (cs:683-695) `SetActive(i <= level)`
-//       yaziyor ve `InitializeLevelObjects` (cs:458-464) level 0 ile cagiriyor
-//       -> seviye 0'da levelObjects'ten YALNIZ [0] aktif.
-//       => 3 + 1 + 1 = 5. `CountActiveInteractables` FindObjectsOfType kullaniyor,
-//       inaktifleri SAYMAZ (CustomerManager.cs:423-436).
-//       ETKI: talep 1P 9->12, 2P 11->16, 3P 14->20, 4P 16->24. Artik HER oyuncu
-//       sayisi seri servis tavaninin (11.4) USTUNDE -> 1P bile musteri kaybediyor.
-//   D2. MASA CEKISMESI modele eklendi (v3.0'da HIC YOKTU).
-//       KANIT: sahnede `Table` = 2 ornek (guid 8656889b...), IKISI DE "Paketleme
-//       Istasyonu" levelObjects'i (unity:21223-21224). Seviye 0'da 1 masa aktif.
-//       `Table` TEK item tasiyor (Table.cs:57) ve paketleme YALNIZ masada
-//       (Table.cs:763-781) -> takimin tum uretimi 1 masadan SERI geciyor.
-//       ETKI: 2P-4P geliri v3.0'da %4-26 FAZLA IYIMSERDI.
-//       Yeni parametre: ASSUMED.tableBusySeconds (S) -- playtest'te olculmesi
-//       gereken 2. en duyarli sayi (S=4 <-> 8 arasi Paketleme upgrade'inin
-//       degerini 4x degistiriyor).
+// HARITA -- hangi sembol neye ait (yeni analizde ONCE buraya bak)
+// ---------------------------------------------------------------------------
+//   SABITLER
+//     SRC4            -- CANLI kod/asset/sahne degerleri, her satirda dosya:satir
+//                        kaniti. Bir sonraki denetimde ONCE bu blogu tazele.
+//     SRC4.reference  -- sim'in HIC OKUMADIGI, yalniz belge amacli canli degerler.
+//     ASSUMED         -- oyuncu becerisi/hizi (kodda YOK). Model girdisi, kanit degil.
+//     ASSUMED4        -- V4 telefon kullanim varsayimi (ASSUMED'in uzantisi).
+//     QR / QUEST_ASSETS -- 30 canli quest asset'i (Assets/Resources/Quests/).
+//   TUREVLER
+//     OVERHEAD_CODE / OVERHEAD_TOTAL, WAVE_INTERVAL_FACTOR, quotaFor,
+//     arrivalIntervalFor, rewardPerBoxFor, cargoValuesFor, timeSkipMinutesFor,
+//     dayDurationSec4
+//   MODEL PARCALARI
+//     tableContentionEfficiency -- paketleme masasi cekismesi (M/M/c//P)
+//     truckThroughputWindowed   -- tir/hangar devri + uretim tavani (pencere-bazli)
+//     fullCustomerDay           -- bir gunun musteri akisi (kota/varis/servis/erken bitis)
+//     questCompletionProb / buildQuestSlots / questDailyDecision -- gunluk quest karari
+//   GIRIS NOKTASI
+//     runFullSim(playerCount, opts)  <-- TEK kanonik simulasyon. BASKASI YOK.
+//   CLI (node sim.js)
+//     Blok NUMARALARI KORUNDU (18-23). 0-17 ve 21 silindi ama kalanlar yeniden
+//     NUMARALANDIRILMADI: gecmis raporlar "blok 18-23" diye atif yapiyor.
 //
-// AMAC: sim <-> kod ayrisma riskini azaltmak icin TEK kontrol noktasi.
-// Asagidaki her deger, 2026-07-30'da CANLI kod/asset'ten satir satir OKUNARAK
-// dogrulandi. Bir sonraki denetimde ONCE bu blogu yeniden dogrula.
-//
-// ----------------------------------------------------------------------------
-// v2'YE GORE METODOLOJI FARKLARI (hepsi kod-kanitli)
-// ----------------------------------------------------------------------------
-//  1. GUN SURESI DUZELTILDI: v2 realDurationInSeconds=160 (cs default) kullaniyordu.
-//     SAHNE DEGERI 200 ("The Main Office.unity":15995). Sahne kazanir.
-//  2. MUSTERI SERVISI ARTIK SERI (buyuk duzeltme): CustomerAI yalnizca
-//     manager.IsFirstInQueue(this) iken BeginService yapiyor (CustomerAI.cs:582).
-//     Yani ayni anda TEK musteri servis edilir. v2 tum "demandAdjusted" icin
-//     prestij veriyordu -> prestij gelirini ciddi sekilde FAZLA tahmin ediyordu.
-//  3. KUYRUK DOLU = SESSIZ ATLAMA: CustomerManager.cs:516 (IsQueueFull -> spawn
-//     yok). Spawn olmayan musteri CEZA URETMEZ. Yani "talep" bir tavan degil,
-//     bir HAVUZ; gercek prestij gelirini SERI SERVIS KAPASITESI belirler.
-//     maxQueueSize sahnede 2 (unity:68600), .cs default 3 (DEFAULT_QUEUE_SIZE).
-//  4. QUEST MODELI SIFIRDAN: havuz+MAX_SELECTED=2 modeli ARTIK YOK. QuestData
-//     4 sabit alan tasiyor (moneyReward/prestigeReward/moneyPenalty/
-//     prestigePenalty, QuestData.cs:48-58). 30 asset Assets/Resources/Quests/
-//     altinda; degerleri bu dosyada birebir gomulu (asagida QUEST_ASSETS).
-//  5. QUEST ODULU KIRA'DAN SONRA YATAR: settlement DayCycleManager.OnNewDay ->
-//     QuestManager.HandleNewDay -> SettleAcceptedQuestsForDayEnd (QuestManager.cs:
-//     356-365). OnNewDay bir SONRAKI gunun basinda tetiklenir; kira kontrolu ise
-//     ayni gunun sonunda TryProcessMoneyCheck ile yapilir (DayCycleManager.cs:
-//     483-489). Yani gun 4'te kabul edilen quest'in parasi gun 4 kirasini
-//     ODEYEMEZ. Sim bunu "questSettlePending" ile modelliyor.
-//  6. TELEFON GELIRI MODELLENDI (v2'de yoktu): saat 8..17 arasi 10 zar,
-//     her biri %30 -> gunde ~3 calma; her yanit 20 TL + 0.2 prestij.
-//  7. HANGAR SURESI HER IKI BANTTA ETKILI: v2'de OPTIMISTIC bant
-//     hangarStayDuration'i hic kullanmiyordu. v3'te optimistic bant "on-stok
-//     var ama kutuyu tira TASIMA suresi var" olarak modellendi (HANDOVER_SPEEDUP),
-//     boylece bekleme sureleri iki bantta da olculebiliyor.
-//  8. PARA 0'IN ALTINA INMEZ: MoneySystem.ModifyMoney -> Mathf.Max(0, ...)
-//     (MoneySystem.cs:91). Cezalar 0'da yutulur; iflas YALNIZ kira kapisinda olur.
-//
+// ---------------------------------------------------------------------------
+// TEMEL DAVRANIS NOTLARI (kod-kanitli -- model kurulumunu aciklar)
+// ---------------------------------------------------------------------------
+//  1. PARA 0'IN ALTINA INMEZ: MoneySystem.ModifyMoney -> Mathf.Max(0, ...)
+//     (MoneySystem.cs:91). Cezalar 0'da yutulur; IFLAS YALNIZ kira kapisinda olur.
+//  2. MUSTERI SERVISI SERI: CustomerAI yalniz `manager.IsFirstInQueue(this)` iken
+//     BeginService yapiyor -> ayni anda TEK musteri (SRC4.serviceStations = 1).
+//  3. KUYRUK DOLUYKEN SPAWN ATLANIR ama musteri KAYBOLMAZ (ertelenir); gun sonunda
+//     hic spawn olmamis kota musterisi ApplyMissedQuotaPenalty yer.
+//  4. QUEST ODULU KIRADAN SONRA YATAR: SettleAcceptedQuestsForDayEnd bir SONRAKI
+//     gunun basinda kosuyor -> gun 4'te kabul edilen quest gun 4 kirasini ODEYEMEZ.
+//     Sim bunu `questSettlePending` ile modelliyor.
+//  5. .asset ile .cs default'u catistiginda ASSET/SAHNE kazanir. ANAHTAR asset'te
+//     HIC YOKSA C# field-initializer degeri CANLIDIR (bkz. "Unity YAML float[]
+//     tuzagi" notu -- anahtari hic yazmamak DOGRU yontem).
 // ============================================================================
-// KAYNAK DEGERLER (dosya:satir -- 2026-07-30'da okunan CANLI deger)
-// ============================================================================
-// NOT: .asset ile .cs default'u catistiginda ASSET/SAHNE kazanir (Unity
-// serialize edilmis degeri yukler). Catismalar raporun "AYRISMA" bolumunde.
-const SRC = {
-  // ---- Assets/Resources/EkonomiAyarlari.asset (ScriptableObject, CANLI) -----
-  // v3.2 RESYNC (2026-08-19): FAZ4 (2026-07-30) sonrasi asset/scene guncellemeleri
-  // hic yansitilmamisti. Asagidaki 11 deger bu turda duzeltildi (bkz. rapor).
-  baseRentByPlayerCount:      [500, 1000, 1450, 1800], // asset:15 hex f4010000/e8030000/aa050000/08070000 (= GameEconomySettings.cs:21)
-  rentGrowthMultiplier:       1.20,   // asset:16   (= GameEconomySettings.cs:24)
-  rentIntervalDays:           4,      // asset:17   (= cs:27)
-  gracePaymentPercent:        0.8,    // asset:18   (= cs:30)
-  rentScaledMultiplier:       1.0,    // asset:19   (perk yoksa 1, cs:33)
-  rewardPerBox:               50,     // asset:20   (= cs:42)
-  penaltyPerBox:              40,     // asset:21   (= cs:45)  YANLIS RENK teslimat
-  hangarStayDurationLegacy:   30,     // asset:22 "hangarStayDuration" (= cs:48) YALNIZ dizi bos ise
-  hangarStayByPlayerCount:    [120, 60, 40, 30], // asset:23 hex 78/3c/28/1e (= cs:51) v3.2: 1P 90->120
-  prestigePerBonus:           8,      // asset:24   (= cs:54)
-  bonusPerTier:               5,      // asset:25   (= cs:57)
-  rewardVolatility:           0,      // asset:26   (perk kapali, cs:60)
-  boxDropMoneyPenalty:        5,      // asset:30   (= cs:78) FIZIKSEL dusme
-  phoneRingChancePerHour:     0.20,   // asset:31   (= cs:87) LEGACY skaler; canli davranis artik P-bazli, asagidaki MODEL NOTU'na bak
-  phoneRingEventMultiplier:   2.0,    // asset:32   (= cs:93)
-  callMoneyReward:            20,     // asset:34   (= cs:99)
-  callPrestigeReward:         0.4,    // asset:35   (= cs:102)
-  customerLostPrestigePenalty:  -0.4, // asset:36   (= cs:111)
-  customerServedPrestigeBonus:   0.4, // asset:37   (= cs:114)
-  wrongProductPrestigePenalty: -0.08, // asset:38   (= cs:117)
-  boxDropPrestigePenalty:     -0.04,  // asset:39   (= cs:120)
-  wrongDeliveryPrestigePenalty: -0.16,// asset:40   (= cs:123)
-  festivalBonusMin:           100,    // asset:41   (= cs:132) FALLBACK -- artik kullanilmiyor
-  festivalBonusMax:           300,    // asset:42   (= cs:135) FALLBACK
-  // FESTIVAL DAY canli davranis: EventEffectManager.cs:407 -> kiranin %10-%20'si.
-  festivalRentSharePct:       [0.10, 0.20],
-  // v3.2: EkonomiAyarlari.asset'te FAZ4'ten sonra eklenen P-bazli/yardimci alanlar.
-  // SIM'DE HENUZ KULLANILMIYOR (bkz. asagidaki MODEL NOTU + rapor). Referans icin tutuluyor.
-  rewardVolatilityMean:       1,      // asset:27 (= cs:63) perk kapaliyken etkisiz
-  truckCargoMinByPlayerCount: [1, 2, 2, 2],   // asset:28 hex (= cs:66) MODELLENMIYOR
-  truckCargoMaxExclusiveByPlayerCount: [3, 4, 5, 6], // asset:29 hex (= cs:69) MODELLENMIYOR
-  phoneRingChanceByPlayerCount: [0.20, 0.25, 0.30, 0.35], // asset'te YOK -> cs:90 default CANLI (MODELLENMIYOR)
-  phoneRingPerkBonus:         0,      // asset:33 (= cs:96) perk kapali
-
-  // ---- Assets/NewCss/UIScripts/DayCycleManager.cs + SAHNE -------------------
-  maxDays:                    16,   // cs:36 MAX_DAYS
-  dynamicDurationStartDay:    3,    // cs:37 DYNAMIC_DURATION_START_DAY
-  realDurationInSeconds:      200,  // SAHNE unity:16797 (= cs:52 default, artik AYRISMA yok)
-  dailyDurationIncrease:      10,   // SAHNE unity:16798 (= cs:55)
-  dayStartHour:               7,    // SAHNE unity:16799 "startHour" (alan yeniden adlandirildi, = cs:58)
-  dayEndHour:                 18,   // SAHNE unity:16800 "endHour" (alan yeniden adlandirildi, = cs:61)
-
-  // ---- Assets/NewCss/TruckScripts/TruckSpawner.cs + SAHNE ------------------
-  truckStartHour:             8,    // SAHNE unity:39722 (= cs:68)
-  truckEndHour:               17,   // SAHNE unity:39723 (= cs:71)
-  minCargo:                   2,    // cs:38 MIN_CARGO_AMOUNT (legacy fallback -- FAZ4'ten sonra CANLI kargo
-                                     // P-bazli, bkz. asagidaki MODEL NOTU + truckCargoMinByPlayerCount)
-  maxCargoExclusive:          6,    // cs:39 MAX_CARGO_AMOUNT (Random.Range int -> UST SINIR HARIC, ayni not)
-  respawnDelayRange:          [3, 5], // SAHNE unity:39720 (= cs:61) -> ort 4s
-  hangarCount:                3,    // SAHNE unity 39705-39718: requiredUpgradeLevel 0/1/2 (dogrulandi)
-  hangarsAtLevel0:            1,    // level 0 -> yalniz ilk hangar aktif
-
-  // ---- Assets/NewCss/TruckScripts/Truck.cs + Truck.prefab ------------------
-  exitDelay:                  5,    // prefab Truck.prefab:196 (= cs:79)
-  // NOT: prefab'daki rewardPerBox=10 / penaltyPerBox=2 (Truck.prefab:197-198)
-  // OLU DEGER -- OnNetworkSpawn (Truck.cs:206-218) Resources'tan EkonomiAyarlari
-  // yukleyip 50/40 ile EZIYOR. [HideInInspector] alanlar.
-
-  // ---- Assets/NewCss/CustomerSripts/PrestigeManager.cs + SAHNE ------------
-  startingPrestige:           12,   // SAHNE unity:26357 (= cs:16) v3.2: 6->12 (cs default de 12'ye cikmis)
-  maxPrestige:                100,  // SAHNE unity:26358 (= cs:19)
-  prestigePerCustomer:        4,    // SAHNE unity:26360 (= cs:26)
-  baseCustomerCapacity:       1,    // SAHNE unity:26361 (= cs:29)
-  maxCustomerCapacity:        20,   // SAHNE unity:26362 (= cs:32)
-
-  // ---- Assets/NewCss/CustomerSripts/CustomerManager.cs + SAHNE ------------
-  maxQueueSize:               2,    // SAHNE unity:73027 (cs:20 DEFAULT_QUEUE_SIZE artik 2 -- AYRISMA KAPANDI)
-  shelfMultiplier:            2,    // SAHNE unity:73029 "_shelfMultiplier" (= cs:71)
-  levelMultiplier:            2,    // SAHNE unity:73030 "_levelMultiplier" (= cs:74)
-  storeLevelStart:            1,    // SAHNE unity:73031 "_storeLevel" (= cs:77)
-  minVariance:               -2,    // SAHNE unity:73032 "_minVariance" (= cs:80)
-  maxVariance:                3,    // SAHNE unity:73033 "_maxVariance" (= cs:83)
-  minCustomersPerDay:         1,    // SAHNE unity:73034 "_minCustomersPerDay" (= cs:86)
-  maxCustomersPerDay:         50,   // SAHNE unity:73035 "_maxCustomersPerDay" (= cs:89)
-  spawnStartHour:             8,    // SAHNE unity:73046 (= cs DEFAULT_SPAWN_START_HOUR:21)
-  spawnEndHour:               17,   // SAHNE unity:73047 (= cs DEFAULT_SPAWN_END_HOUR:22)
-
-  // ---- Assets/ithappy/.../Customer.prefab (CANLI musteri sabri) -----------
-  // DIKKAT: DifficultyManager'in P-bazli sabir olceklemesi bu prefab'a ULASMIYOR
-  // (FindObjectsOfType<CustomerAI>() sahnede ornek bulamiyor) -> OLU KOD.
-  customerMinWaitTime:        15,   // Customer.prefab:2305 (CustomerAI.cs:81 default 10)
-  customerMaxWaitTime:        20,   // Customer.prefab:2306 (CustomerAI.cs:84 default 20)
-  customerInteractionTime:    2,    // Customer.prefab:2307 (CustomerAI.cs:87 default 5)
-
-  // ---- SAHNE TOPOLOJISI (v3.1'de KOD-DOGRULANDI, artik VARSAYIM DEGIL) ----
-  // `UpgradePanel.UpdateLevelObjects` (cs:683-695): `levelObjects[i].SetActive(i <= currentLevel)`
-  // ve `InitializeLevelObjects` (cs:458-464) her upgrade icin level 0 ile cagiriyor
-  // => seviye 0'da levelObjects dizisinin YALNIZ [0] indeksi aktif.
-  shelfStateTotal:            13,   // sahnede ShelfState guid d02b1bd2... = 13 ornek
-  shelfStateInStorageUpgrade: 10,   // "Genis Ambar" levelObjects (unity:21193-21202)
-  shelfStateStandalone:       3,    // 13-10; fileID 1031163660/1630707798/749946192, hepsi m_IsActive:1
-  displayTableTotal:          1,    // DisplayTable guid c22e4241... = 1 ornek
-  // Seviye 0'da aktif interactable = 3 bagimsiz raf + levelObjects[0] + 1 masa = 5
-  // (`CustomerManager.CountActiveInteractables` cs:423-436, FindObjectsOfType INAKTIFLERI SAYMAZ)
-  activeInteractablesAtLevel0: 5,   // <-- v3.0'da ASSUMED=3 idi, YANLISTI (FAZ3 B?, dogrulandi)
-
-  // Paketleme masasi: sahnede `Table` guid 8656889b... = 2 ornek, IKISI DE
-  // "Paketleme Istasyonu" levelObjects'i (unity:21223-21224 -> fileID 729050603, 457085722)
-  // => seviye 0'da YALNIZ 1 masa aktif. `Table` TEK item tasiyor
-  // (`Table.cs:57` TableState{isEmpty,itemNetworkId,isItemBoxed}) ve paketleme
-  // YALNIZ masada yapiliyor (`Table.cs:763-781`) => tum uretim SERI bu masadan geciyor.
-  packingTableTotal:          2,    // sahnede fiziksel masa sayisi
-  packingTablesAtLevel0:      1,    // seviye 0'da aktif masa sayisi
-
-  // Paralel MUSTERI servis istasyonu sayisi. CANLI = 1: CustomerAI.cs:582 yalniz
-  // manager.IsFirstInQueue(this) iken BeginService cagiriyor -> ayni anda TEK
-  // musteri. (CustomerManager.cs serviceTables[] KABLOLANMAMIS -- sifir cagiran;
-  // sahnede dizi 2 elemanli ama yalniz [0] dolu/[1] fileID:0 bos, unity:73040-73042.)
-  serviceStations:            1,
-
-  // ---- Assets/NewCss/GameState/DifficultyManager.cs + DifficultyManager.prefab
-  baseStartingMoney:          500,  // prefab:75 (= cs:36)
-  moneyMultiplierPerPlayer:   1.2,  // prefab:80 (= cs:60) v3.2: 1.0->1.2 (FAZ4 karari, artik P'ye BAGIMLI)
-  playerCountMultCoeff:       0.3,  // DifficultyManager.cs:429 ApplyCustomerSettings() inline literal
-                                     // (eski "playerCountMultCoeff" serialize alani KALDIRILDI, deger ayni: 1+(P-1)*0.3)
-  upgradeCostMultiplierPerPlayer: [1.00, 2.00, 2.95, 3.70], // cs:72 upgradeCostMultiplierByPlayerCount[]
-                                     // v3.2: eski tek-skaler 1.15 (compounding) alani KALDIRILDI; artik P-bazli
-                                     // DIZI (prefab override YOK, cs default canli). SIM'DE KULLANILMIYOR
-                                     // (upgradeSpendRatio=0 taban kosuda tuketilmiyor) -- dokumantasyon amacli.
-  // OLU/KULLANILMAYAN (bkz AYRISMA): baseCustomerCount 10 / customerCountPerPlayer 2
-  // (prefab:74,79) -> ScaledCustomerCount hicbir yere yazilmiyor, yalniz log/UI.
-  // basePhoneCallChance / phoneChancePerPlayer KALDIRILDI (FAZ4 SS.6) -- artik prefab'ta da YOK,
-  // telefonun P-olceklemesi GameEconomySettings.phoneRingChanceByPlayerCount'a tasindi.
-  // baseMinPatience 8 / baseMaxPatience 14 / patienceReductionPerPlayer 2
-  // (prefab:76,77,81) -> yalniz sahnedeki CustomerAI ornegine yazilir, YOK.
-
-  // ---- Assets/NewCss/UIScripts/MoneySystem.cs + SAHNE --------------------
-  moneySystemSceneStartingMoney: 500, // SAHNE unity:4913 -- v3.2: eski DEBUG degeri 50000 DUZELTILMIS (artik AYRISMA yok)
-  moneyFloorZero:             true,  // cs:91 Mathf.Max(0, ...)
-
-  // ---- Assets/NewCss/Phone/PhoneCallManager.cs + SAHNE -------------------
-  phoneStartHour:             8,    // SAHNE unity:14820 (= cs:33)
-  phoneEndHour:               18,   // SAHNE unity:14821 (= cs:36)
-  phoneRingDuration:          15,   // SAHNE unity:14822 "ringDuration" (= cs:40) v3.2: 25->15
-  phoneRingChanceCap:         0.65, // cs:281 GetEffectiveRingChance() Mathf.Clamp(baseChance*mult + perkBonus, 0, 0.65)
-
-  // ---- Assets/NewCss/Events/EventCalendarUI.cs --------------------------
-  eventFreeDays:              3,    // cs:25 INITIAL_EVENT_FREE_DAYS
-  eventIntervalMin:           1,    // cs:23 EVENT_INTERVAL_MIN
-  eventIntervalMax:           2,    // cs:24 EVENT_INTERVAL_MAX (2026-08-25: 3->2 — NOT: bu sim'in nakit-akışı döngüsünde kullanılmıyor, salt dokümantasyon)
-  eventSkipRentDays:          true, // cs: IsRentDay(currentDay) -> continue (rentIntervalDays'e göre, varsayılan 4)
-  eventPoolSize:              16,   // cs:160-177 _allEvents
-
-  // ---- Assets/Scripts/Quest/Manager/QuestManager.cs ---------------------
-  dailyQuestOffered:          3,    // cs:17 DAILY_QUEST_COUNT
-  dailyQuestAcceptLimit:      1,    // cs:691 HasAcceptedQuestToday() -> gunde 1
-  questTierStart:             0,    // cs:70 NetworkVariable<int>(0) -> yalniz Easy
-};
 
 // ============================================================================
 // VARSAYIMLAR (KOD'DA YOK -- oyuncu verimi / insan hizi). Hepsi ETIKETLI.
@@ -251,9 +102,6 @@ const ASSUMED = {
   // STRICT bantta emegin tira ayrilan payi (kalani musteri servisine).
   laborShareTruck: 0.6,
 
-  // Telefonu cevaplama orani (calan telefonun kacinin acildigi).
-  phoneAnswerRate: { strict: 0.50, optimistic: 0.85 },
-
   // Hata oranlari.
   wrongDeliveryRate: { Normal: 0.12, Slow: 0.22, Fast: 0.07 }, // tira yanlis RENK kutu
   physicalDropRate:  { Normal: 0.05, Slow: 0.09, Fast: 0.03 }, // kutu yere dusme
@@ -261,11 +109,6 @@ const ASSUMED = {
   // Quest tamamlama: hedefe/kapasiteye orana gore turetilir (asagida), ama
   // "hedefi karsilayabiliyor olsa bile oyuncu unutur/vazgecer" surtunmesi:
   questExecutionFriction: { strict: 0.75, optimistic: 0.92 },
-
-  // Magaza buyumesi (upgrade ile artan etkilesim noktasi / seviye). FAZ3
-  // fiyatlandirmasi yapilmadan once TABAN kosuda buyume KAPALI (0).
-  // v3.1: ARTIK VARSAYIM DEGIL -- SRC.activeInteractablesAtLevel0'dan (=5) geliyor.
-  startingActiveInteractables: SRC.activeInteractablesAtLevel0,
 
   // ── MASA CEKISMESI (v3.1 YENI) ────────────────────────────────────────────
   // `S` = bir kutunun PAKETLEME MASASINI mesgul ettigi sure (urunu masaya koy ->
@@ -278,43 +121,11 @@ const ASSUMED = {
 };
 
 // ============================================================================
-// TUREVLER
-// ============================================================================
-const CARGO_VALUES = [];
-for (let c = SRC.minCargo; c < SRC.maxCargoExclusive; c++) CARGO_VALUES.push(c); // {2,3,4,5}
-const CARGO_AVG = CARGO_VALUES.reduce((a, b) => a + b, 0) / CARGO_VALUES.length;  // 3.5
-
-const OVERHEAD_CODE = SRC.exitDelay + (SRC.respawnDelayRange[0] + SRC.respawnDelayRange[1]) / 2; // 9
-const OVERHEAD_TOTAL = OVERHEAD_CODE + ASSUMED.animBufferSeconds;                                 // 15
-
-const GAME_HOURS_PER_DAY   = SRC.dayEndHour - SRC.dayStartHour;                 // 11
-const TRUCK_GAME_HOURS     = SRC.truckEndHour - SRC.truckStartHour;             // 9
-const CUSTOMER_GAME_HOURS  = SRC.spawnEndHour - SRC.spawnStartHour;             // 9
-// Telefon: saat DEGISIMINDE zar atilir; ziyaret edilen saatler 7..18, gecerli
-// pencere [8,18) -> 8,9,...,17 = 10 zar.
-const PHONE_ROLLS_PER_DAY  = SRC.phoneEndHour - SRC.phoneStartHour;             // 10
-
-function dayDurationSec(day) {
-  return day <= SRC.dynamicDurationStartDay
-    ? SRC.realDurationInSeconds
-    : SRC.realDurationInSeconds + (day - SRC.dynamicDurationStartDay) * SRC.dailyDurationIncrease;
-}
-function secPerGameHour(day) { return dayDurationSec(day) / GAME_HOURS_PER_DAY; }
-function truckWindowSec(day) { return secPerGameHour(day) * TRUCK_GAME_HOURS; }
-function customerWindowSec(day) { return secPerGameHour(day) * CUSTOMER_GAME_HOURS; }
-
-function hangarStayFor(playerCount) {
-  const a = SRC.hangarStayByPlayerCount;
-  if (!a || a.length === 0) return SRC.hangarStayDurationLegacy;
-  return a[Math.min(Math.max(playerCount - 1, 0), a.length - 1)];
-}
-
-// ============================================================================
 // MASA CEKISMESI (v3.1 YENI) -- sonlu-kaynak kuyruk / machine-repairman
 // ============================================================================
 /**
  * Oyuncular paketleme masalarini PAYLASIYOR. Sahnede seviye 0'da YALNIZ 1 masa
- * aktif (SRC.packingTablesAtLevel0) ve `Table` TEK item tasiyor (Table.cs:57)
+ * aktif (SRC4.packingTablesAtLevel0) ve `Table` TEK item tasiyor (Table.cs:57)
  * => 2+ oyuncu ayni masa icin siraya giriyor.
  *
  * Model: M/M/c//P sonlu-kaynak kuyrugu.
@@ -347,142 +158,6 @@ function tableContentionEfficiency(playerCount, tables, tableBusySec, cycleSec) 
 
   const uncontended = P / (Z + S);
   return X / uncontended;
-}
-
-/** Kac masa aktif: seviye 0'da 1, "Paketleme Istasyonu" L1 alinirsa 2 (tavan 2). */
-function packingTablesForLevel(level) {
-  return Math.min(SRC.packingTableTotal, SRC.packingTablesAtLevel0 + Math.max(0, level));
-}
-
-// ============================================================================
-// TIR / HANGAR VERIM MODELI
-// ============================================================================
-/**
- * Tek hangarin bir gunde kac devir yaptigini ve devir basina kac kutu
- * teslim edilebildigini hesaplar.
- *
- * mode='strict'      : on-stok YOK. Kutular tirin hangarda oldugu pencerede
- *                      URETILIR. Tir "dolunca VEYA sure bitince" kalkar
- *                      (Truck.cs HangarTimerCoroutine + IsComplete).
- * mode='optimistic'  : kutular gun boyunca on-stoklanmis; tira TASIMA suresi
- *                      var ama uretim suresi yok -> handoverSpeedup kat hizli.
- *                      Toplam gunluk uretim ayrica ust sinir.
- */
-function truckThroughput(playerCount, boxesPerMin, day, numHangars, mode, laborShare, packingTables, cargoValues) {
-  const playersOnTrucks = playerCount * laborShare;
-  // v3.1: kargo dizisi opsiyonel parametre (FAZ2 "P-bazli kargo" onerisini
-  // olcebilmek icin). Verilmezse CANLI deger: Random.Range(2,6) -> {2,3,4,5}.
-  const CARGO = (cargoValues && cargoValues.length) ? cargoValues : CARGO_VALUES;
-  // v3.1: MASA CEKISMESI. Uretim, paylasilan paketleme masasindan seri geciyor.
-  const tables   = packingTables === undefined ? SRC.packingTablesAtLevel0 : packingTables;
-  const cycleSec = 60 / boxesPerMin;                                            // Z + S
-  const eta      = tableContentionEfficiency(playerCount, tables, ASSUMED.tableBusySeconds, cycleSec);
-  const prodRate = (boxesPerMin * playersOnTrucks) / 60 * eta;                  // kutu/sn (uretim)
-  const fillRate = mode === 'optimistic' ? prodRate * ASSUMED.handoverSpeedup : prodRate;
-  const tws      = truckWindowSec(day);
-  const stay     = hangarStayFor(playerCount);
-
-  let sumDeliverable = 0, sumCycle = 0, fullCount = 0;
-  for (const cargo of CARGO) {
-    const fillTime  = fillRate > 0 ? cargo / fillRate : Infinity;
-    const dwell     = Math.min(stay, fillTime);       // "dolunca VEYA sure bitince"
-    const delivered = Math.min(cargo, fillRate * stay);
-    sumDeliverable += delivered;
-    sumCycle       += dwell + OVERHEAD_TOTAL;
-    if (fillTime <= stay) fullCount++;
-  }
-  const avgDeliverable = sumDeliverable / CARGO.length;
-  const avgCycle       = sumCycle / CARGO.length;
-  const trucksPerDay   = (tws / avgCycle) * numHangars;
-  let boxesPerDay      = trucksPerDay * avgDeliverable;
-
-  // URETIM TAVANI her iki bantta uygulanir. Aksi halde numHangars>1 ayni oyuncu
-  // havuzunu birden fazla kez sayardi (paralel hangarlar ayni emegi paylasir).
-  //  - optimistic: on-stok yapilabilir -> uretim penceresi TUM gun (7-18).
-  //  - strict    : on-stok yok -> uretim yalniz tir penceresinde (8-17).
-  const productionCapPerDay = prodRate * (mode === 'optimistic' ? dayDurationSec(day) : tws);
-  boxesPerDay = Math.min(boxesPerDay, productionCapPerDay);
-  // Tir sayisi da uretimle tutarli olmali (tavan bagladiysa daha az tir dolar).
-  const trucksPerDayEffective = avgDeliverable > 0
-    ? Math.min(trucksPerDay, boxesPerDay / avgDeliverable)
-    : 0;
-
-  return {
-    trucksPerDay: trucksPerDayEffective,
-    trucksPerDayCycleBound: trucksPerDay,
-    boxesPerDay,
-    avgCycleSec: avgCycle,
-    avgDeliverablePerTruck: avgDeliverable,
-    fullTruckFraction: fullCount / CARGO.length,
-    fullTrucksPerDay: trucksPerDayEffective * (fullCount / CARGO.length),
-    productionCapPerDay,
-    hangarStaySec: stay,
-    // Mekanik ust sinir: doldurma ANINDA olsaydi gunde kac tir islenebilirdi
-    absoluteTruckCeiling: (tws / OVERHEAD_TOTAL) * numHangars,
-    // v3.1 masa cekismesi teshisi
-    tableContentionEta: eta,
-    packingTables: tables,
-  };
-}
-
-// ============================================================================
-// MUSTERI / PRESTIJ VERIM MODELI  (SERI KUYRUK)
-// ============================================================================
-function customerDemand(playerCount, activeInteractables, storeLevel, eventCustomerMult = 1) {
-  const capacityBase = activeInteractables * SRC.shelfMultiplier + storeLevel * SRC.levelMultiplier;
-  const avgVariance  = (SRC.minVariance + SRC.maxVariance) / 2; // -2..3 -> 0.5
-  const pMult        = 1 + (playerCount - 1) * SRC.playerCountMultCoeff;
-  const raw = (capacityBase + avgVariance) * eventCustomerMult * pMult;
-  return Math.min(SRC.maxCustomersPerDay, Math.max(SRC.minCustomersPerDay, Math.round(raw)));
-}
-
-/**
- * Seri kuyrukta gunde kac musteri fiilen servis edilebilir?
- *  - serviceSlots  : mekanik tavan (kuyruk serisi, CustomerAI.cs:582)
- *  - laborCapacity : takimin fiilen yapabildigi servis sayisi
- *  - spawned       : kuyruk (maxQueueSize) sayesinde servis edilebilenden
- *                    birkac fazla musteri sahneye girer; girip servis
- *                    edilemeyen sabri dolar -> customerLostPrestigePenalty.
- *  - Kuyruk DOLUYKEN scheduled spawn ATLANIR (CustomerManager.cs:516) ->
- *    o musteriler hic gelmez, CEZA URETMEZ.
- */
-function customerThroughput(playerCount, day, demand, scenario, laborShare, mode, serviceStations) {
-  const cws = customerWindowSec(day);
-  // v3.1: PARALEL SERVIS ISTASYONU sayisi. CANLI deger 1 -- CustomerAI.cs:582
-  // yalnizca IsFirstInQueue iken BeginService yapiyor (seri). FAZ2 "2 paralel
-  // istasyon" onerisini olcebilmek icin parametre; verilmezse canli deger.
-  const stations = Math.max(1, serviceStations || SRC.serviceStations);
-  const serviceSlots = (cws / ASSUMED.serviceCycleSeconds[scenario]) * stations;
-  const playersOnCustomers = mode === 'optimistic'
-    ? playerCount                      // emek cakismasi yok varsayimi
-    : playerCount * (1 - laborShare);
-  const laborCapacity = (playersOnCustomers * cws) / ASSUMED.serviceLaborSeconds[scenario];
-
-  const served  = Math.min(demand, serviceSlots, laborCapacity);
-  const spawned = Math.min(demand, serviceSlots + SRC.maxQueueSize);
-  const lost    = Math.max(0, spawned - served);
-  const skipped = Math.max(0, demand - spawned); // hic spawn olmayan (cezasiz)
-
-  return { served, spawned, lost, skipped, serviceSlots, laborCapacity };
-}
-
-// ============================================================================
-// TELEFON
-// ============================================================================
-function phoneIncome(mode, eventSupportActive = false) {
-  const chance = Math.min(
-    SRC.phoneRingChanceCap,
-    SRC.phoneRingChancePerHour * (eventSupportActive ? SRC.phoneRingEventMultiplier : 1)
-  );
-  const rings   = PHONE_ROLLS_PER_DAY * chance;
-  const answers = rings * ASSUMED.phoneAnswerRate[mode];
-  return {
-    rings,
-    answers,
-    money: answers * SRC.callMoneyReward,
-    prestige: answers * SRC.callPrestigeReward,
-    ringOccupancySec: rings * SRC.phoneRingDuration,
-  };
 }
 
 // ============================================================================
@@ -787,430 +462,6 @@ function questDailyDecision(questTier, capacity, mode, opts = {}) {
   };
 }
 
-// ============================================================================
-// ANA SIMULASYON
-// ============================================================================
-function runSim(playerCount, opts = {}) {
-  const {
-    scenario = 'Normal',            // 'Normal' | 'Slow' | 'Fast'
-    mode = 'optimistic',            // 'optimistic' | 'strict'
-    numHangars = SRC.hangarsAtLevel0,
-    questsEnabled = true,
-    questTier = SRC.questTierStart,
-    phoneEnabled = true,
-    upgradeSpendRatio = 0,          // 0 = TABAN kosu (FAZ3 oncesi)
-    packingTables = SRC.packingTablesAtLevel0,  // v3.1: 1 = seviye 0, 2 = Paketleme L1
-    serviceStations = SRC.serviceStations,      // v3.1: 1 = canli (seri), 2 = FAZ2 onerisi
-    cargoValues = null,                         // v3.1: null = canli {2,3,4,5}
-    label = '',
-  } = opts;
-
-  const boxesPerMin = ASSUMED.boxesPerMinPerPlayer[scenario];
-  const laborShare  = ASSUMED.laborShareTruck;
-  const baseRent    = SRC.baseRentByPlayerCount[playerCount - 1];
-
-  let cash = Math.round(SRC.baseStartingMoney * Math.pow(SRC.moneyMultiplierPerPlayer, playerCount - 1));
-  let prestige = SRC.startingPrestige;
-  let rentCycle = 0, graceUsed = false;
-  let activeInteractables = ASSUMED.startingActiveInteractables;
-  let storeLevel = SRC.storeLevelStart;
-  let totalUpgradeValue = 0;
-  let bankrupt = false, bankruptDay = null;
-  let prestigeCapDay = null;
-  let questSettlePending = null;   // {money, prestige} -- BIR SONRAKI gun yatar
-  const rows = [];
-
-  for (let day = 1; day <= SRC.maxDays; day++) {
-    // --- 0) Gecen gunun quest'i simdi yatar (kira'dan SONRA gelmis olur) ---
-    let questSettledMoney = 0, questSettledPrestige = 0;
-    if (questSettlePending) {
-      questSettledMoney = questSettlePending.money;
-      questSettledPrestige = questSettlePending.prestige;
-      questSettlePending = null;
-    }
-
-    // --- 1) Verim ---
-    const tt = truckThroughput(playerCount, boxesPerMin, day, numHangars, mode, laborShare, packingTables, cargoValues);
-    const demand = customerDemand(playerCount, activeInteractables, storeLevel);
-    const ct = customerThroughput(playerCount, day, demand, scenario, laborShare, mode, serviceStations);
-    const ph = phoneEnabled ? phoneIncome(mode) : { rings: 0, answers: 0, money: 0, prestige: 0 };
-
-    // --- 2) Tir geliri (TEK para kaynagi) ---
-    const boxesToTruck   = tt.boxesPerDay;
-    const wrongRate      = ASSUMED.wrongDeliveryRate[scenario];
-    const dropRate       = ASSUMED.physicalDropRate[scenario];
-    const wrongBoxes     = boxesToTruck * wrongRate;
-    const correctBoxes   = boxesToTruck - wrongBoxes;
-    const droppedBoxes   = boxesToTruck * dropRate;
-
-    const prestigeTier = Math.floor(prestige / SRC.prestigePerBonus);
-    const rewardActual = SRC.rewardPerBox + prestigeTier * SRC.bonusPerTier;
-
-    const truckRevenue = correctBoxes * rewardActual;
-    const wrongCost    = wrongBoxes * SRC.penaltyPerBox;
-    const dropCost     = droppedBoxes * SRC.boxDropMoneyPenalty;
-
-    // --- 3) Quest karari (bugun kabul, YARIN yatar) ---
-    let questDecision = { accepted: false, money: 0, prestige: 0, pick: null };
-    if (questsEnabled) {
-      const capacity = {
-        trucks: tt.fullTrucksPerDay,
-        // Rafa koyma ve paketleme, tira giden kutularin ONCESINDEKI adimlar;
-        // gunluk uretim kapasitesi ile sinirli.
-        shelfPlacements: tt.productionCapPerDay,
-        packedBoxes: tt.productionCapPerDay,
-        phoneAnswers: ph.answers,
-      };
-      questDecision = questDailyDecision(questTier, capacity, mode);
-      if (questDecision.accepted) {
-        questSettlePending = { money: questDecision.money, prestige: questDecision.prestige };
-      }
-    }
-
-    const grossIncome = truckRevenue + ph.money + questSettledMoney;
-    const grossCost   = wrongCost + dropCost;
-    const netEarnings = grossIncome - grossCost;
-
-    let cashBeforeRent = Math.max(0, cash + netEarnings);
-
-    // --- 4) Prestij ---
-    prestige += ct.served * SRC.customerServedPrestigeBonus;
-    prestige += ct.lost   * SRC.customerLostPrestigePenalty;
-    prestige += wrongBoxes   * SRC.wrongDeliveryPrestigePenalty;
-    prestige += droppedBoxes * SRC.boxDropPrestigePenalty;
-    prestige += ph.prestige;
-    prestige += questSettledPrestige;
-    if (prestige >= SRC.maxPrestige && prestigeCapDay === null) prestigeCapDay = day;
-    prestige = Math.max(0, Math.min(SRC.maxPrestige, prestige));
-
-    // --- 5) Kira (gun sonu, quest ODULUNDEN ONCE) ---
-    let rentAmount = 0, rentPaid = 0, event = '';
-    const isRentDay = day % SRC.rentIntervalDays === 0;
-    if (isRentDay) {
-      rentAmount = Math.round(baseRent * Math.pow(SRC.rentGrowthMultiplier, rentCycle) * SRC.rentScaledMultiplier);
-      if (cashBeforeRent >= rentAmount) {
-        rentPaid = rentAmount; cash = cashBeforeRent - rentPaid; rentCycle++;
-      } else if (!graceUsed) {
-        rentPaid = Math.round(cashBeforeRent * SRC.gracePaymentPercent);
-        cash = cashBeforeRent - rentPaid; graceUsed = true; rentCycle++; event = 'GRACE';
-      } else {
-        bankrupt = true; bankruptDay = day; event = 'IFLAS'; cash = cashBeforeRent;
-      }
-    } else {
-      cash = cashBeforeRent;
-    }
-
-    // --- 6) Yeniden yatirim (TABAN kosuda kapali) ---
-    if (!bankrupt && upgradeSpendRatio > 0 && !isRentDay && cash > 200) {
-      const spend = (cash - 200) * upgradeSpendRatio;
-      cash -= spend; totalUpgradeValue += spend;
-      activeInteractables = ASSUMED.startingActiveInteractables + Math.floor(totalUpgradeValue / 300);
-      storeLevel = SRC.storeLevelStart + Math.floor(totalUpgradeValue / 600);
-    }
-
-    rows.push({
-      gun: day,
-      sureSn: dayDurationSec(day),
-      tirGun: +tt.trucksPerDay.toFixed(2),
-      kutuGun: +boxesToTruck.toFixed(2),
-      odulKutu: rewardActual,
-      tirGeliri: Math.round(truckRevenue),
-      telefon: Math.round(ph.money),
-      questYatan: Math.round(questSettledMoney),
-      cezalar: -Math.round(grossCost),
-      netGelir: Math.round(netEarnings),
-      talep: demand,
-      servisEdilen: +ct.served.toFixed(1),
-      kacan: +ct.lost.toFixed(1),
-      hicGelmeyen: +ct.skipped.toFixed(1),
-      prestij: +prestige.toFixed(2),
-      kira: rentAmount,
-      kasa: Math.round(cash),
-      olay: event,
-    });
-
-    if (bankrupt) break;
-    if (prestige <= 0) { bankrupt = true; bankruptDay = day; break; }
-  }
-
-  const cumNet = rows.reduce((a, r) => a + r.netGelir, 0);
-  return {
-    playerCount, label, scenario, mode, numHangars,
-    bankrupt, bankruptDay, prestigeCapDay, rows,
-    finalCash: rows[rows.length - 1]?.kasa,
-    finalPrestige: rows[rows.length - 1]?.prestij,
-    cumulativeNet: cumNet,
-    avgDailyNet: +(cumNet / rows.length).toFixed(1),
-  };
-}
-
-// ============================================================================
-// PLATEUP MUSTERI/TELEFON MODELI (PROPOSED, 2026-08-29)
-// ============================================================================
-// plans/plateup-musteri-telefon.md -- economist turu (kod yazmadan onceki
-// on kosul, "Is 0"). ASAGIDAKI DEGERLER HENUZ KODA/ASSET'E YAZILMADI; bu
-// turun teslim edilecek onerisidir. Gameplay departmanina devredilmeden once
-// burada TEK NOKTADAN hesaplanip dogrulanir.
-//
-// TUReTIM MANTIGI:
-//  - Gun penceresi degismiyor: customerWindowSec(day) (spawnStartHour..spawnEndHour,
-//    canli 8-17, 9 oyun-saati) hala "musteri isinin sigmasi gereken butce".
-//  - SERI SERVIS TAVANI = min(istasyon-tavani, emek-tavani), FAZ2/FAZ1'de
-//    kod-dogrulanan ayni formul (bkz. customerThroughput). STRICT senaryo
-//    (emegin %60'i tira gidiyor) "kotumser ama gercekci" taban olarak alindi.
-//  - Kota = SAFETY(0.85) x STRICT tavan -- yani STRICT oyunda bile %85
-//    dolduruluyor, %15 tampon kaliyor (17:30 baskisi ancak STRICT'ten DAHA
-//    KOTU -- ör. Slow senaryo, event, dikkat dagatan playtest anlarinda -
-//    gercek hale gelir; "her gun kesin ceza" riski yaratmaz).
-//
-// DUZELTME (2026-08-29, koordinator geri bildirimi -- KANITLA DOGRULANDI):
-// "kota-para baglantisi yok" onceki notu HATALIYDI. Kod denetimi:
-//   - `CustomerAI.cs:1442-1444 PlaceProductOnDropOffTable` musterinin KENDISI
-//     `Instantiate(productPrefabs[...])` yapiyor -- ProductSupply modu (cs:77,83).
-//   - `PickUpScripts/ShelfState.cs`: SIFIR Instantiate -- raf sadece DEPOLUYOR,
-//     URETMIYOR.
-//   - `TableScripts/Shelf.cs` (NetworkedShelf) auto-respawn eden BOS kutular
-//     saglıyor (1sn respawn) ama bunlar `boxDropMoneyPenalty` notunun da
-//     dogruladigi gibi ICI BOS/degersiz -- degeri veren PRODUCT, tek kaynagi
-//     musteri. `productPrefabs`/`ProductSupply` grep'i TUM projede sadece 3
-//     dosyada geciyor (CustomerAI, CustomerManager, PostRentFeatureUnlocks) --
-//     bagimsiz bir "restock/warehouse" spawner YOK.
-//   - Zincir: musteri -> urun (Instantiate) -> oyuncu paketler -> tir ->
-//     `Truck.cs:643 AddMoney`. **SONUC: gunluk kota, gunluk kutu arzinin (=
-//     gelirin) GERCEK ust siniri -- truckThroughput() sadece bu arzi ISLEME
-//     HIZINI (emek/masa/hangar) modelliyor, arzin KENDISINI degil.**
-// Asagidaki tum model bu duzeltmeyle YENIDEN kuruldu: `plateUpBoxSupply` =
-// min(mekanik islem tavani, kota) ve `runSimPlateUp` bunu PARAYA baglıyor.
-//
-// KRITIK ON KOSUL DEGISTI: koordinator sahnedeki 2. istasyon bosluğunu
-// (`serviceTables[1]={fileID:0}`) DOGRULADI ve "2. masa eklenmesi garanti
-// degil" dedi -- bu yuzden 1-ISTASYON artik FALLBACK degil, ANA SENARYO.
-// `stations` parametresi asagida SRC.serviceStations (=1, canli) default'u
-// kullanir. P3/P4 icin bu, "istasyon-slotu" P-BAGIMSIZ SABIT bir urun-arzi
-// tavanina carpar (~8-13/gun, P2 ile hemen hemen AYNI) -- yani P3/P4 REVENUE
-// artik P2'den (hemen hemen) FAZLA BUYUYEMEZ sadece musteri sayisiyla. Rent
-// ise P ile 3.6x'e kadar buyudugunden (baseRent 500->1800), bu YAPISAL bir
-// acik yaratir (bkz asagida REWARD_PER_BOX_BY_PLAYER lever'i).
-const PLATEUP = {
-  SAFETY: 0.85,
-  // Davranissal tampon: SAFETY'nin tersi (1/0.85=1.176) -- kota zaten STRICT
-  // tavanin %85'i, yani "tam SAFETY'de oyna" senaryosunda bile gelir ihtiyaci
-  // bunun uzerine +%17.6 pay ister (STRICT'ten DAHA KOTU performans icin).
-  behavioralMargin: 1 / 0.85,
-  callCooldownRealSeconds: 20,     // P-bagimsiz; anti spam-click, ana kilit
-                                    // maxQueueSize=2 + istasyon dolulugu zaten
-  callMoneyReward: 20,             // DEGISMEDI (asset:34) -- artik "bedava"
-                                    // degil: zaman atlama + kuyruk doldurma
-                                    // maliyeti var (bkz rapor §6).
-  callPrestigeReward: 0.4,         // DEGISMEDI (asset:35)
-  dayEndGraceSeconds: 30,          // plan onerisi -- ekonomik etkisi asagida olculdu
-  missedQuotaPrestigePenalty: -0.2, // YENI SABIT. customerLostPrestigePenalty'nin
-                                     // (-0.4) YARISI; SADECE "hic spawn olmadan
-                                     // gun sonunda kalan kota" icin. Sabri
-                                     // dolan/kuyrukta kaybedilen musteri ESKI
-                                     // -0.4'u alir (degismedi, cifte ceza yok).
-  // YENI LEVER (bu turun secimi -- bkz asagidaki gerekce): rewardPerBox artik
-  // P-bazli. baseRentByPlayerCount deseniyle AYNI (int[4] dizi, index=P-1).
-  // Secim gerekcesi: (a) rentGrowthMultiplier 2026-08-20'de 1.35->1.20'ye
-  // KONTROL-onayli dusuruldu, P1/P2 zaten dengede -- global buyume oranini
-  // tekrar oynatmak o turu bozar VE P3/4'un asil sorununu (rent P ile 3.6x
-  // buyuyor ama urun-arzi P3'ten sonra DUZLESIYOR) cozmez. (b) kotayi P3/4
-  // icin daha da buyutmek MEKANIK OLARAK IMKANSIZ -- 1-istasyon tavanina
-  // zaten carpiyorlar. (c) prestij-tier bonusu (`prestigePerBonus`/
-  // `bonusPerTier`) organik yardimci ama ERKEN GUNLERDE (dusuk prestij)
-  // yetersiz kaliyor (asagida runSimPlateUp ile olculdu) ve P'ye gore
-  // FARKLILASTIRILAMIYOR (tek global deger). => rewardPerBoxByPlayerCount
-  // rent'in P ile buyudugu ORANI DOGRUDAN telafi eden TEK surgical lever.
-  rewardPerBoxByPlayerCount: [50, 55, 70, 88],
-};
-
-/** Seri servis tavani (musteri/gun) -- customerThroughput'un ceza/spawn
- *  ayrimi olmadan salt "mekanik ustsinir" hali. stations verilmezse CANLI
- *  sahne degeri (SRC.serviceStations=1) kullanilir -- artik ANA senaryo. */
-function plateUpCeiling(day, playerCount, scenario, mode, stations = SRC.serviceStations) {
-  const w = customerWindowSec(day);
-  const slots = (w / ASSUMED.serviceCycleSeconds[scenario]) * stations;
-  const playersOnCust = mode === 'optimistic'
-    ? playerCount
-    : playerCount * (1 - ASSUMED.laborShareTruck);
-  const laborCap = (playersOnCust * w) / ASSUMED.serviceLaborSeconds[scenario];
-  return Math.min(slots, laborCap);
-}
-
-/** Onerilen gunluk kota (dailyCustomerCountByDay'in P-bazli hali). Normal
- *  senaryo + STRICT emek varsayimi + CANLI istasyon sayisi (1) ile SAFETY
- *  carpani. P3/P4 bu yuzden P2'ye COK YAKIN cikiyor (istasyon-slotu P3'ten
- *  itibaren baglayici, labor degil) -- bu bir yuvarlama hatasi DEGIL, gercek
- *  mekanik doygunluk. Diger senaryolarda (Slow, event, dusuk performans) bu
- *  SABIT kotanin altinda kalinmasi BEKLENIR VE ISTENIR (bkz plateUpDayOutcome). */
-function plateUpQuota(day, playerCount, stations = SRC.serviceStations) {
-  const c = plateUpCeiling(day, playerCount, 'Normal', 'strict', stations);
-  return Math.max(3, Math.round(PLATEUP.SAFETY * c));
-}
-
-/** P-bazli varis araligi (customerArrivalInterval, saniye). 1-istasyon
- *  gercekliginde P3/4 icin "labor her zaman baglayici" kapali-formu ARTIK
- *  GECERSIZ (istasyon-slotu daha erken baglar) -- bu yuzden ampirik olarak
- *  pencere(day)/kota(day,P) oranindan, GUNLER ARASI ORTALAMA alinarak
- *  turetildi (oran gunden gune ~±10% oynuyor, tek sabit deger icin yeterince
- *  stabil -- dogrulama: sim.js CLI 13b). */
-function plateUpArrivalInterval(playerCount, stations = SRC.serviceStations) {
-  let sum = 0;
-  for (let d = 1; d <= 16; d++) sum += customerWindowSec(d) / plateUpQuota(d, playerCount, stations);
-  return sum / 16;
-}
-
-/** Telefonun tek basina atladigi oyun-DAKIKASI miktari (timeSkipAmount).
- *  Tasarim kurali: telefon dogal "bir sonraki musteri" bekleyisini YERINE
- *  GECIRIR, ONUNE GECMEZ -- yani atlanan sure DOGAL ARALIGIN oyun-dakikasi
- *  karsiligina esitlenir (ne bedava sure yaratir ne de cezalandirir).
- *  referenceDay=8 (orta-oyun) donusum orani kullanilir. */
-function plateUpTimeSkipMinutes(playerCount, referenceDay = 8, stations = SRC.serviceStations) {
-  const intervalSec = plateUpArrivalInterval(playerCount, stations);
-  const secPerGameMinute = secPerGameHour(referenceDay) / 60;
-  return intervalSec / secPerGameMinute;
-}
-
-/** Bir gunun musteri akisi: SABIT kota (Normal+strict+CANLI istasyon sayisiyla
- *  belirlenmis) verilen scenario/mode altinda ne kadari servis edilebiliyor?
- *  missedQuota = ne sabri dolan (queue'da) ne de spawn'a hic sira gelmeyen --
- *  ikisi de gun sonunda TEK ceza kalemi (missedQuotaPrestigePenalty) alir;
- *  gercek oyunda "sabri dolan" ayrimi CustomerAI tarafinda ayrica -0.4 ile
- *  ele alinacagi icin bu fonksiyon UST SINIR/OZET amaclidir, cifte saymaz. */
-function plateUpDayOutcome(day, playerCount, scenario, mode, stations = SRC.serviceStations) {
-  const quota = plateUpQuota(day, playerCount, stations);
-  const ceilingActual = plateUpCeiling(day, playerCount, scenario, mode, stations);
-  const served = Math.min(quota, ceilingActual);
-  const missedQuota = Math.max(0, quota - served);
-  const prestigeDelta = served * SRC.customerServedPrestigeBonus
-                       + missedQuota * PLATEUP.missedQuotaPrestigePenalty;
-  return { quota, ceilingActual: +ceilingActual.toFixed(2), served: +served.toFixed(2), missedQuota: +missedQuota.toFixed(2), prestigeDelta: +prestigeDelta.toFixed(2) };
-}
-
-/** GUNLUK KUTU ARZI = min(mekanik islem tavani (truckThroughput -- emek/masa/
- *  hangar), SERVIS EDILEN musteri sayisi (=urun kaynagi)). Ikinci terim bu
- *  turun eklentisi -- musteri artik gercek bir ARZ TAVANI (bkz dosya basi not). */
-function plateUpBoxSupply(day, playerCount, boxesPerMin, scenario, mode, numHangars, laborShare, packingTables, stations = SRC.serviceStations) {
-  const tt = truckThroughput(playerCount, boxesPerMin, day, numHangars, mode, laborShare, packingTables);
-  const o = plateUpDayOutcome(day, playerCount, scenario, mode, stations);
-  return { boxSupply: Math.min(tt.boxesPerDay, o.served), tt, outcome: o };
-}
-
-/** runSim'in PlateUp-baglantili varyanti: PARA artik SADECE truckThroughput
- *  DEGIL, min(truckThroughput, servis-edilen-musteri) ile sinirli. Prestij de
- *  eski customerDemand/customerThroughput yerine plateUpDayOutcome kullanir.
- *  Geri kalan HER SEY (kira, grace, quest, telefon, hata oranlari) runSim ile
- *  BIREBIR AYNI -- karsilastirilabilir olsun diye. */
-function runSimPlateUp(playerCount, opts = {}) {
-  const {
-    scenario = 'Normal', mode = 'optimistic', numHangars = SRC.hangarsAtLevel0,
-    questsEnabled = true, questTier = SRC.questTierStart, phoneEnabled = true,
-    packingTables = SRC.packingTablesAtLevel0, stations = SRC.serviceStations,
-    rewardPerBoxByPlayerCount = PLATEUP.rewardPerBoxByPlayerCount,
-    label = '',
-  } = opts;
-
-  const boxesPerMin = ASSUMED.boxesPerMinPerPlayer[scenario];
-  const laborShare = ASSUMED.laborShareTruck;
-  const baseRent = SRC.baseRentByPlayerCount[playerCount - 1];
-  const rewardPerBoxBase = rewardPerBoxByPlayerCount[playerCount - 1];
-
-  let cash = Math.round(SRC.baseStartingMoney * Math.pow(SRC.moneyMultiplierPerPlayer, playerCount - 1));
-  let prestige = SRC.startingPrestige;
-  let rentCycle = 0, graceUsed = false;
-  let bankrupt = false, bankruptDay = null;
-  let prestigeCapDay = null;
-  let questSettlePending = null;
-  const rows = [];
-
-  for (let day = 1; day <= SRC.maxDays; day++) {
-    let questSettledMoney = 0, questSettledPrestige = 0;
-    if (questSettlePending) {
-      questSettledMoney = questSettlePending.money;
-      questSettledPrestige = questSettlePending.prestige;
-      questSettlePending = null;
-    }
-
-    const bs = plateUpBoxSupply(day, playerCount, boxesPerMin, scenario, mode, numHangars, laborShare, packingTables, stations);
-    const ph = phoneEnabled ? phoneIncome(mode) : { rings: 0, answers: 0, money: 0, prestige: 0 };
-
-    const boxesToTruck = bs.boxSupply;
-    const wrongRate = ASSUMED.wrongDeliveryRate[scenario];
-    const dropRate = ASSUMED.physicalDropRate[scenario];
-    const wrongBoxes = boxesToTruck * wrongRate;
-    const correctBoxes = boxesToTruck - wrongBoxes;
-    const droppedBoxes = boxesToTruck * dropRate;
-
-    const prestigeTier = Math.floor(prestige / SRC.prestigePerBonus);
-    const rewardActual = rewardPerBoxBase + prestigeTier * SRC.bonusPerTier;
-
-    const truckRevenue = correctBoxes * rewardActual;
-    const wrongCost = wrongBoxes * SRC.penaltyPerBox;
-    const dropCost = droppedBoxes * SRC.boxDropMoneyPenalty;
-
-    let questDecision = { accepted: false, money: 0, prestige: 0, pick: null };
-    if (questsEnabled) {
-      const capacity = {
-        trucks: bs.tt.fullTrucksPerDay,
-        shelfPlacements: bs.tt.productionCapPerDay,
-        packedBoxes: bs.tt.productionCapPerDay,
-        phoneAnswers: ph.answers,
-      };
-      questDecision = questDailyDecision(questTier, capacity, mode);
-      if (questDecision.accepted) questSettlePending = { money: questDecision.money, prestige: questDecision.prestige };
-    }
-
-    const grossIncome = truckRevenue + ph.money + questSettledMoney;
-    const grossCost = wrongCost + dropCost;
-    const netEarnings = grossIncome - grossCost;
-    let cashBeforeRent = Math.max(0, cash + netEarnings);
-
-    prestige += bs.outcome.served * SRC.customerServedPrestigeBonus;
-    prestige += bs.outcome.missedQuota * PLATEUP.missedQuotaPrestigePenalty;
-    prestige += wrongBoxes * SRC.wrongDeliveryPrestigePenalty;
-    prestige += droppedBoxes * SRC.boxDropPrestigePenalty;
-    prestige += ph.prestige;
-    prestige += questSettledPrestige;
-    if (prestige >= SRC.maxPrestige && prestigeCapDay === null) prestigeCapDay = day;
-    prestige = Math.max(0, Math.min(SRC.maxPrestige, prestige));
-
-    let rentAmount = 0, rentPaid = 0, event = '';
-    const isRentDay = day % SRC.rentIntervalDays === 0;
-    if (isRentDay) {
-      rentAmount = Math.round(baseRent * Math.pow(SRC.rentGrowthMultiplier, rentCycle) * SRC.rentScaledMultiplier);
-      if (cashBeforeRent >= rentAmount) {
-        rentPaid = rentAmount; cash = cashBeforeRent - rentPaid; rentCycle++;
-      } else if (!graceUsed) {
-        rentPaid = Math.round(cashBeforeRent * SRC.gracePaymentPercent);
-        cash = cashBeforeRent - rentPaid; graceUsed = true; rentCycle++; event = 'GRACE';
-      } else {
-        bankrupt = true; bankruptDay = day; event = 'IFLAS'; cash = cashBeforeRent;
-      }
-    } else {
-      cash = cashBeforeRent;
-    }
-
-    rows.push({
-      gun: day, kota: bs.outcome.quota, servisEdilen: +bs.outcome.served.toFixed(1),
-      kutuArzi: +boxesToTruck.toFixed(1), mekanikTavan: +bs.tt.boxesPerDay.toFixed(1),
-      odulKutu: rewardActual, tirGeliri: Math.round(truckRevenue), telefon: Math.round(ph.money),
-      questYatan: Math.round(questSettledMoney), cezalar: -Math.round(grossCost),
-      netGelir: Math.round(netEarnings), prestij: +prestige.toFixed(2),
-      kira: rentAmount, kasa: Math.round(cash), olay: event,
-    });
-
-    if (bankrupt) break;
-    if (prestige <= 0) { bankrupt = true; bankruptDay = day; break; }
-  }
-
-  const cumNet = rows.reduce((a, r) => a + r.netGelir, 0);
-  return {
-    playerCount, label, scenario, mode, bankrupt, bankruptDay, prestigeCapDay, rows,
-    finalCash: rows[rows.length - 1]?.kasa, finalPrestige: rows[rows.length - 1]?.prestij,
-    cumulativeNet: cumNet, avgDailyNet: +(cumNet / rows.length).toFixed(1),
-  };
-}
-
 // ############################################################################
 // ############################################################################
 // ##                                                                        ##
@@ -1221,25 +472,20 @@ function runSimPlateUp(playerCount, opts = {}) {
 // ############################################################################
 // ############################################################################
 //
-// NEDEN YENI BIR FONKSIYON?
-//   `runSim` (v3.1) ve `runSimPlateUp` (2026-08-29) parcali ve ARTIK BAYAT:
-//     - runSim musteri talebini HALA kapasite formulunden (raf x2 + level x2 +
-//       varyans) turetiyor. CANLI kod bunu 2026-08-29'da SILDI:
-//       CustomerManager.CalculateTodaysCustomerCount (cs:403-419) artik YALNIZCA
-//       GameEconomySettings.GetDailyCustomerCount(day, P) okuyor.
-//     - Iki fonksiyon da `phoneIncome()` kullaniyor; o da SILINMIS alanlara
-//       (phoneRingChancePerHour / phoneRingEventMultiplier / phoneRingPerkBonus)
-//       dayaniyor. Bu alanlar GameEconomySettings.cs'te ARTIK YOK (asset'te olu
-//       anahtar olarak duruyorlar). Telefon artik "calan telefonu cevapla"
-//       degil "DISARI ARA" (PhoneCallManager V4).
-//     - Ikisi de gunu SABIT `dayDurationSec(day)` uzunlugunda variyor. CANLI kod
-//       kota tukenince gunu ERKEN BITIRIYOR (CustomerManager.CheckEarlyDayCompletion
-//       cs:896-910 -> DayCycleManager.FastForwardToEndOfDay cs:461).
-//     - Ikisi de "1 musteri = 1 urun" variyor. CANLI kod: gun 5+ musterilerin
-//       %25'i IADE modunda (SIFIR urun), gun 9+ TUM tedarik musterileri IKI urun
-//       birakiyor (PostRentFeatureUnlocks + CustomerAI.PlaceProductCoroutine:1339).
-//     - Ikisi de kargo araligini sabit {2,3,4,5} variyor. CANLI kod P-bazli
-//       (TruckSpawner.cs:613,624 -> GetTruckCargoRange).
+// BU MODELIN KARSILADIGI 5 GERCEK. Selef modeller (2026-08-31'de SILINEN runSim
+// ve runSimPlateUp) bunlarin HICBIRINI karsilamiyordu:
+//   1. MUSTERI SAYISI kapasite formulunden DEGIL gun egrisinden geliyor:
+//      CustomerManager.CalculateTodaysCustomerCount artik YALNIZCA
+//      GameEconomySettings.GetDailyCustomerCount(day, P) okuyor (cs:398).
+//   2. TELEFON V4: "calan telefonu cevapla" degil "DISARI ARA". Para verirken
+//      SkipTime ile gunun GERCEK saniyelerini YAKIYOR (PhoneCallManager V4).
+//   3. GUN ERKEN BITIYOR: kota tukenip kuyruk bosalinca
+//      CustomerManager.CheckEarlyDayCompletion -> DayCycleManager.FastForwardToEndOfDay.
+//   4. "1 musteri = 1 urun" YANLIS: gun 5+ musterilerin %25'i IADE modunda
+//      (SIFIR urun), gun 9+ tedarik musterileri IKI urun birakiyor
+//      (PostRentFeatureUnlocks + CustomerAI.PlaceProductCoroutine).
+//   5. KARGO ARALIGI P-bazli (TruckSpawner.cs:613,624 -> GetTruckCargoRange),
+//      sabit {2,3,4,5} degil.
 //
 // KAYNAK DENETIMI 2026-08-30 (her sabit dosya:satir ile):
 //   ! ONEMLI UNITY NOTU: Assets/Resources/EkonomiAyarlari.asset SU ANAHTARLARI
@@ -1250,8 +496,10 @@ function runSimPlateUp(playerCount, opts = {}) {
 //       rewardPerBoxByPlayerCount, timeSkipAmountByPlayerCount,
 //       phoneCooldownSeconds, phoneCooldownPerkBonusSeconds, phoneDialHoldSeconds,
 //       customerMissedQuotaPrestigePenalty
-//   ! OLU ASSET ANAHTARLARI (asset'te var, C# sinifinda YOK -> hicbir sey yapmiyor):
-//       phoneRingChancePerHour: 0.2 / phoneRingEventMultiplier: 2 / phoneRingPerkBonus: 0
+//   ! 2026-08-31 DUZELTME: bu satirlar eskiden "olu asset anahtarlari" olarak
+//     phoneRingChancePerHour / phoneRingEventMultiplier / phoneRingPerkBonus'u
+//     listeliyordu. O anahtarlar EkonomiAyarlari.asset'ten DE silinmis durumda
+//     (grep: sifir eslesme). V3 telefon modelinden geriye HICBIR SEY kalmadi.
 const SRC4 = {
   // ---- KIRA (GameEconomySettings.cs:21,24,27,30,33 + asset:15-19) ----------
   // ROUND 11 RESYNC (2026-08-30): Round 10 U1 UYGULANDI -> canli deger.
@@ -1303,11 +551,12 @@ const SRC4 = {
   phoneEndHour: 18,               // sahne unity:14821
 
   // ---- QUEST (QuestManager.cs) --------------------------------------------
-  dailyQuestCount: 3,             // cs:19 BASE_DAILY_QUEST_COUNT (gunluk TEKLIF sayisi;
-                                  // kabul gunde EN FAZLA 1 -- HasAcceptedQuestToday).
-                                  // CANLI KOD su an cs:117 DailyQuestTargetCount =
-                                  // 3 + CurrentQuestTier (Round 10 U6) AMA UI 3 slotta
-                                  // kirpiyor -> etkin deger yine 3 (bkz. questUiSlots).
+  dailyQuestCount: 3,             // QuestManager.cs:25 BASE_DAILY_QUEST_COUNT (gunluk
+                                  // TEKLIF sayisi; kabul gunde EN FAZLA 1 --
+                                  // HasAcceptedQuestToday cs:971).
+                                  // 2026-08-31 RESYNC: cs:150 DailyQuestTargetCount
+                                  // artik DUZ 3; Round 10 U6'nin "3 + CurrentQuestTier"
+                                  // hali kodda YOK. Deger ayni, gerekce degisti.
   questUiSlots: 3,                // sahne "The Main Office.unity":90392-90395 -> TAM 3
                                   // QuestSlotUI; QuestUIController.cs:407 Mathf.Min ile kirpar.
 
@@ -1371,6 +620,33 @@ const SRC4 = {
   respawnDelayRange: [3, 5],      // sahne (ort 4)
   hangarsAtLevel0: 1,
   packingTablesAtLevel0: 1,       // sahne: "Paketleme Istasyonu" levelObjects[0]
+
+  // ---- REFERANS-ONLY -- SIM BU ALANLARI OKUMAZ ----------------------------
+  // Silinen `SRC` blogundan tasinan, HALA CANLI olan belge degerleri. Modelde
+  // kullanilmazlar; amac gelecek turun bunlari sifirdan aramak zorunda
+  // kalmamasi. Analize TEMEL yapmadan once kaynagi tazele.
+  reference: {
+    // Musteri sabri -- ithappy/Creative_Characters_FREE/Saved_Characters/
+    // Customer.prefab:2323-2325 (CustomerAI default'larini EZIYOR). 2026-08-31 OK.
+    customerMinWaitTime: 15, customerMaxWaitTime: 20, customerInteractionTime: 2,
+    // Olay takvimi -- Events/EventCalendarUI.cs:23,24,25. 2026-08-31 OK.
+    eventFreeDays: 3, eventIntervalMin: 1, eventIntervalMax: 2,
+    eventPoolSize: 16,            // cs:160-177 _allEvents (2026-07-30 sayimi)
+    // Upgrade maliyet olcegi -- GameState/DifficultyManager.cs:73 (P-bazli DIZI,
+    // prefab override YOK). Taban kosuda upgrade harcamasi yok. 2026-08-31 OK.
+    upgradeCostMultiplierByPlayerCount: [1.00, 2.00, 2.95, 3.70],
+    // FESTIVAL DAY -- Events/EventEffectManager.cs:409 CANLI davranis kiranin
+    // %10-20'si; min/max YALNIZ DayCycleManager yoksa fallback (cs:414-415). 2026-08-31 OK.
+    festivalRentSharePct: [0.10, 0.20], festivalBonusMin: 100, festivalBonusMax: 300,
+    // Quest kapilari -- QuestManager.cs:971 gunde EN FAZLA 1 kabul; cs:78 tier
+    // NetworkVariable<int>(0) -> oyun Easy ile basliyor. 2026-08-31 OK.
+    dailyQuestAcceptLimit: 1, questTierStart: 0,
+    // Para tabani -- UIScripts/MoneySystem.cs Mathf.Max(0, ...) -> kasa eksiye inmez.
+    moneyFloorZero: true,
+    // Sahne topolojisi (2026-07-30 sayimi -- 2026-08-31'de YENIDEN DOGRULANMADI).
+    hangarCount: 3,               // TruckSpawner requiredUpgradeLevel 0/1/2
+    packingTableTotal: 2,         // "Paketleme Istasyonu" levelObjects (tavan 2 masa)
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -1378,7 +654,7 @@ const SRC4 = {
 // ---------------------------------------------------------------------------
 const ASSUMED4 = {
   // Kota musterilerinin ne kadari TELEFONLA one cekiliyor.
-  // ESKI `ASSUMED.phoneAnswerRate` BURADA KULLANILAMAZ: o "calan telefonu acma
+  // SILINEN `ASSUMED.phoneAnswerRate` BURADA KULLANILAMAZDI: o "calan telefonu acma
   // orani" idi (V3 pasif telefon). V4'te telefon AKTIF bir tercih ve gunun
   // GERCEK saniyelerini yakiyor (SkipTime).
   //
@@ -1389,6 +665,17 @@ const ASSUMED4 = {
   //    telefonla cagir" (Round 7 S7B'nin ogretilebilir tek kurali).
   phoneUseRate: { strict: 0.20, optimistic: 0.20 },
 };
+
+// ============================================================================
+// TUREVLER (SRC4 + ASSUMED)
+// ============================================================================
+// Tir devir-arasi olu sure. KOD kismi: exitDelay (Truck.prefab:196) + ortalama
+// respawnDelay (sahne [3,5] -> 4) = 9 sn. Animator giris/cikis klibi kodda
+// sayisallastirilmadigi icin ustune VARSAYIM tampon eklenir -> 15 sn.
+// NOT (2026-08-31): eskiden silinen `SRC` blogundan turetiliyordu; SRC4'teki
+// exitDelay/respawnDelayRange AYNI degerleri tasidigi icin sonuc DEGISMEDI.
+const OVERHEAD_CODE  = SRC4.exitDelay + (SRC4.respawnDelayRange[0] + SRC4.respawnDelayRange[1]) / 2; // 9
+const OVERHEAD_TOTAL = OVERHEAD_CODE + ASSUMED.animBufferSeconds;                                    // 15
 
 // --- Wave sisteminin ORTALAMA aralik carpani ---------------------------------
 // interval /= rate oldugu icin ZAMAN-AGIRLIKLI ORTALAMA 1/rate alinir.
@@ -1853,22 +1140,26 @@ function runFullSim(playerCount, opts = {}) {
   };
 }
 
+// ============================================================================
+// EXPORTS -- TEK MODEL (v5.1). Buradaki her sembol SRC4/runFullSim dunyasina ait.
+// 2026-08-31'de KALDIRILAN exportlar (disaridan cagiran script varsa BILINCLI):
+//   SRC, PLATEUP, runSim, runSimPlateUp, plateUp*, truckThroughput,
+//   customerDemand, customerThroughput, phoneIncome, packingTablesForLevel,
+//   hangarStayFor, dayDurationSec, secPerGameHour, truckWindowSec,
+//   customerWindowSec, CARGO_VALUES, CARGO_AVG, PHONE_ROLLS_PER_DAY.
+// ============================================================================
 module.exports = {
-  SRC, ASSUMED, QUEST_ASSETS, CARGO_VALUES, CARGO_AVG,
-  OVERHEAD_CODE, OVERHEAD_TOTAL,
-  dayDurationSec, secPerGameHour, truckWindowSec, customerWindowSec,
-  hangarStayFor, truckThroughput, customerDemand, customerThroughput,
-  phoneIncome, questCompletionProb, questDailyDecision, runSim,
-  PHONE_ROLLS_PER_DAY,
-  // v3.1 masa cekismesi
-  tableContentionEfficiency, packingTablesForLevel,
-  // PlateUp modeli (PROPOSED, 2026-08-29, kota-para BAGLANTILI v2)
-  PLATEUP, plateUpCeiling, plateUpQuota, plateUpArrivalInterval,
-  plateUpTimeSkipMinutes, plateUpDayOutcome, plateUpBoxSupply, runSimPlateUp,
-  // v4.0 KANONIK BIRLESIK MODEL (Round 1, 2026-08-30)
-  SRC4, ASSUMED4, WAVE_INTERVAL_FACTOR, waveIntervalFactor, quotaFor, arrivalIntervalFor,
-  rewardPerBoxFor, cargoValuesFor, timeSkipMinutesFor, dayDurationSec4,
-  truckThroughputWindowed, fullCustomerDay, runFullSim,
+  // --- sabitler
+  SRC4, ASSUMED, ASSUMED4, QR, QUEST_ASSETS,
+  // --- turevler
+  OVERHEAD_CODE, OVERHEAD_TOTAL, WAVE_INTERVAL_FACTOR, waveIntervalFactor,
+  quotaFor, arrivalIntervalFor, rewardPerBoxFor, cargoValuesFor,
+  timeSkipMinutesFor, dayDurationSec4,
+  // --- model parcalari
+  tableContentionEfficiency, questCompletionProb, buildQuestSlots,
+  questDailyDecision, truckThroughputWindowed, fullCustomerDay,
+  // --- TEK kanonik giris noktasi
+  runFullSim,
 };
 
 // ============================================================================
@@ -1876,310 +1167,6 @@ module.exports = {
 // ============================================================================
 if (require.main === module) {
   const B = (s) => `\n${'='.repeat(78)}\n ${s}\n${'='.repeat(78)}`;
-
-  console.log(B('0) GUN TAKVIMI: gun suresi ve pencereler (SAHNE realDuration=200s)'));
-  const calRows = [];
-  for (const d of [1, 2, 3, 4, 8, 12, 16]) {
-    calRows.push({
-      gun: d,
-      gunSn: dayDurationSec(d),
-      snPerOyunSaati: +secPerGameHour(d).toFixed(1),
-      tirPenceresiSn: +truckWindowSec(d).toFixed(1),
-      musteriPenceresiSn: +customerWindowSec(d).toFixed(1),
-    });
-  }
-  console.table(calRows);
-  console.log(`Gun 1-16 toplam gercek sure: ${(() => { let s = 0; for (let d = 1; d <= 16; d++) s += dayDurationSec(d); return s; })()}s ` +
-              `(~${((() => { let s = 0; for (let d = 1; d <= 16; d++) s += dayDurationSec(d); return s; })() / 60).toFixed(1)} dk oynanis)`);
-
-  console.log(B('1) GUNDE KAC TIR? (numHangars=1, oyuncu-bazli hangar suresi)'));
-  const truckRows = [];
-  for (const p of [1, 2, 3, 4]) {
-    for (const mode of ['strict', 'optimistic']) {
-      for (const d of [1, 8, 16]) {
-        const t = truckThroughput(p, ASSUMED.boxesPerMinPerPlayer.Normal, d, 1, mode, ASSUMED.laborShareTruck);
-        truckRows.push({
-          P: p, bant: mode, gun: d,
-          hangarSn: t.hangarStaySec,
-          devirSn: +t.avgCycleSec.toFixed(1),
-          tirGun: +t.trucksPerDay.toFixed(2),
-          kutuTir: +t.avgDeliverablePerTruck.toFixed(2),
-          kutuGun: +t.boxesPerDay.toFixed(2),
-          tamDolanTirGun: +t.fullTrucksPerDay.toFixed(2),
-          mekanikTavanTir: +t.absoluteTruckCeiling.toFixed(2),
-        });
-      }
-    }
-  }
-  console.table(truckRows);
-  console.log(`Devir-arasi olu sure: KOD-DOGRULANMIS ${OVERHEAD_CODE}s (exitDelay 5 + ort respawn 4) ` +
-              `+ VARSAYILAN anim ${ASSUMED.animBufferSeconds}s = ${OVERHEAD_TOTAL}s`);
-
-  console.log(B('1b) MASA CEKISMESI (v3.1) -- cekisme verimliligi eta ve S duyarliligi'));
-  {
-    const rows = [];
-    for (const S of [4, 6, 8]) {
-      for (const p of [1, 2, 3, 4]) {
-        const cyc = 60 / ASSUMED.boxesPerMinPerPlayer.Normal; // 30 sn
-        const e1 = tableContentionEfficiency(p, 1, S, cyc);
-        const e2 = tableContentionEfficiency(p, 2, S, cyc);
-        rows.push({
-          S_sn: S, P: p,
-          'eta 1 masa': +e1.toFixed(4), 'eta 2 masa': +e2.toFixed(4),
-          'v3.0 (cekisme yok)': 1,
-          'v3.0 -> v3.1 kayip': (100 * (e1 - 1)).toFixed(1) + '%',
-          '2. masa kazanci': (100 * (e2 / e1 - 1)).toFixed(1) + '%',
-        });
-      }
-    }
-    console.table(rows);
-    console.log(`Canli: ${SRC.packingTablesAtLevel0} masa aktif (sahnede toplam ${SRC.packingTableTotal}), ` +
-                `S = ${ASSUMED.tableBusySeconds} sn (VARSAYIM).`);
-  }
-
-  console.log(B('2) HANGAR SAYISI DUYARLILIGI (gun 8, Normal)'));
-  const hangRows = [];
-  for (const p of [1, 2, 3, 4]) {
-    const r = { P: p };
-    for (const nh of [1, 2, 3]) {
-      r[`strict_${nh}h`] = +truckThroughput(p, 2.0, 8, nh, 'strict', ASSUMED.laborShareTruck).boxesPerDay.toFixed(1);
-      r[`optim_${nh}h`] = +truckThroughput(p, 2.0, 8, nh, 'optimistic', ASSUMED.laborShareTruck).boxesPerDay.toFixed(1);
-    }
-    r.uretimTavani = +truckThroughput(p, 2.0, 8, 1, 'optimistic', ASSUMED.laborShareTruck).productionCapPerDay.toFixed(1);
-    hangRows.push(r);
-  }
-  console.table(hangRows);
-
-  console.log(B('3) MUSTERI / PRESTIJ VERIMI (SERI kuyruk, maxQueueSize=2)'));
-  const custRows = [];
-  for (const p of [1, 2, 3, 4]) {
-    for (const mode of ['strict', 'optimistic']) {
-      const d = 8;
-      const dem = customerDemand(p, ASSUMED.startingActiveInteractables, 1);
-      const c = customerThroughput(p, d, dem, 'Normal', ASSUMED.laborShareTruck, mode);
-      custRows.push({
-        P: p, bant: mode, gun: d, talep: dem,
-        seriTavan: +c.serviceSlots.toFixed(1),
-        emekTavani: +c.laborCapacity.toFixed(1),
-        servisEdilen: +c.served.toFixed(1),
-        kacan: +c.lost.toFixed(1),
-        hicGelmeyen: +c.skipped.toFixed(1),
-        prestijNetGun: +(c.served * SRC.customerServedPrestigeBonus + c.lost * SRC.customerLostPrestigePenalty).toFixed(2),
-      });
-    }
-  }
-  console.table(custRows);
-
-  console.log(B('4) TELEFON GELIRI (P-BAGIMSIZ -- SetCallChance govdesi bos)'));
-  for (const mode of ['strict', 'optimistic']) {
-    const ph = phoneIncome(mode);
-    console.log(`  ${mode.padEnd(11)}: calma/gun=${ph.rings.toFixed(2)}  yanit/gun=${ph.answers.toFixed(2)}  ` +
-                `para=${ph.money.toFixed(1)} TL  prestij=${ph.prestige.toFixed(2)}  ` +
-                `ekranda calma suresi=${ph.ringOccupancySec.toFixed(0)}s/gun`);
-  }
-  const supportPh = phoneIncome('optimistic', true);
-  console.log(`  CUSTOMER SUPPORT gunu (x1.5, cap 0.65): calma/gun=${supportPh.rings.toFixed(2)} para=${supportPh.money.toFixed(1)} TL`);
-
-  console.log(B('5) QUEST TAMAMLANMA + EV (tier gate=Easy, gun 8, Normal, optimistic)'));
-  const capDemo = (() => {
-    const t = truckThroughput(2, 2.0, 8, 1, 'optimistic', ASSUMED.laborShareTruck);
-    return { trucks: t.fullTrucksPerDay, shelfPlacements: t.productionCapPerDay, packedBoxes: t.productionCapPerDay, phoneAnswers: phoneIncome('optimistic').answers };
-  })();
-  console.log(`  (2P kapasitesi: tamDolanTir=${capDemo.trucks.toFixed(2)}/gun, uretim=${capDemo.shelfPlacements.toFixed(2)} kutu/gun, telefonYanit=${capDemo.phoneAnswers.toFixed(2)}/gun)`);
-  console.table(QUEST_ASSETS.map(q => {
-    const c = questCompletionProb(q, capDemo, 'optimistic');
-    return {
-      id: q.id, tier: ['Easy', 'Med', 'Hard'][q.tier], tip: q.type, hedef: q.target, renkKilit: q.colorLocked ? 'E' : '-',
-      odul: q.mR, ceza: q.mP,
-      tamamlanma: +(c * 100).toFixed(0) + '%',
-      paraEV: +(c * q.mR - (1 - c) * q.mP).toFixed(1),
-      prestijEV: +(c * q.pR - (1 - c) * q.pP).toFixed(2),
-    };
-  }));
-
-  console.log(B('6) 16-GUN TABAN KOSU -- OPTIMISTIC bant (Normal, 1 hangar, quest+telefon acik)'));
-  const optRuns = [1, 2, 3, 4].map(p => runSim(p, { scenario: 'Normal', mode: 'optimistic', label: `${p}P-Normal-OPT` }));
-  console.table(optRuns.map(s => ({
-    P: s.playerCount, iflas: s.bankrupt ? `GUN ${s.bankruptDay}` : 'yok',
-    ortGunlukNet: s.avgDailyNet, kumulatifNet16: Math.round(s.cumulativeNet),
-    sonKasa: s.finalCash, sonPrestij: s.finalPrestige,
-    prestijTavanGunu: s.prestigeCapDay ?? '-',
-  })));
-
-  console.log(B('7) 16-GUN TABAN KOSU -- STRICT bant (Normal, 1 hangar, quest+telefon acik)'));
-  const strRuns = [1, 2, 3, 4].map(p => runSim(p, { scenario: 'Normal', mode: 'strict', label: `${p}P-Normal-STR` }));
-  console.table(strRuns.map(s => ({
-    P: s.playerCount, iflas: s.bankrupt ? `GUN ${s.bankruptDay}` : 'yok',
-    ortGunlukNet: s.avgDailyNet, kumulatifNet16: Math.round(s.cumulativeNet),
-    sonKasa: s.finalCash, sonPrestij: s.finalPrestige,
-    prestijTavanGunu: s.prestigeCapDay ?? '-',
-  })));
-
-  console.log(B('8) YAVAS SENARYO (Slow) -- iki bant'));
-  const slowRuns = [];
-  for (const mode of ['optimistic', 'strict']) {
-    for (const p of [1, 2, 3, 4]) slowRuns.push(runSim(p, { scenario: 'Slow', mode, label: `${p}P-Slow-${mode}` }));
-  }
-  console.table(slowRuns.map(s => ({
-    P: s.playerCount, bant: s.mode, iflas: s.bankrupt ? `GUN ${s.bankruptDay}` : 'yok',
-    ortGunlukNet: s.avgDailyNet, kumulatifNet16: Math.round(s.cumulativeNet),
-    sonKasa: s.finalCash, sonPrestij: s.finalPrestige,
-  })));
-
-  console.log(B('9) GELIR TABANI TABLOSU (FAZ2/FAZ3 GIRDISI) -- gunluk net, gun 1/4/8/12/16'));
-  const baseRows = [];
-  for (const mode of ['optimistic', 'strict']) {
-    for (const p of [1, 2, 3, 4]) {
-      const s = runSim(p, { scenario: 'Normal', mode });
-      const g = (d) => s.rows.find(r => r.gun === d);
-      const v = (d) => g(d) ? g(d).netGelir : 'IFLAS';
-      // Kira serisi iflastan bagimsiz: baseRent * 1.15^cycle (dongu 0..3)
-      const rentAt = (cycle) => Math.round(SRC.baseRentByPlayerCount[p - 1] * Math.pow(SRC.rentGrowthMultiplier, cycle));
-      baseRows.push({
-        P: p, bant: mode,
-        gun1: v(1), gun4: v(4), gun8: v(8), gun12: v(12), gun16: v(16),
-        kumulatif16: s.bankrupt ? `${Math.round(s.cumulativeNet)} (gun ${s.bankruptDay})` : Math.round(s.cumulativeNet),
-        kira4: rentAt(0), kira8: rentAt(1), kira12: rentAt(2), kira16: rentAt(3),
-        kira16Toplam: [0, 1, 2, 3].reduce((a, c) => a + rentAt(c), 0),
-      });
-    }
-  }
-  console.table(baseRows);
-
-  console.log(B('10) 2P OPTIMISTIC -- gun gun detay (ornek okuma)'));
-  console.table(runSim(2, { scenario: 'Normal', mode: 'optimistic' }).rows);
-
-  console.log(B('11) KIRA BASKISI: kira / gunluk net orani (kac gunluk gelir = 1 kira?)'));
-  const pressRows = [];
-  for (const mode of ['optimistic', 'strict']) {
-    for (const p of [1, 2, 3, 4]) {
-      const s = runSim(p, { scenario: 'Normal', mode });
-      const g = (d) => s.rows.find(r => r.gun === d);
-      const row = { P: p, bant: mode };
-      for (const d of [4, 8, 12, 16]) {
-        const r = g(d);
-        row[`gun${d}`] = r && r.netGelir > 0 ? +(r.kira / r.netGelir).toFixed(2) : 'N/A';
-      }
-      pressRows.push(row);
-    }
-  }
-  console.table(pressRows);
-  console.log('Yorum: 4.0 = o gunun kirasi 4 gunluk gelire esit (kira araligi 4 gun -> 1.0 tam denge).');
-
-  console.log(B('12) BEKLEME SURELERI OZETI (canli degerler)'));
-  console.table([
-    { deger: 'hangarStayDuration 1P/2P/3P/4P', canli: SRC.hangarStayByPlayerCount.join(' / ') + ' sn', kaynak: 'EkonomiAyarlari.asset:24' },
-    { deger: 'tir exitDelay', canli: SRC.exitDelay + ' sn', kaynak: 'Truck.prefab:196' },
-    { deger: 'tir respawnDelay', canli: SRC.respawnDelayRange.join('-') + ' sn (ort 4)', kaynak: 'unity:36776' },
-    { deger: 'musteri sabri (min-max)', canli: `${SRC.customerMinWaitTime}-${SRC.customerMaxWaitTime} sn (ort ${(SRC.customerMinWaitTime + SRC.customerMaxWaitTime) / 2})`, kaynak: 'Customer.prefab:2305-2306' },
-    { deger: 'musteri interactionTime', canli: SRC.customerInteractionTime + ' sn', kaynak: 'Customer.prefab:2307' },
-    { deger: 'telefon ringDuration', canli: SRC.phoneRingDuration + ' sn', kaynak: 'unity:14158' },
-    { deger: 'gun uzunlugu (gun1 / gun16)', canli: `${dayDurationSec(1)} / ${dayDurationSec(16)} sn`, kaynak: 'unity:15995-15996' },
-    { deger: 'oyun-saati basina gercek sure (gun1/16)', canli: `${secPerGameHour(1).toFixed(1)} / ${secPerGameHour(16).toFixed(1)} sn`, kaynak: 'turev' },
-  ]);
-
-  console.log(B('13) PLATEUP MODELI v2 (KOTA-PARA BAGLANTILI) -- dailyCustomerCountByDay + aralik + telefon + gelir'));
-  console.log('DUZELTME (koordinator geri bildirimi, dogrulandi): musteri tek urun kaynagi ' +
-              '(CustomerAI.cs:1442-1444 Instantiate, ShelfState.cs 0 Instantiate) -- kota = gunluk kutu/gelir tavani.');
-  console.log('ANA SENARYO ARTIK 1 ISTASYON (SRC.serviceStations=1, sahne dogrulandi -- 2. masa GARANTI DEGIL).');
-
-  console.log('13a) P-bazli KOTA egrisi (dailyCustomerCountByDay), CANLI 1-istasyon ile:');
-  const quotaRows = [];
-  for (let d = 1; d <= 16; d++) {
-    const row = { gun: d, pencereSn: +customerWindowSec(d).toFixed(1) };
-    for (const p of [1, 2, 3, 4]) row[`P${p}`] = plateUpQuota(d, p);
-    quotaRows.push(row);
-  }
-  console.table(quotaRows);
-  console.log('Not: P3/P4 P2ye COK YAKIN -- 1 istasyonda urun-arzi P3ten itibaren istasyon-slotuyla ' +
-              'doyuyor (labor degil). Bu YUVARLAMA HATASI DEGIL, gercek mekanik doygunluk.');
-
-  console.log('13b) Aralik / timeSkip (1-istasyon, ana senaryo):');
-  console.table([1, 2, 3, 4].map(p => ({
-    P: p,
-    customerArrivalInterval_sn: +plateUpArrivalInterval(p).toFixed(1),
-    timeSkipAmount_dk: +plateUpTimeSkipMinutes(p).toFixed(1),
-    gun16_kota: plateUpQuota(16, p),
-    gun16_tavan_strict: +plateUpCeiling(16, p, 'Normal', 'strict').toFixed(1),
-  })));
-
-  console.log('13c) GEREKLI rewardPerBox (P-bazli) -- kira/kota oranindan geriye turetildi ' +
-              '(behavioralMargin=1.176, hata orani Normal wrongDelivery+drop=%17 dusulmus):');
-  {
-    const windows = { 0: [1, 4], 1: [5, 8], 2: [9, 12], 3: [13, 16] };
-    const errorFactor = 1 - ASSUMED.wrongDeliveryRate.Normal - ASSUMED.physicalDropRate.Normal; // 0.83
-    const reqRows = [];
-    for (const p of [1, 2, 3, 4]) {
-      for (const [cyc, [d0, d1]] of Object.entries(windows)) {
-        let sumQ = 0, n = 0;
-        for (let d = d0; d <= d1; d++) { sumQ += plateUpQuota(d, p); n++; }
-        const avgQ = sumQ / n;
-        const rent = Math.round(SRC.baseRentByPlayerCount[p - 1] * Math.pow(SRC.rentGrowthMultiplier, +cyc));
-        const dailyRentReq = rent / SRC.rentIntervalDays;
-        const reqDailyRevenue = dailyRentReq * PLATEUP.behavioralMargin;
-        const reqRewardPerBox = reqDailyRevenue / (avgQ * errorFactor);
-        reqRows.push({ P: p, dongu: +cyc, gunler: `${d0}-${d1}`, avgKota: +avgQ.toFixed(1), kira: rent, gerekliRewardPerBox: +reqRewardPerBox.toFixed(1) });
-      }
-    }
-    console.table(reqRows);
-    console.log('SECILEN rewardPerBoxByPlayerCount:', PLATEUP.rewardPerBoxByPlayerCount, '(en kotu-dongu ihtiyacini karsilayacak sekilde yuvarlandi)');
-  }
-
-  console.log(B('14) runSimPlateUp -- TAM PARA+PRESTIJ DOGRULAMASI (kota gelire baglı, 1-istasyon, flat rewardPerBox=50 KIYASLAMA)'));
-  {
-    const rows = [];
-    for (const scenario of ['Normal', 'Slow']) {
-      for (const mode of ['strict', 'optimistic']) {
-        for (const p of [1, 2, 3, 4]) {
-          const flat = runSimPlateUp(p, { scenario, mode, rewardPerBoxByPlayerCount: [50, 50, 50, 50] });
-          rows.push({
-            senaryo: scenario, bant: mode, P: p, rewardModel: 'flat50',
-            iflas: flat.bankrupt ? `GUN ${flat.bankruptDay}` : 'yok',
-            sonKasa: flat.finalCash, sonPrestij: flat.finalPrestige,
-            kumulatifNet16: Math.round(flat.cumulativeNet),
-          });
-        }
-      }
-    }
-    console.table(rows);
-    console.log('^ flat rewardPerBox=50 (canli deger) ile P3/P4 iflas riskini gosterir -- rent P ile 3.6x buyurken ' +
-                'urun-arzi (kota) P3ten sonra DUZLESIYOR (13a notu).');
-  }
-
-  console.log(B('15) runSimPlateUp -- rewardPerBoxByPlayerCount [50,55,70,88] ile DUZELTILMIS'));
-  {
-    const rows = [];
-    for (const scenario of ['Normal', 'Slow']) {
-      for (const mode of ['strict', 'optimistic']) {
-        for (const p of [1, 2, 3, 4]) {
-          const s = runSimPlateUp(p, { scenario, mode });
-          rows.push({
-            senaryo: scenario, bant: mode, P: p,
-            iflas: s.bankrupt ? `GUN ${s.bankruptDay}` : 'yok',
-            sonKasa: s.finalCash, sonPrestij: s.finalPrestige,
-            kumulatifNet16: Math.round(s.cumulativeNet),
-            prestijTavanGunu: s.prestigeCapDay ?? '-',
-          });
-        }
-      }
-    }
-    console.table(rows);
-  }
-
-  console.log(B('16) runSimPlateUp -- 4P/Slow/strict GUN GUN DETAY (en kotu senaryo, duzeltilmis reward ile)'));
-  console.table(runSimPlateUp(4, { scenario: 'Slow', mode: 'strict' }).rows);
-
-  console.log(B('17) rentGrowthMultiplier=1.20 REGRESYON KONTROLU (2026-08-20 karari BOZULMADI mi?)'));
-  {
-    const rows = [];
-    for (const p of [1, 2, 3, 4]) {
-      const s = runSimPlateUp(p, { scenario: 'Normal', mode: 'strict' });
-      rows.push({ P: p, senaryo: 'Normal-strict', iflas: s.bankrupt ? `GUN ${s.bankruptDay}` : 'yok', sonKasa: s.finalCash });
-    }
-    console.table(rows);
-    console.log('Not: rentGrowthMultiplier bu turda DEGISTIRILMEDI (hala 1.20) -- P1/P2in 2026-08-20da ' +
-                'onaylanan sagliginin YENI kota-para baglantisi ALTINDA da korundugunu dogrular.');
-  }
 
   // ==========================================================================
   // v4.0 BLOKLARI (Round 1, 2026-08-30) -- KANONIK runFullSim
@@ -2223,32 +1210,6 @@ if (require.main === module) {
       }
     }
     console.table(rows);
-  }
-
-  console.log(B('21) v4.0 vs ESKI MODELLER -- ayni senaryoda sonuc karsilastirmasi'));
-  {
-    const rows = [];
-    for (const scenario of ['Normal', 'Slow']) {
-      for (const mode of ['strict', 'optimistic']) {
-        for (const p of [1, 2, 3, 4]) {
-          const a = runSim(p, { scenario, mode });
-          const b = runSimPlateUp(p, { scenario, mode });
-          const c = runFullSim(p, { scenario, mode });
-          rows.push({
-            senaryo: scenario, bant: mode, P: p,
-            'runSim(v3.1)': a.bankrupt ? `IFLAS g${a.bankruptDay}` : a.finalCash,
-            'runSimPlateUp': b.bankrupt ? `IFLAS g${b.bankruptDay}` : b.finalCash,
-            'runFullSim(v4)': c.bankrupt ? `IFLAS g${c.bankruptDay}` : c.finalCash,
-            'v3.1 vs v4 fark': (a.bankrupt !== c.bankrupt || a.bankruptDay !== c.bankruptDay) ? 'IFLAS AYRISMASI'
-              : (a.finalCash === c.finalCash ? 'ayni' : `${Math.round(100 * (c.finalCash / Math.max(a.finalCash, 1) - 1))}%`),
-          });
-        }
-      }
-    }
-    console.table(rows);
-    console.log('Beklenti: ORTUSMEMELERI NORMAL. runSim(v3.1) musteri talebini SILINMIS kapasite');
-    console.log('formulunden turetiyor + telefonu SILINMIS phoneRingChancePerHour ile modelliyor +');
-    console.log('gunu hep tam uzunlukta variyor + 1 musteri=1 urun variyor. v4 canli kodu yansitir.');
   }
 
   console.log(B('22) v4.0 DUYARLILIK -- telefon kullanim orani (zaman-atlamasi gunu KISALTIYOR)'));

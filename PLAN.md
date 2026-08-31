@@ -8,7 +8,22 @@
 
 ## 🎯 Şu an aktif iş
 
-**✅ `feature/voice-chat` `main`'e merge edildi (2026-08-29) — oda-görünürlük/localization/perk-revival/post-rent artık telsizle AYNI dalda.** Önceki oturumlarda dallar ayrı kalmıştı (voice-chat, main'den `d6132b2`'de ayrılmış — sonraki tüm room-visibility/localization/perk-revival merge'lerini görmüyordu), bu yüzden hangi daldan build alınırsa alınsın diğer yarısı eksik geliyordu. Şimdi tek dal.
+**🟢 Kodlanmış bekleyen iş YOK — her şey `main`'de, tek kalan kapı PLAYTEST.** (2026-08-31)
+
+Son durum: `feature/plateup-day-cycle` (PlateUp gün döngüsü + 11-round tam kapsamlı ekonomi
+dengeleme, kontrol ONAY) `main`'e merge edildi ve dal silindi. Öncesinde `feature/voice-chat`
+(telsiz) ve room-visibility / post-rent-mechanics / perk-revival / localization dalları da
+merge'lenmişti — **artık tek dal var**, "build'de yarısı eksik" sorunu kapandı.
+
+🔴 **`main`, `origin/main`'in 38 commit ÖNÜNDE — PUSH YAPILMADI.** Aylardır biriken tüm iş
+yalnızca bu makinede. Bu projede daha önce 4 güne yayılan çalışma bir stash'te unutulduğu için
+kaybedildi sanılmıştı; push kararı kullanıcıda.
+
+**Son oturum (2026-08-31) — salt-okunur denetim turu, `328e7e7`:** 3 paralel denetim koşuldu.
+Bulunan gerçek regresyon: `e669e33` sahne senkronu, mesajında yalnız V3 çalma sesini kaldırdığını
+söylerken **`successCallSound` AudioSource'unu da silmişti** — telefonun başarılı arama sesi
+aylardır sessizdi, geri bağlandı. Ayrıca `GetBaseRent` boş-dizi guard'ı, bayat GDD uyarısı,
+ölü `playerCountMultiplier`, ve WASD teşhis kodunun build'de çalışır hale getirilmesi.
 
 > 🎙️ **TELSİZ — kod tamam + `kontrol` ONAY, push-talk ikon göstergesi eklendi (2026-08-29).** Basılıyken renkli/bırakınca gri `PushTalkIconIndicator` + `Cargor/UI/Saturation` shader; shader Always Included Shaders'a eklendi (Steam build'inde stripping ile atılıp ikonun hep renkli takılı kalmasına neden oluyordu).
 > Tam plan: **[plans/telsiz-voice-chat.md](plans/telsiz-voice-chat.md)** · 🙋 **Editor işleri: [plans/telsiz-editor-isleri.md](plans/telsiz-editor-isleri.md)** · Hata ayıklama detayı: **[plans/devam.md](plans/devam.md)**
@@ -31,20 +46,21 @@
 > - **Kira sonrası 3 özellik** — iade göstergesinin görünürlüğü · 2-item akışının tempo hissi · ACES tonemapping altında karışık tır renklerinin doğru görünmesi.
 > - 🔴 **YENİ: 4P gün-16 iflas riski** (yukarı bak) — sim resync'in açığa çıkardığı bulgu, ayrıca izlenmeli.
 
-`main` = 2026-08-19 perk canlandırma + stamina fix + sim resync + temizlik + 2026-08-29 telsiz merge'i ile güncel, **PUSH henüz yapılmadı** (aşağıya bak).
+> ℹ️ Yukarıdaki bloklar (telsiz · karartma · perk · 2026-08-16 merge'leri) **tarihsel kayıt** —
+> hepsi `main`'de. Güncel durum en üstteki 2026-08-31 özetinde.
 
 - ✅ **Roguelite draft + RELEASE PUSH FAZ 0/1** — arşiv: [plans/roguelite-draft.md](plans/roguelite-draft.md), [plans/release-push.md](plans/release-push.md)
 - ✅ **Ekonomi sıfırdan yeniden hesaplandı + uygulandı** — 4 faz analiz ([plans/economy-rebuild-2026-07-30*.md](plans/economy-rebuild-2026-07-30-faz4-final.md)), §D#1–#8 tamamı kodda; kalite kapısı 3 turda ONAY
 - ✅ **Quest sistemi canlı** — 30 asset, tier ödül tablosu, kart UI, gün-16 settlement, raf exploit'i kapalı
 - ✅ **Unity 6000.5.6f1 geçişi**
-- ✅ **Doğrulama**: 0 CS hatası · EditMode 9/9 · 30 asset + tüm P dizileri Unity'ye okutularak teyitli
+- ✅ **Doğrulama**: 0 CS hatası · EditMode 79/79 · 30 asset + tüm P dizileri Unity'ye okutularak teyitli
 
 ### ⏭️ Sıradaki adım
 
 > 🎮 **PLAYTEST İÇİN TEK LİSTE: [plans/playtest-checklist.md](plans/playtest-checklist.md)** (derlendi 2026-08-31) — 5 ayrı yere dağılmış tüm açık playtest maddeleri (ekonomi Adım 5, oda-görünürlük S7, kira-sonrası 3 özellik, telefon collider, telsiz + client WASD hatası) tek oturumda koşulacak hâlde toplandı. Aşağıdaki dağınık playtest notlarından ÖNCE bunu aç.
 
 0. 📏 **Ölçüm protokolü hazır: [plans/playtest-olcum-protokolu.md](plans/playtest-olcum-protokolu.md)** — oynamadan önce bunu aç. Tek zorunlu çıktı **kutu/dakika/oyuncu**. Oturum öncesi VE sonrası `Cargor / Ekonomi Değerlerini Doğrula` çalıştır (perk asset bozulmasını yakalar).
-1. 🔴 **PLAY-TEST — tek gerçek kapı.** Bu turda kira, prestij, upgrade fiyatları, quest ödülleri, event çarpanları ve telefon ekonomisi değişti; **hiçbiri oyun içinde çalışırken görülmedi.** Makine doğrulaması "derleniyor ve sayılar doğru yerde" der, "oyun iyi hissettiriyor" demez. Checklist tabanı: [plans/playtest-2026-07-19.md](plans/playtest-2026-07-19.md) (bayat, ekonomi kısmı yeniden yazılmalı).
+1. 🔴 **PLAY-TEST — tek gerçek kapı.** Bu turda kira, prestij, upgrade fiyatları, quest ödülleri, event çarpanları ve telefon ekonomisi değişti; **hiçbiri oyun içinde çalışırken görülmedi.** Makine doğrulaması "derleniyor ve sayılar doğru yerde" der, "oyun iyi hissettiriyor" demez. **Checklist: [plans/playtest-checklist.md](plans/playtest-checklist.md)** (2026-08-31, güncel — eski `plans/playtest-2026-07-19.md` bayat, kullanma).
    **Ölçülecekler duyarlılık sırasına göre:** `kutu/dk/oyuncu` (1.2→2.0 ile 1P kümülatifi %117 değişiyor) · masa meşgul süresi S · `agile_crew`'in üretime yansıması · telefon yanıtlamanın oyuncu-saniyesi maliyeti. Bir oyun günü yalnız 200–330 gerçek saniye → **mutlak TL değil oranlarla konuş.**
 2. 🙋 **Kullanıcıda bekleyen 3 iş:** (a) 2. servis masasının mesh/collider yerleşimi — headless doğrulayamıyor; (b) sahnede `endIntensity 0.03→0` plansız değişiklik, istenmiyorsa geri al; (c) `StringTable Shared Data`'daki event açıklamaları eski yüzdelerde kalmış olabilir.
 3. **PERK MİMARİSİ — ✅ İKİ YARISI DA KAPANDI.**
@@ -76,6 +92,7 @@
 | Dosya | İçerik | Durum |
 |---|---|---|
 | **[plans/devam.md](plans/devam.md)** | Oturum logu — oturum başında ÖNCE bunu oku | 🚧 **canlı — gerçek kaynak** |
+| **[plans/playtest-checklist.md](plans/playtest-checklist.md)** | 🎮 Tüm açık playtest maddeleri tek listede (A: tek oyuncu · B: 2 istemci + WASD karar tablosu · C: konsol log avı) | 🔴 **bekliyor — kullanıcıda** |
 | **[plans/economy-rebuild-2026-07-30-faz4-final.md](plans/economy-rebuild-2026-07-30-faz4-final.md)** | Uygulanan nihai değer seti (§A gelir · §B değerler · §D sıra · §E ölçülecekler) | ✅ **uygulandı — play-test referansı** |
 | [plans/economy-rebuild-2026-07-30.md](plans/economy-rebuild-2026-07-30.md) · [-faz2](plans/economy-rebuild-2026-07-30-faz2.md) · [-faz3](plans/economy-rebuild-2026-07-30-faz3.md) | 4 fazlık analiz (envanter, verim modeli, kira/prestij/event, upgrade/quest) | 📖 gerekçe kaynağı |
 | **[plans/playtest-olcum-protokolu.md](plans/playtest-olcum-protokolu.md)** | 🙋 **Oynamadan önce aç** — ölçüm protokolü; tek zorunlu çıktı kutu/dk/oyuncu | 🔴 **bekliyor** |
@@ -90,8 +107,9 @@
 | [plans/quest-listesi.md](plans/quest-listesi.md) · [quest-redesign-2026-07-25.md](plans/quest-redesign-2026-07-25.md) · [economy-balance-round.md](plans/economy-balance-round.md) · [upgrade-round-2026-07-20.md](plans/upgrade-round-2026-07-20.md) · [upgrade-isim-listesi.md](plans/upgrade-isim-listesi.md) · [release-push.md](plans/release-push.md) · [roguelite-draft.md](plans/roguelite-draft.md) · [economy-audit-2026-07-13.md](plans/economy-audit-2026-07-13.md) · [-17](plans/economy-audit-2026-07-17.md) · [economy-balance.md](plans/economy-balance.md) | Bitmiş turlar ve tarihsel referanslar | 🗄️ arşiv niteliğinde |
 
 **Referans raporlar (kök):** `GDD.md` (tasarım — ✅ **2026-08-07'de koda senkronlandı**), `UPGRADE_PRICING_REPORT.md`, `ECONOMY_BALANCE_REPORT.md`.
-**Denetçi:** `Assets/Editor/EconomyInvariantCheck.cs` — 165 kontrol, menü `Cargor / Ekonomi Değerlerini Doğrula`. Ekonomi değeri değiştiren HER işten sonra ve **her play-test sonrası** çalıştır.
-**Sim:** `tools/economy-sim/sim.js` v3.1 — `node tools/economy-sim/sim.js`. Başlığındaki her değer `dosya:satır` ile belgeli; denetimden önce gerçek koda karşı doğrula.
+**Denetçi:** `Assets/Editor/EconomyInvariantCheck.cs` — 200 kontrol, menü `Cargor / Ekonomi Değerlerini Doğrula`. Ekonomi değeri değiştiren HER işten sonra ve **her play-test sonrası** çalıştır.
+**Sim:** `tools/economy-sim/sim.js` v5.1 — `node tools/economy-sim/sim.js`. Başlığındaki her değer `dosya:satır` ile belgeli; denetimden önce gerçek koda karşı doğrula.
+> 🧹 **2026-08-31: sim TEK MODELE indirildi** (2297→1258 satır). Ölü `SRC` (v3.1 kapasite tabanlı talep + V3 telefon) ve `PLATEUP` (öneri modeli) blokları, bağımlı fonksiyonları ve CLI blok 0-17/21 **silindi**. Tek gerçek: `SRC4` + `runFullSim`, CLI blok 18-23 (numaralar korundu, raporlar onlara atıf yapıyor). `runFullSim` çıktısının **bit-birebir aynı** kaldığı önce/sonra koşumuyla doğrulandı. Dosya başındaki HARİTA yorumu neyin neden silindiğini listeler — **yeni turda ölü modeli diriltme.**
 
 ---
 

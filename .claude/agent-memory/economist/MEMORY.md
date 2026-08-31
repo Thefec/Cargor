@@ -61,3 +61,4 @@
 - [Q3: TempMoneyPerBox ölü kod](q3_tempmoneyperbox_dead.md) — KARAR=bırak; wiring için yedek sayı hazır
 - [Q8: buff stack politikası](q8_buff_stacking_policy.md) — şu an sıfır etki; temp buff'a ileride MAX_STACK=2
 - [FAZ2 kota-verim kalibrasyonu](quota_throughput_calibration.md) — ⚠️QuotaManager SİLİNDİ, konu kapandı
+- [sim.js tek-model invariantı](sim-js-single-model-invariant.md) — 2026-08-31: ölü `SRC`(v3.1) + `PLATEUP` modelleri ve blok 0-17/21 SİLİNDİ, tek gerçek `SRC4`/`runFullSim`; çıktı bit-birebir aynı doğrulandı. Yeni turda ölü model diriltme.
