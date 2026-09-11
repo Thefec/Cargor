@@ -12,11 +12,13 @@ using NewCss;
 /// Tutorial yönetim sistemi - adım adım tutorial akışı, UI yönetimi ve koşul kontrollerini sağlar.
 /// Typewriter efekti, highlight sistemi, kapı entegrasyonu ve çoklu dil desteği içerir.
 ///
-/// Çekirdek döngü kapsamı (bkz plans/tutorial-rewrite.md) — önerilen ~8 adımlık akış:
-///   1. Hareket (WASD/PressKey)          5. Masaya koy (PlaceOnTable)
-///   2. Kutu al (PickupItem)             6. Masadan al (TakeFromTable)
-///   3. Rafa koy (PlaceOnShelf)          7. Tıra teslim et (DeliverToTruck)
-///   4. Raftan al (TakeFromShelf)        8. Tamamlanma
+/// Çekirdek döngü kapsamı (bkz plans/tutorial-rewrite.md) — güncel 10 adımlık akış
+/// (tam tablo + Inspector değerleri plans/tutorial-rewrite.md'de):
+///   0. Hoş geldin (PressKey)                 5. Masadan al (TakeFromTable)
+///   1. Müşteriyle konuş + al (TakeFromTable) 6. Rafa koy (PlaceOnShelf)
+///   2. Masaya bırak (PlaceOnTable)           7. Bekle (WaitForTime)
+///   3. Raftan kutu al (TakeFromShelf)        8. Raftan tekrar al (TakeFromShelf)
+///   4. Masaya bırak → otomatik paketle       9. Tıra teslim et (DeliverToTruck)
 /// Bu liste yalnız referans/öneridir — `tutorialSteps` alanı koddan YAML/kod
 /// üzerinden doldurulmaz; adımların Inspector'da elle eklenmesi/sıralanması
 /// gerekir (Unity Editor işi, bu script'in kapsamı dışında).
@@ -29,7 +31,6 @@ public class TutorialManager : NetworkBehaviour
     private const float PLAYER_SEARCH_INTERVAL = 0.5f;
     private const int MAX_PLAYER_SEARCH_ATTEMPTS = 20;
     private const float CONDITION_CHECK_INTERVAL = 0.1f;
-    private const float STEP_TRANSITION_DELAY = 0.3f;
     private const float TUTORIAL_START_DELAY = 1f;
 
     private const float TEXT_FONT_SIZE_MIN = 18f;
@@ -133,6 +134,16 @@ public class TutorialManager : NetworkBehaviour
     [SerializeField, Tooltip("Oyuncu envanteri")]
     private PlayerInventory playerInventory;
 
+    [Header("=== TUTORIAL CUSTOMER BYPASS ===")]
+    [SerializeField, Tooltip("Tutorial'daki tek müşteri. Sahnede CustomerManager olmadığından " +
+        "CustomerAI hiçbir zaman doğal yoldan Service state'ine geçmez (bkz. AssignFreeServiceStations, " +
+        "CustomerAI.cs) — bu yüzden burada elle atanıp server'da AssignServiceStation ile bypass edilir. " +
+        "Boş bırakılırsa bypass hiçbir şey yapmaz (production/CustomerManager akışı etkilenmez).")]
+    private CustomerAI tutorialCustomer;
+
+    [SerializeField, Tooltip("tutorialCustomer'a atanacak sipariş masası (DisplayTable).")]
+    private DisplayTable tutorialDropOffTable;
+
     #endregion
 
     #region Serialized Fields - Visual Helpers
@@ -189,6 +200,7 @@ public class TutorialManager : NetworkBehaviour
     private bool _shelfInteractionCompleted;
     private bool _shelfPlacementCompleted;
     private bool _truckDeliveryCompleted;
+    private bool _pressKeyDetected;
     private NetworkedShelf.BoxType _lastTakenBoxType;
     private BoxInfo.BoxType _lastDeliveredBoxType;
 
@@ -233,11 +245,13 @@ public class TutorialManager : NetworkBehaviour
         InitializeUI();
         StartPlayerSearch();
         StartCoroutine(InitializeLocalizationAndStartTutorial());
+        StartCoroutine(AssignTutorialCustomerServiceStationWhenReady());
     }
 
     private void Update()
     {
         HandleSkipInput();
+        HandlePressKeyCondition();
         CheckLocaleChange();
     }
 
@@ -327,6 +341,48 @@ public class TutorialManager : NetworkBehaviour
         {
             StartCoroutine(FindLocalPlayerCoroutine());
         }
+    }
+
+    /// <summary>
+    /// Tutorial-only bypass: Tutorial.unity'de CustomerManager.AssignFreeServiceStations akışı
+    /// çalışmadığından (sahnede CustomerManager yok), tutorialCustomer hiçbir zaman doğal yoldan
+    /// Service state'ine geçmez ve oyuncu E'ye bassa da RequestInteractionServerRpc içindeki
+    /// state guard'ı yüzünden hiçbir şey olmaz. Bu coroutine server'da tutorialCustomer'ın
+    /// NetworkObject'i spawn olur olmaz AssignServiceStation'ı (CustomerAI.cs, zaten public ve
+    /// IsServer-guard'lı, production API'si) doğrudan çağırır. CustomerManager'a veya normal
+    /// AssignFreeServiceStations akışına hiç dokunmaz — sadece bu tek müşteriyi bypass eder.
+    /// </summary>
+    private IEnumerator AssignTutorialCustomerServiceStationWhenReady()
+    {
+        if (tutorialCustomer == null || tutorialDropOffTable == null)
+        {
+            LogDebug("tutorialCustomer/tutorialDropOffTable atanmamış - Service bypass atlanıyor");
+            yield break;
+        }
+
+        // Yalnızca server'da anlamlı; AssignServiceStation zaten IsServer guard'lı ama
+        // NetworkManager.Singleton null olabileceğinden burada erken çıkıyoruz.
+        if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
+        {
+            yield break;
+        }
+
+        const float timeout = 10f;
+        float elapsed = 0f;
+        while (!tutorialCustomer.IsSpawned && elapsed < timeout)
+        {
+            yield return null;
+            elapsed += Time.deltaTime;
+        }
+
+        if (!tutorialCustomer.IsSpawned)
+        {
+            Debug.LogWarning($"{LOG_PREFIX} tutorialCustomer {timeout}s içinde spawn olmadı - Service bypass iptal edildi");
+            yield break;
+        }
+
+        tutorialCustomer.AssignServiceStation(tutorialDropOffTable);
+        LogDebug("Tutorial customer doğrudan Service state'ine atandı (CustomerManager bypass)");
     }
 
     private IEnumerator InitializeLocalizationAndStartTutorial()
@@ -471,6 +527,24 @@ public class TutorialManager : NetworkBehaviour
                _currentStep.conditionType == TutorialConditionType.WaitForTime;
     }
 
+    /// <summary>
+    /// PressKey koşulunu Update()'te frame-doğru şekilde takip eder.
+    /// IsStepConditionMet() bu koşulu 0.1s aralıklarla poll ettiği için doğrudan
+    /// Input.GetKeyDown okusa çoğu basışı kaçırır (GetKeyDown yalnız o frame true) —
+    /// bu yüzden bayrak burada, her frame, tutulur. Typewriter hâlâ yazıyorsa basış
+    /// (skip mantığıyla tutarlı olarak) yalnız metni tamamlar, adımı bitirmez.
+    /// </summary>
+    private void HandlePressKeyCondition()
+    {
+        if (_currentStep == null || _currentStep.conditionType != TutorialConditionType.PressKey) return;
+        if (_isTyping) return;
+
+        if (Input.GetKeyDown(_currentStep.requiredKey))
+        {
+            _pressKeyDetected = true;
+        }
+    }
+
     #endregion
 
     #region Player Finding
@@ -612,6 +686,7 @@ public class TutorialManager : NetworkBehaviour
         _shelfInteractionCompleted = false;
         _shelfPlacementCompleted = false;
         _truckDeliveryCompleted = false;
+        _pressKeyDetected = false;
 
         // Step'in kendi delivery sayacını da sıfırla
         if (_currentStep != null)
@@ -626,10 +701,21 @@ public class TutorialManager : NetworkBehaviour
 
         _isTransitioning = true;
 
-        // Typewriter efektini hemen durdur
+        // Typewriter efektini hemen durdur, eski adimin metin/skip-hint'ini temizle
+        // (eskiden ayri HideInstructionCoroutine yapiyordu - bkz. asagidaki not).
         StopCurrentTypewriter();
         _isTyping = false;
         _skipTyping = false;
+
+        if (skipHintText != null)
+        {
+            skipHintText.gameObject.SetActive(false);
+        }
+
+        if (instructionText != null)
+        {
+            instructionText.text = "";
+        }
 
         LogDebug($"Step {_currentStepIndex + 1} completed: {_currentStep.stepName}");
 
@@ -640,14 +726,12 @@ public class TutorialManager : NetworkBehaviour
         RemoveHighlight();
         NotifyDoorsOfStepCompletion(_currentStepIndex);
 
-        StartCoroutine(TransitionToNextStepCoroutine());
-    }
-
-    private IEnumerator TransitionToNextStepCoroutine()
-    {
-        yield return StartCoroutine(HideInstructionCoroutine());
-        yield return new WaitForSeconds(STEP_TRANSITION_DELAY);
-
+        // Bir sonraki adima HEMEN gec (eskiden StartCoroutine(TransitionToNextStepCoroutine())
+        // ile HideInstructionCoroutine + STEP_TRANSITION_DELAY (0.3sn) kadar gecikmeliydi).
+        // O gecikme penceresinde yapilan bir fiziksel aksiyon (orn. paketlenmis kutuyu masadan
+        // alma) hala ESKI adimin kosuluna gore degerlendirilip kayboluyordu - StartStep() flag'leri
+        // sifirladiginda event bir daha ateslenmedigi icin yeni adim asla tamamlanamiyordu
+        // (kullanici bulgusu: "metin bitmeden aldim, 2. kapi acilmadi", 2026-09-11).
         _isTransitioning = false;
         StartStep(_currentStepIndex + 1);
     }
@@ -705,6 +789,8 @@ public class TutorialManager : NetworkBehaviour
             TutorialConditionType.TakeFromShelf => CheckTakeFromShelfCondition(),
             TutorialConditionType.DeliverToTruck => CheckDeliverToTruckCondition(),
             TutorialConditionType.WaitForTime => CheckWaitTimeCondition(),
+            TutorialConditionType.PressKey => _pressKeyDetected,
+            TutorialConditionType.InteractWithCustomer => tutorialCustomer != null && tutorialCustomer.HasInteracted,
             // CompleteMinigame ve Custom: kapsam dışı, çekirdek-döngü tutorial'ında
             // kullanılmıyor (bkz plans/tutorial-rewrite.md). Enum'dan silinmedi,
             // ileride minigame/özel adım eklenirse hazır kalsın diye.
@@ -820,26 +906,6 @@ public class TutorialManager : NetworkBehaviour
         // State'i de sıfırla
         _isTyping = false;
         _skipTyping = false;
-    }
-
-    private IEnumerator HideInstructionCoroutine()
-    {
-        // Önce typewriter'ı durdur
-        StopCurrentTypewriter();
-        _isTyping = false;
-        _skipTyping = false;
-
-        if (skipHintText != null)
-        {
-            skipHintText.gameObject.SetActive(false);
-        }
-
-        if (instructionText != null)
-        {
-            instructionText.text = "";
-        }
-
-        yield return null;
     }
 
     #endregion

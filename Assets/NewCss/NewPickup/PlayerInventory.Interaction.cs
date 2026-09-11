@@ -351,7 +351,17 @@ public partial class PlayerInventory : NetworkBehaviour
         }
 
         Debug.Log("[PlayerInventory] ✅ Calling TutorialShelfState.PlaceItemOnShelfFromServer");
-        nearbyTutorialShelf.PlaceItemOnShelfFromServer(new NetworkObjectReference(networkObject), requesterClientId);
+        bool placedOnShelf = nearbyTutorialShelf.PlaceItemOnShelfFromServer(new NetworkObjectReference(networkObject), requesterClientId);
+
+        if (!placedOnShelf)
+        {
+            // Raf reddetti (yanlış kategori/tip/dolu) - item zaten dünyaya spawn edildi ve
+            // DisablePickup() ile kilitlenmişti; hiç açılmazsa kalıcı olarak kayboluyordu
+            // (ne rafta, ne oyuncuda, ne yerden alınabilir). Normal bırakılmış eşya gibi
+            // tekrar alınabilir yap.
+            Debug.LogWarning("[PlayerInventory] ⚠️ Shelf rejected item - re-enabling pickup instead of losing it.");
+            worldItem?.EnablePickup();
+        }
 
         // Player inventory temizle
         ClearInventoryState();

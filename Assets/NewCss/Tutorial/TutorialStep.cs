@@ -40,6 +40,9 @@ public enum TutorialConditionType
     /// <summary>Araca kutu teslim etti mi?</summary>
     DeliverToTruck,
 
+    /// <summary>Müşteriyle etkileşime girdi mi (E ile)? </summary>
+    InteractWithCustomer,
+
     /// <summary>Özel koşul</summary>
     Custom
 }

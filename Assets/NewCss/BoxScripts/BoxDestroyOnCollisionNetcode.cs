@@ -77,6 +77,11 @@ namespace NewCss
             // 2. Sadece server çarpışma kararı verir (authoritative)
             if (!IsServer) return;
 
+            // 2b. Tutorial'da item kırılması/kaybı istenmiyor (kullanıcı isteği) — tek sipariş
+            // item'ı yanlışlıkla fırlatılıp kırılırsa tutorial ilerleyemez hale gelirdi.
+            // TutorialManager.Instance yalnızca Tutorial sahnesinde var, üretimde etkisiz.
+            if (TutorialManager.Instance != null) return;
+
             // 3. DOLU kutular ASLA kırılmaz — tıra teslim edilmeli, yolda parçalanmamalı.
             //    Sadece BOŞ kutular kırılır (bırakılınca da fırlatılınca da).
             if (_boxInfo != null && _boxInfo.isFull) return;

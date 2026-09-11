@@ -249,11 +249,6 @@ public partial class PlayerInventory : NetworkBehaviour
             }
         }
 
-        if (closestShelf != null)
-        {
-            Debug.Log($"[PlayerInventory] Found nearby TutorialShelf at distance: {closestDistance:F2}");
-        }
-
         return closestShelf;
     }
 
@@ -277,11 +272,6 @@ public partial class PlayerInventory : NetworkBehaviour
                     closestShelf = shelf;
                 }
             }
-        }
-
-        if (closestShelf != null)
-        {
-            Debug.Log($"[PlayerInventory] Found nearby shelf at distance: {closestDistance:F2}");
         }
 
         return closestShelf;
