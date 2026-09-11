@@ -5,6 +5,9 @@
 
 ---
 
+## 2026-09-11 (6)
+- **🎓✅ TUTORIAL DALI OTURUMU KAPANDI — kullanıcı "şuanlık tutorial ile işimiz bitti save al commit at clear atıcam" dedi.** Unity'de sahneyi (EventSystem + closeButton fix'leriyle) kaydedip kapatmış, ikisi de korunmuş (grep ile doğrulandı, üzerine yazılmamış). Son headless doğrulama: 0 CS, EditMode 79/79. `Assets/Scenes/Tutorial.unity` commit edildi (Unity'nin kendi re-serileştirmesi dışında içerik farkı yok). **SIRADAKİ:** kullanıcı `/clear` atacak — bir sonraki oturumda "tutorial'a devam" denirse: dal `feature/tutorial-rewrite`'ta 3 commit birikti (`9813b41`, `5a98e4d`, `919f321`) + bu commit, push/merge kararı henüz verilmedi, ilk soru bu olmalı.
+
 ## 2026-09-11 (5)
 - **🎙️ Telsiz HUD'undaki "kendi ad/mikrofon" satırı kaldırıldı (tüm oyun, her sahne).** Kullanıcı: "şu sol üstte oyuncunun adının yazmasını kaldırırmısın". Kök: `RadioHudController.cs` (`Assets/NewCss/Voice/UI/`) sahneye yerleşik değil, `[RuntimeInitializeOnLoadMethod(AfterSceneLoad)]` ile HER sahnede (Tutorial dahil) otomatik kuruluyor; `_ownRow` sol-üst köşede (`anchorMin/Max=(0,1)`) her zaman görünürdü (`SetVisible(true)`, plan: "her zaman görünür küçük gösterge"). Kullanıcıya kapsam soruldu (yalnız Tutorial / tüm oyun / yalnız kendi satırı) → **"tüm oyunda"** seçildi. `UpdateOwnRow()` artık tek satır: `_ownRow.SetVisible(false)`; eski durum-gösterge mantığı (Steam/mikrofon hata metni, konuşma etiketi, seviye çubuğu) + artık çağrılmayan `ResolveLocalizedOrFallback` helper'ı + kullanılmayan `using Steamworks;` temizlendi (ölü kod bırakılmadı). Uzak konuşmacı satırları (`UpdateRemoteRows`, başkaları konuşunca çıkan satırlar) **etkilenmedi**, ayrı satır havuzu kullanıyor. Headless: 0 CS, EditMode 79/79. Commit atılmadı — tutorial dalıyla mı birlikte mi ayrı mı gideceği kullanıcıya sorulmadı, tek dosya/düşük risk olduğu için kontrol kapısı koşulmadı (KÜÇÜK iş sayıldı).
 
