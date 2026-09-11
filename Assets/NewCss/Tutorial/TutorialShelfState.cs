@@ -409,11 +409,19 @@ namespace NewCss
             var item = networkObj.gameObject;
             var slot = shelfSlots[slotIndex];
 
-            item.transform.SetParent(slot);
-            item.transform.localPosition = Vector3.zero;
-            item.transform.localRotation = Quaternion.identity;
-
             DisableItemPhysics(item);
+            SnapItemToSlot(item, slot);
+        }
+
+        /// <summary>
+        /// Item'ı slotun dünya pozisyonuna/rotasyonuna taşır; parent'lamaz. Kutu prefab'ları
+        /// AutoObjectParentSync=1 — NGO NetworkObject'i NetworkObject olmayan bir Transform'a
+        /// (slot) parent'lamayı reddedip köke geri alıyor, ardından localPosition=0 kutuyu
+        /// dünya (0,0,0)'ına ışınlıyordu. Raf da 115x ölçekli, ona parent'lamak kutuyu büyütürdü.
+        /// </summary>
+        private static void SnapItemToSlot(GameObject item, Transform slot)
+        {
+            item.transform.SetPositionAndRotation(slot.position, slot.rotation);
         }
 
         private static void DisableItemPhysics(GameObject item)
@@ -645,17 +653,13 @@ namespace NewCss
             {
                 var item = networkObj.gameObject;
 
-                // Slot varsa transform ayarla
+                // Physics devre dışı (pozisyonlamadan önce - dinamik rigidbody taşımayı ezmesin)
+                DisableItemPhysics(item);
+
                 if (shelfSlots != null && slotIndex < shelfSlots.Length)
                 {
-                    var slot = shelfSlots[slotIndex];
-                    item.transform.SetParent(slot);
-                    item.transform.localPosition = Vector3.zero;
-                    item.transform.localRotation = Quaternion.identity;
+                    SnapItemToSlot(item, shelfSlots[slotIndex]);
                 }
-
-                // Physics devre dışı
-                DisableItemPhysics(item);
 
                 string boxTypeStr = boxInfo != null ? boxInfo.boxType.ToString() : "Unknown";
                 LogDebug($"✅ Item ({boxTypeStr}) placed on shelf by client {clientId} at slot {slotIndex}");

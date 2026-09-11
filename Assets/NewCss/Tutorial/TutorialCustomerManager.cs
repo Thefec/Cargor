@@ -101,6 +101,12 @@ public class TutorialCustomerManager : CustomerManager
         customerAI.isPrefabMode = false;
         customerAI.manager = this;
 
+        // Tutorial rafı (TutorialShelfState) yalnız Red kutu kabul ediyor. Üretim Customer
+        // prefabının productPrefabs havuzu Toy/Clothing/Glass karışık - manager.GetRandomProductIndexExcludingRecent
+        // rastgele renk seçtiğinden Yellow/Blue ürün (örn. çay fincanı) de çıkabiliyordu. Yalnız bu
+        // instance'ın havuzunu Toy(Red)'a daraltıyoruz, paylaşılan prefab asset'i değişmiyor.
+        customerAI.productPrefabs = FilterToRedBoxProducts(customerAI.productPrefabs);
+
         var navAgent = customerAI.GetComponent<NavMeshAgent>();
         if (navAgent != null)
         {
@@ -159,5 +165,29 @@ public class TutorialCustomerManager : CustomerManager
 
         _hasSpawned = true;
         Debug.Log($"[TutorialCustomerManager] Customer step {spawnOnStepIndex}'de {tutorialSpawnPoint.position} konumunda spawnlandı.");
+    }
+
+    /// <summary>Verilen ürün havuzunu yalnız Toy(Red kutu) ürünlere daraltır. Uygun ürün yoksa havuz değiştirilmez.</summary>
+    private static GameObject[] FilterToRedBoxProducts(GameObject[] productPrefabs)
+    {
+        if (productPrefabs == null) return productPrefabs;
+
+        var redOnly = new System.Collections.Generic.List<GameObject>(productPrefabs.Length);
+        foreach (var prefab in productPrefabs)
+        {
+            var info = prefab != null ? prefab.GetComponent<ProductInfo>() : null;
+            if (info != null && info.productType == ProductInfo.ProductType.Toy)
+            {
+                redOnly.Add(prefab);
+            }
+        }
+
+        if (redOnly.Count == 0)
+        {
+            Debug.LogWarning("[TutorialCustomerManager] productPrefabs içinde Toy(Red) ürün bulunamadı, filtre uygulanmadı.");
+            return productPrefabs;
+        }
+
+        return redOnly.ToArray();
     }
 }
