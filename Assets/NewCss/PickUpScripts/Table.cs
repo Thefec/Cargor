@@ -67,6 +67,10 @@ namespace NewCss
         private BoxCollider _interactionTrigger;
         private Outline _outline;
 
+        // Server-only re-entrancy kilidi: SpawnItemOnTableCoroutine'in 0.1s gecikme
+        // penceresinde ikinci bir yerleştirme isteğinin aynı masaya item spawn etmesini engeller.
+        private bool _placementInProgress;
+
         // Static table registry
         private static readonly List<Table> _allTables = new();
 
@@ -342,12 +346,33 @@ namespace NewCss
         /// </summary>
         public bool IsPlayerInRange(Transform playerTransform)
         {
+            return IsPlayerInRange(playerTransform, 0f);
+        }
+
+        /// <summary>
+        /// Transform bazlı range kontrolü + client'ın hedef-seçim geometrisiyle (OverlapSphere+koni)
+        /// hizalamak için mesafe-tabanlı fallback. Client bir hedefi sunmuşsa (detectionRange içindeyse)
+        /// server sessizce reddetmesin - oriented-box dışında olsa bile mesafe eşiği içindeyse kabul et.
+        /// </summary>
+        public bool IsPlayerInRange(Transform playerTransform, float clientDetectionRange)
+        {
             if (playerTransform == null) return false;
 
             Vector3 localPoint = transform.InverseTransformPoint(playerTransform.position);
             Vector3 halfSize = interactionBoxSize * 0.5f;
 
-            return IsPointInsideBox(localPoint, interactionBoxOffset, halfSize);
+            if (IsPointInsideBox(localPoint, interactionBoxOffset, halfSize))
+            {
+                return true;
+            }
+
+            if (clientDetectionRange > 0f)
+            {
+                float distance = Vector3.Distance(playerTransform.position, transform.position);
+                return distance <= clientDetectionRange;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -493,6 +518,9 @@ namespace NewCss
 
             if (!ValidateInteractionRequest(requesterClientId, playerNetworkId, out PlayerInventory player))
             {
+                // Client cooldown timer'ını beklemeden tekrar deneyebilsin diye ack gönder
+                // (player identity/component çözülebildiyse - erken çıkışlarda null kalabilir).
+                player?.ResetProcessingInteractionForClientRpc(requesterClientId);
                 return;
             }
 
@@ -511,15 +539,8 @@ namespace NewCss
                 return false;
             }
 
-            // Range check
-            if (!IsPlayerInRange(playerTransform))
-            {
-                float distance = Vector3.Distance(playerTransform.position, transform.position);
-                LogWarning($"Client {clientId} is NOT in range!  Distance: {distance}");
-                return false;
-            }
-
-            // Get PlayerInventory
+            // Get PlayerInventory (range kontrolünden ÖNCE - client'in kullandığı
+            // detectionRange'i server-side range fallback'inde referans almak için)
             if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(playerNetworkId, out NetworkObject playerObj))
             {
                 LogError("Player NetworkObject not found");
@@ -537,6 +558,15 @@ namespace NewCss
             if (playerObj.OwnerClientId != clientId)
             {
                 LogError($"Kimlik uyusmazligi: sender {clientId} != hedef owner {playerObj.OwnerClientId}");
+                return false;
+            }
+
+            // Range check - oriented-box VEYA client'ın hedef-seçiminde kullandığı
+            // detectionRange mesafesi (client-offer / server-accept geometri hizalaması)
+            if (!IsPlayerInRange(playerTransform, player.DetectionRange))
+            {
+                float distance = Vector3.Distance(playerTransform.position, transform.position);
+                LogWarning($"Client {clientId} is NOT in range!  Distance: {distance}");
                 return false;
             }
 
@@ -563,9 +593,10 @@ namespace NewCss
 
         private void ProcessPlayerHasItem(PlayerInventory player, ulong requesterClientId)
         {
-            if (CanPlaceItem)
+            if (CanPlaceItem && !_placementInProgress)
             {
                 LogDebug($"✅ Placing item from player {requesterClientId}");
+                _placementInProgress = true;
                 PlaceItemOnTable(player);
             }
             else
@@ -600,6 +631,7 @@ namespace NewCss
             if (playerItemData == null)
             {
                 LogError("Player has no valid item data");
+                _placementInProgress = false;
                 return;
             }
 
@@ -621,6 +653,7 @@ namespace NewCss
             if (itemData.worldPrefab == null)
             {
                 LogError($"Item {itemData.itemName} has no world prefab");
+                _placementInProgress = false;
                 yield break;
             }
 
@@ -632,6 +665,7 @@ namespace NewCss
             {
                 LogError("World item has no NetworkObject component");
                 Destroy(worldItem);
+                _placementInProgress = false;
                 yield break;
             }
 
@@ -643,6 +677,10 @@ namespace NewCss
             PlayPlacementAnimationClientRpc(netObj.NetworkObjectId);
 
             LogDebug($"✅ Item {itemData.itemName} placed successfully");
+
+            // Kilit, masa state'i yazıldıktan sonra serbest bırakılır - bu noktadan
+            // sonra CanPlaceItem zaten false olacağı için ek bir koruma gerekmez.
+            _placementInProgress = false;
         }
 
         private Vector3 CalculateSpawnPosition()
@@ -659,6 +697,16 @@ namespace NewCss
             {
                 worldItemComponent.SetItemData(itemData);
                 worldItemComponent.DisablePickup();
+            }
+
+            // Defense-in-depth: spawn anında kinematik yap. Normalde bu, NetworkVariable
+            // callback'i (PositionItemOnTable) ile yapılır; ama bir clobber durumunda
+            // orphan kalan item bu callback'i hiç tetiklemeyebilir ve yere düşer.
+            var rb = worldItem.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.isKinematic = true;
+                rb.useGravity = false;
             }
         }
 

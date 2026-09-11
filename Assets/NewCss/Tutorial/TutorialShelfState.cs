@@ -459,42 +459,6 @@ namespace NewCss
         #region Server RPCs - Place Item
 
         /// <summary>
-        /// Rafa item yerleştirir (Tutorial versiyonu)
-        /// </summary>
-        [ServerRpc(RequireOwnership = false)]
-        public void PlaceItemOnShelfServerRpc(NetworkObjectReference itemRef, ServerRpcParams rpcParams = default)
-        {
-            if (!IsServer) return;
-
-            ulong requesterClientId = rpcParams.Receive.SenderClientId;
-            LogDebug($"📥 PlaceItemOnShelfServerRpc - Client {requesterClientId}");
-
-            // Box category validation - only allow Box category items on shelf
-            if (!ValidateItemIsBox(itemRef))
-            {
-                LogDebug("❌ Only Box category items can be placed on shelf!");
-                return;
-            }
-
-            // Validation
-            if (!ValidatePlaceItemRequest(requesterClientId, itemRef, out Transform playerTransform, out BoxInfo boxInfo))
-            {
-                return;
-            }
-
-            // Boş slot bul
-            int slotIndex = FindEmptySlotIndex();
-            if (slotIndex == -1)
-            {
-                LogDebug("❌ Shelf is FULL!");
-                return;
-            }
-
-            // Item'ı yerleştir
-            PlaceItemInSlot(itemRef, slotIndex, requesterClientId, boxInfo);
-        }
-
-        /// <summary>
         /// Server-side version - PlayerInventory tarafından çağrılır
         /// </summary>
         /// <returns>Item gerçekten bir slota yerleştirildiyse true. Çağıran (PlayerInventory)
@@ -586,53 +550,6 @@ namespace NewCss
 
             LogDebug("❌ No valid category information found - NOT allowed on shelf");
             return false;
-        }
-
-        private bool ValidatePlaceItemRequest(ulong clientId, NetworkObjectReference itemRef, out Transform playerTransform, out BoxInfo boxInfo)
-        {
-            playerTransform = null;
-            boxInfo = null;
-
-            // Dolu mu kontrol et
-            if (IsFull)
-            {
-                LogDebug("❌ Shelf is FULL!");
-                return false;
-            }
-
-            // Player'ı bul
-            if (!TryGetPlayerTransform(clientId, out playerTransform))
-            {
-                LogDebug($"❌ Player object not found for client {clientId}");
-                return false;
-            }
-
-            // Range kontrolü
-            if (!IsPlayerInRange(playerTransform))
-            {
-                float distance = Vector3.Distance(playerTransform.position, transform.position);
-                LogDebug($"❌ Player {clientId} NOT in shelf range!  Distance: {distance:F2}");
-                return false;
-            }
-
-            // Item'ı kontrol et
-            if (!itemRef.TryGet(out NetworkObject netObj) || netObj == null)
-            {
-                LogDebug("❌ Invalid item reference!");
-                return false;
-            }
-
-            // BoxInfo kontrolü
-            boxInfo = netObj.GetComponent<BoxInfo>();
-
-            // Belirli kutu türü gerekiyorsa kontrol et
-            if (requireSpecificBoxType && boxInfo != null && boxInfo.boxType != acceptedBoxType)
-            {
-                LogDebug($"❌ Wrong box type! Expected: {acceptedBoxType}, Got: {boxInfo.boxType}");
-                return false;
-            }
-
-            return true;
         }
 
         /// <summary>
@@ -743,27 +660,22 @@ namespace NewCss
         #region Server RPCs - Take Item
 
         /// <summary>
-        /// Raftan item alır
+        /// Raftan item alır (server-only düz metot — çağıran giriş-RPC'si sender'ı zaten doğruluyor)
         /// </summary>
-        [ServerRpc(RequireOwnership = false)]
-        public void TakeItemFromShelfServerRpc(ulong requesterClientId, ulong itemNetworkId, ServerRpcParams rpcParams = default)
+        public void TakeItemFromShelfServer(ulong requesterClientId, ulong itemNetworkId)
         {
             if (!IsServer) return;
 
-            // Güvenlik: requesterClientId client tarafından sağlanıyor, spoof edilebilir.
-            // Gerçek çağıran her zaman ağ katmanının doğruladığı SenderClientId'dir.
-            ulong senderClientId = rpcParams.Receive.SenderClientId;
-
-            LogDebug($"📥 TakeItemFromShelfServerRpc - Client {senderClientId} wants item {itemNetworkId}");
+            LogDebug($"📥 TakeItemFromShelfServer - Client {requesterClientId} wants item {itemNetworkId}");
 
             // Validation
-            if (!ValidateTakeItemRequest(senderClientId, itemNetworkId, out PlayerInventory playerInventory, out int slotIndex))
+            if (!ValidateTakeItemRequest(requesterClientId, itemNetworkId, out PlayerInventory playerInventory, out int slotIndex))
             {
                 return;
             }
 
             // Item'ı al
-            TakeItemFromSlot(slotIndex, playerInventory, senderClientId);
+            TakeItemFromSlot(slotIndex, playerInventory, requesterClientId);
         }
 
         private bool ValidateTakeItemRequest(ulong clientId, ulong itemNetworkId, out PlayerInventory playerInventory, out int slotIndex)

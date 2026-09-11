@@ -226,6 +226,16 @@ namespace NewCss
         /// <returns>Oyuncu etkileşim alanı içinde mi?</returns>
         public bool IsPlayerInRange(Transform playerTransform)
         {
+            return IsPlayerInRange(playerTransform, 0f);
+        }
+
+        /// <summary>
+        /// Transform bazlı range kontrolü + client'ın kullandığı detectionRange mesafesiyle fallback.
+        /// Latency nedeniyle client-offer anı ile server-accept anı arasında oyuncu hafifçe hareket
+        /// etmiş olabilir; oriented-box dışında kalsa bile detectionRange içindeyse kabul et.
+        /// </summary>
+        public bool IsPlayerInRange(Transform playerTransform, float clientDetectionRange)
+        {
             if (playerTransform == null) return false;
 
             // World position'ı local space'e çevir
@@ -233,9 +243,18 @@ namespace NewCss
             Vector3 halfSize = interactionBoxSize * 0.5f;
 
             // Box içinde mi kontrol et
-            bool isInBox = IsPointInsideBox(localPoint, interactionBoxOffset, halfSize);
+            if (IsPointInsideBox(localPoint, interactionBoxOffset, halfSize))
+            {
+                return true;
+            }
 
-            return isInBox;
+            if (clientDetectionRange > 0f)
+            {
+                float distance = Vector3.Distance(playerTransform.position, transform.position);
+                return distance <= clientDetectionRange;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -498,10 +517,15 @@ namespace NewCss
 
             Debug.Log($"{LOG_PREFIX} 📥 PlaceItemOnShelfFromServer - Client {requesterClientId}");
 
+            // Reddedilirse orphan (spawn edilmiş ama hiçbir slota/parent'a bağlanmamış) item
+            // kalmaması için, çağıran taraf item'ı önceden spawn etmiş olsa da red durumunda despawn edilir.
+            itemRef.TryGet(out NetworkObject orphanCandidate);
+
             // Box category validation - only allow Box category items on shelf
             if (!ValidateItemIsBox(itemRef))
             {
                 Debug.LogWarning($"{LOG_PREFIX} ❌ Only Box category items can be placed on shelf!");
+                DespawnOrphanItem(orphanCandidate);
                 return;
             }
 
@@ -510,11 +534,24 @@ namespace NewCss
             if (slotIndex == -1)
             {
                 Debug.LogWarning($"{LOG_PREFIX} ❌ Shelf is FULL!");
+                DespawnOrphanItem(orphanCandidate);
                 return;
             }
 
             // Item'ı yerleştir
             PlaceItemInSlot(itemRef, slotIndex, requesterClientId);
+        }
+
+        /// <summary>
+        /// Reddedilen bir yerleştirme isteğinde önceden spawn edilmiş item'ı despawn eder
+        /// ki sahnede parent'sız/kinematik olmayan bir "orphan" item kalmasın.
+        /// </summary>
+        private static void DespawnOrphanItem(NetworkObject orphanItem)
+        {
+            if (orphanItem != null && orphanItem.IsSpawned)
+            {
+                orphanItem.Despawn();
+            }
         }
 
         /// <summary>
@@ -649,15 +686,8 @@ namespace NewCss
                 return false;
             }
 
-            // Range kontrolü
-            if (!IsPlayerInRange(playerTransform))
-            {
-                float distance = Vector3.Distance(playerTransform.position, transform.position);
-                Debug.LogWarning($"{LOG_PREFIX} ❌ Player {clientId} NOT in shelf range! Distance: {distance:F2}");
-                return false;
-            }
-
-            // PlayerInventory kontrolü
+            // PlayerInventory kontrolü (range kontrolünden ÖNCE - client'in detectionRange'ini
+            // server-side range fallback'inde referans almak için)
             if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out var client))
             {
                 Debug.LogError($"{LOG_PREFIX} ❌ Client {clientId} not found");
@@ -668,6 +698,14 @@ namespace NewCss
             if (playerInventory == null)
             {
                 Debug.LogError($"{LOG_PREFIX} ❌ PlayerInventory not found for client {clientId}");
+                return false;
+            }
+
+            // Range kontrolü
+            if (!IsPlayerInRange(playerTransform, playerInventory.DetectionRange))
+            {
+                float distance = Vector3.Distance(playerTransform.position, transform.position);
+                Debug.LogWarning($"{LOG_PREFIX} ❌ Player {clientId} NOT in shelf range! Distance: {distance:F2}");
                 return false;
             }
 

@@ -353,6 +353,7 @@ namespace NewCss
             _networkElapsedTime.OnValueChanged += HandleElapsedTimeChanged;
             _networkCurrentDay.OnValueChanged += HandleCurrentDayChanged;
             _networkIsDayOver.OnValueChanged += HandleDayOverChanged;
+            _networkIsBreakRoomReady.OnValueChanged += HandleBreakRoomReadyChanged;
         }
 
         private void UnsubscribeFromNetworkEvents()
@@ -360,6 +361,7 @@ namespace NewCss
             _networkElapsedTime.OnValueChanged -= HandleElapsedTimeChanged;
             _networkCurrentDay.OnValueChanged -= HandleCurrentDayChanged;
             _networkIsDayOver.OnValueChanged -= HandleDayOverChanged;
+            _networkIsBreakRoomReady.OnValueChanged -= HandleBreakRoomReadyChanged;
         }
 
         #endregion
@@ -988,6 +990,18 @@ namespace NewCss
         private void HandleDayOverChanged(bool previousValue, bool newValue)
         {
             SetDayEndScreenActive(newValue);
+        }
+
+        private void HandleBreakRoomReadyChanged(bool previousValue, bool newValue)
+        {
+            // N10: server-auth ready durumu artık HER peer'e NetworkVariable ile yayılıyor.
+            // UI/hareket-kilidi senkronunu burada tetikle ki yerel trigger tespitini lag'de
+            // kaçırmış client'lar da Next Day UI'ını görsün (server-auth state ↔ yerel UI
+            // kopukluğu kapandı). Idempotent; false tarafı mevcut reset/unlock akışlarında.
+            if (newValue)
+            {
+                BreakRoomManager.Instance?.OnBreakRoomReadyStateSynced(true);
+            }
         }
 
         #endregion

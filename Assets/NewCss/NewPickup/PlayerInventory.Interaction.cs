@@ -80,11 +80,11 @@ public partial class PlayerInventory : NetworkBehaviour
             return;
         }
 
-        Debug.Log("[PlayerInventory] Calling TutorialShelfState.TakeItemFromShelfServerRpc");
+        Debug.Log("[PlayerInventory] Calling TutorialShelfState.TakeItemFromShelfServer");
 
         try
         {
-            nearbyTutorialShelf.TakeItemFromShelfServerRpc(requesterClientId, itemNetworkId, rpcParams);
+            nearbyTutorialShelf.TakeItemFromShelfServer(requesterClientId, itemNetworkId);
 
             // Client'a shelf item targeting'i temizlemesini söyle
             ClearShelfTargetingClientRpc(requesterClientId);
