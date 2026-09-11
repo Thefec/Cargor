@@ -8,7 +8,22 @@
 
 ## 🎯 Şu an aktif iş
 
-**🟢 Kodlanmış bekleyen iş YOK — her şey `main`'de, tek kalan kapı PLAYTEST.** (2026-08-31)
+**🎓 TUTORIAL SİSTEMİ SIFIRDAN YENİDEN YAZILIYOR — Adım 1-5 BİTTİ, `kontrol` ONAY.** (2026-08-31, dal
+`feature/tutorial-rewrite`, commit YOK push, 6 commit merge'siz). Ana harita işleri bitti, kullanıcı
+boşalan kapasiteyi Tutorial'a yönlendirdi. Yapılanlar: 6 script `Assets/Tutorialassets/`'ten
+`Assets/NewCss/Tutorial/`'a guid korunarak taşındı (klasör ikiliği kapandı) · BoxType karışıklığı
+(`NetworkedShelf.BoxType` vs `BoxInfo.BoxType`, farklı enum sırası) tooltip'le netleştirildi ·
+kapsam dışı condition tipleri işaretlendi · gerçek bir bug bulundu+kapatıldı (`CompleteTutorial()`
+`_currentStep`'i null'lamıyordu, skip/dil-değişimi tamamlanma akışını tekrar tetikleyebiliyordu).
+qa + kontrol ikisi de temiz ONAY (bağımsız doğrulandı: guid, content-preserving taşıma, kapsam
+taşması yok, headless derleme 0 CS). **SIRADAKİ: kullanıcı Unity Editor'de manuel işler** (adım
+listesini Inspector'da doldurma, highlight/trigger referansları bağlama — kod ajanı sahneye obje
+yerleştiremiyor), sonra `plans/playtest-checklist.md` yeni **T-serisi** (T1-T9). Tam plan:
+**[plans/tutorial-rewrite.md](plans/tutorial-rewrite.md)**. Level tasarımı (mevcut statik FBX
+korunuyor) ve içerik (sadece çekirdek döngü — telefon/quest/oda-görünürlük öğretimi kapsam DIŞI)
+bu turun kapsamıydı.
+
+**🟢 Ana harita: kodlanmış bekleyen iş YOK — her şey `main`'de, tek kalan kapı PLAYTEST.** (2026-08-31)
 
 Son durum: `feature/plateup-day-cycle` (PlateUp gün döngüsü + 11-round tam kapsamlı ekonomi
 dengeleme, kontrol ONAY) `main`'e merge edildi ve dal silindi. Öncesinde `feature/voice-chat`
@@ -92,6 +107,7 @@ aylardır sessizdi, geri bağlandı. Ayrıca `GetBaseRent` boş-dizi guard'ı, b
 | Dosya | İçerik | Durum |
 |---|---|---|
 | **[plans/devam.md](plans/devam.md)** | Oturum logu — oturum başında ÖNCE bunu oku | 🚧 **canlı — gerçek kaynak** |
+| **[plans/tutorial-rewrite.md](plans/tutorial-rewrite.md)** | 🎓 Tutorial sistemi sıfırdan yeniden yazım — klasör birleştirme, adım akışı, kapsam | 🚧 **aktif — dal `feature/tutorial-rewrite`** |
 | **[plans/playtest-checklist.md](plans/playtest-checklist.md)** | 🎮 Tüm açık playtest maddeleri tek listede (A: tek oyuncu · B: 2 istemci + WASD karar tablosu · C: konsol log avı) | 🔴 **bekliyor — kullanıcıda** |
 | **[plans/teknik-borc.md](plans/teknik-borc.md)** | 🧹 Teknik borç envanteri — 2026-08-31 denetim turunun kapanan/açık kalan tüm bulguları, çürütülen şüpheler dahil | 📖 **envanter — iş almadan önce doğrula** |
 | **[plans/economy-rebuild-2026-07-30-faz4-final.md](plans/economy-rebuild-2026-07-30-faz4-final.md)** | Uygulanan nihai değer seti (§A gelir · §B değerler · §D sıra · §E ölçülecekler) | ✅ **uygulandı — play-test referansı** |

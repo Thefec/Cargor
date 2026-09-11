@@ -1636,6 +1636,12 @@ namespace NewCss
                 yield return new WaitForSeconds(PICKUP_CHECK_INTERVAL);
             }
 
+            // Tutorial-only hook: bu ürün genel "ground item" pickup yolundan (RequestPickupServerRpc,
+            // PlayerInventory.Interaction.cs) alınıyor - Table.cs/Shelf.cs'in aksine bu yol hiçbir
+            // tutorial bildirimi göndermiyordu, TalkAndGetItem adımı (TakeFromTable) hiç tamamlanmazdı.
+            // Instance null ise (üretim sahnelerinde) no-op.
+            TutorialManager.Instance?.OnTableInteraction(false);
+
             TransitionToExit();
         }
 

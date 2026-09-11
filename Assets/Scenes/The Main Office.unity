@@ -17725,6 +17725,32 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fillImage: {fileID: 282469587}
   barContainer: {fileID: 1263143603}
+--- !u!114 &424799596
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 424799584}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 3673397281
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  <InScenePlaced>k__BackingField: 0
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 0
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
 --- !u!82 &424799598
 AudioSource:
   m_ObjectHideFlags: 0
@@ -17736,7 +17762,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 8300000, guid: a488ce2f04a98e34480b044287bb392b, type: 3}
+  m_Resource: {fileID: 8300000, guid: e9eb8fd1bf15bcc46a797492d5f9a0e3, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 0.4
   m_Pitch: 1
@@ -17822,32 +17848,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &424799596
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 424799584}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3673397281
-  InScenePlacedSourceGlobalObjectIdHash: 0
-  DeferredDespawnTick: 0
-  Ownership: 1
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  <InScenePlaced>k__BackingField: 0
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 0
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
-  SyncOwnerTransformWhenParented: 1
-  AllowOwnerToParent: 0
 --- !u!1 &425538936
 GameObject:
   m_ObjectHideFlags: 0
@@ -27493,9 +27493,9 @@ MonoBehaviour:
     levelObjects: []
     garageDoorControllers: []
   - displayName: "Telefon Hatt\u0131"
-    displayNameLocKey:
+    displayNameLocKey: 
     contentText: "D\u0131\u015Far\u0131 arama zaman maliyetini %20 azalt\u0131r."
-    contentTextLocKey:
+    contentTextLocKey: 
     starterValue: 0
     StaminaValue: 1
     TruckValue: 10
@@ -87506,7 +87506,6 @@ MonoBehaviour:
   _maxCustomersPerDay: 50
   spawnTimeRandomness: 0.2
   eventCustomerMultiplier: 1
-  playerCountMultiplier: 1
   queueWaypoint: {fileID: 1514593546}
   exitPoint: {fileID: 1949928939}
   dropOffTable: {fileID: 1102516558}

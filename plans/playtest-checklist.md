@@ -163,6 +163,26 @@ Console'u filtrele, şunları ara:
 
 ---
 
+## T. TUTORIAL TURU (host, 1 kişi) — yeniden yazım sonrası (`feature/tutorial-rewrite`)
+
+> Ön koşul: Adım 6 (kullanıcı Editor işleri, `plans/tutorial-rewrite.md`) tamamlanmış olmalı —
+> adım listesi Inspector'da dolu, highlight/trigger referansları bağlı.
+
+- [ ] T1 — Sahne açılışında Console'da Missing Script / broken reference YOK mu? (guid taşıması doğrulaması)
+- [ ] T2 — Adım 1 (hareket) mesajı doğru dilde (TR/EN) görünüyor mu?
+- [ ] T3 — Kutu alma adımı NewPickup v2 ile uyumlu tetikleniyor mu (PickupItem koşulu doğru objeyi tanıyor mu)?
+- [ ] T4 — Rafa koy/raftan al: NetworkedShelf.BoxType karşılaştırması hatalı renk kabul/reddi yapıyor mu?
+- [ ] T5 — Masaya koy/masadan al akışı donmadan ilerliyor mu?
+- [ ] T6 — Tıra teslim: DeliverToTruck sayaç doğru artıyor mu, BoxInfo.BoxType ile karışıklık var mı?
+- [ ] T7 — Garaj kapısı adım geçişlerine göre doğru açılıp kapanıyor mu (TutorialDoor/GarageDoorController)?
+- [ ] T8 — Tutorial biter bitmez Menu.cs akışına (MapSelection) sorunsuz dönüyor mu? Bittikten sonra
+      SPACE'e (skip) basınca ya da dil değiştirince tamamlanma mesajı/akışı tekrar tetikleniyor mu?
+      (Bu turda `_currentStep=null` fix'i ile kapatıldı — regresyon testi.)
+- [ ] T9 — 🔴 Bilinen açık WASD bug'ı (bkz B1) tutorial'ı da etkiliyor mu? Development Build ile test et,
+      [TESHIS] logu kopyala. **Bu bug'ı çözmeye çalışma, yalnız gözlemle** — bu işin kapsamı dışı.
+
+---
+
 ## D. Bulguları bana nasıl ver
 
 Her ❌ için tek satır yeter: **ne yaptın → ne bekledin → ne oldu**, varsa log satırı.

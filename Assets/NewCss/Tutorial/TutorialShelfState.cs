@@ -55,6 +55,15 @@ namespace NewCss
         [SerializeField, Tooltip("Maksimum item sayısı (0 = sınırsız)")]
         private int maxItemCount = 1;
 
+        [Header("=== INITIAL STOCK (server-only, opsiyonel) ===")]
+        [SerializeField, Tooltip("Sahne açılışında rafa otomatik konacak ham kutu ItemData'sı " +
+            "(ör. Resources/Items/RedBox.asset → worldPrefab NGO/RedNGO.prefab, BoxInfo+NetworkObject " +
+            "içerir). Boş bırakılırsa otomatik stoklama yapılmaz ve raf boş doğar.")]
+        private ItemData initialStockItemData;
+
+        [SerializeField, Tooltip("Otomatik stoklanacak kutu adedi (shelfSlots uzunluğunu aşamaz)")]
+        private int initialStockCount = 1;
+
         #endregion
 
         #region Serialized Fields - Debug
@@ -142,6 +151,7 @@ namespace NewCss
             if (IsServer)
             {
                 InitializeSlots();
+                SpawnInitialStock();
             }
 
             SubscribeToNetworkEvents();
@@ -270,7 +280,13 @@ namespace NewCss
         {
             if (playerTransform == null) return false;
 
-            Vector3 localPoint = transform.InverseTransformPoint(playerTransform.position);
+            // transform.InverseTransformPoint scale'i de bolerdi - obje gorsel boyut icin
+            // buyuk olcekliyse (orn. 115x), interactionBoxSize de ayni oranda buyuyup
+            // oyuncuyu haritanin cok uzagindan bile "menzilde" sayiyordu. Sadece pozisyon +
+            // rotasyonu hesaba kat, scale'i yok say - interactionBoxSize hep sabit dunya
+            // birimi (metre) olarak kalsin.
+            Vector3 worldOffset = playerTransform.position - transform.position;
+            Vector3 localPoint = Quaternion.Inverse(transform.rotation) * worldOffset;
             Vector3 halfSize = interactionBoxSize * 0.5f;
 
             return IsPointInsideBox(localPoint, interactionBoxOffset, halfSize);
@@ -393,11 +409,19 @@ namespace NewCss
             var item = networkObj.gameObject;
             var slot = shelfSlots[slotIndex];
 
-            item.transform.SetParent(slot);
-            item.transform.localPosition = Vector3.zero;
-            item.transform.localRotation = Quaternion.identity;
-
             DisableItemPhysics(item);
+            SnapItemToSlot(item, slot);
+        }
+
+        /// <summary>
+        /// Item'ı slotun dünya pozisyonuna/rotasyonuna taşır; parent'lamaz. Kutu prefab'ları
+        /// AutoObjectParentSync=1 — NGO NetworkObject'i NetworkObject olmayan bir Transform'a
+        /// (slot) parent'lamayı reddedip köke geri alıyor, ardından localPosition=0 kutuyu
+        /// dünya (0,0,0)'ına ışınlıyordu. Raf da 115x ölçekli, ona parent'lamak kutuyu büyütürdü.
+        /// </summary>
+        private static void SnapItemToSlot(GameObject item, Transform slot)
+        {
+            item.transform.SetPositionAndRotation(slot.position, slot.rotation);
         }
 
         private static void DisableItemPhysics(GameObject item)
@@ -473,9 +497,13 @@ namespace NewCss
         /// <summary>
         /// Server-side version - PlayerInventory tarafından çağrılır
         /// </summary>
-        public void PlaceItemOnShelfFromServer(NetworkObjectReference itemRef, ulong requesterClientId)
+        /// <returns>Item gerçekten bir slota yerleştirildiyse true. Çağıran (PlayerInventory)
+        /// bunu kontrol etmiyordu - raf reddettiğinde (yanlış kategori/tip/dolu) item zaten
+        /// spawn edilmiş+pickup'ı kapatılmış halde ortada kalıyordu, oyuncunun envanteri yine de
+        /// temizleniyordu - item ne rafta ne oyuncuda ne de yerden alınabilir oluyordu.</returns>
+        public bool PlaceItemOnShelfFromServer(NetworkObjectReference itemRef, ulong requesterClientId)
         {
-            if (!IsServer) return;
+            if (!IsServer) return false;
 
             LogDebug($"📥 PlaceItemOnShelfFromServer - Client {requesterClientId}");
 
@@ -483,14 +511,14 @@ namespace NewCss
             if (IsFull)
             {
                 LogDebug("❌ Shelf is FULL!");
-                return;
+                return false;
             }
 
             // Box category validation - only allow Box category items on shelf
             if (!ValidateItemIsBox(itemRef))
             {
                 LogDebug("❌ Only Box category items can be placed on shelf!");
-                return;
+                return false;
             }
 
             // BoxInfo kontrolü (opsiyonel)
@@ -503,7 +531,7 @@ namespace NewCss
                 if (requireSpecificBoxType && boxInfo != null && boxInfo.boxType != acceptedBoxType)
                 {
                     LogDebug($"❌ Wrong box type! Expected: {acceptedBoxType}, Got: {boxInfo.boxType}");
-                    return;
+                    return false;
                 }
             }
 
@@ -512,11 +540,12 @@ namespace NewCss
             if (slotIndex == -1)
             {
                 LogDebug("❌ No empty slot found!");
-                return;
+                return false;
             }
 
             // Item'ı yerleştir
             PlaceItemInSlot(itemRef, slotIndex, requesterClientId, boxInfo);
+            return true;
         }
 
         /// <summary>
@@ -606,7 +635,16 @@ namespace NewCss
             return true;
         }
 
-        private void PlaceItemInSlot(NetworkObjectReference itemRef, int slotIndex, ulong clientId, BoxInfo boxInfo)
+        /// <summary>
+        /// Item'ı belirtilen slot'a yerleştirir ve slot state'ini günceller.
+        /// </summary>
+        /// <param name="notifyTutorial">
+        /// TutorialManager'a "item rafa kondu" bildirimi gönderilsin mi? Oyuncu aksiyonlarında
+        /// (RPC üzerinden çağrılan yerleştirme) true olmalı. SpawnInitialStock gibi server'ın
+        /// kendi başlangıç stoklaması OYUNCU AKSİYONU DEĞİLDİR — false verilmeli, aksi halde
+        /// PlaceOnShelf adımı sahne açılışında yanlışlıkla tamamlanmış sayılabilir.
+        /// </param>
+        private void PlaceItemInSlot(NetworkObjectReference itemRef, int slotIndex, ulong clientId, BoxInfo boxInfo, bool notifyTutorial = true)
         {
             _slotItems[slotIndex] = itemRef;
             _itemCount.Value++;
@@ -615,24 +653,89 @@ namespace NewCss
             {
                 var item = networkObj.gameObject;
 
-                // Slot varsa transform ayarla
+                // Physics devre dışı (pozisyonlamadan önce - dinamik rigidbody taşımayı ezmesin)
+                DisableItemPhysics(item);
+
                 if (shelfSlots != null && slotIndex < shelfSlots.Length)
                 {
-                    var slot = shelfSlots[slotIndex];
-                    item.transform.SetParent(slot);
-                    item.transform.localPosition = Vector3.zero;
-                    item.transform.localRotation = Quaternion.identity;
+                    SnapItemToSlot(item, shelfSlots[slotIndex]);
                 }
-
-                // Physics devre dışı
-                DisableItemPhysics(item);
 
                 string boxTypeStr = boxInfo != null ? boxInfo.boxType.ToString() : "Unknown";
                 LogDebug($"✅ Item ({boxTypeStr}) placed on shelf by client {clientId} at slot {slotIndex}");
             }
 
-            // TutorialManager'a bildir
-            NotifyTutorialItemPlaced(boxInfo);
+            if (notifyTutorial)
+            {
+                // TutorialManager'a bildir
+                NotifyTutorialItemPlaced(boxInfo);
+            }
+        }
+
+        #endregion
+
+        #region Initial Stock (Server-Only)
+
+        /// <summary>
+        /// Sahne açılışında rafa initialStockItemData tipinde ham kutu(lar) spawn eder.
+        /// Tutorial adım 4 (TakeFromShelf) için gerekli: production Shelf.cs'teki
+        /// SpawnBoxIfNeeded otomatik-stoklama mantığının bu sınıftaki karşılığı — TutorialShelfState
+        /// production Shelf/NetworkedShelf'ten TAMAMEN ayrı bir sınıf olduğundan (ayrı slot/stok
+        /// state'i), bu mantık burada tekrar yazılmak zorunda; NetworkedShelf'e dokunulmadı.
+        /// Yalnızca server'da (OnNetworkSpawn → IsServer) çalışır.
+        /// </summary>
+        private void SpawnInitialStock()
+        {
+            if (initialStockItemData == null || initialStockItemData.worldPrefab == null)
+            {
+                LogDebug("initialStockItemData/worldPrefab atanmamış - otomatik stoklama atlanıyor");
+                return;
+            }
+
+            if (shelfSlots == null || shelfSlots.Length == 0)
+            {
+                LogDebug("shelfSlots boş - otomatik stoklama yapılamıyor");
+                return;
+            }
+
+            int stockCount = Mathf.Clamp(initialStockCount, 0, shelfSlots.Length);
+
+            for (int i = 0; i < stockCount; i++)
+            {
+                SpawnStockBoxAtSlot(i);
+            }
+        }
+
+        private void SpawnStockBoxAtSlot(int slotIndex)
+        {
+            var slot = shelfSlots[slotIndex];
+            if (slot == null)
+            {
+                Debug.LogError($"{LOG_PREFIX} shelfSlots[{slotIndex}] null - stok kutusu yerleştirilemedi");
+                return;
+            }
+
+            var boxInstance = Instantiate(initialStockItemData.worldPrefab, slot.position, slot.rotation);
+
+            var netObj = boxInstance.GetComponent<NetworkObject>();
+            if (netObj == null)
+            {
+                Debug.LogError($"{LOG_PREFIX} initialStockItemData.worldPrefab NetworkObject içermiyor: {initialStockItemData.worldPrefab.name}");
+                Destroy(boxInstance);
+                return;
+            }
+
+            netObj.Spawn();
+
+            var worldItem = boxInstance.GetComponent<NetworkWorldItem>();
+            worldItem?.SetItemData(initialStockItemData);
+
+            var boxInfo = boxInstance.GetComponent<BoxInfo>();
+
+            // Oyuncu aksiyonu değil - tutorial bildirimi (PlaceOnShelf) tetiklenmemeli.
+            PlaceItemInSlot(new NetworkObjectReference(netObj), slotIndex, 0, boxInfo, notifyTutorial: false);
+
+            LogDebug($"📦 Initial stock box spawned at slot {slotIndex}: {initialStockItemData.itemName}");
         }
 
         #endregion
@@ -738,6 +841,7 @@ namespace NewCss
             }
 
             int itemID = worldItem.ItemData.itemID;
+            var boxInfo = networkObj.GetComponent<BoxInfo>();
             LogDebug($"✅ Taking item from slot {slotIndex}, ItemID: {itemID}");
 
             // Slot'u temizle
@@ -749,6 +853,8 @@ namespace NewCss
 
             // Player'a item ver
             playerInventory.SetInventoryStateServer(true, itemID);
+
+            NotifyTutorialItemTaken(boxInfo);
 
             LogDebug($"✅ Item successfully given to player {clientId}");
         }
@@ -767,9 +873,31 @@ namespace NewCss
 
             // TutorialManager'a bildir
             TutorialManager.Instance.OnItemPlacedOnShelf();
+        }
 
-            string boxTypeStr = boxInfo != null ? boxInfo.boxType.ToString() : "Unknown";
-            LogDebug($"📚 Tutorial notified: {boxTypeStr} item placed on shelf");
+        /// <summary>
+        /// TakeFromShelf koşulu (adım 8, "paketi tekrar al") NetworkedShelf.OnBoxTakenFromShelf'e
+        /// bağlıydı; TutorialShelfState'ten alım hiç bildirim göndermiyordu, o adım hiç
+        /// tamamlanamazdı. BoxInfo.BoxType (Yellow=0,Blue=1,Red=2) ile NetworkedShelf.BoxType
+        /// (Red=0,Blue=1,Yellow=2) sırası farklı - isimden eşleştir, int cast yapma.
+        /// </summary>
+        private void NotifyTutorialItemTaken(BoxInfo boxInfo)
+        {
+            if (TutorialManager.Instance == null || boxInfo == null) return;
+
+            NetworkedShelf.BoxType? mapped = boxInfo.boxType switch
+            {
+                BoxInfo.BoxType.Red => NetworkedShelf.BoxType.Red,
+                BoxInfo.BoxType.Blue => NetworkedShelf.BoxType.Blue,
+                BoxInfo.BoxType.Yellow => NetworkedShelf.BoxType.Yellow,
+                _ => null
+            };
+
+            if (mapped == null) return;
+
+            TutorialManager.Instance.OnBoxTakenFromShelf(mapped.Value);
+
+            LogDebug($"📚 Tutorial notified: {mapped.Value} box taken from shelf");
         }
 
         #endregion

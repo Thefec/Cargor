@@ -40,6 +40,9 @@ public enum TutorialConditionType
     /// <summary>Araca kutu teslim etti mi?</summary>
     DeliverToTruck,
 
+    /// <summary>Müşteriyle etkileşime girdi mi (E ile)? </summary>
+    InteractWithCustomer,
+
     /// <summary>Özel koşul</summary>
     Custom
 }
@@ -64,15 +67,9 @@ public class TutorialStep
 
     #region Display Settings - Localized
 
-    [Header("=== TURKISH TEXT ===")]
-    [TextArea(3, 5)]
-    [Tooltip("Türkçe talimat metni")]
-    public string instructionText = "Talimatı buraya yazın...";
-
-    [Header("=== ENGLISH TEXT ===")]
-    [TextArea(3, 5)]
-    [Tooltip("İngilizce talimat metni")]
-    public string instructionTextEnglish = "Write instruction here...";
+    [Header("=== LOCALIZATION ===")]
+    [Tooltip("StringTable'daki key adı")]
+    public string instructionLocalizationKey = "";
 
     #endregion
 
@@ -105,7 +102,12 @@ public class TutorialStep
     [Tooltip("TakeFromShelf koşulu için belirli kutu türü gerekiyor mu? ")]
     public bool requiresSpecificBoxType;
 
-    [Tooltip("Gerekli kutu türü (Red, Yellow, Blue)")]
+    [Tooltip("Gerekli kutu türü (RAF içi tip). DİKKAT: NewCss.NetworkedShelf.BoxType " +
+        "enum sırası (Red=0, Blue=1, Yellow=2) ile aşağıdaki requiredTruckBoxType alanının " +
+        "tipi olan NewCss.BoxInfo.BoxType (Yellow=0, Blue=1, Red=2) FARKLI SIRADA. " +
+        "Bu iki enum arasında ASLA int cast yapma (örn. (BoxInfo.BoxType)(int)requiredBoxType) " +
+        "— renkler karışır. Karşılaştırma/dönüşüm gerekiyorsa isim (.ToString()) veya " +
+        "açık switch-case eşlemesi kullan.")]
     public NewCss.NetworkedShelf.BoxType requiredBoxType;
 
     #endregion
@@ -170,57 +172,19 @@ public class TutorialStep
     public TutorialStep()
     {
         stepName = "Step";
-        instructionText = "Talimatı buraya yazın...";
-        instructionTextEnglish = "Write instruction here...";
+        instructionLocalizationKey = "";
         conditionType = TutorialConditionType.PickupItem;
         waitDuration = 3f;
         requiredDeliveryCount = 1;
     }
 
-    public TutorialStep(string name, string instructionTR, string instructionEN, TutorialConditionType condition)
+    public TutorialStep(string name, string instructionKey, TutorialConditionType condition)
     {
         stepName = name;
-        instructionText = instructionTR;
-        instructionTextEnglish = instructionEN;
+        instructionLocalizationKey = instructionKey;
         conditionType = condition;
         waitDuration = 3f;
         requiredDeliveryCount = 1;
-    }
-
-    #endregion
-
-    #region Localization Methods
-
-    /// <summary>
-    /// Seçili dile göre talimat metnini döndürür
-    /// </summary>
-    /// <param name="isTurkish">Türkçe mi? </param>
-    /// <returns>Lokalize edilmiş metin</returns>
-    public string GetLocalizedInstruction(bool isTurkish)
-    {
-        if (isTurkish)
-        {
-            return instructionText;
-        }
-
-        // İngilizce metin boşsa Türkçe'yi döndür (fallback)
-        if (string.IsNullOrEmpty(instructionTextEnglish))
-        {
-            return instructionText;
-        }
-
-        return instructionTextEnglish;
-    }
-
-    /// <summary>
-    /// Dil koduna göre talimat metnini döndürür
-    /// </summary>
-    /// <param name="localeCode">Dil kodu (tr, en, vb. )</param>
-    /// <returns>Lokalize edilmiş metin</returns>
-    public string GetLocalizedInstruction(string localeCode)
-    {
-        bool isTurkish = localeCode.ToLower().StartsWith("tr");
-        return GetLocalizedInstruction(isTurkish);
     }
 
     #endregion
@@ -334,7 +298,7 @@ public class TutorialStep
         if (string.IsNullOrEmpty(stepName))
             return false;
 
-        if (string.IsNullOrEmpty(instructionText))
+        if (string.IsNullOrEmpty(instructionLocalizationKey))
             return false;
 
         switch (conditionType)
@@ -364,8 +328,8 @@ public class TutorialStep
         if (string.IsNullOrEmpty(stepName))
             return "Step name is empty";
 
-        if (string.IsNullOrEmpty(instructionText))
-            return "Instruction text is empty";
+        if (string.IsNullOrEmpty(instructionLocalizationKey))
+            return "Instruction localization key is empty";
 
         switch (conditionType)
         {

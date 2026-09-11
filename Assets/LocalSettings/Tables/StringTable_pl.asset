@@ -1460,6 +1460,62 @@ MonoBehaviour:
       si\u0119 p\xF3\u017Aniej znacznie bardziej."
     m_Metadata:
       m_Items: []
+  - m_Id: 143536416780595200
+    m_Localized: "Witaj w Cargor! B\u0119dziesz odbiera\u0107 zam\xF3wienia od klient\xF3w
+      i dostarcza\u0107 je do ci\u0119\u017Car\xF3wek. Naci\u015Bnij [SPACE], aby
+      kontynuowa\u0107."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704064
+    m_Localized: "Podejd\u017A do klienta i naci\u015Bnij [{0}], a nast\u0119pnie
+      ponownie naci\u015Bnij [{0}] przy stole, aby odebra\u0107 przedmiot."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704065
+    m_Localized: "Zanie\u015B przedmiot do sto\u0142u pakowania i naci\u015Bnij [{0}],
+      aby go po\u0142o\u017Cy\u0107."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092672
+    m_Localized: "Naci\u015Bnij [{0}] przy regale, aby wzi\u0105\u0107 w\u0142a\u015Bciwe
+      pude\u0142ko."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092673
+    m_Localized: "Zanie\u015B pude\u0142ko do sto\u0142u pakowania, naci\u015Bnij
+      [{0}] \u2014 przedmiot zostanie automatycznie zapakowany."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092674
+    m_Localized: "Naci\u015Bnij ponownie [{0}] przy stole, aby odebra\u0107 zapakowane
+      pude\u0142ko."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092675
+    m_Localized: "Naci\u015Bnij [{0}], aby umie\u015Bci\u0107 pude\u0142ko na regale."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092676
+    m_Localized: "Ci\u0119\u017Car\xF3wka nadje\u017Cd\u017Ca, poczekaj chwil\u0119..."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092677
+    m_Localized: "Naci\u015Bnij ponownie [{0}] przy regale, aby wzi\u0105\u0107 paczk\u0119."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092678
+    m_Localized: "Zanie\u015B paczk\u0119 na ty\u0142 ci\u0119\u017Car\xF3wki i wrzu\u0107
+      j\u0105 do \u015Brodka."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092679
+    m_Localized: "Naci\u015Bnij [SPACE], aby pomin\u0105\u0107"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416860286976
+    m_Localized: "Samouczek uko\u0144czony!"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

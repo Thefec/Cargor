@@ -776,6 +776,10 @@ namespace NewCss
             // Quest sistemine bildir
             Quest.QuestTracker.NotifyToyPacked(playerBox.boxType);
 
+            // Tutorial'ın "kutuyu masaya koy" adımı (PlaceOnTable) yalnız bu yoldan tamamlanabilir -
+            // masada ürün varken E ile kutu koymak PlaceItemOnTable'a değil buraya düşüyor.
+            NotifyTutorialManager(true);
+
             // Tüm clientlara bildir
             NotifyBoxPackedClientRpc(requesterClientId, (int)playerBox.boxType);
         }

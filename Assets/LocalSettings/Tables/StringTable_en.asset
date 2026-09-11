@@ -1456,6 +1456,58 @@ MonoBehaviour:
       down the road."
     m_Metadata:
       m_Items: []
+  - m_Id: 143536416780595200
+    m_Localized: Welcome to Cargor! You'll pick up items from customers and deliver
+      them to trucks. Press [SPACE] to continue.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704064
+    m_Localized: Walk up to the customer and press [{0}], then press [{0}] again
+      at the table to pick up the item.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704065
+    m_Localized: Carry the item to the packing table and press [{0}] to place it
+      down.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092672
+    m_Localized: Press [{0}] at the shelf to take the right box.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092673
+    m_Localized: "Bring the box to the packing table and press [{0}] \u2014 the item
+      will be packed automatically."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092674
+    m_Localized: Press [{0}] again at the table to pick up the packed box.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092675
+    m_Localized: Press [{0}] to place the box on the shelf.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092676
+    m_Localized: The truck is arriving, hold on...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092677
+    m_Localized: Press [{0}] again at the shelf to take the package.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092678
+    m_Localized: Carry the package to the back of the truck and throw it in.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092679
+    m_Localized: Press [SPACE] to skip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416860286976
+    m_Localized: Tutorial completed!
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

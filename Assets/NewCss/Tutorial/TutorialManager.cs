@@ -4,13 +4,23 @@ using System.Collections.Generic;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 using NewCss;
 
 /// <summary>
-/// Tutorial yönetim sistemi - adım adım tutorial akışı, UI yönetimi ve koşul kontrollerini sağlar. 
+/// Tutorial yönetim sistemi - adım adım tutorial akışı, UI yönetimi ve koşul kontrollerini sağlar.
 /// Typewriter efekti, highlight sistemi, kapı entegrasyonu ve çoklu dil desteği içerir.
+///
+/// Çekirdek döngü kapsamı (bkz plans/tutorial-rewrite.md) — güncel 10 adımlık akış
+/// (tam tablo + Inspector değerleri plans/tutorial-rewrite.md'de):
+///   0. Hoş geldin (PressKey)                 5. Masadan al (TakeFromTable)
+///   1. Müşteriyle konuş + al (TakeFromTable) 6. Rafa koy (PlaceOnShelf)
+///   2. Masaya bırak (PlaceOnTable)           7. Bekle (WaitForTime)
+///   3. Raftan kutu al (TakeFromShelf)        8. Raftan tekrar al (TakeFromShelf)
+///   4. Masaya bırak → otomatik paketle       9. Tıra teslim et (DeliverToTruck)
+/// Bu liste yalnız referans/öneridir — `tutorialSteps` alanı koddan YAML/kod
+/// üzerinden doldurulmaz; adımların Inspector'da elle eklenmesi/sıralanması
+/// gerekir (Unity Editor işi, bu script'in kapsamı dışında).
 /// </summary>
 public class TutorialManager : NetworkBehaviour
 {
@@ -20,7 +30,6 @@ public class TutorialManager : NetworkBehaviour
     private const float PLAYER_SEARCH_INTERVAL = 0.5f;
     private const int MAX_PLAYER_SEARCH_ATTEMPTS = 20;
     private const float CONDITION_CHECK_INTERVAL = 0.1f;
-    private const float STEP_TRANSITION_DELAY = 0.3f;
     private const float TUTORIAL_START_DELAY = 1f;
 
     private const float TEXT_FONT_SIZE_MIN = 18f;
@@ -31,8 +40,6 @@ public class TutorialManager : NetworkBehaviour
     private const float SPACE_DELAY_MULTIPLIER = 0.5f;
 
     private const float HIGHLIGHT_OUTLINE_WIDTH = 5f;
-
-    private const string TURKISH_LOCALE_CODE = "tr";
 
     #endregion
 
@@ -110,12 +117,6 @@ public class TutorialManager : NetworkBehaviour
     [SerializeField, Tooltip("Geçme ipucu text'i")]
     private TextMeshProUGUI skipHintText;
 
-    [SerializeField, Tooltip("Geçme ipucu mesajı - Türkçe")]
-    private string skipHintMessageTR = "Geçmek için [SPACE] tuşuna basın";
-
-    [SerializeField, Tooltip("Geçme ipucu mesajı - İngilizce")]
-    private string skipHintMessageEN = "Press [SPACE] to skip";
-
     #endregion
 
     #region Serialized Fields - References
@@ -123,6 +124,16 @@ public class TutorialManager : NetworkBehaviour
     [Header("=== PLAYER REFERENCE ===")]
     [SerializeField, Tooltip("Oyuncu envanteri")]
     private PlayerInventory playerInventory;
+
+    [Header("=== TUTORIAL CUSTOMER BYPASS ===")]
+    [SerializeField, Tooltip("Tutorial'daki tek müşteri. Sahnede CustomerManager olmadığından " +
+        "CustomerAI hiçbir zaman doğal yoldan Service state'ine geçmez (bkz. AssignFreeServiceStations, " +
+        "CustomerAI.cs) — bu yüzden burada elle atanıp server'da AssignServiceStation ile bypass edilir. " +
+        "Boş bırakılırsa bypass hiçbir şey yapmaz (production/CustomerManager akışı etkilenmez).")]
+    private CustomerAI tutorialCustomer;
+
+    [SerializeField, Tooltip("tutorialCustomer'a atanacak sipariş masası (DisplayTable).")]
+    private DisplayTable tutorialDropOffTable;
 
     #endregion
 
@@ -134,17 +145,6 @@ public class TutorialManager : NetworkBehaviour
 
     [SerializeField, Tooltip("Highlight rengi")]
     private Color highlightColor = Color.yellow;
-
-    #endregion
-
-    #region Serialized Fields - Localization
-
-    [Header("=== LOCALIZATION ===")]
-    [SerializeField, Tooltip("Tutorial tamamlandı mesajı - Türkçe")]
-    private string tutorialCompletedMessageTR = "Tutorial tamamlandı! ";
-
-    [SerializeField, Tooltip("Tutorial tamamlandı mesajı - İngilizce")]
-    private string tutorialCompletedMessageEN = "Tutorial completed!";
 
     #endregion
 
@@ -162,7 +162,6 @@ public class TutorialManager : NetworkBehaviour
     private TutorialStep _currentStep;
     private bool _isTransitioning;
     private GameObject _currentHighlight;
-    private bool _isTurkish = true;
 
     #endregion
 
@@ -180,6 +179,7 @@ public class TutorialManager : NetworkBehaviour
     private bool _shelfInteractionCompleted;
     private bool _shelfPlacementCompleted;
     private bool _truckDeliveryCompleted;
+    private bool _pressKeyDetected;
     private NetworkedShelf.BoxType _lastTakenBoxType;
     private BoxInfo.BoxType _lastDeliveredBoxType;
 
@@ -201,7 +201,6 @@ public class TutorialManager : NetworkBehaviour
     public bool IsTutorialActive => isTutorialLevel && _currentStep != null;
     public bool IsTyping => _isTyping;
     public bool IsTransitioning => _isTransitioning;
-    public bool IsTurkish => _isTurkish;
 
     #endregion
 
@@ -224,18 +223,20 @@ public class TutorialManager : NetworkBehaviour
         InitializeUI();
         StartPlayerSearch();
         StartCoroutine(InitializeLocalizationAndStartTutorial());
+        StartCoroutine(AssignTutorialCustomerServiceStationWhenReady());
     }
 
     private void Update()
     {
         HandleSkipInput();
-        CheckLocaleChange();
+        HandlePressKeyCondition();
     }
 
     public override void OnDestroy()
     {
         base.OnDestroy();
         RemoveHighlight();
+        NewCss.LocalizationHelper.OnLocaleChanged -= RefreshCurrentStepText;
     }
 
     #endregion
@@ -320,6 +321,48 @@ public class TutorialManager : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Tutorial-only bypass: Tutorial.unity'de CustomerManager.AssignFreeServiceStations akışı
+    /// çalışmadığından (sahnede CustomerManager yok), tutorialCustomer hiçbir zaman doğal yoldan
+    /// Service state'ine geçmez ve oyuncu E'ye bassa da RequestInteractionServerRpc içindeki
+    /// state guard'ı yüzünden hiçbir şey olmaz. Bu coroutine server'da tutorialCustomer'ın
+    /// NetworkObject'i spawn olur olmaz AssignServiceStation'ı (CustomerAI.cs, zaten public ve
+    /// IsServer-guard'lı, production API'si) doğrudan çağırır. CustomerManager'a veya normal
+    /// AssignFreeServiceStations akışına hiç dokunmaz — sadece bu tek müşteriyi bypass eder.
+    /// </summary>
+    private IEnumerator AssignTutorialCustomerServiceStationWhenReady()
+    {
+        if (tutorialCustomer == null || tutorialDropOffTable == null)
+        {
+            LogDebug("tutorialCustomer/tutorialDropOffTable atanmamış - Service bypass atlanıyor");
+            yield break;
+        }
+
+        // Yalnızca server'da anlamlı; AssignServiceStation zaten IsServer guard'lı ama
+        // NetworkManager.Singleton null olabileceğinden burada erken çıkıyoruz.
+        if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
+        {
+            yield break;
+        }
+
+        const float timeout = 10f;
+        float elapsed = 0f;
+        while (!tutorialCustomer.IsSpawned && elapsed < timeout)
+        {
+            yield return null;
+            elapsed += Time.deltaTime;
+        }
+
+        if (!tutorialCustomer.IsSpawned)
+        {
+            Debug.LogWarning($"{LOG_PREFIX} tutorialCustomer {timeout}s içinde spawn olmadı - Service bypass iptal edildi");
+            yield break;
+        }
+
+        tutorialCustomer.AssignServiceStation(tutorialDropOffTable);
+        LogDebug("Tutorial customer doğrudan Service state'ine atandı (CustomerManager bypass)");
+    }
+
     private IEnumerator InitializeLocalizationAndStartTutorial()
     {
         // Localization hazır olana kadar bekle
@@ -327,10 +370,9 @@ public class TutorialManager : NetworkBehaviour
             LocalizationSettings.InitializationOperation.IsValid() &&
             LocalizationSettings.InitializationOperation.IsDone);
 
-        // Dil durumunu güncelle
-        UpdateLocaleState();
+        NewCss.LocalizationHelper.OnLocaleChanged += RefreshCurrentStepText;
 
-        LogDebug($"Localization initialized.  Current language: {(_isTurkish ? "Turkish" : "English")}");
+        LogDebug("Localization initialized.");
 
         // Tutorial'ı başlat
         yield return StartTutorialSequenceCoroutine();
@@ -341,40 +383,16 @@ public class TutorialManager : NetworkBehaviour
     #region Localization
 
     /// <summary>
-    /// Mevcut dil durumunu günceller
+    /// Adımın talimat metnini StringTable'dan çözer, tuş referansını (rebind'e duyarlı)
+    /// ve skip tuşunu yerlerine yerleştirir.
     /// </summary>
-    private void UpdateLocaleState()
+    private string ResolveStepText(TutorialStep step)
     {
-        if (LocalizationSettings.SelectedLocale != null)
-        {
-            string localeCode = LocalizationSettings.SelectedLocale.Identifier.Code;
-            _isTurkish = localeCode.ToLower().StartsWith(TURKISH_LOCALE_CODE);
-        }
-        else
-        {
-            _isTurkish = true; // Varsayılan Türkçe
-        }
-    }
+        if (step == null || string.IsNullOrEmpty(step.instructionLocalizationKey)) return "";
 
-    /// <summary>
-    /// Dil değişikliğini kontrol eder ve gerekirse UI'ı günceller
-    /// </summary>
-    private void CheckLocaleChange()
-    {
-        if (LocalizationSettings.SelectedLocale == null) return;
-
-        string currentLocale = LocalizationSettings.SelectedLocale.Identifier.Code;
-        bool currentIsTurkish = currentLocale.ToLower().StartsWith(TURKISH_LOCALE_CODE);
-
-        // Dil değiştiyse
-        if (currentIsTurkish != _isTurkish)
-        {
-            _isTurkish = currentIsTurkish;
-            LogDebug($"Language changed to: {(_isTurkish ? "Turkish" : "English")}");
-
-            // Mevcut adımın metnini güncelle
-            RefreshCurrentStepText();
-        }
+        string interactKey = InputBindingManager.GetBindingDisplayName(InputBindingManager.GameAction.Interact);
+        string raw = NewCss.LocalizationHelper.GetLocalizedStringFormat(step.instructionLocalizationKey, interactKey);
+        return raw.Replace("[SPACE]", $"[{skipKey}]");
     }
 
     /// <summary>
@@ -388,13 +406,13 @@ public class TutorialManager : NetworkBehaviour
         if (_isTyping)
         {
             StopCurrentTypewriter();
-            string localizedText = _currentStep.GetLocalizedInstruction(_isTurkish);
+            string localizedText = ResolveStepText(_currentStep);
             StartCoroutine(ShowInstructionCoroutine(localizedText));
         }
         else
         {
             // Doğrudan metni güncelle
-            instructionText.text = _currentStep.GetLocalizedInstruction(_isTurkish);
+            instructionText.text = ResolveStepText(_currentStep);
         }
 
         // Skip hint'i de güncelle
@@ -409,21 +427,8 @@ public class TutorialManager : NetworkBehaviour
         if (skipHintText == null) return;
         if (!skipHintText.gameObject.activeSelf) return;
 
-        string message = _isTurkish ? skipHintMessageTR : skipHintMessageEN;
+        string message = NewCss.LocalizationHelper.GetLocalizedString("TutorialSkipHint");
         skipHintText.text = message.Replace("[SPACE]", $"[{skipKey}]");
-    }
-
-    /// <summary>
-    /// Lokalize edilmiş metni döndürür
-    /// </summary>
-    private string GetLocalizedText(string turkishText, string englishText)
-    {
-        if (_isTurkish)
-        {
-            return turkishText;
-        }
-
-        return string.IsNullOrEmpty(englishText) ? turkishText : englishText;
     }
 
     #endregion
@@ -460,6 +465,24 @@ public class TutorialManager : NetworkBehaviour
     {
         return _currentStep != null &&
                _currentStep.conditionType == TutorialConditionType.WaitForTime;
+    }
+
+    /// <summary>
+    /// PressKey koşulunu Update()'te frame-doğru şekilde takip eder.
+    /// IsStepConditionMet() bu koşulu 0.1s aralıklarla poll ettiği için doğrudan
+    /// Input.GetKeyDown okusa çoğu basışı kaçırır (GetKeyDown yalnız o frame true) —
+    /// bu yüzden bayrak burada, her frame, tutulur. Typewriter hâlâ yazıyorsa basış
+    /// (skip mantığıyla tutarlı olarak) yalnız metni tamamlar, adımı bitirmez.
+    /// </summary>
+    private void HandlePressKeyCondition()
+    {
+        if (_currentStep == null || _currentStep.conditionType != TutorialConditionType.PressKey) return;
+        if (_isTyping) return;
+
+        if (Input.GetKeyDown(_currentStep.requiredKey))
+        {
+            _pressKeyDetected = true;
+        }
     }
 
     #endregion
@@ -590,7 +613,7 @@ public class TutorialManager : NetworkBehaviour
         OnStepStarted?.Invoke(stepIndex, _currentStep);
 
         // Lokalize edilmiş metni göster
-        string localizedText = _currentStep.GetLocalizedInstruction(_isTurkish);
+        string localizedText = ResolveStepText(_currentStep);
         StartCoroutine(ShowInstructionCoroutine(localizedText));
 
         HighlightObject(_currentStep.objectToHighlight);
@@ -603,6 +626,7 @@ public class TutorialManager : NetworkBehaviour
         _shelfInteractionCompleted = false;
         _shelfPlacementCompleted = false;
         _truckDeliveryCompleted = false;
+        _pressKeyDetected = false;
 
         // Step'in kendi delivery sayacını da sıfırla
         if (_currentStep != null)
@@ -617,10 +641,21 @@ public class TutorialManager : NetworkBehaviour
 
         _isTransitioning = true;
 
-        // Typewriter efektini hemen durdur
+        // Typewriter efektini hemen durdur, eski adimin metin/skip-hint'ini temizle
+        // (eskiden ayri HideInstructionCoroutine yapiyordu - bkz. asagidaki not).
         StopCurrentTypewriter();
         _isTyping = false;
         _skipTyping = false;
+
+        if (skipHintText != null)
+        {
+            skipHintText.gameObject.SetActive(false);
+        }
+
+        if (instructionText != null)
+        {
+            instructionText.text = "";
+        }
 
         LogDebug($"Step {_currentStepIndex + 1} completed: {_currentStep.stepName}");
 
@@ -631,14 +666,12 @@ public class TutorialManager : NetworkBehaviour
         RemoveHighlight();
         NotifyDoorsOfStepCompletion(_currentStepIndex);
 
-        StartCoroutine(TransitionToNextStepCoroutine());
-    }
-
-    private IEnumerator TransitionToNextStepCoroutine()
-    {
-        yield return StartCoroutine(HideInstructionCoroutine());
-        yield return new WaitForSeconds(STEP_TRANSITION_DELAY);
-
+        // Bir sonraki adima HEMEN gec (eskiden StartCoroutine(TransitionToNextStepCoroutine())
+        // ile HideInstructionCoroutine + STEP_TRANSITION_DELAY (0.3sn) kadar gecikmeliydi).
+        // O gecikme penceresinde yapilan bir fiziksel aksiyon (orn. paketlenmis kutuyu masadan
+        // alma) hala ESKI adimin kosuluna gore degerlendirilip kayboluyordu - StartStep() flag'leri
+        // sifirladiginda event bir daha ateslenmedigi icin yeni adim asla tamamlanamiyordu
+        // (kullanici bulgusu: "metin bitmeden aldim, 2. kapi acilmadi", 2026-09-11).
         _isTransitioning = false;
         StartStep(_currentStepIndex + 1);
     }
@@ -650,13 +683,20 @@ public class TutorialManager : NetworkBehaviour
         if (instructionText != null)
         {
             // Lokalize edilmiş tamamlanma mesajı
-            instructionText.text = GetLocalizedText(tutorialCompletedMessageTR, tutorialCompletedMessageEN);
+            instructionText.text = NewCss.LocalizationHelper.GetLocalizedString("TutorialCompleted");
         }
 
         if (skipHintText != null)
         {
             skipHintText.gameObject.SetActive(false);
         }
+
+        // _currentStep tamamlanmadan sonra null'lanmazsa Update() içindeki
+        // HandleSkipInput bayat referansla çalışmaya devam eder (skip tuşu
+        // tamamlama mantığını tekrar tetikler) ve olası bir OnLocaleChanged
+        // tetiklenmesinde RefreshCurrentStepText "Tutorial completed!" mesajını
+        // eski adım metniyle ezer.
+        _currentStep = null;
 
         OnTutorialCompleted?.Invoke();
     }
@@ -690,6 +730,11 @@ public class TutorialManager : NetworkBehaviour
             TutorialConditionType.TakeFromShelf => CheckTakeFromShelfCondition(),
             TutorialConditionType.DeliverToTruck => CheckDeliverToTruckCondition(),
             TutorialConditionType.WaitForTime => CheckWaitTimeCondition(),
+            TutorialConditionType.PressKey => _pressKeyDetected,
+            TutorialConditionType.InteractWithCustomer => tutorialCustomer != null && tutorialCustomer.HasInteracted,
+            // CompleteMinigame ve Custom: kapsam dışı, çekirdek-döngü tutorial'ında
+            // kullanılmıyor (bkz plans/tutorial-rewrite.md). Enum'dan silinmedi,
+            // ileride minigame/özel adım eklenirse hazır kalsın diye.
             TutorialConditionType.CompleteMinigame => _currentStep.isCompleted,
             TutorialConditionType.Custom => _currentStep.isCompleted,
             _ => false
@@ -786,7 +831,7 @@ public class TutorialManager : NetworkBehaviour
         if (_currentStep.conditionType != TutorialConditionType.WaitForTime) return;
 
         // Lokalize edilmiş skip hint mesajı
-        string message = _isTurkish ? skipHintMessageTR : skipHintMessageEN;
+        string message = NewCss.LocalizationHelper.GetLocalizedString("TutorialSkipHint");
         skipHintText.text = message.Replace("[SPACE]", $"[{skipKey}]");
         skipHintText.gameObject.SetActive(true);
     }
@@ -802,26 +847,6 @@ public class TutorialManager : NetworkBehaviour
         // State'i de sıfırla
         _isTyping = false;
         _skipTyping = false;
-    }
-
-    private IEnumerator HideInstructionCoroutine()
-    {
-        // Önce typewriter'ı durdur
-        StopCurrentTypewriter();
-        _isTyping = false;
-        _skipTyping = false;
-
-        if (skipHintText != null)
-        {
-            skipHintText.gameObject.SetActive(false);
-        }
-
-        if (instructionText != null)
-        {
-            instructionText.text = "";
-        }
-
-        yield return null;
     }
 
     #endregion
@@ -924,6 +949,8 @@ public class TutorialManager : NetworkBehaviour
     /// </summary>
     public void OnMinigameCompleted()
     {
+        // Kapsam dışı, çekirdek-döngü tutorial'ında kullanılmıyor
+        // (bkz plans/tutorial-rewrite.md) — çağrılmıyor ama kaldırılmadı.
         if (_currentStep == null) return;
         if (_currentStep.conditionType != TutorialConditionType.CompleteMinigame) return;
 
@@ -1156,21 +1183,12 @@ public class TutorialManager : NetworkBehaviour
         }
     }
 
-    [ContextMenu("Debug: Toggle Language")]
-    private void DebugToggleLanguage()
-    {
-        _isTurkish = !_isTurkish;
-        RefreshCurrentStepText();
-        LogDebug($"Language toggled to: {(_isTurkish ? "Turkish" : "English")}");
-    }
-
     [ContextMenu("Debug: Print State")]
     private void DebugPrintState()
     {
         Debug.Log($"{LOG_PREFIX} === TUTORIAL MANAGER STATE ===");
         Debug.Log($"Is Tutorial Level: {isTutorialLevel}");
         Debug.Log($"Is Tutorial Active: {IsTutorialActive}");
-        Debug.Log($"Current Language: {(_isTurkish ? "Turkish" : "English")}");
         Debug.Log($"Current Step Index: {_currentStepIndex}/{TotalSteps}");
         Debug.Log($"Current Step: {(_currentStep != null ? _currentStep.stepName : "NULL")}");
         Debug.Log($"Is Transitioning: {_isTransitioning}");
@@ -1189,8 +1207,7 @@ public class TutorialManager : NetworkBehaviour
             Debug.Log($"  Condition: {_currentStep.conditionType}");
             Debug.Log($"  Is Completed: {_currentStep.isCompleted}");
             Debug.Log($"  Start Time: {_currentStep.stepStartTime:F2}");
-            Debug.Log($"  TR Text: {_currentStep.instructionText}");
-            Debug.Log($"  EN Text: {_currentStep.instructionTextEnglish}");
+            Debug.Log($"  Localization Key: {_currentStep.instructionLocalizationKey}");
 
             if (_currentStep.conditionType == TutorialConditionType.DeliverToTruck)
             {
@@ -1209,8 +1226,7 @@ public class TutorialManager : NetworkBehaviour
             var step = tutorialSteps[i];
             string status = step.isCompleted ? "[COMPLETED]" : (i == _currentStepIndex ? "[CURRENT]" : "[PENDING]");
             Debug.Log($"  [{i}] {step}");
-            Debug.Log($"      TR: {step.instructionText}");
-            Debug.Log($"      EN: {step.instructionTextEnglish}");
+            Debug.Log($"      Key: {step.instructionLocalizationKey}");
         }
     }
 

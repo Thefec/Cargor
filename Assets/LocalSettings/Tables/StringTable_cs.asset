@@ -1454,6 +1454,59 @@ MonoBehaviour:
       dnech, se pozd\u011Bji hodn\u011B vyplat\xED."
     m_Metadata:
       m_Items: []
+  - m_Id: 143536416780595200
+    m_Localized: "V\xEDtej v Cargor! Bude\u0161 vyzved\xE1vat objedn\xE1vky od z\xE1kazn\xEDk\u016F
+      a doru\u010Dovat je do n\xE1kla\u010F\xE1k\u016F. Stiskni [SPACE] pro pokra\u010Dov\xE1n\xED."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704064
+    m_Localized: "Jdi za z\xE1kazn\xEDkem a stiskni [{0}], pot\xE9 znovu stiskni
+      [{0}] u stolu, abys vyzvedl p\u0159edm\u011Bt."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704065
+    m_Localized: "Odnes p\u0159edm\u011Bt na balic\xED st\u016Fl a stiskni [{0}],
+      abys ho polo\u017Eil."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092672
+    m_Localized: "Stiskni [{0}] u reg\xE1lu, abys vzal spr\xE1vnou krabici."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092673
+    m_Localized: "Odnes krabici na balic\xED st\u016Fl, stiskni [{0}] \u2014 p\u0159edm\u011Bt
+      se automaticky zabal\xED."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092674
+    m_Localized: Znovu stiskni [{0}] u stolu, abys vyzvedl zabalenou krabici.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092675
+    m_Localized: "Stiskni [{0}], abys um\xEDstil krabici na reg\xE1l."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092676
+    m_Localized: "N\xE1kla\u010F\xE1k p\u0159ij\xED\u017Ed\xED, chv\xEDli po\u010Dkej..."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092677
+    m_Localized: "Znovu stiskni [{0}] u reg\xE1lu, abys vzal bal\xEDk."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092678
+    m_Localized: "Odnes bal\xEDk k zadn\xED \u010D\xE1sti n\xE1kla\u010F\xE1ku a
+      ho\u010F ho dovnit\u0159."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092679
+    m_Localized: "Stiskni [SPACE] pro p\u0159esko\u010Den\xED"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416860286976
+    m_Localized: "Tutori\xE1l dokon\u010Den!"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

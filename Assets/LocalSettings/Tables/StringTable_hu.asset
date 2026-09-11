@@ -1453,6 +1453,61 @@ MonoBehaviour:
       nagyon megt\xE9r\xFClnek."
     m_Metadata:
       m_Items: []
+  - m_Id: 143536416780595200
+    m_Localized: "\xDCdv\xF6zl\xFCnk a Cargorban! Rendel\xE9seket veszel \xE1t a
+      v\xE1s\xE1rl\xF3kt\xF3l, \xE9s kisz\xE1ll\xEDtod \u0151ket a teheraut\xF3khoz.
+      Nyomd meg a [SPACE] gombot a folytat\xE1shoz."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704064
+    m_Localized: "Menj oda a v\xE1s\xE1rl\xF3hoz, \xE9s nyomd meg a [{0}] gombot,
+      majd nyomd meg \xFAjra a [{0}] gombot az asztaln\xE1l, hogy felvedd a term\xE9ket."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704065
+    m_Localized: "Vidd a term\xE9ket a csomagol\xF3 asztalhoz, \xE9s nyomd meg a
+      [{0}] gombot a lerak\xE1shoz."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092672
+    m_Localized: "Nyomd meg a [{0}] gombot a polcn\xE1l, hogy elvedd a megfelel\u0151
+      dobozt."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092673
+    m_Localized: "Vidd a dobozt a csomagol\xF3 asztalhoz, nyomd meg a [{0}] gombot
+      \u2014 a term\xE9k automatikusan becsomagol\xF3dik."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092674
+    m_Localized: "Nyomd meg \xFAjra a [{0}] gombot az asztaln\xE1l, hogy felvedd
+      a becsomagolt dobozt."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092675
+    m_Localized: Nyomd meg a [{0}] gombot, hogy a polcra tedd a dobozt.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092676
+    m_Localized: "J\xF6n a teheraut\xF3, v\xE1rj egy kicsit..."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092677
+    m_Localized: "Nyomd meg \xFAjra a [{0}] gombot a polcn\xE1l, hogy elvedd a csomagot."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092678
+    m_Localized: "Vidd a csomagot a teheraut\xF3 h\xE1tulj\xE1hoz, \xE9s dobd be."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092679
+    m_Localized: "Nyomd meg a [SPACE] gombot a kihagy\xE1shoz"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416860286976
+    m_Localized: Tutorial befejezve!
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

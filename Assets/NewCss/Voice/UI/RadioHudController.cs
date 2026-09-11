@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using NewCss;
 using NewCss.Voice.Core;
-using Steamworks;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Telsiz HUD'u — "kim konuşuyor" listesi + kendi mikrofon durumu + oturum-içi mute (plan Adım 7).
+/// Telsiz HUD'u — "kim konuşuyor" listesi + oturum-içi mute (plan Adım 7). Kendi mikrofon
+/// durumu satırı (_ownRow) kullanıcı isteğiyle (2026-09-11) kaldırıldı, bkz. UpdateOwnRow.
 ///
 /// KENDİ Screen-Space-Overlay Canvas'ı, bootstrap'ta koddan kurulur + DontDestroyOnLoad. Desen
 /// <see cref="RadioVoiceRuntime"/>/<see cref="RadioVoiceSpeakerSlot.CreateSlot"/> ile BİREBİR aynı:
@@ -128,62 +128,15 @@ public sealed class RadioHudController : MonoBehaviour
     }
 
     // -----------------------------------------------------------------------------------------
-    // Kendi mikrofon satırı — HER ZAMAN görünür (plan: "her zaman görünür küçük gösterge").
-    // Hold/fade zamanlayıcısı BİLEREK kullanılmıyor: bu satır asla kaybolmaz, sadece durumu değişir.
+    // Kendi mikrofon satırı — kullanıcı isteğiyle (2026-09-11) kaldırıldı, HER ZAMAN gizli.
+    // Uzak konuşmacı satırları (UpdateRemoteRows) bundan ETKİLENMİYOR, ayrı satır havuzu kullanıyor.
+    // _ownRow objesi bilerek silinmedi (Awake'te SetClickable çağrısı ona bağlı) - sadece
+    // görünmez tutuluyor, ileride geri istenirse tek satır değişir.
     // -----------------------------------------------------------------------------------------
 
     private void UpdateOwnRow()
     {
-        _ownRow.SetVisible(true);
-        _ownRow.SetAlpha(1f);
-
-        var runtime = RadioVoiceRuntime.Instance;
-
-        if (!SteamClient.IsValid)
-        {
-            // Adım 10: Steam geçersiz — RadioVoiceRuntime zaten bunu oturum başına bir kez loglar,
-            // burada SÜREKLİ (log spam değil, HUD durumu) gösteriliyor ki oyuncu "telsiz neden
-            // çalışmıyor" sorusuna sahnede cevap bulsun.
-            _ownRow.SetLabel(ResolveLocalizedOrFallback("VoiceErrorNoSteam", "Steam bağlantısı yok — telsiz kullanılamıyor"), dimmed: true);
-            _ownRow.SetLevel01(0f);
-            return;
-        }
-
-        if (runtime != null && runtime.Capture.IsMicDegraded)
-        {
-            // 2026-08-09: metin "Mikrofon bulunamadı" değil "Ses algılanmıyor" — tespit mikrofonun
-            // VARLIĞINI değil, Steam'den bayt gelip gelmediğini ölçüyor ve gürültü kapısı sessizliği
-            // de aynı sonucu veriyor. Anahtar ADI (VoiceErrorNoMic) bilerek KORUNDU: kullanıcının
-            // Localization Tables'ta yazacağı 10 anahtarlık liste bozulmasın.
-            _ownRow.SetLabel(ResolveLocalizedOrFallback("VoiceErrorNoMic", "Ses algılanmıyor"), dimmed: true);
-            _ownRow.SetLevel01(0f);
-            return;
-        }
-
-        string ownName = SteamClient.Name; // roster'a gerek yok — kendi Steam adın zaten elinde (GameStateManager.BuildLocalRosterName de aynı kaynağı kullanıyor)
-        bool transmitting = runtime != null &&
-            (runtime.Capture.State == RadioVoiceCapture.CaptureState.Transmitting ||
-             runtime.Capture.State == RadioVoiceCapture.CaptureState.Tail);
-
-        if (!transmitting)
-        {
-            _ownRow.SetLabel(ownName, dimmed: false);
-            _ownRow.SetLevel01(0f);
-            return;
-        }
-
-        _ownRow.SetLabel(FormatTransmittingLabel(ownName), dimmed: false);
-
-        // Seviye çubuğu SADECE "Kendini Dinle" açıkken gerçek RMS gösterir (plan §UI ve ayarlar:
-        // "yerelde yalnız sıkıştırılmış veri var, RMS için kendi sesimizi de decompress etmek
-        // gerekir → kozmetik bir çubuk için gereksiz. Karar: ikili aç/kapa; RMS yalnız Kendini
-        // Dinle açıkken, o modda decompress zaten yapılıyor, bedava"). Kapalıyken ikili gösterge: dolu çubuk.
-        float level = 1f;
-        if (RadioVoicePrefs.IsSelfMonitorEnabled() && runtime != null)
-        {
-            runtime.Playback.TryGetSpeakerLevel(RadioVoiceRuntime.SelfMonitorClientId, out level);
-        }
-        _ownRow.SetLevel01(level);
+        _ownRow.SetVisible(false);
     }
 
     // -----------------------------------------------------------------------------------------
@@ -320,12 +273,6 @@ public sealed class RadioHudController : MonoBehaviour
         string resolved = LocalizationHelper.GetLocalizedString(key);
         string template = resolved == key ? "{0} (Sessize Alındı)" : resolved;
         return SafeFormat(template, name);
-    }
-
-    private static string ResolveLocalizedOrFallback(string key, string fallback)
-    {
-        string resolved = LocalizationHelper.GetLocalizedString(key);
-        return resolved == key ? fallback : resolved;
     }
 
     private static string SafeFormat(string template, string name)

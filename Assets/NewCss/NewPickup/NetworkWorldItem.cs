@@ -365,6 +365,11 @@ public class NetworkWorldItem : NetworkBehaviour
         // Sadece server karar verir
         if (!IsServer) return;
 
+        // Tutorial'da item kırılması/kaybı istenmiyor (kullanıcı isteği) — tek sipariş item'ı
+        // yanlışlıkla fırlatılıp kırılırsa tutorial ilerleyemez hale gelirdi. TutorialManager.Instance
+        // yalnızca Tutorial sahnesinde var, üretimde etkisiz.
+        if (TutorialManager.Instance != null) return;
+
         // DOLU kutular ASLA kırılmaz — tıra teslim edilmeli, yolda parçalanmamalı.
         // Boş kutular BoxDestroyOnCollisionNetcode taşır (yukarıda atlanır); ancak DOLU kutu
         // dünya prefab'ları (RedNGOFull vb.) o script'i taşımadığından bu yola düşerler.
