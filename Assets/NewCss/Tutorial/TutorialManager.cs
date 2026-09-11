@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 using NewCss;
 
@@ -41,8 +40,6 @@ public class TutorialManager : NetworkBehaviour
     private const float SPACE_DELAY_MULTIPLIER = 0.5f;
 
     private const float HIGHLIGHT_OUTLINE_WIDTH = 5f;
-
-    private const string TURKISH_LOCALE_CODE = "tr";
 
     #endregion
 
@@ -120,12 +117,6 @@ public class TutorialManager : NetworkBehaviour
     [SerializeField, Tooltip("Geçme ipucu text'i")]
     private TextMeshProUGUI skipHintText;
 
-    [SerializeField, Tooltip("Geçme ipucu mesajı - Türkçe")]
-    private string skipHintMessageTR = "Geçmek için [SPACE] tuşuna basın";
-
-    [SerializeField, Tooltip("Geçme ipucu mesajı - İngilizce")]
-    private string skipHintMessageEN = "Press [SPACE] to skip";
-
     #endregion
 
     #region Serialized Fields - References
@@ -157,17 +148,6 @@ public class TutorialManager : NetworkBehaviour
 
     #endregion
 
-    #region Serialized Fields - Localization
-
-    [Header("=== LOCALIZATION ===")]
-    [SerializeField, Tooltip("Tutorial tamamlandı mesajı - Türkçe")]
-    private string tutorialCompletedMessageTR = "Tutorial tamamlandı! ";
-
-    [SerializeField, Tooltip("Tutorial tamamlandı mesajı - İngilizce")]
-    private string tutorialCompletedMessageEN = "Tutorial completed!";
-
-    #endregion
-
     #region Serialized Fields - Debug
 
     [Header("=== DEBUG ===")]
@@ -182,7 +162,6 @@ public class TutorialManager : NetworkBehaviour
     private TutorialStep _currentStep;
     private bool _isTransitioning;
     private GameObject _currentHighlight;
-    private bool _isTurkish = true;
 
     #endregion
 
@@ -222,7 +201,6 @@ public class TutorialManager : NetworkBehaviour
     public bool IsTutorialActive => isTutorialLevel && _currentStep != null;
     public bool IsTyping => _isTyping;
     public bool IsTransitioning => _isTransitioning;
-    public bool IsTurkish => _isTurkish;
 
     #endregion
 
@@ -252,13 +230,13 @@ public class TutorialManager : NetworkBehaviour
     {
         HandleSkipInput();
         HandlePressKeyCondition();
-        CheckLocaleChange();
     }
 
     public override void OnDestroy()
     {
         base.OnDestroy();
         RemoveHighlight();
+        NewCss.LocalizationHelper.OnLocaleChanged -= RefreshCurrentStepText;
     }
 
     #endregion
@@ -392,10 +370,9 @@ public class TutorialManager : NetworkBehaviour
             LocalizationSettings.InitializationOperation.IsValid() &&
             LocalizationSettings.InitializationOperation.IsDone);
 
-        // Dil durumunu güncelle
-        UpdateLocaleState();
+        NewCss.LocalizationHelper.OnLocaleChanged += RefreshCurrentStepText;
 
-        LogDebug($"Localization initialized.  Current language: {(_isTurkish ? "Turkish" : "English")}");
+        LogDebug("Localization initialized.");
 
         // Tutorial'ı başlat
         yield return StartTutorialSequenceCoroutine();
@@ -406,40 +383,16 @@ public class TutorialManager : NetworkBehaviour
     #region Localization
 
     /// <summary>
-    /// Mevcut dil durumunu günceller
+    /// Adımın talimat metnini StringTable'dan çözer, tuş referansını (rebind'e duyarlı)
+    /// ve skip tuşunu yerlerine yerleştirir.
     /// </summary>
-    private void UpdateLocaleState()
+    private string ResolveStepText(TutorialStep step)
     {
-        if (LocalizationSettings.SelectedLocale != null)
-        {
-            string localeCode = LocalizationSettings.SelectedLocale.Identifier.Code;
-            _isTurkish = localeCode.ToLower().StartsWith(TURKISH_LOCALE_CODE);
-        }
-        else
-        {
-            _isTurkish = true; // Varsayılan Türkçe
-        }
-    }
+        if (step == null || string.IsNullOrEmpty(step.instructionLocalizationKey)) return "";
 
-    /// <summary>
-    /// Dil değişikliğini kontrol eder ve gerekirse UI'ı günceller
-    /// </summary>
-    private void CheckLocaleChange()
-    {
-        if (LocalizationSettings.SelectedLocale == null) return;
-
-        string currentLocale = LocalizationSettings.SelectedLocale.Identifier.Code;
-        bool currentIsTurkish = currentLocale.ToLower().StartsWith(TURKISH_LOCALE_CODE);
-
-        // Dil değiştiyse
-        if (currentIsTurkish != _isTurkish)
-        {
-            _isTurkish = currentIsTurkish;
-            LogDebug($"Language changed to: {(_isTurkish ? "Turkish" : "English")}");
-
-            // Mevcut adımın metnini güncelle
-            RefreshCurrentStepText();
-        }
+        string interactKey = InputBindingManager.GetBindingDisplayName(InputBindingManager.GameAction.Interact);
+        string raw = NewCss.LocalizationHelper.GetLocalizedStringFormat(step.instructionLocalizationKey, interactKey);
+        return raw.Replace("[SPACE]", $"[{skipKey}]");
     }
 
     /// <summary>
@@ -453,13 +406,13 @@ public class TutorialManager : NetworkBehaviour
         if (_isTyping)
         {
             StopCurrentTypewriter();
-            string localizedText = _currentStep.GetLocalizedInstruction(_isTurkish);
+            string localizedText = ResolveStepText(_currentStep);
             StartCoroutine(ShowInstructionCoroutine(localizedText));
         }
         else
         {
             // Doğrudan metni güncelle
-            instructionText.text = _currentStep.GetLocalizedInstruction(_isTurkish);
+            instructionText.text = ResolveStepText(_currentStep);
         }
 
         // Skip hint'i de güncelle
@@ -474,21 +427,8 @@ public class TutorialManager : NetworkBehaviour
         if (skipHintText == null) return;
         if (!skipHintText.gameObject.activeSelf) return;
 
-        string message = _isTurkish ? skipHintMessageTR : skipHintMessageEN;
+        string message = NewCss.LocalizationHelper.GetLocalizedString("TutorialSkipHint");
         skipHintText.text = message.Replace("[SPACE]", $"[{skipKey}]");
-    }
-
-    /// <summary>
-    /// Lokalize edilmiş metni döndürür
-    /// </summary>
-    private string GetLocalizedText(string turkishText, string englishText)
-    {
-        if (_isTurkish)
-        {
-            return turkishText;
-        }
-
-        return string.IsNullOrEmpty(englishText) ? turkishText : englishText;
     }
 
     #endregion
@@ -673,7 +613,7 @@ public class TutorialManager : NetworkBehaviour
         OnStepStarted?.Invoke(stepIndex, _currentStep);
 
         // Lokalize edilmiş metni göster
-        string localizedText = _currentStep.GetLocalizedInstruction(_isTurkish);
+        string localizedText = ResolveStepText(_currentStep);
         StartCoroutine(ShowInstructionCoroutine(localizedText));
 
         HighlightObject(_currentStep.objectToHighlight);
@@ -743,7 +683,7 @@ public class TutorialManager : NetworkBehaviour
         if (instructionText != null)
         {
             // Lokalize edilmiş tamamlanma mesajı
-            instructionText.text = GetLocalizedText(tutorialCompletedMessageTR, tutorialCompletedMessageEN);
+            instructionText.text = NewCss.LocalizationHelper.GetLocalizedString("TutorialCompleted");
         }
 
         if (skipHintText != null)
@@ -752,9 +692,10 @@ public class TutorialManager : NetworkBehaviour
         }
 
         // _currentStep tamamlanmadan sonra null'lanmazsa Update() içindeki
-        // HandleSkipInput/CheckLocaleChange bayat referansla çalışmaya devam eder
-        // (skip tuşu tamamlama mantığını tekrar tetikler, dil değişimi
-        // "Tutorial completed!" mesajını eski adım metniyle ezer).
+        // HandleSkipInput bayat referansla çalışmaya devam eder (skip tuşu
+        // tamamlama mantığını tekrar tetikler) ve olası bir OnLocaleChanged
+        // tetiklenmesinde RefreshCurrentStepText "Tutorial completed!" mesajını
+        // eski adım metniyle ezer.
         _currentStep = null;
 
         OnTutorialCompleted?.Invoke();
@@ -890,7 +831,7 @@ public class TutorialManager : NetworkBehaviour
         if (_currentStep.conditionType != TutorialConditionType.WaitForTime) return;
 
         // Lokalize edilmiş skip hint mesajı
-        string message = _isTurkish ? skipHintMessageTR : skipHintMessageEN;
+        string message = NewCss.LocalizationHelper.GetLocalizedString("TutorialSkipHint");
         skipHintText.text = message.Replace("[SPACE]", $"[{skipKey}]");
         skipHintText.gameObject.SetActive(true);
     }
@@ -1242,21 +1183,12 @@ public class TutorialManager : NetworkBehaviour
         }
     }
 
-    [ContextMenu("Debug: Toggle Language")]
-    private void DebugToggleLanguage()
-    {
-        _isTurkish = !_isTurkish;
-        RefreshCurrentStepText();
-        LogDebug($"Language toggled to: {(_isTurkish ? "Turkish" : "English")}");
-    }
-
     [ContextMenu("Debug: Print State")]
     private void DebugPrintState()
     {
         Debug.Log($"{LOG_PREFIX} === TUTORIAL MANAGER STATE ===");
         Debug.Log($"Is Tutorial Level: {isTutorialLevel}");
         Debug.Log($"Is Tutorial Active: {IsTutorialActive}");
-        Debug.Log($"Current Language: {(_isTurkish ? "Turkish" : "English")}");
         Debug.Log($"Current Step Index: {_currentStepIndex}/{TotalSteps}");
         Debug.Log($"Current Step: {(_currentStep != null ? _currentStep.stepName : "NULL")}");
         Debug.Log($"Is Transitioning: {_isTransitioning}");
@@ -1275,8 +1207,7 @@ public class TutorialManager : NetworkBehaviour
             Debug.Log($"  Condition: {_currentStep.conditionType}");
             Debug.Log($"  Is Completed: {_currentStep.isCompleted}");
             Debug.Log($"  Start Time: {_currentStep.stepStartTime:F2}");
-            Debug.Log($"  TR Text: {_currentStep.instructionText}");
-            Debug.Log($"  EN Text: {_currentStep.instructionTextEnglish}");
+            Debug.Log($"  Localization Key: {_currentStep.instructionLocalizationKey}");
 
             if (_currentStep.conditionType == TutorialConditionType.DeliverToTruck)
             {
@@ -1295,8 +1226,7 @@ public class TutorialManager : NetworkBehaviour
             var step = tutorialSteps[i];
             string status = step.isCompleted ? "[COMPLETED]" : (i == _currentStepIndex ? "[CURRENT]" : "[PENDING]");
             Debug.Log($"  [{i}] {step}");
-            Debug.Log($"      TR: {step.instructionText}");
-            Debug.Log($"      EN: {step.instructionTextEnglish}");
+            Debug.Log($"      Key: {step.instructionLocalizationKey}");
         }
     }
 

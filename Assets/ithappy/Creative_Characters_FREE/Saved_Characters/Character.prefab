@@ -14280,12 +14280,12 @@ MonoBehaviour:
   outlineColor: {r: 1, g: 1, b: 1, a: 1}
   outlineWidth: 2
   outlineMode: 0
-  pickupSound: {fileID: 8300000, guid: ff411ff5e343d7d478228985caf05e03, type: 3}
-  dropSound: {fileID: 8300000, guid: ac1f54ce055ef4a41938e1e609552810, type: 3}
-  placeOnTableSound: {fileID: 8300000, guid: ac1f54ce055ef4a41938e1e609552810, type: 3}
-  placeOnShelfSound: {fileID: 8300000, guid: ac1f54ce055ef4a41938e1e609552810, type: 3}
-  takeFromTableSound: {fileID: 8300000, guid: ff411ff5e343d7d478228985caf05e03, type: 3}
-  takeFromShelfSound: {fileID: 8300000, guid: ff411ff5e343d7d478228985caf05e03, type: 3}
+  pickupSound: {fileID: 8300000, guid: 8f58139b131ced94c95ae5569217a001, type: 3}
+  dropSound: {fileID: 8300000, guid: 6f8ebcb9587a156459cecd7ec4e8c5e0, type: 3}
+  placeOnTableSound: {fileID: 8300000, guid: 6f8ebcb9587a156459cecd7ec4e8c5e0, type: 3}
+  placeOnShelfSound: {fileID: 8300000, guid: 6f8ebcb9587a156459cecd7ec4e8c5e0, type: 3}
+  takeFromTableSound: {fileID: 8300000, guid: 8f58139b131ced94c95ae5569217a001, type: 3}
+  takeFromShelfSound: {fileID: 8300000, guid: 8f58139b131ced94c95ae5569217a001, type: 3}
   inventorySoundVolume: 0.75
   holdPosition: {fileID: 836902756960530537}
   holdPositionName: HoldPosition
@@ -14356,18 +14356,6 @@ MonoBehaviour:
   - {r: 0.8, g: 0.6, b: 0.4, a: 1}
   - {r: 0.6, g: 0.4, b: 0.3, a: 1}
   - {r: 0.4, g: 0.3, b: 0.2, a: 1}
---- !u!114 &2475212818803721048
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9174414027654833558}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4f2984326842189438dc4f16287275c0, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
 --- !u!82 &4674628221128457937
 AudioSource:
   m_ObjectHideFlags: 0
@@ -14465,6 +14453,18 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &2475212818803721048
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9174414027654833558}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f2984326842189438dc4f16287275c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &9198794570601956688
 GameObject:
   m_ObjectHideFlags: 0

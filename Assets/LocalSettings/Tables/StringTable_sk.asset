@@ -1457,6 +1457,60 @@ MonoBehaviour:
       sa nesk\xF4r ve\u013Emi vyplatia."
     m_Metadata:
       m_Items: []
+  - m_Id: 143536416780595200
+    m_Localized: "Vitaj v Cargor! Bude\u0161 vyzdvihova\u0165 objedn\xE1vky od z\xE1kazn\xEDkov
+      a doru\u010Dova\u0165 ich do n\xE1kladiakov. Stla\u010D [SPACE] pre pokra\u010Dovanie."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704064
+    m_Localized: "Cho\u010F k z\xE1kazn\xEDkovi a stla\u010D [{0}], potom znova stla\u010D
+      [{0}] pri stole, aby si vyzdvihol predmet."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704065
+    m_Localized: "Odnes predmet na baliaci st\xF4l a stla\u010D [{0}], aby si ho
+      polo\u017Eil."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092672
+    m_Localized: "Stla\u010D [{0}] pri reg\xE1li, aby si vzal spr\xE1vnu krabicu."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092673
+    m_Localized: "Odnes krabicu na baliaci st\xF4l, stla\u010D [{0}] \u2014 predmet
+      sa automaticky zabal\xED."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092674
+    m_Localized: "Znova stla\u010D [{0}] pri stole, aby si vyzdvihol zabalen\xFA
+      krabicu."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092675
+    m_Localized: "Stla\u010D [{0}], aby si umiestnil krabicu na reg\xE1l."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092676
+    m_Localized: "N\xE1kladiak prich\xE1dza, chv\xED\u013Eu po\u010Dkaj..."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092677
+    m_Localized: "Znova stla\u010D [{0}] pri reg\xE1li, aby si vzal bal\xEDk."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092678
+    m_Localized: "Odnes bal\xEDk k zadnej \u010Dasti n\xE1kladiaku a ho\u010F ho
+      dovn\xFAtra."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092679
+    m_Localized: "Stla\u010D [SPACE] pre presko\u010Denie"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416860286976
+    m_Localized: "Tutori\xE1l dokon\u010Den\xFD!"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

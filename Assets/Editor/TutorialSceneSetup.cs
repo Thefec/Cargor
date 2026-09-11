@@ -328,50 +328,34 @@ public static class TutorialSceneSetup
         var customerGO = GameObject.Find("TutorialCustomer");
         var displayTableGO = GameObject.Find("TutorialDisplayTable");
         var packingTableGO = GameObject.Find("TutorialPackingTable");
-        var shelfGO = GameObject.Find("TutorialShelf");
+        // "TutorialShelf" adı Run()'da oluşturulduğu isimdi ama obje sonradan
+        // "TutorialShelfState" olarak yeniden adlandırılmış (component adıyla eşleşsin diye) -
+        // eski isimle Find çağrısı artık hep null dönüyordu, bu da TakeBox/PlaceOnShelf/
+        // TakePackageAgain adımlarının objectToHighlight'ını sessizce null'a düşürüyordu.
+        var shelfGO = GameObject.Find("TutorialShelfState");
         var truckGO = GameObject.Find("TutorialTruck");
 
         var steps = new[]
         {
-            new StepDef("Welcome", TutorialConditionType.PressKey,
-                "Cargor'a hoş geldin! Eşyaları müşterilerden alıp araçlara teslim edeceksin. Devam etmek için [SPACE]'e bas.",
-                "Welcome to Cargor! You'll pick up items from customers and deliver them to trucks. Press [SPACE] to continue.",
+            new StepDef("Welcome", TutorialConditionType.PressKey, "TutorialWelcome",
                 requiredKey: KeyCode.Space),
-            new StepDef("TalkAndGetItem", TutorialConditionType.TakeFromTable,
-                "Müşteriye gidip E'ye basarak siparişini al, sonra masanın önünde tekrar E'ye basarak ürünü al.",
-                "Walk up to the customer and press E, then press E again at the table to pick up the item.",
+            new StepDef("TalkAndGetItem", TutorialConditionType.TakeFromTable, "TutorialTalkAndGetItem",
                 highlight: customerGO),
-            new StepDef("PlaceOnPackingTable", TutorialConditionType.PlaceOnTable,
-                "Ürünü paketleme masasına götür ve önünde E'ye basarak bırak.",
-                "Carry the item to the packing table and press E to place it down.",
+            new StepDef("PlaceOnPackingTable", TutorialConditionType.PlaceOnTable, "TutorialPlaceOnPackingTable",
                 highlight: packingTableGO),
-            new StepDef("TakeBox", TutorialConditionType.TakeFromShelf,
-                "Raftan uygun kutuyu almak için önünde E'ye bas.",
-                "Press E at the shelf to take the right box.",
+            new StepDef("TakeBox", TutorialConditionType.TakeFromShelf, "TutorialTakeBox",
                 highlight: shelfGO, requiresBoxType: true, boxType: NetworkedShelf.BoxType.Red),
-            new StepDef("PackItem", TutorialConditionType.PlaceOnTable,
-                "Kutuyu paketleme masasına götür, E'ye bas — ürün otomatik paketlenecek.",
-                "Bring the box to the packing table and press E — the item will be packed automatically.",
+            new StepDef("PackItem", TutorialConditionType.PlaceOnTable, "TutorialPackItem",
                 highlight: packingTableGO),
-            new StepDef("TakePackedBox", TutorialConditionType.TakeFromTable,
-                "Paketlenmiş kutuyu almak için masanın önünde tekrar E'ye bas.",
-                "Press E again at the table to pick up the packed box.",
+            new StepDef("TakePackedBox", TutorialConditionType.TakeFromTable, "TutorialTakePackedBox",
                 highlight: packingTableGO),
-            new StepDef("PlaceOnShelf", TutorialConditionType.PlaceOnShelf,
-                "Kutuyu rafa yerleştirmek için E'ye bas.",
-                "Press E to place the box on the shelf.",
+            new StepDef("PlaceOnShelf", TutorialConditionType.PlaceOnShelf, "TutorialPlaceOnShelf",
                 highlight: shelfGO),
-            new StepDef("WaitForTruck", TutorialConditionType.WaitForTime,
-                "Araç geliyor, biraz bekle...",
-                "The truck is arriving, hold on...",
+            new StepDef("WaitForTruck", TutorialConditionType.WaitForTime, "TutorialWaitForTruck",
                 highlight: truckGO, waitDuration: 2.5f),
-            new StepDef("TakePackageAgain", TutorialConditionType.TakeFromShelf,
-                "Paketi tekrar almak için rafın önünde E'ye bas.",
-                "Press E at the shelf again to take the package.",
+            new StepDef("TakePackageAgain", TutorialConditionType.TakeFromShelf, "TutorialTakePackageAgain",
                 highlight: shelfGO, requiresBoxType: true, boxType: NetworkedShelf.BoxType.Red),
-            new StepDef("Deliver", TutorialConditionType.DeliverToTruck,
-                "Paketi tırın arkasına götür ve fırlat.",
-                "Carry the package to the back of the truck and throw it in.",
+            new StepDef("Deliver", TutorialConditionType.DeliverToTruck, "TutorialDeliver",
                 highlight: truckGO, requiredDeliveryCount: 1, requiresTruckBoxType: true, truckBoxType: BoxInfo.BoxType.Red),
         };
 
@@ -385,8 +369,7 @@ public static class TutorialSceneSetup
             var el = stepsProp.GetArrayElementAtIndex(i);
             el.FindPropertyRelative("stepName").stringValue = s.Name;
             el.FindPropertyRelative("stepIndex").intValue = i;
-            el.FindPropertyRelative("instructionText").stringValue = s.TR;
-            el.FindPropertyRelative("instructionTextEnglish").stringValue = s.EN;
+            el.FindPropertyRelative("instructionLocalizationKey").stringValue = s.InstructionKey;
             el.FindPropertyRelative("conditionType").enumValueIndex = (int)s.Condition;
             el.FindPropertyRelative("waitDuration").floatValue = s.WaitDuration;
             // Unity array büyürken yeni elemanları son elemandan kopyalar (fresh default değil) —
@@ -418,8 +401,7 @@ public static class TutorialSceneSetup
     {
         public string Name;
         public TutorialConditionType Condition;
-        public string TR;
-        public string EN;
+        public string InstructionKey;
         public GameObject Highlight;
         public KeyCode RequiredKey;
         public float WaitDuration;
@@ -429,15 +411,14 @@ public static class TutorialSceneSetup
         public bool RequiresTruckBoxType;
         public BoxInfo.BoxType TruckBoxType;
 
-        public StepDef(string name, TutorialConditionType condition, string tr, string en, GameObject highlight = null,
+        public StepDef(string name, TutorialConditionType condition, string instructionKey, GameObject highlight = null,
             KeyCode requiredKey = KeyCode.None, float waitDuration = 3f, bool requiresBoxType = false,
             NetworkedShelf.BoxType boxType = default, int requiredDeliveryCount = 1, bool requiresTruckBoxType = false,
             BoxInfo.BoxType truckBoxType = default)
         {
             Name = name;
             Condition = condition;
-            TR = tr;
-            EN = en;
+            InstructionKey = instructionKey;
             Highlight = highlight;
             RequiredKey = requiredKey;
             WaitDuration = waitDuration;

@@ -1472,6 +1472,57 @@ MonoBehaviour:
       che velocizzano le basi nei primi giorni ripagano molto pi\xF9 avanti."
     m_Metadata:
       m_Items: []
+  - m_Id: 143536416780595200
+    m_Localized: Benvenuto a Cargor! Ritirerai gli ordini dai clienti e li consegnerai
+      ai camion. Premi [SPACE] per continuare.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704064
+    m_Localized: Avvicinati al cliente e premi [{0}], poi premi di nuovo [{0}] davanti
+      al tavolo per ritirare l'oggetto.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704065
+    m_Localized: Porta l'oggetto al tavolo d'imballaggio e premi [{0}] per posarlo.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092672
+    m_Localized: Premi [{0}] davanti allo scaffale per prendere la scatola giusta.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092673
+    m_Localized: "Porta la scatola al tavolo d'imballaggio, premi [{0}] \u2014 l'oggetto
+      verr\xE0 imballato automaticamente."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092674
+    m_Localized: Premi di nuovo [{0}] davanti al tavolo per ritirare la scatola imballata.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092675
+    m_Localized: Premi [{0}] per posizionare la scatola sullo scaffale.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092676
+    m_Localized: Il camion sta arrivando, attendi un momento...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092677
+    m_Localized: Premi di nuovo [{0}] davanti allo scaffale per prendere il pacco.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092678
+    m_Localized: Porta il pacco sul retro del camion e lancialo dentro.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092679
+    m_Localized: Premi [SPACE] per saltare
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416860286976
+    m_Localized: Tutorial completato!
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

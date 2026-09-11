@@ -1432,6 +1432,56 @@ MonoBehaviour:
       esimestel p\xE4evadel p\xF5hit\xF5desid, tasuvad end hiljem palju \xE4ra."
     m_Metadata:
       m_Items: []
+  - m_Id: 143536416780595200
+    m_Localized: "Tere tulemast Cargorisse! V\xF5tad klientidelt tellimusi vastu
+      ja toimetad need veokitesse. Vajuta j\xE4tkamiseks [SPACE]."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704064
+    m_Localized: "Mine kliendi juurde ja vajuta [{0}], seej\xE4rel vajuta laua juures
+      uuesti [{0}], et toode k\xE4tte saada."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704065
+    m_Localized: Vii toode pakkimislauale ja vajuta [{0}], et see maha panna.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092672
+    m_Localized: "Vajuta riiuli juures [{0}], et v\xF5tta \xF5ige kast."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092673
+    m_Localized: "Vii kast pakkimislauale, vajuta [{0}] \u2014 toode pakitakse automaatselt."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092674
+    m_Localized: "Vajuta laua juures uuesti [{0}], et v\xF5tta pakitud kast."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092675
+    m_Localized: Vajuta [{0}], et panna kast riiulile.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092676
+    m_Localized: Veok saabub, oota veidi...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092677
+    m_Localized: "Vajuta riiuli juures uuesti [{0}], et v\xF5tta pakk."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092678
+    m_Localized: Vii pakk veoki taha ja viska see sisse.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092679
+    m_Localized: "Vahelej\xE4tmiseks vajuta [SPACE]"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416860286976
+    m_Localized: "\xD5petus l\xF5petatud!"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

@@ -1311,6 +1311,54 @@ MonoBehaviour:
     m_Key: "BelirliG\xFCnlerde\xD6n\xFCneBirka\xE7Y\xFCkseltme"
     m_Metadata:
       m_Items: []
+  - m_Id: 143536416780595200
+    m_Key: TutorialWelcome
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704064
+    m_Key: TutorialTalkAndGetItem
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704065
+    m_Key: TutorialPlaceOnPackingTable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092672
+    m_Key: TutorialTakeBox
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092673
+    m_Key: TutorialPackItem
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092674
+    m_Key: TutorialTakePackedBox
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092675
+    m_Key: TutorialPlaceOnShelf
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092676
+    m_Key: TutorialWaitForTruck
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092677
+    m_Key: TutorialTakePackageAgain
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092678
+    m_Key: TutorialDeliver
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092679
+    m_Key: TutorialSkipHint
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416860286976
+    m_Key: TutorialCompleted
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

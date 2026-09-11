@@ -1439,6 +1439,58 @@ MonoBehaviour:
       mucho m\xE1s adelante."
     m_Metadata:
       m_Items: []
+  - m_Id: 143536416780595200
+    m_Localized: "\xA1Bienvenido a Cargor! Recoger\xE1s pedidos de los clientes y
+      los entregar\xE1s en los camiones. Pulsa [SPACE] para continuar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704064
+    m_Localized: "Ac\xE9rcate al cliente y pulsa [{0}], luego pulsa [{0}] otra vez
+      frente a la mesa para recoger el art\xEDculo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704065
+    m_Localized: "Lleva el art\xEDculo a la mesa de embalaje y pulsa [{0}] para dejarlo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092672
+    m_Localized: "Pulsa [{0}] frente a la estanter\xEDa para coger la caja correcta."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092673
+    m_Localized: "Lleva la caja a la mesa de embalaje, pulsa [{0}] \u2014 el art\xEDculo
+      se empaquetar\xE1 autom\xE1ticamente."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092674
+    m_Localized: Pulsa [{0}] otra vez frente a la mesa para recoger la caja empaquetada.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092675
+    m_Localized: "Pulsa [{0}] para colocar la caja en la estanter\xEDa."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092676
+    m_Localized: "El cami\xF3n est\xE1 llegando, espera un momento..."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092677
+    m_Localized: "Pulsa [{0}] otra vez frente a la estanter\xEDa para coger el paquete."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092678
+    m_Localized: "Lleva el paquete a la parte trasera del cami\xF3n y l\xE1nzalo
+      dentro."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092679
+    m_Localized: Pulsa [SPACE] para saltar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416860286976
+    m_Localized: "\xA1Tutorial completado!"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

@@ -1452,6 +1452,60 @@ MonoBehaviour:
       beaucoup par la suite."
     m_Metadata:
       m_Items: []
+  - m_Id: 143536416780595200
+    m_Localized: "Bienvenue chez Cargor ! Tu r\xE9cup\xE9reras des articles aupr\xE8s
+      des clients et les livreras aux camions. Appuie sur [SPACE] pour continuer."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704064
+    m_Localized: "Va voir le client et appuie sur [{0}], puis appuie \xE0 nouveau
+      sur [{0}] devant la table pour r\xE9cup\xE9rer l'article."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704065
+    m_Localized: "Apporte l'article \xE0 la table d'emballage et appuie sur [{0}]
+      pour le d\xE9poser."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092672
+    m_Localized: "Appuie sur [{0}] devant l'\xE9tag\xE8re pour prendre la bonne bo\xEEte."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092673
+    m_Localized: "Apporte la bo\xEEte \xE0 la table d'emballage, appuie sur [{0}]
+      \u2014 l'article sera emball\xE9 automatiquement."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092674
+    m_Localized: "Appuie \xE0 nouveau sur [{0}] devant la table pour r\xE9cup\xE9rer
+      la bo\xEEte emball\xE9e."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092675
+    m_Localized: "Appuie sur [{0}] pour poser la bo\xEEte sur l'\xE9tag\xE8re."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092676
+    m_Localized: Le camion arrive, patiente un instant...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092677
+    m_Localized: "Appuie \xE0 nouveau sur [{0}] devant l'\xE9tag\xE8re pour prendre
+      le colis."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092678
+    m_Localized: "Apporte le colis \xE0 l'arri\xE8re du camion et jette-le dedans."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092679
+    m_Localized: Appuie sur [SPACE] pour passer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416860286976
+    m_Localized: "Tutoriel termin\xE9 !"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

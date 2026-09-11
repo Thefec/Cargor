@@ -1436,6 +1436,57 @@ MonoBehaviour:
       se puno isplate."
     m_Metadata:
       m_Items: []
+  - m_Id: 143536416780595200
+    m_Localized: "Dobrodo\u0161ao u Cargor! Preuzimat \u0107e\u0161 narud\u017Ebe
+      od kupaca i dostavljati ih kamionima. Pritisni [SPACE] za nastavak."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704064
+    m_Localized: "Pri\u0111i kupcu i pritisni [{0}], zatim ponovno pritisni [{0}]
+      kod stola da preuzme\u0161 predmet."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704065
+    m_Localized: "Odnesi predmet na stol za pakiranje i pritisni [{0}] da ga odlo\u017Ei\u0161."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092672
+    m_Localized: "Pritisni [{0}] kod police da uzme\u0161 pravu kutiju."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092673
+    m_Localized: "Odnesi kutiju na stol za pakiranje, pritisni [{0}] \u2014 predmet
+      \u0107e se automatski zapakirati."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092674
+    m_Localized: "Ponovno pritisni [{0}] kod stola da preuzme\u0161 zapakiranu kutiju."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092675
+    m_Localized: "Pritisni [{0}] da stavi\u0161 kutiju na policu."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092676
+    m_Localized: "Kamion dolazi, pri\u010Dekaj malo..."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092677
+    m_Localized: "Ponovno pritisni [{0}] kod police da uzme\u0161 paket."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092678
+    m_Localized: "Odnesi paket do stra\u017Enjeg dijela kamiona i baci ga unutra."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092679
+    m_Localized: Pritisni [SPACE] za preskakanje
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416860286976
+    m_Localized: "Tutorial dovr\u0161en!"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

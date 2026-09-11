@@ -1456,6 +1456,61 @@ MonoBehaviour:
       atmaks\u0101jas daudz vair\u0101k."
     m_Metadata:
       m_Items: []
+  - m_Id: 143536416780595200
+    m_Localized: "Laipni l\u016Bdzam Cargor! Tu \u0146emsi pas\u016Bt\u012Bjumus
+      no klientiem un pieg\u0101d\u0101si tos kravas automa\u0161\u012Bn\u0101m.
+      Nospied [SPACE], lai turpin\u0101tu."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704064
+    m_Localized: "Ej pie klienta un nospied [{0}], tad v\u0113lreiz nospied [{0}]
+      pie galda, lai pa\u0146emtu preci."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704065
+    m_Localized: "Aiznes preci uz iepako\u0161anas galdu un nospied [{0}], lai to
+      noliktu."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092672
+    m_Localized: "Nospied [{0}] pie plaukta, lai pa\u0146emtu pareizo kasti."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092673
+    m_Localized: "Aiznes kasti uz iepako\u0161anas galdu, nospied [{0}] \u2014 prece
+      tiks iepakota autom\u0101tiski."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092674
+    m_Localized: "V\u0113lreiz nospied [{0}] pie galda, lai pa\u0146emtu iepakoto
+      kasti."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092675
+    m_Localized: Nospied [{0}], lai noliktu kasti uz plaukta.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092676
+    m_Localized: "Kravas automa\u0161\u012Bna tuvojas, uzgaidi mazliet..."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092677
+    m_Localized: "V\u0113lreiz nospied [{0}] pie plaukta, lai pa\u0146emtu paku."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092678
+    m_Localized: "Aiznes paku uz kravas automa\u0161\u012Bnas aizmuguri un iemet
+      to iek\u0161\u0101."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092679
+    m_Localized: Nospied [SPACE], lai izlaistu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416860286976
+    m_Localized: "Tutori\u0101ls pabeigts!"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

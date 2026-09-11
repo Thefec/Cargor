@@ -1438,6 +1438,57 @@ MonoBehaviour:
       kasneje zelo obrestujejo."
     m_Metadata:
       m_Items: []
+  - m_Id: 143536416780595200
+    m_Localized: "Dobrodo\u0161el v Cargor! Naro\u010Dila bo\u0161 prevzemal od strank
+      in jih dostavljal do tovornjakov. Pritisni [SPACE] za nadaljevanje."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704064
+    m_Localized: "Pojdi do stranke in pritisni [{0}], nato znova pritisni [{0}] pri
+      mizi, da prevzame\u0161 izdelek."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704065
+    m_Localized: "Odnesi izdelek na mizo za pakiranje in pritisni [{0}], da ga odlo\u017Ei\u0161."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092672
+    m_Localized: "Pritisni [{0}] pri polici, da vzame\u0161 pravo \u0161katlo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092673
+    m_Localized: "Odnesi \u0161katlo na mizo za pakiranje, pritisni [{0}] \u2014
+      izdelek bo samodejno zapakiran."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092674
+    m_Localized: "Znova pritisni [{0}] pri mizi, da prevzame\u0161 zapakirano \u0161katlo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092675
+    m_Localized: "Pritisni [{0}], da postavi\u0161 \u0161katlo na polico."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092676
+    m_Localized: "Tovornjak prihaja, po\u010Dakaj trenutek..."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092677
+    m_Localized: "Znova pritisni [{0}] pri polici, da vzame\u0161 paket."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092678
+    m_Localized: Odnesi paket do zadnjega dela tovornjaka in ga vrzi noter.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092679
+    m_Localized: "Pritisni [SPACE], da presko\u010Di\u0161"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416860286976
+    m_Localized: "Tutorial zaklju\u010Den!"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

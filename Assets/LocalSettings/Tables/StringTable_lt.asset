@@ -1457,6 +1457,61 @@ MonoBehaviour:
       dienomis, v\u0117liau gerokai atsiperka."
     m_Metadata:
       m_Items: []
+  - m_Id: 143536416780595200
+    m_Localized: "Sveikas atvyk\u0119s \u012F Cargor! Priimsi u\u017Esakymus i\u0161
+      klient\u0173 ir pristatysi juos \u012F sunkve\u017Eimius. Spausk [SPACE], kad
+      t\u0119stum."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704064
+    m_Localized: "Prieik prie kliento ir spausk [{0}], tada dar kart\u0105 spausk
+      [{0}] prie stalo, kad paimtum prek\u0119."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704065
+    m_Localized: "Nune\u0161k prek\u0119 prie pakavimo stalo ir spausk [{0}], kad
+      j\u0105 pad\u0117tum."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092672
+    m_Localized: "Spausk [{0}] prie lentynos, kad paimtum tinkam\u0105 d\u0117\u017E\u0119."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092673
+    m_Localized: "Nune\u0161k d\u0117\u017E\u0119 prie pakavimo stalo, spausk [{0}]
+      \u2014 prek\u0117 bus supakuota automati\u0161kai."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092674
+    m_Localized: "Dar kart\u0105 spausk [{0}] prie stalo, kad paimtum supakuot\u0105
+      d\u0117\u017E\u0119."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092675
+    m_Localized: "Spausk [{0}], kad pad\u0117tum d\u0117\u017E\u0119 ant lentynos."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092676
+    m_Localized: "Sunkve\u017Eimis atvyksta, palauk truput\u012F..."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092677
+    m_Localized: "Dar kart\u0105 spausk [{0}] prie lentynos, kad paimtum siuntin\u012F."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092678
+    m_Localized: "Nune\u0161k siuntin\u012F \u012F sunkve\u017Eimio gal\u0105 ir
+      \u012Fmesk j\u012F vidun."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092679
+    m_Localized: Spausk [SPACE], kad praleistum
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416860286976
+    m_Localized: Tutorialas baigtas!
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

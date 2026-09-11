@@ -1436,6 +1436,59 @@ MonoBehaviour:
       Escolhas que aceleram o b\xE1sico nos primeiros dias compensam muito mais tarde."
     m_Metadata:
       m_Items: []
+  - m_Id: 143536416780595200
+    m_Localized: "Bem-vindo ao Cargor! Vais recolher pedidos dos clientes e entreg\xE1-los
+      nos cami\xF5es. Pressiona [SPACE] para continuar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704064
+    m_Localized: "Vai at\xE9 o cliente e pressiona [{0}], depois pressiona [{0}]
+      novamente junto \xE0 mesa para pegar o item."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704065
+    m_Localized: "Leva o item at\xE9 a mesa de embalagem e pressiona [{0}] para o
+      colocar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092672
+    m_Localized: "Pressiona [{0}] junto \xE0 prateleira para pegar a caixa certa."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092673
+    m_Localized: "Leva a caixa at\xE9 a mesa de embalagem, pressiona [{0}] \u2014
+      o item ser\xE1 embalado automaticamente."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092674
+    m_Localized: "Pressiona [{0}] novamente junto \xE0 mesa para pegar a caixa embalada."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092675
+    m_Localized: Pressiona [{0}] para colocar a caixa na prateleira.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092676
+    m_Localized: "O cami\xE3o est\xE1 a chegar, aguarda um pouco..."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092677
+    m_Localized: "Pressiona [{0}] novamente junto \xE0 prateleira para pegar o pacote."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092678
+    m_Localized: "Leva o pacote at\xE9 \xE0 traseira do cami\xE3o e atira-o para
+      dentro."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092679
+    m_Localized: Pressiona [SPACE] para saltar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416860286976
+    m_Localized: "Tutorial conclu\xEDdo!"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

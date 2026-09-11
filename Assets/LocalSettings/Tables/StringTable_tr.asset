@@ -388,7 +388,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000046
-    m_Localized: "D\u0131\u015far\u0131 aramalarda zaman atlamas\u0131 yar\u0131ya iner."
+    m_Localized: "D\u0131\u015Far\u0131 aramalarda zaman atlamas\u0131 yar\u0131ya
+      iner."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000047
@@ -1445,6 +1446,63 @@ MonoBehaviour:
       d\xFC\u015F\xFCn: baz\u0131 y\xFCkseltmeler birbirini d\u0131\u015Flar, baz\u0131lar\u0131
       belli bir g\xFCne kadar a\xE7\u0131lmaz. Erken g\xFCnlerde temel i\u015Fleyi\u015Fi
       h\u0131zland\u0131ran se\xE7imler, ileride i\u015Fine \xE7ok yarar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416780595200
+    m_Localized: "Cargor'a ho\u015F geldin! E\u015Fyalar\u0131 m\xFC\u015Fterilerden
+      al\u0131p ara\xE7lara teslim edeceksin. Devam etmek i\xE7in [SPACE] tu\u015Funa
+      bas."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704064
+    m_Localized: "M\xFC\u015Fteriye gidip [{0}] tu\u015Funa basarak sipari\u015Fini
+      al, sonra masan\u0131n \xF6n\xFCnde tekrar [{0}] tu\u015Funa basarak \xFCr\xFCn\xFC
+      al."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704065
+    m_Localized: "\xDCr\xFCn\xFC paketleme masas\u0131na g\xF6t\xFCr ve \xF6n\xFCnde
+      [{0}] tu\u015Funa basarak b\u0131rak."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092672
+    m_Localized: "Raftan uygun kutuyu almak i\xE7in \xF6n\xFCnde [{0}] tu\u015Funa
+      bas."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092673
+    m_Localized: "Kutuyu paketleme masas\u0131na g\xF6t\xFCr, [{0}] tu\u015Funa bas
+      \u2014 \xFCr\xFCn otomatik paketlenecek."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092674
+    m_Localized: "Paketlenmi\u015F kutuyu almak i\xE7in masan\u0131n \xF6n\xFCnde
+      tekrar [{0}] tu\u015Funa bas."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092675
+    m_Localized: "Kutuyu rafa yerle\u015Ftirmek i\xE7in [{0}] tu\u015Funa bas."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092676
+    m_Localized: "Ara\xE7 geliyor, biraz bekle..."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092677
+    m_Localized: "Paketi tekrar almak i\xE7in raf\u0131n \xF6n\xFCnde [{0}] tu\u015Funa
+      bas."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092678
+    m_Localized: "Paketi t\u0131r\u0131n arkas\u0131na g\xF6t\xFCr ve f\u0131rlat."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092679
+    m_Localized: "Ge\xE7mek i\xE7in [SPACE] tu\u015Funa bas\u0131n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416860286976
+    m_Localized: "Tutorial tamamland\u0131!"
     m_Metadata:
       m_Items: []
   references:

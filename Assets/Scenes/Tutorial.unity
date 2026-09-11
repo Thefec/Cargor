@@ -5243,10 +5243,7 @@ MonoBehaviour:
   tutorialSteps:
   - stepName: Welcome
     stepIndex: 0
-    instructionText: "Cargor'a ho\u015F geldin! E\u015Fyalar\u0131 m\xFC\u015Fterilerden
-      al\u0131p ara\xE7lara teslim edeceksin. Devam etmek i\xE7in [SPACE]'e bas."
-    instructionTextEnglish: Welcome to Cargor! You'll pick up items from customers
-      and deliver them to trucks. Press [SPACE] to continue.
+    instructionLocalizationKey: TutorialWelcome
     conditionType: 9
     waitDuration: 3
     requiresItemPickup: 0
@@ -5273,10 +5270,7 @@ MonoBehaviour:
     currentDeliveryCount: 0
   - stepName: TalkAndGetItem
     stepIndex: 1
-    instructionText: "M\xFC\u015Fteriye gidip E'ye basarak sipari\u015Fini al, sonra
-      masan\u0131n \xF6n\xFCnde tekrar E'ye basarak \xFCr\xFCn\xFC al."
-    instructionTextEnglish: Walk up to the customer and press E, then press E again
-      at the table to pick up the item.
+    instructionLocalizationKey: TutorialTalkAndGetItem
     conditionType: 3
     waitDuration: 3
     requiresItemPickup: 0
@@ -5303,10 +5297,7 @@ MonoBehaviour:
     currentDeliveryCount: 0
   - stepName: PlaceOnPackingTable
     stepIndex: 2
-    instructionText: "\xDCr\xFCn\xFC paketleme masas\u0131na g\xF6t\xFCr ve \xF6n\xFCnde
-      E'ye basarak b\u0131rak."
-    instructionTextEnglish: Carry the item to the packing table and press E to place
-      it down.
+    instructionLocalizationKey: TutorialPlaceOnPackingTable
     conditionType: 2
     waitDuration: 3
     requiresItemPickup: 0
@@ -5333,8 +5324,7 @@ MonoBehaviour:
     currentDeliveryCount: 0
   - stepName: TakeBox
     stepIndex: 3
-    instructionText: "Raftan uygun kutuyu almak i\xE7in \xF6n\xFCnde E'ye bas."
-    instructionTextEnglish: Press E at the shelf to take the right box.
+    instructionLocalizationKey: TutorialTakeBox
     conditionType: 5
     waitDuration: 3
     requiresItemPickup: 0
@@ -5352,7 +5342,7 @@ MonoBehaviour:
     onStepComplete:
       m_PersistentCalls:
         m_Calls: []
-    objectToHighlight: {fileID: 1015884814}
+    objectToHighlight: {fileID: 1554693076}
     targetPosition: {fileID: 0}
     showArrow: 0
     targetUIElement: {fileID: 0}
@@ -5361,10 +5351,7 @@ MonoBehaviour:
     currentDeliveryCount: 0
   - stepName: PackItem
     stepIndex: 4
-    instructionText: "Kutuyu paketleme masas\u0131na g\xF6t\xFCr, E'ye bas \u2014
-      \xFCr\xFCn otomatik paketlenecek."
-    instructionTextEnglish: "Bring the box to the packing table and press E \u2014
-      the item will be packed automatically."
+    instructionLocalizationKey: TutorialPackItem
     conditionType: 2
     waitDuration: 3
     requiresItemPickup: 0
@@ -5391,9 +5378,7 @@ MonoBehaviour:
     currentDeliveryCount: 0
   - stepName: TakePackedBox
     stepIndex: 5
-    instructionText: "Paketlenmi\u015F kutuyu almak i\xE7in masan\u0131n \xF6n\xFCnde
-      tekrar E'ye bas."
-    instructionTextEnglish: Press E again at the table to pick up the packed box.
+    instructionLocalizationKey: TutorialTakePackedBox
     conditionType: 3
     waitDuration: 3
     requiresItemPickup: 0
@@ -5420,8 +5405,7 @@ MonoBehaviour:
     currentDeliveryCount: 0
   - stepName: PlaceOnShelf
     stepIndex: 6
-    instructionText: "Kutuyu rafa yerle\u015Ftirmek i\xE7in E'ye bas."
-    instructionTextEnglish: Press E to place the box on the shelf.
+    instructionLocalizationKey: TutorialPlaceOnShelf
     conditionType: 4
     waitDuration: 3
     requiresItemPickup: 0
@@ -5448,8 +5432,7 @@ MonoBehaviour:
     currentDeliveryCount: 0
   - stepName: WaitForTruck
     stepIndex: 7
-    instructionText: "Ara\xE7 geliyor, biraz bekle..."
-    instructionTextEnglish: The truck is arriving, hold on...
+    instructionLocalizationKey: TutorialWaitForTruck
     conditionType: 8
     waitDuration: 2.5
     requiresItemPickup: 0
@@ -5476,8 +5459,7 @@ MonoBehaviour:
     currentDeliveryCount: 0
   - stepName: TakePackageAgain
     stepIndex: 8
-    instructionText: "Paketi tekrar almak i\xE7in raf\u0131n \xF6n\xFCnde E'ye bas."
-    instructionTextEnglish: Press E at the shelf again to take the package.
+    instructionLocalizationKey: TutorialTakePackageAgain
     conditionType: 5
     waitDuration: 3
     requiresItemPickup: 0
@@ -5504,9 +5486,7 @@ MonoBehaviour:
     currentDeliveryCount: 0
   - stepName: Deliver
     stepIndex: 9
-    instructionText: "Paketi t\u0131r\u0131n arkas\u0131na g\xF6t\xFCr ve f\u0131rlat."
-    instructionTextEnglish: Carry the package to the back of the truck and throw
-      it in.
+    instructionLocalizationKey: TutorialDeliver
     conditionType: 10
     waitDuration: 3
     requiresItemPickup: 0
@@ -5546,17 +5526,11 @@ MonoBehaviour:
   skipKey: 32
   showSkipHint: 1
   skipHintText: {fileID: 0}
-  skipHintMessageTR: "Ge\xE7mek i\xE7in [SPACE] tu\u015Funa bas\u0131n"
-  skipHintMessageEN: Press [SPACE] to skip
   playerInventory: {fileID: 0}
   tutorialCustomer: {fileID: 0}
   tutorialDropOffTable: {fileID: 357473495}
   highlightPrefab: {fileID: 0}
   highlightColor: {r: 0, g: 0.5754717, b: 0.025365295, a: 1}
-  tutorialCompletedMessageTR: "E\u011Fitim tamamland\u0131. esc men\xFC \xFCzerinden
-    \xE7\u0131k\u0131\u015F yap\u0131p men\xFCye d\xF6nebilirsiniz."
-  tutorialCompletedMessageEN: Training complete. You can exit via the ESC menu and
-    return to the main menu.
   showDebugLogs: 1
 --- !u!224 &437215979
 RectTransform:
@@ -7277,8 +7251,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: PATRON
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: f00f6d77295b8244da67e40b5c2bf49d, type: 2}
-  m_sharedMaterial: {fileID: 3646549821621045345, guid: f00f6d77295b8244da67e40b5c2bf49d, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 9b06d1fb27c356c4098c02fad67cc786, type: 2}
+  m_sharedMaterial: {fileID: -713182712946970239, guid: 9b06d1fb27c356c4098c02fad67cc786, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -10950,6 +10924,85 @@ MonoBehaviour:
   blendDistance: 0
   weight: 1
   sharedProfile: {fileID: 11400000, guid: d6fbe3556208a4a43abb982cd0a45514, type: 2}
+--- !u!1 &990500001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 990500004}
+  - component: {fileID: 990500003}
+  - component: {fileID: 990500002}
+  m_Layer: 0
+  m_Name: EventSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &990500002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 990500001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01614664b831546d2ae94a42149d80ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SendPointerHoverToParent: 1
+  m_MoveRepeatDelay: 0.5
+  m_MoveRepeatRate: 0.1
+  m_XRTrackingOrigin: {fileID: 0}
+  m_ActionsAsset: {fileID: -944628639613478452, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_PointAction: {fileID: -1654692200621890270, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_MoveAction: {fileID: -8784545083839296357, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_SubmitAction: {fileID: 392368643174621059, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_CancelAction: {fileID: 7727032971491509709, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_LeftClickAction: {fileID: 3001919216989983466, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_MiddleClickAction: {fileID: -2185481485913320682, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_RightClickAction: {fileID: -4090225696740746782, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_ScrollWheelAction: {fileID: 6240969308177333660, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_TrackedDevicePositionAction: {fileID: 6564999863303420839, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_TrackedDeviceOrientationAction: {fileID: 7970375526676320489, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_DeselectOnBackgroundClick: 1
+  m_PointerBehavior: 0
+  m_CursorLockBehavior: 0
+  m_ScrollDeltaPerTick: 6
+--- !u!114 &990500003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 990500001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76c392e42b5098c458856cdf6ecaaaa1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_FirstSelected: {fileID: 0}
+  m_sendNavigationEvents: 1
+  m_DragThreshold: 10
+--- !u!4 &990500004
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 990500001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &991252678
 GameObject:
   m_ObjectHideFlags: 0
@@ -20948,8 +21001,8 @@ MonoBehaviour:
 
 '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 6d73b0534c7c4cd44899afaba2dcb2b1, type: 2}
-  m_sharedMaterial: {fileID: 80361077559399187, guid: 6d73b0534c7c4cd44899afaba2dcb2b1, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 9b06d1fb27c356c4098c02fad67cc786, type: 2}
+  m_sharedMaterial: {fileID: -713182712946970239, guid: 9b06d1fb27c356c4098c02fad67cc786, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -26442,85 +26495,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!1 &990500001
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 990500004}
-  - component: {fileID: 990500003}
-  - component: {fileID: 990500002}
-  m_Layer: 0
-  m_Name: EventSystem
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &990500002
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 990500001}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 01614664b831546d2ae94a42149d80ac, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  m_SendPointerHoverToParent: 1
-  m_MoveRepeatDelay: 0.5
-  m_MoveRepeatRate: 0.1
-  m_XRTrackingOrigin: {fileID: 0}
-  m_ActionsAsset: {fileID: -944628639613478452, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_PointAction: {fileID: -1654692200621890270, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_MoveAction: {fileID: -8784545083839296357, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_SubmitAction: {fileID: 392368643174621059, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_CancelAction: {fileID: 7727032971491509709, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_LeftClickAction: {fileID: 3001919216989983466, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_MiddleClickAction: {fileID: -2185481485913320682, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_RightClickAction: {fileID: -4090225696740746782, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_ScrollWheelAction: {fileID: 6240969308177333660, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_TrackedDevicePositionAction: {fileID: 6564999863303420839, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_TrackedDeviceOrientationAction: {fileID: 7970375526676320489, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_DeselectOnBackgroundClick: 1
-  m_PointerBehavior: 0
-  m_CursorLockBehavior: 0
-  m_ScrollDeltaPerTick: 6
---- !u!114 &990500003
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 990500001}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 76c392e42b5098c458856cdf6ecaaaa1, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  m_FirstSelected: {fileID: 0}
-  m_sendNavigationEvents: 1
-  m_DragThreshold: 10
---- !u!4 &990500004
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 990500001}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

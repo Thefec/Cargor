@@ -1439,6 +1439,57 @@ MonoBehaviour:
       die Grundabl\xE4ufe beschleunigen, zahlen sich sp\xE4ter sehr aus."
     m_Metadata:
       m_Items: []
+  - m_Id: 143536416780595200
+    m_Localized: "Willkommen bei Cargor! Du nimmst Bestellungen von Kunden entgegen
+      und lieferst sie an die Lkws. Dr\xFCcke [SPACE], um fortzufahren."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704064
+    m_Localized: "Geh zum Kunden und dr\xFCcke [{0}], dann dr\xFCcke [{0}] erneut
+      am Tisch, um den Artikel aufzunehmen."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704065
+    m_Localized: "Bring den Artikel zum Packtisch und dr\xFCcke [{0}], um ihn abzulegen."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092672
+    m_Localized: "Dr\xFCcke [{0}] am Regal, um die richtige Kiste zu nehmen."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092673
+    m_Localized: "Bring die Kiste zum Packtisch und dr\xFCcke [{0}] \u2014 der Artikel
+      wird automatisch verpackt."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092674
+    m_Localized: "Dr\xFCcke [{0}] erneut am Tisch, um die verpackte Kiste aufzunehmen."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092675
+    m_Localized: "Dr\xFCcke [{0}], um die Kiste ins Regal zu stellen."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092676
+    m_Localized: Der Lkw kommt, warte kurz...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092677
+    m_Localized: "Dr\xFCcke [{0}] erneut am Regal, um das Paket zu nehmen."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092678
+    m_Localized: "Bring das Paket zur R\xFCckseite des Lkws und wirf es hinein."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092679
+    m_Localized: "Dr\xFCcke [SPACE], um zu \xFCberspringen"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416860286976
+    m_Localized: Tutorial abgeschlossen!
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

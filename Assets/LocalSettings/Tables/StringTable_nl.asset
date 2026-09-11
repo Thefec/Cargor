@@ -1461,6 +1461,59 @@ MonoBehaviour:
       betalen zich later flink uit."
     m_Metadata:
       m_Items: []
+  - m_Id: 143536416780595200
+    m_Localized: Welkom bij Cargor! Je haalt bestellingen op bij klanten en levert
+      ze af bij de vrachtwagens. Druk op [SPACE] om door te gaan.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704064
+    m_Localized: Loop naar de klant en druk op [{0}], druk daarna opnieuw op [{0}]
+      bij de tafel om het product op te pakken.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416847704065
+    m_Localized: Breng het product naar de inpaktafel en druk op [{0}] om het neer
+      te zetten.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092672
+    m_Localized: Druk op [{0}] bij het schap om de juiste doos te pakken.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092673
+    m_Localized: "Breng de doos naar de inpaktafel, druk op [{0}] \u2014 het product
+      wordt automatisch ingepakt."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092674
+    m_Localized: Druk opnieuw op [{0}] bij de tafel om de ingepakte doos op te pakken.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092675
+    m_Localized: Druk op [{0}] om de doos op het schap te zetten.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092676
+    m_Localized: De vrachtwagen komt eraan, wacht even...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092677
+    m_Localized: Druk opnieuw op [{0}] bij het schap om het pakket te pakken.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092678
+    m_Localized: Breng het pakket naar de achterkant van de vrachtwagen en gooi het
+      erin.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416856092679
+    m_Localized: Druk op [SPACE] om over te slaan
+    m_Metadata:
+      m_Items: []
+  - m_Id: 143536416860286976
+    m_Localized: Tutorial voltooid!
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
