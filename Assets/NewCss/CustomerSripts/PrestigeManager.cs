@@ -170,12 +170,36 @@ public class PrestigeManager : NetworkBehaviour
         ModifyPrestige(-Mathf.Abs(amount));
     }
 
+    // prestigeText objesinde NumberRollDisplay varsa sayaç animasyonu + flaş/punch
+    // üzerinden gider; yoksa eski ":F0" yazımına sessizce düşülür. İlk çağrı (OnNetworkSpawn
+    // kaynaklı) her zaman anında oturtulur — açılışta 0'dan başlangıç prestijine saymasın.
+    private NumberRollDisplay _prestigeRollDisplay;
+    private bool _prestigeRollDisplayCached;
+    private bool _prestigeUiFirstUpdateDone;
+
     private void UpdatePrestigeUI()
     {
-        if (prestigeText != null)
+        if (prestigeText == null) return;
+
+        if (!_prestigeRollDisplayCached)
         {
-            prestigeText.text = $"{currentPrestige.Value:F0}";
+            _prestigeRollDisplay = prestigeText.GetComponent<NumberRollDisplay>();
+            _prestigeRollDisplayCached = true;
         }
+
+        if (_prestigeRollDisplay != null)
+        {
+            if (!_prestigeUiFirstUpdateDone)
+                _prestigeRollDisplay.SetValueInstant(currentPrestige.Value);
+            else
+                _prestigeRollDisplay.SetValue(currentPrestige.Value);
+
+            _prestigeUiFirstUpdateDone = true;
+            return;
+        }
+
+        prestigeText.text = $"{currentPrestige.Value:F0}";
+        _prestigeUiFirstUpdateDone = true;
     }
 
     private void UpdateCustomerCapacityUI()
