@@ -935,11 +935,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GlobalObjectIdHash: 3640098813
   InScenePlacedSourceGlobalObjectIdHash: 0
+  m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
-  <InScenePlaced>k__BackingField: 0
+  m_InScenePlaced: 0
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 1
   SpawnWithObservers: 1
@@ -1040,7 +1041,7 @@ AudioSource:
   m_GameObject: {fileID: 1674395625942143596}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 1274258241605518300, guid: 0895000e847426f498429b3135af2727, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: 051522f2854ad304ea7869827d62377c, type: 3}
   m_PlayOnAwake: 0
@@ -1137,7 +1138,7 @@ AudioSource:
   m_GameObject: {fileID: 1674395625942143596}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 1274258241605518300, guid: 0895000e847426f498429b3135af2727, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: e5cdd21af685937478f8a5590bbb9ffd, type: 3}
   m_PlayOnAwake: 0

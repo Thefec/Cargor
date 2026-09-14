@@ -188,8 +188,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7c82736062490f40a06cbe5f3b97b31, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dropMoneyPenalty: 10
-  dropPrestigePenalty: 0.01
+  economySettings: {fileID: 0}
   boxDropSound: {fileID: 0}
   soundVolume: 1
   minVelocityForSound: 2
@@ -209,10 +208,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GlobalObjectIdHash: 4253886102
   InScenePlacedSourceGlobalObjectIdHash: 0
+  m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
+  m_InScenePlaced: 0
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 1
   SpawnWithObservers: 1
@@ -229,7 +230,7 @@ AudioSource:
   m_GameObject: {fileID: 1312192829740983107}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 1274258241605518300, guid: 0895000e847426f498429b3135af2727, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1

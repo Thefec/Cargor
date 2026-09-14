@@ -6,6 +6,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Localization.Settings;
 using NewCss;
+using NewCss.Audio;
 
 /// <summary>
 /// Tutorial yönetim sistemi - adım adım tutorial akışı, UI yönetimi ve koşul kontrollerini sağlar.
@@ -269,6 +270,7 @@ public class TutorialManager : NetworkBehaviour
             typingSoundSource = gameObject.AddComponent<AudioSource>();
             typingSoundSource.playOnAwake = false;
             typingSoundSource.volume = typingSoundVolume;
+            AudioRouting.Route(typingSoundSource, AudioCategory.SFX);
         }
     }
 

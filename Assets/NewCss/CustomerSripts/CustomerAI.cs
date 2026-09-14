@@ -5,6 +5,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Rendering;
+using NewCss.Audio;
 using Random = UnityEngine.Random;
 
 namespace NewCss
@@ -503,6 +504,7 @@ namespace NewCss
 
             _audioSource.playOnAwake = false;
             _audioSource.spatialBlend = 1f;
+            AudioRouting.Route(_audioSource, AudioCategory.SFX);
         }
 
         private void InitializeInteractionCollider()

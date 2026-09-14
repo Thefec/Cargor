@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using NewCss.Audio;
 
 /// <summary>
 /// Ana menü sistemi.
@@ -647,13 +648,19 @@ public class Menu : MonoBehaviour
 
     public void PlayButtonSound() => PlaySound(buttonClickSound, buttonSoundVolume);
 
+    // DÜZELTME (QA, çifte ölçekleme): SFX/Master kısılması artık PlaySoundOnSource'un gittiği
+    // yollarda (mixer'a route edilmiş AudioSource ya da AudioRouting.PlayOneShot fallback'i)
+    // CargorMixer üzerinden uygulanıyor. Burada AYRICA GetSFXVolume()*GetMasterVolume()
+    // çarpılırsa ses iki kez kısılır — vol sadece tasarım değerini (buttonSoundVolume vb.) taşır.
     private void PlaySound(AudioClip clip, float vol)
     {
         if (clip == null) return;
-        if (settingsManager != null) vol *= settingsManager.GetSFXVolume() * settingsManager.GetMasterVolume();
         if      (uiAudioSource  != null) uiAudioSource.PlayOneShot(clip, vol);
         else if (sfxAudioSource != null) sfxAudioSource.PlayOneShot(clip, vol);
-        else if (Camera.main    != null) AudioSource.PlayClipAtPoint(clip, Camera.main.transform.position, vol);
+        // PlayClipAtPoint YERİNE: mixer'a uğramıyordu, SFX slider'ını atlıyordu (bkz.
+        // plans/ses-tasarimi.md §5). uiAudioSource/sfxAudioSource şu an hep null olduğu için
+        // (grep ile doğrulandı) bu aslında ÇALIŞAN TEK yoldu.
+        else AudioRouting.PlayOneShot(AudioCategory.SFX, clip, vol);
     }
 
     // ── Escape ────────────────────────────────────────────────

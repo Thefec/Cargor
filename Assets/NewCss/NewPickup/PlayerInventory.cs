@@ -1,4 +1,5 @@
 using NewCss;
+using NewCss.Audio;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -320,6 +321,7 @@ public partial class PlayerInventory : NetworkBehaviour
             _audioSource = gameObject.AddComponent<AudioSource>();
         }
 
+        AudioRouting.Route(_audioSource, AudioCategory.SFX);
         ConfigureAudioSource(_audioSource);
     }
 

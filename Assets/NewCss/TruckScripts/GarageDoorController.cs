@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using NewCss.Audio;
 
 namespace NewCss
 {
@@ -143,6 +144,8 @@ namespace NewCss
             {
                 motorAudioSource = gameObject.AddComponent<AudioSource>();
             }
+
+            AudioRouting.Route(motorAudioSource, AudioCategory.SFX);
 
             // AudioSource ayarları
             motorAudioSource.playOnAwake = false;
