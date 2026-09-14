@@ -26,8 +26,11 @@ public static class AudioImportSettingsSetup
     /// oradaki 8 eski caz WAV'ı bu turun konusu değil, gereksiz diff üretmesin.</summary>
     private static readonly string[] TaranacakKlasorler =
     {
-        "Assets/Music/Gameplay",
-        "Assets/Music/Menu",
+        // Faz C (müzik sistemi, 2026-09-14): Gameplay/Menu, Resources.LoadAll ile runtime'da
+        // okunabilmesi için Assets/Resources/Music/ altına taşındı (bkz.
+        // Assets/NewCss/Audio/Music/MusicLibrary.cs). Stinger BURADA taşınmadı — Faz B'nin alanı.
+        "Assets/Resources/Music/Gameplay",
+        "Assets/Resources/Music/Menu",
         "Assets/Music/Stinger",
         "Assets/Audio/SFX",
     };

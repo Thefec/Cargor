@@ -4,6 +4,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using NewCss.Audio;
 
 /// <summary>
 /// "Boş slot bekçisi" — sahne + prefab'ları tarayıp KENDİ script'lerimizdeki (Assets/NewCss,
@@ -30,6 +31,13 @@ public static class AudioSlotValidator
     {
         int bosSlot = 0;
         int taranan = 0;
+
+        // Faz B (plans/ses-tasarimi.md §3): SfxLibrary ScriptableObject sahne/prefab TARAMASINDAN
+        // geçmez (MonoBehaviour değil) — bu yüzden ayrı bir adım. MoneyEarned/CorrectItem BİLEREK
+        // boş (klip henüz seçilmedi, plan §3.2) — bu ikisi burada GÜRÜLTÜLÜ raporlanması BEKLENEN
+        // bir durumdur, hata değil; kullanıcı klip seçince kapanır.
+        bosSlot += ReportEmptySfxLibrarySlots();
+        taranan++;
 
         string originalScenePath = EditorSceneManager.GetActiveScene().path;
 
@@ -119,6 +127,48 @@ public static class AudioSlotValidator
 
             string path = GetHierarchyPath(mb.transform);
             Debug.LogError($"[SesSlotKontrol] BOŞ SLOT: {assetPath} :: {path} :: {mb.GetType().Name}.{prop.name} ({prop.type})");
+            found++;
+        }
+
+        return found;
+    }
+
+    private const string SfxLibraryPath = "Assets/Resources/Audio/SfxLibrary.asset";
+
+    /// <summary>SfxLibrary.asset'teki her SfxId için klip atanmış mı kontrol eder. Asset hiç yoksa
+    /// (Tools ▸ Cargor ▸ Audio ▸ SFX Kutuphanesini Kur hiç çalıştırılmamış) da hata sayılır —
+    /// sessizce atlanmaz, aksi halde tüm olay sesleri sessizce ölür (bkz. GDD §27 CAUTION).</summary>
+    private static int ReportEmptySfxLibrarySlots()
+    {
+        var library = AssetDatabase.LoadAssetAtPath<SfxLibrary>(SfxLibraryPath);
+        if (library == null)
+        {
+            Debug.LogError($"[SesSlotKontrol] BOŞ SLOT: {SfxLibraryPath} bulunamadı — " +
+                            "Tools ▸ Cargor ▸ Audio ▸ SFX Kutuphanesini Kur veya Guncelle çalıştırılmalı.");
+            return 1;
+        }
+
+        int found = 0;
+        var seen = new HashSet<SfxId>();
+
+        foreach (var entry in library.Entries)
+        {
+            if (entry == null) continue;
+            seen.Add(entry.id);
+
+            if (entry.clip == null)
+            {
+                Debug.LogError($"[SesSlotKontrol] BOŞ SLOT: {SfxLibraryPath} :: SfxLibrary.Entry :: {entry.id} (klip atanmamış)");
+                found++;
+            }
+        }
+
+        // Enum'da olup asset'te hiç girişi olmayan SfxId — tabloya hiç eklenmemiş anlamına gelir,
+        // Inspector'da görünmez bile — bu da "boş slot"tan farksız bir sessiz ölüm riskidir.
+        foreach (SfxId id in System.Enum.GetValues(typeof(SfxId)))
+        {
+            if (seen.Contains(id)) continue;
+            Debug.LogError($"[SesSlotKontrol] BOŞ SLOT: {SfxLibraryPath} :: SfxLibrary'de '{id}' için HİÇ giriş yok.");
             found++;
         }
 
