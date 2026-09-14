@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = System.Random; // CS0104: UnityEngine.Random ile karisiyor; shuffler seed-li System.Random istiyor
 
 namespace NewCss.Audio
 {

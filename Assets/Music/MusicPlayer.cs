@@ -1,94 +1,48 @@
-﻿using UnityEngine;
-using UnityEngine.SceneManagement;
+using UnityEngine;
 
+/// <summary>
+/// UYUMLULUK KATMANI (2026-09-14, Faz C tamamlandı): Bu bileşen artık MÜZİK ÇALMIYOR — gerçek
+/// menü/gameplay müziği artık NewCss.Audio.MusicDirector tarafından yönetiliyor (bkz.
+/// Assets/NewCss/Audio/Music/MusicDirector.cs, [RuntimeInitializeOnLoadMethod] bootstrap; hiçbir
+/// sahneye elle eklenmeden kendi DontDestroyOnLoad AudioSource'larını kurar).
+///
+/// SİLİNMEDİ — sadece pasifleştirildi. İki bağımlılık hâlâ bu TİPE ve bu GameObject'in
+/// AudioSource'una referans veriyor, ikisi de KIRILMAMALI:
+///   1. Assets/Editor/AudioSourceRoutingSetup.cs:61 — GetComponent&lt;MusicPlayer&gt;() != null
+///      ile "hangi AudioSource müzik" tespiti yapıyor (Faz A mixer yönlendirmesi).
+///   2. Assets/MENUUI/UnifiedSettingsManager.cs:180 — musicAudioSource alanı MainMenu.unity'de
+///      bu GameObject'in AudioSource'una serialize edilmiş (satır ~1196-1199 volume=1 yazıyor;
+///      kaynak artık hiç çalmadığı için bu artık sessiz bir no-op, zararsız).
+///
+/// Bu yüzden: sınıf adı, GameObject, üzerindeki AudioSource component'i ve [Serialize] alanları
+/// (allowedScenes/stopOtherAudioSources) AYNEN duruyor — sahne dosyasına dokunulmadı. Tek
+/// değişen: Awake() artık SceneManager.sceneLoaded'a abone olmuyor, audioSource.Play()/Stop()
+/// çağırmıyor. Eskiden burada çalan Ana Menü müziği artık MusicDirector'ın Menu ailesinden
+/// geliyor — ikisi aynı anda aktif kalıp üst üste binmesin diye bu bileşen kasıtlı olarak inert.
+/// </summary>
 public class MusicPlayer : MonoBehaviour
 {
-    private AudioSource audioSource;
-
-    [Header("Müzik Ayarları")]
-    [Tooltip("Müziğin çalacağı sahne isimleri")]
+    [Header("Müzik Ayarları (ARTIK KULLANILMIYOR — geriye dönük uyumluluk için duruyor)")]
+    [Tooltip("KULLANILMIYOR: müzik artık MusicDirector tarafından yönetiliyor (bkz. sınıf başı yorum)")]
     public string[] allowedScenes = { "MainMenu" };
 
-    [Header("Diğer AudioSource Kontrolü")] // ✨ YENİ
-    [Tooltip("Diğer sahnelerdeki AudioSource'ları otomatik durdur")]
+    [Header("Diğer AudioSource Kontrolü (ARTIK KULLANILMIYOR)")]
+    [Tooltip("KULLANILMIYOR")]
     public bool stopOtherAudioSources = true;
 
-    void Awake()
+    private void Awake()
     {
-        if (FindObjectsOfType<MusicPlayer>().Length > 1)
+        // Kendi başına ikinci bir müzik motoru koşmasın — mevcut AudioSource'u sessizce
+        // durdur/pasifleştir ve bırak. MusicDirector zaten kendi kaynaklarını kuruyor.
+        var audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
         {
-            Destroy(gameObject);
+            Debug.LogWarning("[MusicPlayer] Bu GameObject'te AudioSource yok — " +
+                              "UnifiedSettingsManager.musicAudioSource referansı geçersiz kalabilir.");
             return;
         }
 
-        DontDestroyOnLoad(gameObject);
-        audioSource = GetComponent<AudioSource>();
-
-        SceneManager.sceneLoaded += OnSceneLoaded;
-        CheckScene(SceneManager.GetActiveScene().name);
-    }
-
-    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        CheckScene(scene.name);
-    }
-
-    void CheckScene(string sceneName)
-    {
-        bool shouldPlay = System.Array.Exists(allowedScenes, s => s == sceneName);
-
-        if (shouldPlay && !audioSource.isPlaying)
-        {
-            audioSource.Play();
-            Debug.Log($"🎵 Ana menü müziği başlatıldı: {sceneName}");
-        }
-        else if (!shouldPlay)
-        {
-            if (audioSource.isPlaying)
-            {
-                audioSource.Stop();
-                audioSource.time = 0f;
-                Debug.Log($"🔇 Ana menü müziği durduruldu: {sceneName}");
-            }
-
-            // ✨ YENİ: Diğer sahnelerdeki AudioSource'ları yönet
-            if (stopOtherAudioSources)
-            {
-                HandleOtherAudioSources(sceneName);
-            }
-        }
-    }
-
-    // ✨ YENİ: Diğer AudioSource'ları bul ve yönet
-    void HandleOtherAudioSources(string sceneName)
-    {
-        // Biraz bekle ki sahne tam yüklensin
-        Invoke(nameof(CheckOtherAudioSources), 0.5f);
-    }
-
-    void CheckOtherAudioSources()
-    {
-        AudioSource[] allAudioSources = FindObjectsOfType<AudioSource>();
-
-        foreach (AudioSource source in allAudioSources)
-        {
-            // Kendi AudioSource'umuz değilse
-            if (source != audioSource)
-            {
-                // Eğer "Play On Awake" açıksa ve müzik dosyası varsa
-                if (source.playOnAwake && source.clip != null)
-                {
-                    Debug.Log($"🎵 Map sahnesinde AudioSource bulundu: {source.gameObject.name} - Clip: {source.clip.name}");
-
-                    // Bu AudioSource'un çalmasına izin ver (Map müziği için)
-                    // Sadece ana menü müziğini durdurduk, Map müziği çalabilir
-                }
-            }
-        }
-    }
-
-    void OnDestroy()
-    {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
+        audioSource.playOnAwake = false;
+        if (audioSource.isPlaying) audioSource.Stop();
     }
 }

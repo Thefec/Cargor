@@ -208,13 +208,22 @@ atmak yeterli olacak, kod değişmeyecek. Dosya adı serbest; harf soneki (A1, B
 kullanıcının etiketi, kod buna bakmıyor, **klasör belirleyici**.
 
 ```
-Assets/Music/Gameplay/Main/      <- A1..A6   (6 dosya)
-Assets/Music/Gameplay/Busy/      <- B1..B3   (3)
-Assets/Music/Gameplay/Closing/   <- C        (1 — nihai, kullanıcı kararı)
-Assets/Music/Gameplay/Tension/   <- D1, D2   (2)
-Assets/Music/Menu/               <- E        (1)
-Assets/Music/Stinger/            <- F, G     (2)
+Assets/Resources/Music/Gameplay/Main/      <- A1..A6   (6 dosya)
+Assets/Resources/Music/Gameplay/Busy/      <- B1..B3   (3)
+Assets/Resources/Music/Gameplay/Closing/   <- C        (1 — nihai, kullanıcı kararı)
+Assets/Resources/Music/Gameplay/Tension/   <- D1, D2   (2)
+Assets/Resources/Music/Menu/               <- E        (1)
+Assets/Music/Stinger/                      <- F, G     (2)   ← TAŞINMADI, kasıtlı
 ```
+
+> **NEDEN `Resources/` ALTINDA (2026-09-14'te taşındı, commit `047785b`):** müzik runtime'da
+> `Resources.LoadAll` ile yükleniyor (`MusicLibrary.cs:48-59`); `AssetDatabase` build'de yok,
+> bu yüzden klasörün `Assets/Resources/` altında olması ZORUNLU. Klasör adını değiştirirsen
+> `MusicLibrary.ResourcePathFor`'u da değiştir — eşleşmezse sessizce boş liste döner.
+>
+> **Stinger kasıtlı taşınmadı:** F/G Faz B (SFX) alanı, `SfxLibrarySetup.cs:27-28` onları
+> editör zamanında `AssetDatabase` ile okuyup `SfxLibrary.asset`'e gömüyor — runtime
+> `Resources.Load` yolu kullanılmıyor, dolayısıyla `Resources/` altında olması gerekmiyor.
 
 > **MainMenu.unity'deki 5 eksik GameObject ses işiyle ilgisiz — KAPANDI.** QA bu turda
 > fark etti (333→328, 3 `Rectangle` + `FigmaImage`'ler). Kullanıcı 2026-09-14'te

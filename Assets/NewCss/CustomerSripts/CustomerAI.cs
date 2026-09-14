@@ -1395,6 +1395,20 @@ namespace NewCss
                     ? EventEffectManager.Instance.GetPenaltyMultiplier() : 1f;
                 PrestigeManager.Instance.ModifyPrestige(penalty * penaltyMult);
             }
+
+            // Faz B (plans/ses-tasarimi.md §3) — bu yol yalnız server'da çalışır
+            // (RequestInteractionServerRpc -> StartInteraction -> ... -> HandleFailedInteraction,
+            // hiçbir adım ClientRpc değil); host burada yerel çalar, PlayWrongItemSoundClientRpc
+            // ile diğer client'lara da yayılır. Truck.ProcessWrongDelivery ile aynı desen.
+            SfxBus.Play(SfxId.WrongItem);
+            PlayWrongItemSoundClientRpc();
+        }
+
+        [ClientRpc]
+        private void PlayWrongItemSoundClientRpc()
+        {
+            if (IsServer) return;
+            SfxBus.Play(SfxId.WrongItem);
         }
 
         private void UnlockInteractingPlayer()

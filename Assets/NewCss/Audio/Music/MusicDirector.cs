@@ -2,21 +2,31 @@ using System;
 using NewCss;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Random = System.Random; // CS0104: UnityEngine.Random ile karisiyor; shuffler seed-li System.Random istiyor
 
 namespace NewCss.Audio
 {
     /// <summary>
-    /// Faz C müzik sistemi (bkz. plans/ses-tasarimi.md Faz C brief). Assets/Music/MusicPlayer.cs
-    /// yerine geçer — o dosya artık bu bileşeni ekleyip kendini yok eden bir uyumluluk katmanı
-    /// (bkz. Assets/Music/MusicPlayer.cs başındaki not: AudioSourceRoutingSetup.cs ve
-    /// UnifiedSettingsManager.musicAudioSource hâlâ o tip/GameObject'e bağımlı olduğu için
-    /// dosya SİLİNMEDİ).
+    /// Faz C müzik sistemi (bkz. plans/ses-tasarimi.md Faz C brief).
+    ///
+    /// DURUM (2026-09-14, Faz C tamamlandı): [RuntimeInitializeOnLoadMethod] ile hiçbir sahneye
+    /// elle eklenmeden kendini kurar (bkz. Bootstrap() altta) — hangi sahneden başlanırsa
+    /// başlansın (editörde doğrudan "The Main Office"e basmak dahil) tek bir DontDestroyOnLoad
+    /// instance garanti edilir, sıfır sahne dosyası değişikliği gerekmez.
+    ///
+    /// Ana menü müziği artık BU SINIF üzerinden çalıyor. Eski Assets/Music/MusicPlayer.cs
+    /// uyumluluk katmanına dönüştürüldü (kendi başına Play()/Stop() çağırmıyor) — silinmedi,
+    /// çünkü AudioSourceRoutingSetup.cs ve UnifiedSettingsManager.musicAudioSource hâlâ o
+    /// tipe/GameObject'e bağımlı (bkz. MusicPlayer.cs başındaki not).
     ///
     /// Tek DontDestroyOnLoad instance; sahne adına göre Menu/Gameplay moduna geçer:
     ///   - Menu sahnesinde (varsayılan: "MainMenu") sabit Menu ailesini çalar.
-    ///   - Gameplay sahnesinde (varsayılan: "The Main Office") DayCycleManager'ı SALT OKUMA
-    ///     (currentDay/elapsedTime/CurrentDayDuration/IsDayOver) ve varsa CustomerManager.QueueSize'ı
-    ///     okuyarak MusicPhaseSelector ile aile seçer (Main/Busy/Tension/Closing).
+    ///   - Gameplay sahnelerinde (varsayılan: "The Main Office", "Tutorial") DayCycleManager'ı
+    ///     SALT OKUMA (currentDay/elapsedTime/CurrentDayDuration/IsDayOver) ve varsa
+    ///     CustomerManager.QueueSize'ı okuyarak MusicPhaseSelector ile aile seçer
+    ///     (Main/Busy/Tension/Closing). Tutorial'da DayCycleManager hiç yoksa/spawn olmamışsa
+    ///     EvaluateGameplayPhase() null-safe — sessiz kalmaz, Main ailesine düşer (kullanıcı
+    ///     kararı: Tutorial sakin A ailesiyle çalsın).
     ///   - Aile içinde MusicQueue (karıştırılmış, tur sınırında tekrarsız) sırayla çalar; parça
     ///     sonuna yaklaşınca ya da aile değişince MusicCrossfadeMath ile iki AudioSource arasında
     ///     çapraz geçiş yapılır (equal-power, varsayılan 2.5 sn).
@@ -32,12 +42,26 @@ namespace NewCss.Audio
     {
         private static MusicDirector _instance;
 
+        /// <summary>
+        /// Sahneye elle eklemeye gerek bırakmayan bootstrap — ilk sahne yüklendikten hemen
+        /// sonra çalışır (AfterSceneLoad), tek bir DontDestroyOnLoad GameObject kurar. Editörde
+        /// domain reload kapalıyken Play'e art arda basılırsa _instance hâlâ ayakta olabilir —
+        /// guard bu durumda ikinci bir kurulumu engeller.
+        /// </summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        private static void Bootstrap()
+        {
+            if (_instance != null) return;
+            var go = new GameObject("MusicDirector (bootstrap)");
+            go.AddComponent<MusicDirector>();
+        }
+
         [Header("Sahne eşlemesi")]
         [Tooltip("Bu sahnelerde sabit Menu ailesi çalar")]
         public string[] menuSceneNames = { "MainMenu" };
 
         [Tooltip("Bu sahnelerde DayCycleManager'a göre gameplay ailesi (Main/Busy/Tension/Closing) çalar")]
-        public string[] gameplaySceneNames = { "The Main Office" };
+        public string[] gameplaySceneNames = { "The Main Office", "Tutorial" };
 
         [Header("Çapraz geçiş")]
         [Tooltip("İki parça arası üst üste binme süresi (saniye)")]
@@ -86,9 +110,9 @@ namespace NewCss.Audio
             SceneManager.sceneLoaded -= OnSceneLoaded;
         }
 
-        /// <summary>Var olan AudioSource'u (örn. MainMenu.unity'deki eski MusicPlayer objesinin
-        /// zaten mixer'a bağlı kaynağı) benimser; yoksa yenisini kurar. İkisinde de aynı temiz
-        /// duruma sıfırlanır — eski atanmış clip/otomatik oynatma miras alınmaz.</summary>
+        /// <summary>Bootstrap ile oluşturulan GameObject'te zaten AudioSource varsa (örn. ileride
+        /// biri sahneye elle bir tane eklerse) onu benimser; yoksa yenisini kurar. İkisinde de
+        /// aynı temiz duruma sıfırlanır — eski atanmış clip/otomatik oynatma miras alınmaz.</summary>
         private AudioSource AdoptOrCreateSourceA()
         {
             var existing = GetComponent<AudioSource>();

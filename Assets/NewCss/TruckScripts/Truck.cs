@@ -2,6 +2,7 @@ using System.Collections;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
+using NewCss.Audio;
 
 namespace NewCss
 {
@@ -642,6 +643,13 @@ namespace NewCss
             int totalReward = CalculateRewardWithPrestige();
             MoneySystem.Instance?.AddMoney(totalReward);
 
+            // Faz B (plans/ses-tasarimi.md §3.2) — bağlantı noktası HAZIR, klip henüz seçilmedi
+            // (SfxLibrary'de CorrectItem bilerek boş; AudioSlotValidator bunu raporlar).
+            // ProcessDelivery server-only çalışır (bkz. sınıf üstü guard); host burada yerel
+            // çalar, PlayCorrectItemSoundClientRpc ile diğer client'lara da yayılır.
+            SfxBus.Play(SfxId.CorrectItem);
+            PlayCorrectItemSoundClientRpc();
+
             // Check if truck is complete
             if (_deliveredCount.Value >= _networkRequiredCargo.Value && !_isComplete.Value)
             {
@@ -665,10 +673,30 @@ namespace NewCss
 
             MoneySystem.Instance?.SpendMoney(Mathf.RoundToInt(penaltyPerBox * penaltyMult));
 
+            // Faz B (plans/ses-tasarimi.md §3) — ProcessDelivery server-only çalışır (bkz. sınıf
+            // üstü guard); host burada yerel çalar, PlayWrongItemSoundClientRpc ile diğer
+            // client'lara da yayılır.
+            SfxBus.Play(SfxId.WrongItem);
+            PlayWrongItemSoundClientRpc();
+
             // Yanlış kargo göndermek itibarı da düşürür (para cezasına ek — tematik tutarlılık:
             // müşteri kaçma/yanlış ürün de prestij düşürüyor). Değer merkezi SO'dan; server-only bağlam.
             float prestigePenalty = economySettings != null ? economySettings.wrongDeliveryPrestigePenalty : -0.08f;
             PrestigeManager.Instance?.ModifyPrestige(prestigePenalty * penaltyMult);
+        }
+
+        [ClientRpc]
+        private void PlayCorrectItemSoundClientRpc()
+        {
+            if (IsServer) return;
+            SfxBus.Play(SfxId.CorrectItem);
+        }
+
+        [ClientRpc]
+        private void PlayWrongItemSoundClientRpc()
+        {
+            if (IsServer) return;
+            SfxBus.Play(SfxId.WrongItem);
         }
 
         #endregion
