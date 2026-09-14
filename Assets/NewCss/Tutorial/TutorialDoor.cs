@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using Unity.Netcode;
 using System.Collections;
+using NewCss.Audio;
 
 /// <summary>
 /// Tutorial kapılarını kontrol eder.
@@ -68,6 +69,7 @@ public class TutorialDoor : NetworkBehaviour
                 audioSource.playOnAwake = false;
                 audioSource.spatialBlend = 1f;
             }
+            AudioRouting.Route(audioSource, AudioCategory.SFX);
         }
         audioSource.volume = volume;
 

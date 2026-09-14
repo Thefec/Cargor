@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using NewCss.Audio;
 
 namespace NewCss
 {
@@ -143,6 +144,8 @@ namespace NewCss
             {
                 _motorAudioSource = gameObject.AddComponent<AudioSource>();
             }
+
+            AudioRouting.Route(_motorAudioSource, AudioCategory.SFX);
 
             _motorAudioSource.playOnAwake = false;
             _motorAudioSource.loop = true;

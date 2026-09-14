@@ -49,18 +49,18 @@ public partial class PlayerInventory : NetworkBehaviour
         };
     }
 
+    /// <summary>
+    /// DÜZELTME (QA, çifte ölçekleme): SFX/Master kısılması artık AudioRouting ile SFX mixer
+    /// grubuna yönlendirilen _audioSource üzerinden CargorMixer'da uygulanıyor (bkz.
+    /// UnifiedSettingsManager.ApplyMixerCategoryVolume). Burada AYRICA
+    /// GetSFXVolume()*GetMasterVolume() çarpılırsa ses iki kez kısılır — kaynak volume'u
+    /// SADECE tasarım değerini (inventorySoundVolume) taşır.
+    /// </summary>
     private void UpdateAudioVolume()
     {
         if (_audioSource == null) return;
 
-        float finalVolume = inventorySoundVolume;
-
-        if (_settingsManager != null)
-        {
-            finalVolume *= _settingsManager.GetSFXVolume() * _settingsManager.GetMasterVolume();
-        }
-
-        _audioSource.volume = finalVolume;
+        _audioSource.volume = inventorySoundVolume;
     }
 
     [ServerRpc]

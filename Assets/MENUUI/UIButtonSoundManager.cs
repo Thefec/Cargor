@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using NewCss.Audio;
 
 public class UIButtonSoundManager : MonoBehaviour
 {
@@ -17,20 +18,21 @@ public class UIButtonSoundManager : MonoBehaviour
 
     void Awake()
     {
-        // AudioSource oluþtur
+        // AudioSource oluï¿½tur
         audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.playOnAwake = false;
         audioSource.spatialBlend = 0f; // 2D ses
+        AudioRouting.Route(audioSource, AudioCategory.SFX);
     }
 
     void Start()
     {
-        // Sahnedeki tüm butonlarý bul
+        // Sahnedeki tï¿½m butonlarï¿½ bul
         Button[] allButtons = FindObjectsOfType<Button>(true);
 
         foreach (Button button in allButtons)
         {
-            // Týklama sesi ekle
+            // Tï¿½klama sesi ekle
             button.onClick.AddListener(() => PlayClickSound());
 
             // Hover efekti ekle (opsiyonel)

@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
+using NewCss.Audio;
 
 /// <summary>
 /// Tüm oyun ayarlarını (grafik, ses, dil, çözünürlük, FPS) tek bir yerden yöneten manager. 
@@ -873,9 +874,16 @@ public class UnifiedSettingsManager : MonoBehaviour
         PlaySoundOnSource(clip, volume);
     }
 
+    /// <summary>
+    /// DÜZELTME (QA, çifte ölçekleme): SFX/Master kısılması artık PlaySoundOnSource'un gittiği
+    /// yolların hepsinde (uiAudioSource/sfxAudioSource mixer'a route edilmişse, ya da
+    /// AudioRouting.PlayOneShot fallback'i) CargorMixer üzerinden uygulanıyor. Burada AYRICA
+    /// SFXVolume*MasterVolume çarpılırsa ses iki kez kısılır — sadece tasarım değeri
+    /// (uiSoundVolume) döner.
+    /// </summary>
     private float CalculateUIVolume()
     {
-        return uiSoundVolume * _selectedSettings.SFXVolume * _selectedSettings.MasterVolume;
+        return uiSoundVolume;
     }
 
     private void PlaySoundOnSource(AudioClip clip, float volume)
@@ -888,9 +896,13 @@ public class UnifiedSettingsManager : MonoBehaviour
         {
             sfxAudioSource.PlayOneShot(clip, volume);
         }
-        else if (Camera.main != null)
+        else
         {
-            AudioSource.PlayClipAtPoint(clip, Camera.main.transform.position, volume);
+            // PlayClipAtPoint YERİNE: o metot mixer'a hiç uğramıyor, SFX slider'ını atlıyordu
+            // (bkz. plans/ses-tasarimi.md §5 mimari kararlar). uiAudioSource/sfxAudioSource
+            // ikisi de null olduğunda (bu proje genelinde şu an hep null — grep ile doğrulandı)
+            // aslında ÇALIŞAN TEK yol buydu, dolayısıyla bu değişiklik kozmetik değil.
+            AudioRouting.PlayOneShot(AudioCategory.SFX, clip, volume);
         }
     }
 
@@ -1160,6 +1172,19 @@ public class UnifiedSettingsManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// DİKKAT (2026-09-14, Faz A ses altyapısı): musicAudioSource/sfxAudioSource artık
+    /// CargorMixer'a yönlendirilmiş durumda (bkz. AudioRouting, Assets/Editor/AudioSourceRoutingSetup.cs).
+    /// Kategori (music/sfx) kısılması ARTIK MİXER GRUBUNDA uygulanıyor — kaynaklarda AYRICA
+    /// music/sfx çarpılırsa ses İKİ KEZ kısılır (aynı tuzak ekonomi dengelemesinde yaşandı,
+    /// bkz. plans/ses-tasarimi.md §5 mimari kararlar). Bu yüzden kaynak volume'u 1 (tam)
+    /// bırakılıyor. AudioListener.volume = master KALIYOR — o her şeyi yakalayan TEK
+    /// güvenlik ağı, mixer grupları master'ı BİR DAHA uygulamıyor.
+    ///
+    /// Yan not: bu değişiklik öncesinde musicAudioSource.volume = music * master YAZILIYORDU
+    /// — AudioListener.volume zaten master uyguladığı için bu satır master'ı GİZLİCE İKİ KEZ
+    /// çarpıyordu (music*master²). Mixer'a doğru bağlamanın bir sonucu olarak bu da düzeldi.
+    /// </summary>
     private void ApplyAudioSettings()
     {
         float master = _selectedSettings.MasterVolume;
@@ -1170,12 +1195,39 @@ public class UnifiedSettingsManager : MonoBehaviour
 
         if (musicAudioSource != null)
         {
-            musicAudioSource.volume = music * master;
+            musicAudioSource.volume = 1f;
         }
 
         if (sfxAudioSource != null)
         {
-            sfxAudioSource.volume = sfx * master;
+            sfxAudioSource.volume = 1f;
+        }
+
+        ApplyMixerCategoryVolume(AudioCategory.Music, music);
+        ApplyMixerCategoryVolume(AudioCategory.SFX, sfx);
+    }
+
+    /// <summary>DÜZELTME (QA): AudioMixer.SetFloat exposed parametre adı mixer'da yoksa
+    /// (asset bozulmuş, isim sözleşmesi sürüklenmiş, ya da Tools ▸ Cargor ▸ Audio ▸ Mixer Kur
+    /// veya Dogrula hiç çalıştırılmamışsa) sessizce false döner — slider UI'da hareket eder,
+    /// ses hiç değişmez, konsola tek satır düşmez. GDD.md §27 CAUTION'daki "sessiz ölüm"
+    /// sınıfının aynısı. Burada kategori başına BİR KEZ (spam etmeden) LogError basılıyor.</summary>
+    private static readonly HashSet<AudioCategory> _mixerSetFloatFailureLogged = new HashSet<AudioCategory>();
+
+    private void ApplyMixerCategoryVolume(AudioCategory category, float linearVolume)
+    {
+        var mixer = AudioRouting.GetMixer();
+        if (mixer == null) return;
+
+        string exposedParam = AudioVolumeMath.ExposedParamFor(category);
+        float db = AudioVolumeMath.LinearToDecibel(linearVolume);
+        bool applied = mixer.SetFloat(exposedParam, db);
+
+        if (!applied && _mixerSetFloatFailureLogged.Add(category))
+        {
+            Debug.LogError($"{LOG_PREFIX} mixer.SetFloat(\"{exposedParam}\") başarısız — CargorMixer'da " +
+                            $"bu exposed parametre yok görünüyor. Tools ▸ Cargor ▸ Audio ▸ Mixer Kur veya " +
+                            $"Dogrula çalıştırılmalı. ({category} slider'ı sessizce etkisiz kalacak.)");
         }
     }
 

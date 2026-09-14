@@ -1072,8 +1072,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7c1f8a3e5d2b4c9e8a1f6d3b2c5e9a04, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   duration: 0.25
   startScale: 0
   overshoot: 1.70158
@@ -2245,10 +2245,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GlobalObjectIdHash: 2151631666
   InScenePlacedSourceGlobalObjectIdHash: 0
+  m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
+  m_InScenePlaced: 0
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
@@ -2357,6 +2359,7 @@ MonoBehaviour:
   manager: {fileID: 0}
   exitPoint: {fileID: 0}
   dropOffTable: {fileID: 0}
+  economySettings: {fileID: 0}
 --- !u!114 &3231516756921554553
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2432,7 +2435,7 @@ AudioSource:
   m_GameObject: {fileID: 5590917900889142653}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 1274258241605518300, guid: 0895000e847426f498429b3135af2727, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1
@@ -2530,8 +2533,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8228a5e52c6d4f5d8eb21f38d6ddb25a, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   accessoriesMeshes:
   - {fileID: 4554999278103424840, guid: ad472b939cd48144e9521d873c2e3018, type: 3}
   - {fileID: -3811569408259832331, guid: 7f08cab61f953cd4693ac58a98b96079, type: 3}
@@ -3480,7 +3484,7 @@ SkinnedMeshRenderer:
   m_Quality: 0
   m_UpdateWhenOffscreen: 0
   m_SkinnedMotionVectors: 1
-  m_Mesh: {fileID: -4389200089894859703, guid: e4f543c638ecbfd40b8dc37cd298e48a, type: 3}
+  m_Mesh: {fileID: -7927354642031663450, guid: 819bbc3929ae14e43b0d8405d65589f9, type: 3}
   m_Bones:
   - {fileID: 8632284794711710010}
   - {fileID: 5906623514796444678}

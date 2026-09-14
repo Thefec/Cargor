@@ -1,5 +1,6 @@
 using Unity.Netcode;
 using UnityEngine;
+using NewCss.Audio;
 
 namespace NewCss
 {
@@ -272,6 +273,7 @@ namespace NewCss
                 _audioSource = gameObject.AddComponent<AudioSource>();
             }
 
+            AudioRouting.Route(_audioSource, AudioCategory.SFX);
             ConfigureAudioSource();
         }
 
@@ -310,16 +312,16 @@ namespace NewCss
             _audioSource.volume = finalVolume;
         }
 
+        /// <summary>
+        /// DÜZELTME (QA, çifte ölçekleme): SFX/Master kısılması artık AudioRouting ile SFX
+        /// mixer grubuna yönlendirilen _audioSource üzerinden CargorMixer'da uygulanıyor
+        /// (bkz. UnifiedSettingsManager.ApplyMixerCategoryVolume). Burada AYRICA
+        /// GetSFXVolume()*GetMasterVolume() çarpılırsa ses iki kez kısılır — kaynak volume'u
+        /// SADECE tasarım değerini (footstepVolume) taşır.
+        /// </summary>
         private float CalculateFinalVolume()
         {
-            float volume = footstepVolume;
-
-            if (_settingsManager != null)
-            {
-                volume *= _settingsManager.GetSFXVolume() * _settingsManager.GetMasterVolume();
-            }
-
-            return volume;
+            return footstepVolume;
         }
 
         /// <summary>
