@@ -137,6 +137,12 @@ public class Menu : MonoBehaviour
     private Vector2 _customizationStaggerRestPos;
     private Vector2 _customizationPreviewRestPos;
     private Coroutine _customizationStaggerCoroutine;
+
+    // Settings / TutorialConfirm animasyonlu overlay'leri icin (Credits kasitli instant kaliyor)
+    private RectTransform _settingsRt;
+    private Vector2 _settingsRestPos;
+    private RectTransform _tutorialConfirmRt;
+    private Vector2 _tutorialConfirmRestPos;
     #endregion
 
     #region Properties
@@ -183,6 +189,17 @@ public class Menu : MonoBehaviour
         if (customizationSlidePanel != null) _customizationRestPos = customizationSlidePanel.anchoredPosition;
         if (customizationStaggerPanel != null) _customizationStaggerRestPos = customizationStaggerPanel.anchoredPosition;
         if (customizationPreviewPanel != null) _customizationPreviewRestPos = customizationPreviewPanel.anchoredPosition;
+
+        if (settingsPanel != null)
+        {
+            _settingsRt = settingsPanel.GetComponent<RectTransform>();
+            if (_settingsRt != null) _settingsRestPos = _settingsRt.anchoredPosition;
+        }
+        if (tutorialConfirmPanel != null)
+        {
+            _tutorialConfirmRt = tutorialConfirmPanel.GetComponent<RectTransform>();
+            if (_tutorialConfirmRt != null) _tutorialConfirmRestPos = _tutorialConfirmRt.anchoredPosition;
+        }
     }
 
     private void InitPanels()
@@ -211,9 +228,11 @@ public class Menu : MonoBehaviour
         }
         Go(customizationBlackBG, false);
 
-        // Overlay'ler
-        Go(settingsPanel,        false);
-        Go(creditsPanel,         false);
+        // Overlay'ler — Settings/TutorialConfirm animasyonlu (off-screen basla), Credits instant
+        if (_settingsRt != null) SetOffscreenTop(_settingsRt, _settingsRestPos);
+        Go(settingsPanel, false);
+        Go(creditsPanel,  false);
+        if (_tutorialConfirmRt != null) SetOffscreenTop(_tutorialConfirmRt, _tutorialConfirmRestPos);
         Go(tutorialConfirmPanel, false);
     }
 
@@ -262,9 +281,9 @@ public class Menu : MonoBehaviour
             case MenuState.MainMenu:        ShowMainMenu(prev);   break;
             case MenuState.HostJoinMenu:    ShowHAJ(prev);        break;
             case MenuState.JoinRoomPanel:   ShowJoin();           break;
-            case MenuState.Settings:        ShowOverlay(settingsPanel);        break;
-            case MenuState.Credits:         ShowOverlay(creditsPanel);         break;
-            case MenuState.TutorialConfirm: ShowOverlay(tutorialConfirmPanel); break;
+            case MenuState.Settings:        ShowAnimatedOverlay(settingsPanel, _settingsRt, _settingsRestPos);               break;
+            case MenuState.Credits:         ShowOverlay(creditsPanel);                                                        break;
+            case MenuState.TutorialConfirm: ShowAnimatedOverlay(tutorialConfirmPanel, _tutorialConfirmRt, _tutorialConfirmRestPos); break;
             case MenuState.Lobby:           ShowLobby();          break;
             case MenuState.Customization:   ShowCustomization();  break;
         }
@@ -478,6 +497,28 @@ public class Menu : MonoBehaviour
         Go(panel, true);
     }
 
+    /// <summary>
+    /// Settings/TutorialConfirm icin: digger overlay'ler anlik kapanir, hedef panel ekran
+    /// disindan (yukaridan) kayarak icer gelir (SLIDE_DUR, HAJ/Join ile ayni desen). rt null ise
+    /// (RectTransform bulunamadiysa) ShowOverlay'in eski instant davranisina duser — sessiz olum yok.
+    /// </summary>
+    private void ShowAnimatedOverlay(GameObject panel, RectTransform rt, Vector2 restPos)
+    {
+        Go(settingsPanel,        false);
+        Go(creditsPanel,         false);
+        Go(tutorialConfirmPanel, false);
+
+        if (rt == null)
+        {
+            Go(panel, true);
+            return;
+        }
+
+        SetOffscreenTop(rt, restPos);
+        Go(panel, true);
+        SlideIn(rt, restPos);
+    }
+
     private void CloseOverlays()
     {
         Go(settingsPanel,        false);
@@ -612,15 +653,24 @@ public class Menu : MonoBehaviour
         onComplete?.Invoke();
     }
 
+    /// <summary>
+    /// KOK NEDEN NOTU (2026-09-14): Menu script'inin bagli oldugu GameObject Canvas
+    /// hiyerarsisinin DISINDA, kokte duruyor (NetworkManager ile ayni bootstrap objesi) —
+    /// GetComponentInParent&lt;Canvas&gt;() 'this' uzerinden hic bulamiyor, sessizce 0 donuyordu.
+    /// Sonuc: SetOffscreenTop hicbir paneli gercekten ekran disina tasimiyordu (rest+0=rest),
+    /// SlideIn/SlideOut sifir mesafeli "animasyon" oynatip duz aciliyordu (Settings/TutorialConfirm/
+    /// HAJ/Join/Lobby hepsi ayni payli fonksiyonu kullaniyor). mainMenuPanel Canvas'a gercekten
+    /// bagli oldugu icin arama oradan yapiliyor.
+    /// </summary>
     private float GetCanvasW()
     {
-        Canvas c = GetComponentInParent<Canvas>();
+        Canvas c = mainMenuPanel != null ? mainMenuPanel.GetComponentInParent<Canvas>() : null;
         return c != null ? c.GetComponent<RectTransform>().rect.width : 0f;
     }
 
     private float GetCanvasH()
     {
-        Canvas c = GetComponentInParent<Canvas>();
+        Canvas c = mainMenuPanel != null ? mainMenuPanel.GetComponentInParent<Canvas>() : null;
         return c != null ? c.GetComponent<RectTransform>().rect.height : 0f;
     }
 
@@ -715,22 +765,47 @@ public class Menu : MonoBehaviour
 
     public void ConfirmTutorial()
     {
-        Go(tutorialConfirmPanel, false);
-        SceneManager.LoadScene(SCENE_TUT);
+        if (_tutorialConfirmRt == null)
+        {
+            Go(tutorialConfirmPanel, false);
+            SceneManager.LoadScene(SCENE_TUT);
+            return;
+        }
+        SlideOut(_tutorialConfirmRt, _tutorialConfirmRestPos, () =>
+        {
+            Go(tutorialConfirmPanel, false);
+            SceneManager.LoadScene(SCENE_TUT);
+        });
     }
 
     public void CancelTutorial()
     {
-        Go(tutorialConfirmPanel, false);
-        GoTo(MenuState.MainMenu);
+        if (_tutorialConfirmRt == null)
+        {
+            Go(tutorialConfirmPanel, false);
+            GoTo(MenuState.MainMenu);
+            return;
+        }
+        SlideOut(_tutorialConfirmRt, _tutorialConfirmRestPos, () =>
+        {
+            Go(tutorialConfirmPanel, false);
+            GoTo(MenuState.MainMenu);
+        });
     }
 
     public void BackFromSettings()
     {
         if (settingsManager != null && settingsManager.HasUnsavedChanges())
             settingsManager.OnBackButtonPressed();
-        Go(settingsPanel, false);
+
         if (_state == MenuState.Settings) _state = MenuState.MainMenu;
+
+        if (_settingsRt == null)
+        {
+            Go(settingsPanel, false);
+            return;
+        }
+        SlideOut(_settingsRt, _settingsRestPos, () => Go(settingsPanel, false));
     }
 
     public void SaveSettings()
