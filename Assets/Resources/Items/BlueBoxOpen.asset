@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed5bd7c844f447849955a6f2faf30057, type: 3}
+  m_Name: BlueBoxOpen
+  m_EditorClassIdentifier: Assembly-CSharp::ItemData
+  itemName: BlueBoxOpen
+  visualPrefab: {fileID: 3544878022416520156, guid: ccf4448a8ddd1e2439352c6eecdd98ff, type: 3}
+  worldPrefab: {fileID: 3544878022416520156, guid: f15c1399e8bb85d4db6bfd112e8e1bcf, type: 3}
+  throwForce: 10
+  itemID: 17
+  itemCategory: 0

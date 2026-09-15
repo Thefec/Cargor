@@ -1,5 +1,6 @@
 public enum ItemCategory
 {
     Box,
-    Product
+    Product,
+    Tool
 }

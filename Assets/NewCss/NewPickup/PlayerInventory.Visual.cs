@@ -268,6 +268,15 @@ public partial class PlayerInventory : NetworkBehaviour
     {
         if (_currentItemData == null) return;
 
+        // Bant hiçbir yoldan (drop/throw/disconnect) dünyaya geri konmaz - kaybolur.
+        // Bu metot projedeki TEK "elden zorla çıkan item" noktası (bkz. plan bölüm 5),
+        // dispenser zaten pickup anında kendi respawn sayacını başlatmıştı (bölüm 3).
+        if (_currentItemData.visualPrefab != null &&
+            _currentItemData.visualPrefab.GetComponent<TapeInfo>() != null)
+        {
+            return;
+        }
+
         var worldItemPrefab = GetWorldItemPrefab(_currentItemData);
         if (worldItemPrefab == null) return;
 

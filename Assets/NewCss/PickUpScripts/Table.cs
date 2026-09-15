@@ -71,6 +71,11 @@ namespace NewCss
         // penceresinde ikinci bir yerleştirme isteğinin aynı masaya item spawn etmesini engeller.
         private bool _placementInProgress;
 
+        // Server-only re-entrancy kilidi: PerformSealing/SealAndReleaseLockCoroutine sürerken
+        // (despawn açık kutu -> spawn kapalı kutu arasındaki boşlukta) ikinci bir bantlama
+        // isteğinin aynı masayı tekrar sarmasını engeller.
+        private bool _sealingInProgress;
+
         // Static table registry
         private static readonly List<Table> _allTables = new();
 
@@ -109,9 +114,10 @@ namespace NewCss
         public bool CanPlaceItem => IsEmpty;
 
         /// <summary>
-        /// Item alınabilir mi?
+        /// Item alınabilir mi? Açık+dolu (henüz bantlanmamış) kutu masadayken VEYA sarma işlemi
+        /// tam o an sürerken (despawn->spawn arasındaki kısa boşluk) oyuncu masadan item alamaz.
         /// </summary>
-        public bool CanTakeItem => HasItem;
+        public bool CanTakeItem => HasItem && !IsAwaitingSeal() && !_sealingInProgress;
 
         #endregion
 
@@ -162,6 +168,7 @@ namespace NewCss
         {
             UnsubscribeFromNetworkEvents();
             UnregisterTable();
+            _sealingInProgress = false;
 
             base.OnNetworkDespawn();
         }
@@ -195,6 +202,7 @@ namespace NewCss
                 itemNetworkId = 0,
                 isItemBoxed = false
             };
+            _sealingInProgress = false;
         }
 
         #endregion
@@ -593,14 +601,37 @@ namespace NewCss
 
         private void ProcessPlayerHasItem(PlayerInventory player, ulong requesterClientId)
         {
-            if (CanPlaceItem && !_placementInProgress)
+            bool holdingTape = player.CurrentItemData?.visualPrefab?.GetComponent<TapeInfo>() != null;
+
+            if (CanPlaceItem && holdingTape)
+            {
+                // Bant boş masaya doğrudan konulamaz
+                LogDebug("⚠️ Bant boş masaya doğrudan konulamaz");
+                NotifySealingNotReadyClientRpc(requesterClientId);
+            }
+            else if (CanPlaceItem && !_placementInProgress && !_sealingInProgress && !holdingTape)
             {
                 LogDebug($"✅ Placing item from player {requesterClientId}");
                 _placementInProgress = true;
                 PlaceItemOnTable(player);
             }
+            else if (holdingTape && IsAwaitingSeal() && !_sealingInProgress)
+            {
+                // Masa bantlamaya HAZIR: açık+dolu kutu bekliyor -> sarma işlemini başlat
+                _sealingInProgress = true;
+                PerformSealing(player, requesterClientId);
+            }
+            else if (holdingTape)
+            {
+                // Bant tutuluyor ama masa hazır değil (ham ürünle dolu, zaten sarılıyor,
+                // veya zaten kapalı) - sessizce yutmak yerine kısa uyarı ver
+                LogDebug("⚠️ Masa şu an bantlanmaya hazır değil");
+                NotifySealingNotReadyClientRpc(requesterClientId);
+            }
             else
             {
+                // Bu dala SADECE !holdingTape iken düşülür (yukarıdaki üç dal da holdingTape
+                // gerektiriyor) - PerformInstantBoxing bant tutan bir oyuncu için ASLA çağrılmaz.
                 LogDebug($"📦 Attempting instant boxing for player {requesterClientId}");
                 PerformInstantBoxing(player, requesterClientId);
             }
@@ -818,8 +849,8 @@ namespace NewCss
             // Masadaki ürünü kaldır
             DespawnCurrentTableItem();
 
-            // Paketlenmiş ürünü spawn et (gecikme yok)
-            StartCoroutine(SpawnBoxedProductCoroutine(playerBox.boxType));
+            // Paketlenmiş ürünü spawn et (gecikme yok) - açık kutu (bant bekliyor)
+            StartCoroutine(SpawnBoxedProductCoroutine(playerBox.boxType, "Open"));
 
             // Quest sistemine bildir
             Quest.QuestTracker.NotifyToyPacked(playerBox.boxType);
@@ -837,8 +868,11 @@ namespace NewCss
             playerBox = null;
             tableProduct = null;
 
-            // Spam-click koruması: Zaten paketlenmiş bir ürünü tekrar paketlemeyi engelle
-            if (state.isItemBoxed)
+            // Spam-click koruması: Zaten paketlenmiş bir ürünü tekrar paketlemeyi engelle.
+            // _sealingInProgress savunma-derinliği olarak eklendi (sarma sürerken başka bir
+            // oyuncu kutu+ürün akışını tetikleyemesin diye) - teorik olarak isItemBoxed zaten
+            // bunu kapsıyor.
+            if (state.isItemBoxed || _sealingInProgress)
             {
                 LogDebug("⚠️ Item is already boxed - ignoring duplicate request");
                 return false;
@@ -884,6 +918,75 @@ namespace NewCss
                    (productType == ProductInfo.ProductType.Glass && boxType == BoxInfo.BoxType.Blue);
         }
 
+        /// <summary>
+        /// Masadaki item "açık+dolu, bantlanmayı bekliyor" durumunda mı? (isItemBoxed==true
+        /// VE üzerindeki BoxInfo.isFull==false)
+        /// </summary>
+        private bool IsAwaitingSeal()
+        {
+            var state = _tableState.Value;
+            if (!state.isItemBoxed) return false;
+            if (!TryGetTableItem(state.itemNetworkId, out _, out NetworkWorldItem worldItem)) return false;
+            var boxInfo = worldItem.GetComponent<BoxInfo>();
+            return boxInfo != null && !boxInfo.isFull;
+        }
+
+        #endregion
+
+        #region Sealing (Bantlama)
+
+        /// <summary>
+        /// Bant ile açık+dolu kutuyu sarıp kapalı ("...Full") kutuya dönüştürür.
+        /// Server authoritative: önce hedef sealed ItemData'nın gerçekten yüklendiği doğrulanır,
+        /// ANCAK ondan sonra masadaki açık kutu yıkılır ve oyuncunun bandı tüketilir.
+        /// </summary>
+        private void PerformSealing(PlayerInventory player, ulong requesterClientId)
+        {
+            var state = _tableState.Value;
+
+            if (!TryGetTableItem(state.itemNetworkId, out _, out NetworkWorldItem tableWorldItem))
+            {
+                _sealingInProgress = false;
+                return;
+            }
+
+            var boxInfo = tableWorldItem.GetComponent<BoxInfo>();
+            if (boxInfo == null || boxInfo.isFull)
+            {
+                _sealingInProgress = false;
+                return;
+            }
+
+            // Madde 3: önce hedef "...Full" ItemData'sının gerçekten yüklendiğini doğrula,
+            // ANCAK ondan sonra masadaki açık kutuyu yık ve oyuncunun bandını tüket.
+            ItemData sealedBoxData = GetBoxedProductData(boxInfo.boxType, "Full");
+            if (sealedBoxData == null || sealedBoxData.worldPrefab == null)
+            {
+                LogError($"Sealed box data not found for {boxInfo.boxType} - aborting seal");
+                _sealingInProgress = false;
+                return;
+            }
+
+            // Doğrulama geçti - artık tüketime/yıkıma geçilebilir
+            player.SetInventoryStateServer(false, -1);
+            player.TriggerDropAnimationServerRpc();
+
+            DespawnCurrentTableItem();
+
+            StartCoroutine(SealAndReleaseLockCoroutine(boxInfo.boxType));
+
+            NotifyBoxPackedClientRpc(requesterClientId, (int)boxInfo.boxType);
+        }
+
+        private IEnumerator SealAndReleaseLockCoroutine(BoxInfo.BoxType boxType)
+        {
+            // SpawnBoxedProductCoroutine'in KENDİ içindeki tüm erken-çıkışları
+            // (yield break dahil) bekler - coroutine hangi yoldan biterse bitsin
+            // buradan sonrasına düşülür, kilit her durumda açılır.
+            yield return StartCoroutine(SpawnBoxedProductCoroutine(boxType, "Full"));
+            _sealingInProgress = false;
+        }
+
         #endregion
 
         #region Client RPCs
@@ -897,6 +1000,19 @@ namespace NewCss
             if (NetworkManager.Singleton.LocalClientId == targetClientId)
             {
                 LogDebug($"❌ Boxing failed - box and product don't match!");
+            }
+        }
+
+        /// <summary>
+        /// Bant tutuluyor ama masa bantlanmaya hazır değilken (boş masa, ham ürün, zaten
+        /// sarılıyor veya zaten kapalı) hedef client'a bildirir.
+        /// </summary>
+        [ClientRpc]
+        private void NotifySealingNotReadyClientRpc(ulong targetClientId)
+        {
+            if (NetworkManager.Singleton.LocalClientId == targetClientId)
+            {
+                LogDebug($"❌ Sealing not ready - table is not awaiting seal!");
             }
         }
 
@@ -959,15 +1075,15 @@ namespace NewCss
             }
         }
 
-        private IEnumerator SpawnBoxedProductCoroutine(BoxInfo.BoxType boxType)
+        private IEnumerator SpawnBoxedProductCoroutine(BoxInfo.BoxType boxType, string suffix = "Full")
         {
             // Bir frame bekle - DespawnCurrentTableItem'in tamamlanmasını garanti et
             yield return null;
 
-            ItemData boxedProductData = GetBoxedProductData(boxType);
+            ItemData boxedProductData = GetBoxedProductData(boxType, suffix);
             if (boxedProductData == null)
             {
-                LogError($"Boxed product data not found for {boxType}");
+                LogError($"Boxed product data not found for {boxType} (suffix: {suffix})");
                 yield break;
             }
 
@@ -995,13 +1111,13 @@ namespace NewCss
 
         #region Helper Methods
 
-        private ItemData GetBoxedProductData(BoxInfo.BoxType boxType)
+        private ItemData GetBoxedProductData(BoxInfo.BoxType boxType, string suffix = "Full")
         {
             string itemName = boxType switch
             {
-                BoxInfo.BoxType.Red => "RedBoxFull",
-                BoxInfo.BoxType.Yellow => "YellowBoxFull",
-                BoxInfo.BoxType.Blue => "BlueBoxFull",
+                BoxInfo.BoxType.Red => $"RedBox{suffix}",
+                BoxInfo.BoxType.Yellow => $"YellowBox{suffix}",
+                BoxInfo.BoxType.Blue => $"BlueBox{suffix}",
                 _ => ""
             };
 
