@@ -5,6 +5,16 @@
 
 ---
 
+## 2026-09-16 (2)
+- **RAF KUTU PICKUP + BANT ELDE-BÜYÜME REGRESYONU DÜZELTİLDİ, kontrol ONAY, COMMIT EDİLMEDİ (kullanıcı playtest bekleniyor).** `626a1df`'in yan etkisiydi: collider'ı "Visual" alt objeye taşıyan prefab'larda (RedOpen/BlueOpen/YellowOpen/DuctTape, NGO+Normal) kod hâlâ `collider.GetComponent<NetworkWorldItem>()` ile root'ta arıyordu → hep null → kutu menzile hiç girmiyordu. Fix: `PlayerInventory.Detection.cs:56`, `Shelf.cs:501`, `ItemDispenser.cs:349` → `GetComponentInParent`. Ayrıca `Normal/DuctTape.prefab` scale'i 626a1df'te unutulmuş (98.69 kalmış, NGO kardeşi 8.5'e kalibre edilmişti) → 8.5'e çekildi.
+- **DERS:** "Visual alt objeye taşı" deseni uygulanırken collider'a bağımlı TÜM `GetComponent` çağrıları (birincil VE fallback path'ler) taranmalı — qa ilk turda ana bug'ı geçirdi ama ikincil fallback'i (Shelf/ItemDispenser slot-doluluk kontrolü) ayrı bulguyla yakaladı.
+- **SIRADAKİ:** kullanıcı Unity'de host başlatıp raf/bant test edecek, onay verirse commit edilecek.
+
+## 2026-09-16
+- **PAKETLEME ODASI BOŞ KUTU + BANT DİSPENSER BUG'I ÇÖZÜLDÜ, COMMIT `626a1df` main'e (PUSH YOK).** Kullanıcı raporu: raflarda boş kutu yok, bant masasında bant yok. Kök neden ikiliydi: (1) 4 yeni FBX (B/R/Y_Open_Box, Duct_Tape) `useFileScale:0` ile import edilmiş → mesh 17x-113x büyütülmüş, üstüne eski kutu prefab'ının ~98.69x compensating scale'i binince devasa çıkıyordu — `useFileScale:1`+`globalScale:1` yapılıp projenin diğer tüm FBX'leriyle aynı konvansiyona getirildi (DuctTape scale ayrıca 98.69→8.5). (2) Kutuların rafta/elde/masada yanlış duruşu: `Instantiate(prefab,pos,rot)` VE `PlayerInventory.Visual.cs`'nin elde-tutma kodu root Transform'un rotasyonunu HER YERDE eziyor — prefab köküne rotasyon vermek işe yaramıyordu. Çözüm: mesh+collider ayrı bir "Visual" alt objeye taşındı, o alt objeye -90 X sabit tilt verildi (6 prefab: RedOpenNGO/BlueOpenNGO/YellowOpenNGO + RedOpen/BlueOpen/YellowOpen). Kod tarafı hiç değişmedi, her yerleşim noktasında otomatik tutarlı.
+- **DERS (kaydedildi):** [[unity-fbx-import-scale-mismatch]] ve [[unity-item-rotation-override-pattern]] — ikisi de tekrar edebilecek genel Unity tuzakları, yeni item eklerken kontrol listesi olarak kullan.
+- **SIRADAKI:** kullanıcı Unity'de tekrar test edip onay verdi, aktif açık iş yok.
+
 ## 2026-09-15 (2)
 - **VOICE-CHAT WASD BUG'I KAPATILDI (kullanici karari, `1f3210b`) — KANIT ZAYIF.** Kullanici 2 makine/hesapla host+client oynadi, bug'i gormedi. `AppData/Local/Unity/Editor/Editor.log`'daki 264 `[TESHIS]` girisini inceledim: net kanit yok (3 supheli-tek-kareli kayit, kalici donma degil; LockMovement sayaci 12/10 ama log gurultulu — gun boyu coklu Play oturumu + benim menu hata ayiklamam karismis). Bug intermittent oldugu icin tek test kesin kanit degil diye acikca soyledim, kullanici yine de kapatmaya karar verdi — PlayerMovement.cs'deki tum teshis kodu silindi. **Tekrar ederse sifirdan teshis kurulmali**, referans: `328e7e7`.
 - **SIRADAKI:** aktif olarak acik bir is kalmadi. Hafiza + devam.md guncel.
@@ -33,8 +43,4 @@
 - **SES FAZ A BITTI — kontrol ONAY, EditMode 93/93, 0 CS.** `Assets/Audio/CargorMixer.mixer` (Master > Music/SFX) + `Assets/NewCss/Audio/{AudioRouting,AudioRoutingConfig}.cs` + `Core/{AudioCategory,AudioVolumeMath}.cs`. Yonlendirilen: 29 prefab + 4 sahne AudioSource + MusicPlayer + 8 runtime `AddComponent`; `PlayClipAtPoint` SIFIR kaldi. **Kapanan bug: oyun ici SFX slider'i hic calismiyordu.** QA cifte olcekleme (4 yerde eski manuel carpim) + sessiz `mixer.SetFloat` donusu buldu, ikisi de kapandi.
 - **Muzik uretimi TAMAM: 15 parca, 47.5 dk, OGG** (431MB WAV -> 48MB, ffmpeg q6). C ailesi tek parca kaliyor (kullanici karari). Import ayarlari sureye gore duzeltildi (Streaming/CompressedInMemory/DecompressOnLoad).
 
-## 2026-09-14 (2)
-- **MUZIK URETIMI BITTI + PROJEYE ALINDI. Kod hala YAZILMADI.** Kullanici flowmusic.app'te 15/16 parca uretti (harf sonekli: A1-A6, B1-B3, C, D1-D2, E, F, G), **toplam 47.5 dakika** -> eski 4 dakika/17-tekrar sorunu kapandi. Downloads'tan `Assets/Music/Gameplay/{Main,Busy,Closing,Tension}` + `Menu` + `Stinger` altina yerlestirildi. **EKSIK: C ailesinin 2. parcasi** (Closing'de 1 dosya, 2 olmali) — sistem tek parcayla da calisir. F ailesi geldigi icin `06_iflas` SFX secimi gereksizlesti.
-- **WAV -> OGG cevrildi: 431 MB -> 48 MB (8.9x, sureler birebir korundu, 15/15 dogrulandi).** Sebep: `.git` zaten 495 MB, LFS yok, WAV commit'lenirse git gecmisinde kalici olurdu. Orijinal WAV'lar Downloads'ta duruyor. TUZAK: `soundfile`/libsndfile 1.2.2 Vorbis encoder'i bu makinede **sureci hard-crash ettiriyor** (exit 127, float/int16/mono/stereo hepsi); MP3 encoder'i sorunsuz. Cozum: tasinabilir ffmpeg (gyan.dev, gecici klasor, PATH'e dokunulmadi). Kullanicinin "zip'leyelim" fikri olculdu: WAV'da sadece %6.7 kazanc, elendi.
-- **SIRADAKI: Faz A (CargorMixer + tum AudioSource'larin gruba yonlendirilmesi + `UnifiedSettingsManager.ApplyAudioSettings()` baglantisi) — gameplay departmani.** Muzikten bagimsiz, gercek bir bug'i kapatiyor (oyun ici SFX slider'i calismiyor). Kullanici uc kez soruldu, henuz "basla" demedi. Commit YOK.
 

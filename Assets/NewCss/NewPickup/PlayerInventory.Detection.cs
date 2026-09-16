@@ -53,7 +53,11 @@ public partial class PlayerInventory : NetworkBehaviour
             var collider = _colliderBuffer[i];
             if (collider == null) continue;
 
-            var worldItem = collider.GetComponent<NetworkWorldItem>();
+            // GetComponent DEĞİL: RedOpenNGO/BlueOpenNGO/YellowOpenNGO/DuctTapeNGO gibi kutu
+            // prefab'larında mesh+collider "Visual" alt objesine taşındı (bkz. 626a1df, rotasyon
+            // ezilme fix'i). Collider artık NetworkWorldItem'ın olduğu root objede değil, GetComponent
+            // bu yüzden null dönüyordu ve hiçbir kutu pickup range'ine giremiyordu.
+            var worldItem = collider.GetComponentInParent<NetworkWorldItem>();
             if (IsValidPickupTarget(worldItem) && IsItemInCone(worldItem))
             {
                 currentFrameItems.Add(worldItem);

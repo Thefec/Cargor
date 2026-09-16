@@ -498,7 +498,7 @@ namespace NewCss
 
             foreach (var collider in colliders)
             {
-                var worldItem = collider.GetComponent<NetworkWorldItem>();
+                var worldItem = collider.GetComponentInParent<NetworkWorldItem>();
                 if (worldItem != null && IsBoxSpawned(worldItem.NetworkObject))
                 {
                     return true;
