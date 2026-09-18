@@ -1256,12 +1256,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 137293859411079170
-    m_Localized: "Depodaki telefon zaman zaman \xE7alar. Yan\u0131na gidip a\xE7arsan
-      k\xFC\xE7\xFCk bir para ve itibar \xF6d\xFCl\xFC kazan\u0131rs\u0131n. A\xE7mazsan
-      da bir \u015Fey kaybetmezsin \u2014 telefon kendi kendine susar.\n\n\xC7almas\u0131
-      tamamen \u015Fansa ba\u011Fl\u0131, ama baz\u0131 g\xFCnler (\xF6rne\u011Fin
-      \xF6zel etkinlik g\xFCnlerinde) \xE7alma ihtimali artar. Yan\u0131ndan ge\xE7erken
-      bir bak\u0131\u015F atmak zarar vermez."
+    m_Localized: "Depodaki telefonla s\u0131radaki m\xFC\u015Fteriyi sen \xE7a\u011F\u0131rabilirsin. Telefona gidip tu\u015Fu bas\u0131l\u0131 tut: m\xFC\u015Fteri hemen gelir ve itibar kazan\u0131rs\u0131n.\n\nAma arama bedava de\u011Fil \u2014 g\xFCn\xFCn saati ileri atlar. Telefon do\u011Frudan para vermez; paray\u0131 gelen m\xFC\u015Fteriyi do\u011Fru teslimatla memnun ederek kazan\u0131rs\u0131n. Bo\u015F durdu\u011Fun, m\xFC\u015Fteri beklemedi\u011Fin anlarda kullan."
     m_Metadata:
       m_Items: []
   - m_Id: 137293859415273472
@@ -1300,14 +1295,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 137293859419467776
-    m_Localized: "Cargor'u i\u015Fletmek \xFCcretsiz de\u011Fil. Belirli g\xFCnlerde
-      kira \xF6demesi gelir \u2014 bu g\xFCne \"kira g\xFCn\xFC\" diyoruz.\n\n- Kiray\u0131
-      \xF6deyecek paran varsa, \xF6denir ve devam edersin.\n\n- \u0130lk \xF6demede
-      tarihinde \xD6deyemezsen bir kerelik bir \u015Fans var: elindeki paran\u0131n
-      b\xFCy\xFCk bir k\u0131sm\u0131 al\u0131n\u0131r ama i\u015Fletme kapanmaz.\n\n<b>Para;
-      </b>do\u011Fru teslimatlardan, telefon aramalar\u0131ndan ve tamamlanan g\xF6revlerden
-      gelir. Yanl\u0131\u015F teslimat, d\xFC\u015F\xFCr\xFClen kutular ve yar\u0131m
-      b\u0131rak\u0131lan g\xF6revler paran\u0131 azalt\u0131r."
+    m_Localized: "Cargor'u i\u015Fletmek \xFCcretsiz de\u011Fil. Belirli g\xFCnlerde kira \xF6demesi gelir \u2014 bu g\xFCne \"kira g\xFCn\xFC\" diyoruz.\n\n- Kiray\u0131 \xF6deyecek paran varsa, \xF6denir ve devam edersin.\n\n- \u0130lk \xF6demede tarihinde \xD6deyemezsen bir kerelik bir \u015Fans var: elindeki paran\u0131n b\xFCy\xFCk bir k\u0131sm\u0131 al\u0131n\u0131r ama i\u015Fletme kapanmaz.\n\n<b>Para; </b>do\u011Fru teslimatlardan ve tamamlanan g\xF6revlerden gelir. Yanl\u0131\u015F teslimat, d\xFC\u015F\xFCr\xFClen kutular ve yar\u0131m b\u0131rak\u0131lan g\xF6revler paran\u0131 azalt\u0131r."
     m_Metadata:
       m_Items: []
   - m_Id: 137293859419467777
@@ -1372,9 +1360,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 137293859436244994
-    m_Localized: "<b> \u0130pucu:  </b>Telefon \xE7alarken elin doluysa bile yoluna
-      \xE7\u0131k\u0131yorsa u\u011Fra \u2014 k\u0131sa bir mola, k\xFC\xE7\xFCk
-      bir kazan\xE7."
+    m_Localized: "<b> \u0130pucu:  </b>Telefon zaman yakar \u2014 s\u0131rada m\xFC\u015Fteri yokken ara, m\xFC\u015Fteri beklerken de\u011Fil."
     m_Metadata:
       m_Items: []
   - m_Id: 137293859444633600

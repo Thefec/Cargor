@@ -49,7 +49,7 @@ namespace NewCss
         // Backward-compat fallback'ler — SO atanmamissa hard-coded degerler kullanilir.
         private float PhoneCooldownSecondsBase => economySettings != null ? economySettings.phoneCooldownSeconds : 3f;
         private float PhoneCooldownPerkBonusSeconds => economySettings != null ? economySettings.phoneCooldownPerkBonusSeconds : 0f;
-        private int   CallMoneyReward => economySettings != null ? economySettings.callMoneyReward : 20;
+        private int   CallMoneyReward => economySettings != null ? economySettings.callMoneyReward : 0;
         private float CallPrestigeReward => economySettings != null ? economySettings.callPrestigeReward : 0.4f;
 
         // UX/his parametresi (EKONOMİK DEĞİL — para/süre/ödül/multiplier değil, saf input-timing).

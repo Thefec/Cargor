@@ -681,7 +681,17 @@ namespace NewCss
             }
 
             float normalizedSpeed = _navAgent.speed > 0f ? targetSpeed / _navAgent.speed : 0f;
-            _networkAnimatorSpeed.Value = normalizedSpeed;
+
+            // Optimizasyon teftisi 2026-09-18: NavMesh hizi her frame kucuk dalgalandigi icin
+            // NetworkVariable kosulsuz yazilinca musteri basina HER tick dirty oluyordu. Yalniz
+            // anlamli degisimde (veya tam durus/0'a inis) yaz — animator blend gorsel olarak ayni.
+            const float ANIM_SPEED_SYNC_EPSILON = 0.02f;
+            float previous = _networkAnimatorSpeed.Value;
+            bool stoppedNow = normalizedSpeed <= 0f && previous > 0f;
+            if (stoppedNow || Mathf.Abs(normalizedSpeed - previous) > ANIM_SPEED_SYNC_EPSILON)
+            {
+                _networkAnimatorSpeed.Value = normalizedSpeed;
+            }
 
             if (_animator != null)
             {
@@ -976,6 +986,13 @@ namespace NewCss
 
             // UI gizle
             HideWaitUI();
+
+            // A4 denetimi (docs/playtest/denetim-2026-09-18/A4-feedback.md) gap #3: müşteri kaybı
+            // sessizdi. HandleTimeUp yalnız server'da çalışır (CheckWaitTimeExpired -> ServerUpdate),
+            // bu yüzden HandleFailedInteraction/Truck.ProcessWrongDelivery ile aynı desen: host burada
+            // yerel çalar, PlayCustomerLostSoundClientRpc ile diğer client'lara yayılır.
+            SfxBus.Play(SfxId.CustomerLost);
+            PlayCustomerLostSoundClientRpc();
 
             // NEW: Customer lost - trigger game over
             if (IsServer && GameStateManager.Instance != null)
@@ -1409,6 +1426,13 @@ namespace NewCss
         {
             if (IsServer) return;
             SfxBus.Play(SfxId.WrongItem);
+        }
+
+        [ClientRpc]
+        private void PlayCustomerLostSoundClientRpc()
+        {
+            if (IsServer) return;
+            SfxBus.Play(SfxId.CustomerLost);
         }
 
         private void UnlockInteractingPlayer()

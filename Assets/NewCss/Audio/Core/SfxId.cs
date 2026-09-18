@@ -23,5 +23,9 @@ namespace NewCss.Audio
         // Klip henüz seçilmedi (plan §3.2 AÇIK) — AudioSlotValidator bunları boş slot olarak raporlar.
         MoneyEarned,
         CorrectItem,
+
+        // A4 denetimi (docs/playtest/denetim-2026-09-18/A4-feedback.md) gap #3: müşteri kaybı sessizdi.
+        // Klip: WrongItem ile aynı — proje içinde ayrı bir "negatif/kayıp" ses bulunamadı, YER TUTUCU.
+        CustomerLost,
     }
 }

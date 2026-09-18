@@ -29,7 +29,7 @@ MonoBehaviour:
   truckCargoMinByPlayerCount: 01000000020000000200000002000000
   truckCargoMaxExclusiveByPlayerCount: 03000000040000000500000006000000
   boxDropMoneyPenalty: 5
-  callMoneyReward: 20
+  callMoneyReward: 0
   callPrestigeReward: 0.4
   customerLostPrestigePenalty: -0.4
   customerServedPrestigeBonus: 0.4

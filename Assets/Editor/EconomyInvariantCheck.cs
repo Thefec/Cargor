@@ -334,7 +334,7 @@ public static class EconomyInvariantCheck
         r.ExpectArray("timeSkipAmountByPlayerCount", eco.timeSkipAmountByPlayerCount,
                       new[] { 115f, 49f, 47f, 47f });
         r.ExpectFloat("phoneCooldownSeconds", eco.phoneCooldownSeconds, 3f); // kullanıcı isteği 2026-08-30, eski 20f çok uzundu
-        r.Expect("callMoneyReward", eco.callMoneyReward, 20);
+        r.Expect("callMoneyReward", eco.callMoneyReward, 0); // 2026-09-18 tasarim denetimi #2: kosulsuz para kaldirildi, prestij + musteri cagirma kaldi
         r.ExpectFloat("callPrestigeReward", eco.callPrestigeReward, 0.4f);
         r.ExpectFloat("GetTimeSkipAmountMinutes(1)", eco.GetTimeSkipAmountMinutes(1), 115f); // P1 bilerek sabit
         r.ExpectFloat("GetTimeSkipAmountMinutes(4)", eco.GetTimeSkipAmountMinutes(4), 47f); // U2

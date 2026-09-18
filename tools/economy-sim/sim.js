@@ -544,7 +544,8 @@ const SRC4 = {
                                     // PhoneCallManager.cs:292 yorumu "10f economist onayli"
                                     // diyor, plan dosyasi da 10f varsayiyor. GERCEK DEGER 0f.
                                     // Round 7'nin cikis noktasi bu olmali.
-  callMoneyReward: 20,            // cs:126 == asset:34
+  callMoneyReward: 0,             // cs:129 == asset:32 (2026-09-18: 20->0, "ikinci koşulsuz
+                                    // para musluğu" kapatıldı — bkz. GDD §14.4)
   callPrestigeReward: 0.4,        // cs:129 == asset:35
   phoneDialHoldSeconds: 1,        // cs:132 ASSET'TE YOK -> CANLI (ekonomik deger DEGIL)
   phoneStartHour: 8,              // sahne unity:14820

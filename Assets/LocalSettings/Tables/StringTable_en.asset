@@ -1279,11 +1279,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 137293859411079170
-    m_Localized: "The phone in the warehouse rings from time to time. Go over and
-      answer it for a small money and reputation reward. If you don't, you lose nothing
-      either \u2014 the phone just goes quiet on its own.\n\nWhether it rings is
-      entirely down to chance, though on some days (special event days, for example)
-      the odds go up. It doesn't hurt to glance over when you're passing by."
+    m_Localized: "With the warehouse phone you can call the next customer yourself. Walk up to it and hold the button: the customer arrives right away and you gain reputation.\n\nBut a call isn't free \u2014 the clock skips ahead. The phone doesn't pay money directly; you earn money by serving the customer it brings with a correct delivery. Use it when you're idle and no customer is waiting."
     m_Metadata:
       m_Items: []
   - m_Id: 137293859415273472
@@ -1319,12 +1315,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 137293859419467776
-    m_Localized: "Running Cargor isn't free. On certain days a rent payment comes
-      due \u2014 we call that a \"rent day.\"\n\n- If you have enough money to cover
-      the rent, it's paid and you carry on.\n\n- If you can't pay on the due date,
-      you get one second chance: most of your cash is taken, but the business doesn't
-      close.\n\n<b>Money </b>comes from correct deliveries, phone calls, and completed
-      quests. Wrong deliveries, dropped boxes, and unfinished quests take money away."
+    m_Localized: "Running Cargor isn't free. On certain days a rent payment comes due \u2014 we call that a \"rent day.\"\n\n- If you have enough money to cover the rent, it's paid and you carry on.\n\n- If you can't pay on the due date, you get one second chance: most of your cash is taken, but the business doesn't close.\n\n<b>Money </b>comes from correct deliveries and completed quests. Wrong deliveries, dropped boxes, and unfinished quests take money away."
     m_Metadata:
       m_Items: []
   - m_Id: 137293859419467777
@@ -1384,8 +1375,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 137293859436244994
-    m_Localized: "<b> Tip:  </b>If the phone rings and it's on your way, swing by
-      even with your hands full \u2014 a short break, a small payoff."
+    m_Localized: "<b> Tip:  </b>The phone burns time \u2014 call when nobody is in the queue, not while a customer is waiting."
     m_Metadata:
       m_Items: []
   - m_Id: 137293859444633600

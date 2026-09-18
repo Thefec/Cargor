@@ -125,8 +125,8 @@ namespace NewCss
         [Tooltip("phone_line perki aktifken cooldown'dan mutlak olarak düşülen saniye (idempotent atama — PerkEffect.ApplyPhoneLine). economist round10 U5 (2026-08-30): 10f taban 3f'e (phoneCooldownSeconds) göre Mathf.Max(1, 3-10) ile zaten tabana çakılıyordu (ekonomik değeri SIFIR) — perk artık 1f atıyor, yalnız his/etiket amaçlı, ekonomik etkisi hâlâ yok.")]
         public float phoneCooldownPerkBonusSeconds = 0f;
 
-        [Tooltip("Telefonla müşteri çağrıldığında verilen para ödülü (TL)")]
-        public int callMoneyReward = 20;
+        [Tooltip("Telefonla müşteri çağrıldığında verilen para ödülü (TL). 0 = KASITLI — çağrı KOŞULSUZ ikinci para musluğu olmasın diye kapatıldı (economist 2026-09-18, tasarim-denetimi #2). Para artık yalnız çağrılan müşteri servis edilirse tırdan gelir; prestij ödülü aşağıda ayrı, dokunulmadı.")]
+        public int callMoneyReward = 0;
 
         [Tooltip("Telefonla müşteri çağrıldığında verilen prestij ödülü")]
         public float callPrestigeReward = 0.4f;
