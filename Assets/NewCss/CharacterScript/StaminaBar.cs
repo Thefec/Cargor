@@ -10,11 +10,17 @@ public class StaminaBar : MonoBehaviour
     public float Speed = 30;
 
     private float CurrentAmount;
+    private Image _fillImage; // Optimizasyon teftisi 2026-09-18: her frame GetComponent yerine Awake'de onbellek
+
+    void Awake()
+    {
+        _fillImage = loadingBarImage != null ? loadingBarImage.GetComponent<Image>() : null;
+    }
 
     void Start()
     {
         CurrentAmount = TargetAmount;
-        loadingBarImage.GetComponent<Image>().fillAmount = 1f;
+        if (_fillImage != null) _fillImage.fillAmount = 1f;
     }
 
     void Update()
@@ -22,7 +28,7 @@ public class StaminaBar : MonoBehaviour
         if (CurrentAmount < TargetAmount)
         {
             CurrentAmount += Speed * Time.deltaTime;
-            loadingBarImage.GetComponent<Image>().fillAmount = CurrentAmount / TargetAmount;
+            if (_fillImage != null) _fillImage.fillAmount = CurrentAmount / TargetAmount;
         }
     }
 }
