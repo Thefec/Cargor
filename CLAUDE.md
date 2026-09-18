@@ -28,7 +28,7 @@ Sen bu Unity projesinin müdürüsün. İki temel görevin var: **planlamak** ve
 ### 0. İş büyüklüğü eşiği (token disiplini — önce buna karar ver)
 Her iş subagent zincirinden geçmez. Delegasyondan önce işi sınıfla:
 - **KÜÇÜK iş** → müdür kendi yapar, subagent açmaz. Tanım: tek dosya + dar değişiklik, kozmetik/metin/loc, tek satırlık düzeltme, doküman, ekonomik değer içermeyen ve kritik sistemlere dokunmayan işler. qa/kontrol gerekmez; müdür diff'i kendi doğrular, kullanıcıya raporlar.
-- **BÜYÜK/RİSKLİ iş** → tam departman + kapı akışı (aşağıdaki kurallar). Tanım: gameplay mantığı, birden çok dosya, ekonomik değer, veya kritik sistemler (netcode/SteamManager/LobbyManager, GameState, ekonomi, prestij, save).
+- **BÜYÜK/RİSKLİ iş** → tam departman + kapı akışı (aşağıdaki kurallar). Tanım: gameplay mantığı, birden çok dosya, ekonomik değer, veya kritik sistemler (netcode/SteamManager/PlayerSpawner, GameState, ekonomi, prestij, save).
 - Kararsızsan KÜÇÜK varsay ve inline yap; sürpriz risk çıkarsa BÜYÜK'e yükselt.
 
 ### Kurallar (BÜYÜK/RİSKLİ işler için)

@@ -219,6 +219,17 @@ namespace NewCss
             {
                 SetupCamera();
 
+                // DEFECT 1 FIX (kontrol düzeltmesi, 2026-09-18): DifficultyManager.ApplyStaminaSettings
+                // (FindObjectsOfType<PlayerMovement>() ile server-side yazıyor) yalnız server'ın KENDİ
+                // GameObject kopyasına ulaşıyor; staminaRegenRate düz `public float` olduğu için uzak
+                // client'a hiç replike olmuyor (host = server+owner aynı process olduğundan yalnız host'ta
+                // "çalışıyormuş" gibi görünüyordu). Gerçek düzeltme: her owner kendi local instance'ına
+                // DifficultyManager.Instance üzerinden (zaten replike NetworkVariable'dan yerel hesap)
+                // uygulasın. ApplyLivePerksToPlayer'dan ÖNCE çağrılmalı: aşağıdaki "Dinç Ekip" perk'i
+                // mutlak override olduğu için, perk sahibiyse zorluk taban değerinin üstüne yazmalı
+                // (mevcut "son yazan kazanır" sırası korunuyor).
+                ApplyDifficultyStaminaRegen();
+
                 // perk-revival (bkz. plans/perk-revival.md §2): late-join oyuncusu bu ana kadar
                 // satın alınmış agile_crew/energetic_crew perklerini kaçırmasın. F10 fix'teki
                 // BuffManager deseniyle aynı sorun sınıfı, ama kapsam SADECE owned player (her peer
@@ -229,6 +240,13 @@ namespace NewCss
                 // UpgradePanel.ApplyLivePerksToPlayer) canlı instance'a mutlak yazılıyor — BuffManager
                 // += yapmadan ÖNCE burada olmalı (aksi halde backbone'un mutlak ataması buff'ları silerdi).
                 UpgradePanel.Instance?.ApplyLivePerksToPlayer(this);
+
+                // DEFECT 1 FIX (devam): DifficultyManager NetworkVariable'ı bu OnNetworkSpawn anında
+                // henüz senkron olmamış olabilir (late-join yarışı) — ayrıca oyun ortasında oyuncu
+                // sayısı değişirse de bu owner'ın local instance'ı güncellenmeli. DifficultyManager
+                // zaten yeni bir mekanizma eklemeden bu değişiklikte statik OnDifficultyChanged
+                // event'ini fırlatıyordu (önceden tüketicisi yoktu); burada ona abone oluyoruz.
+                DifficultyManager.OnDifficultyChanged += HandleDifficultyChangedForOwner;
             }
 
             // F10 fix: late-join oyuncusu veya BuffManager'ın buff listesi zaten dolmuşken sonradan spawn
@@ -236,6 +254,45 @@ namespace NewCss
             // hiç almıyordu (BuffManager push-once FindObjectsOfType modeli, bu obje o an sahnede yoktu).
             // Çift-uygulama guard BuffManager.ApplyActiveBuffsTo içinde (bkz. Assets/Scripts/Quest/Buff/BuffManager.cs).
             Quest.BuffManager.Instance?.ApplyActiveBuffsTo(this);
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            // IsOwner kontrolü olmadan koşulsuz unsubscribe: static event'ten hiç abone
+            // olunmamışsa -= no-op'tur, ama IsOwner teardown sırasında beklenmedik şekilde
+            // false dönerse bile abonelik sızıntısını (memory leak / stale delegate) garanti
+            // önler.
+            DifficultyManager.OnDifficultyChanged -= HandleDifficultyChangedForOwner;
+
+            base.OnNetworkDespawn();
+        }
+
+        /// <summary>
+        /// DEFECT 1 FIX: oyuncu sayısı değiştiğinde (veya late-join yarışını kapatmak için
+        /// spawn anında) bu owner'ın kendi local PlayerMovement instance'ına ölçeklenmiş
+        /// stamina regen değerini yazar. Sadece owner çağırmalı (ApplyLivePerksToPlayer ile
+        /// aynı "her peer kendi owned player'ı" kapsamı).
+        /// </summary>
+        private void ApplyDifficultyStaminaRegen()
+        {
+            if (DifficultyManager.Instance != null)
+            {
+                staminaRegenRate = DifficultyManager.Instance.ScaledStaminaRegenRate;
+            }
+        }
+
+        /// <summary>
+        /// DifficultyManager.OnDifficultyChanged handler'ı — yalnız owner'da abone olunur.
+        /// Zorluk tabanını yeniden uygulayıp, ardından perk override'ını (varsa) tekrar
+        /// uygulayarak OnNetworkSpawn'daki sırayı korur; aksi halde bir zorluk değişikliği
+        /// sahip olunan "Dinç Ekip" perkini silebilirdi.
+        /// </summary>
+        private void HandleDifficultyChangedForOwner(int newPlayerCount)
+        {
+            if (!IsOwner) return;
+
+            ApplyDifficultyStaminaRegen();
+            UpgradePanel.Instance?.ApplyLivePerksToPlayer(this);
         }
 
         #endregion

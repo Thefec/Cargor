@@ -21,7 +21,7 @@ Roguelite dalı kod olarak bitti; **late-join testi kullanıcı tarafından yap�
 Salt-okunur qa taramaları → önceliklendirilmiş bulgu listesi → onaylı düzeltmeler.
 
 ### Dilim: Netcode / multiplayer  🚧 (2026-07-12 başladı)
-İki paralel qa: **A** bağlantı/lobi/yaşam döngüsü (SteamManager, LateJoinGuard, LobbySaver, PlayerSpawner, NetworkCleanupHelper, NetworkObjectPool) · **B** state senkron/yetki (PlayerRosterEntry, GameStateManager, DayCycleManager roster, BreakRoomManager, NextDayUIManager, ClientNetworkTransform).
+İki paralel qa: **A** bağlantı/lobi/yaşam döngüsü (SteamManager, LateJoinGuard, LobbySaver, PlayerSpawner, NetworkCleanupHelper) · **B** state senkron/yetki (PlayerRosterEntry, GameStateManager, DayCycleManager roster, BreakRoomManager, NextDayUIManager, ClientNetworkTransform).
 - ⚠️ In-flight istisna: SteamManager+LateJoinGuard'daki commit'siz late-join fix + `[NETDBG]` bulgu SAYILMAZ.
 
 #### Bulgu envanteri (2026-07-12 qa A+B, müdür doğruladı)

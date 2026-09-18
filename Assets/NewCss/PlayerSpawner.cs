@@ -4,6 +4,7 @@ using UnityEngine.SceneManagement;
 using System;
 using System.Collections.Generic;
 using System.Collections;
+using NewCss;
 
 public class PlayerSpawner : NetworkBehaviour
 {
@@ -299,7 +300,20 @@ public class PlayerSpawner : NetworkBehaviour
         {
             // Player prefab'ı instantiate et
             GameObject playerInstance = Instantiate(PlayerPrefab);
-            
+
+            // DEFECT 2 FIX (2026-09-18), NOT: bu satır SADECE sunucunun kendi authoritative
+            // kopyasını ayarlar; staminaRegenRate düz `public float` olduğu için networkObject.Spawn
+            // sonrası uzak client'a hiç replike OLMAZ (kontrol düzeltmesi, aynı gün — bkz.
+            // PlayerMovement.cs OnNetworkSpawn/ApplyDifficultyStaminaRegen). Gerçek çalışma yolu artık
+            // owner-side (PlayerMovement.OnNetworkSpawn + DifficultyManager.OnDifficultyChanged
+            // aboneliği); bu yazma zararsız/vestigial olarak bırakıldı (host kendi player'ında IsOwner+
+            // IsServer aynı instance olduğundan gereksiz ama etkisiz tekrar, uzak client için no-op).
+            var spawnedPlayerMovement = playerInstance.GetComponent<PlayerMovement>();
+            if (spawnedPlayerMovement != null && DifficultyManager.Instance != null)
+            {
+                spawnedPlayerMovement.staminaRegenRate = DifficultyManager.Instance.ScaledStaminaRegenRate;
+            }
+
             // Spawn pozisyonu ayarla
             if (spawnPoints != null && spawnPoints.Length > 0)
             {

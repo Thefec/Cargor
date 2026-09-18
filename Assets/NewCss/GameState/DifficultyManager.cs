@@ -40,10 +40,10 @@ namespace NewCss
         // GameEconomySettings.timeSkipAmountByPlayerCount'ta.
 
         [SerializeField, Tooltip("Customer minimum patience time for single player (seconds)")]
-        private float baseMinPatience = 35f;
- 
+        private float baseMinPatience = 15f;
+
         [SerializeField, Tooltip("Customer maximum patience time for single player (seconds)")]
-        private float baseMaxPatience = 55f;
+        private float baseMaxPatience = 20f;
 
         [SerializeField, Tooltip("Stamina regeneration rate for single player")]
         private float baseStaminaRegenRate = 1f;
@@ -63,7 +63,7 @@ namespace NewCss
         // `phoneChancePerPlayer` KALDIRILDI (FAZ4 §B.6) — bkz. basePhoneCallChance notu.
 
         [SerializeField, Tooltip("Patience reduction per player (seconds)")]
-        private float patienceReductionPerPlayer = 5f;
+        private float patienceReductionPerPlayer = 2f;
 
         [SerializeField, Tooltip("Stamina drain multiplier per player")]
         [Range(1f, 2f)]
@@ -178,6 +178,7 @@ namespace NewCss
             if (IsServer)
             {
                 InitializePlayerCount();
+                SubscribeToPlayerConnectionEvents();
             }
 
             UpdateDifficultyUI();
@@ -185,6 +186,7 @@ namespace NewCss
 
         public override void OnNetworkDespawn()
         {
+            UnsubscribeFromPlayerConnectionEvents();
             UnsubscribeFromNetworkEvents();
             base.OnNetworkDespawn();
         }
@@ -227,6 +229,31 @@ namespace NewCss
             _networkPlayerCount.OnValueChanged -= HandlePlayerCountChanged;
         }
 
+        /// <summary>
+        /// DEFECT 1 FIX (2026-09-18): host tek başına başladığında InitializePlayerCount
+        /// bir kez çalışıyor ama sonradan katılan/ayrılan oyuncular için hiçbir yer
+        /// _networkPlayerCount'ı güncellemiyordu (SetPlayerCount yalnız [ContextMenu] debug
+        /// yollarından çağrılıyordu). Sunucu, bağlantı sayısı değiştiğinde sayıyı
+        /// InitializePlayerCount() ile (mevcut Steam lobisi + ConnectedClientsList fallback
+        /// kaynağıyla) yeniden hesaplar; bu da NetworkVariable üzerinden zaten var olan
+        /// mekanizmayla client'lara (late-join dahil) replike olur.
+        /// </summary>
+        private void SubscribeToPlayerConnectionEvents()
+        {
+            if (NetworkManager.Singleton == null) return;
+
+            NetworkManager.Singleton.OnClientConnectedCallback += HandlePlayerConnectionChanged;
+            NetworkManager.Singleton.OnClientDisconnectCallback += HandlePlayerConnectionChanged;
+        }
+
+        private void UnsubscribeFromPlayerConnectionEvents()
+        {
+            if (NetworkManager.Singleton == null) return;
+
+            NetworkManager.Singleton.OnClientConnectedCallback -= HandlePlayerConnectionChanged;
+            NetworkManager.Singleton.OnClientDisconnectCallback -= HandlePlayerConnectionChanged;
+        }
+
         #endregion
 
         #region Network Event Handlers
@@ -239,6 +266,40 @@ namespace NewCss
             UpdateDifficultyUI();
             ApplyDifficultySettings();
             OnDifficultyChanged?.Invoke(newValue);
+        }
+
+        /// <summary>
+        /// NetworkManager.OnClientConnectedCallback / OnClientDisconnectCallback handler'ı.
+        /// Sadece sunucuda anlamlı; erken çıkıyoruz çünkü client'larda bu callback de tetiklenir.
+        ///
+        /// BULGU 2 FIX (kontrol düzeltmesi, 2026-09-18): InitializePlayerCount() KASITLI OLARAK
+        /// çağrılmıyor — o metod GetLobbyPlayerCount() ile Steam lobi üye sayısını ÖNCE dener.
+        /// Steamworks'ün lobi-ayrılma event'i (bkz. SteamManager.cs:503-517, OnLobbyMemberLeave —
+        /// sadece menü UI günceller) netcode'un bu callback'inden bağımsız, ayrı bir async event;
+        /// bu callback'in tetiklendiği anda Steam lobi listesi henüz düşmemiş/artmamış olabilir →
+        /// bayat sayı. NGO paket kaynağı doğrulandı (Library/PackageCache/
+        /// com.unity.netcode.gameobjects@cfd429cc91ec/Runtime/Connection/NetworkConnectionManager.cs):
+        /// disconnect'te ConnectedClients/ConnectedClientsList.Remove SATIR 1531-1537'de,
+        /// InvokeOnClientDisconnectCallback SATIR 1567'de — yani remove HER ZAMAN invoke'dan ÖNCE
+        /// tamamlanıyor; connect'te de AddClient (satır 1000) InvokeOnClientConnectedCallback'ten
+        /// (satır 1063) önce çalışıyor. Yani bu callback'in içinde
+        /// NetworkManager.Singleton.ConnectedClientsList.Count HER ZAMAN doğru/güncel — Steam lobi
+        /// sayısı yalnız OnNetworkSpawn'daki İLK InitializePlayerCount() çağrısında kullanılmaya
+        /// devam ediyor (o an NGO bağlantıları Steam lobisinden geride kalabilir).
+        /// </summary>
+        private void HandlePlayerConnectionChanged(ulong clientId)
+        {
+            if (!IsServer) return;
+
+            int authoritativeCount = NetworkManager.Singleton != null
+                ? NetworkManager.Singleton.ConnectedClientsList.Count
+                : MIN_PLAYERS;
+
+            _networkPlayerCount.Value = Mathf.Clamp(authoritativeCount, MIN_PLAYERS, MAX_PLAYERS);
+            _cachedPlayerCount = _networkPlayerCount.Value;
+
+            LogDebug($"Client connection changed (clientId={clientId}); recomputed player count via ConnectedClientsList: {_networkPlayerCount.Value}");
+            ApplyDifficultySettings();
         }
 
         #endregion

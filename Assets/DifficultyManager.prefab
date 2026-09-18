@@ -73,8 +73,8 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   baseCustomerCount: 10
   baseStartingMoney: 500
-  baseMinPatience: 8
-  baseMaxPatience: 14
+  baseMinPatience: 15
+  baseMaxPatience: 20
   baseStaminaRegenRate: 1
   customerCountPerPlayer: 2
   moneyMultiplierPerPlayer: 1.2

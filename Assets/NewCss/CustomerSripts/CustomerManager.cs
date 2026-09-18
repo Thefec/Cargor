@@ -723,6 +723,19 @@ namespace NewCss
 
             SetupCustomerAI(customerAI, queueIndex);
 
+            // DEFECT 2 FIX (2026-09-18): DifficultyManager.ApplyCustomerSettings only patches
+            // CustomerAI instances that already exist (FindObjectsOfType) at the moment the
+            // player count changes; customers spawned mid-day through this method never picked
+            // up the scaled patience and kept the prefab's static minWaitTime/maxWaitTime. Apply
+            // the current scaled values directly here, before Spawn() — same ordering
+            // requirement as the buff application below, since CustomerAI.InitializeServerState
+            // reads minWaitTime/maxWaitTime synchronously from OnNetworkSpawn.
+            if (IsServer && DifficultyManager.Instance != null)
+            {
+                customerAI.minWaitTime = DifficultyManager.Instance.ScaledMinPatience;
+                customerAI.maxWaitTime = DifficultyManager.Instance.ScaledMaxPatience;
+            }
+
             // F10 fix: buff verildiği anda sahnede olmayan (BuffManager listesi zaten dolmuşken sonradan
             // spawn olan) müşteriler CustomerWaitTime buff'ını hiç almıyordu. Spawn() ÇAĞRILMADAN ÖNCE
             // uygulanmalı: CustomerAI.InitializeServerState, Spawn() sırasında senkron çalışan
