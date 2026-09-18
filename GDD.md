@@ -6,9 +6,13 @@
 > **Platform**: PC (Steam)
 > **Tür**: Co-op Kargo / Mağaza Yönetimi Simülasyonu
 > **Oyuncu Sayısı**: 1–4 (Online Co-op)
-> **Motor Sürümü**: Unity 6000.5.6f1 (URP)
-> **Durum**: Geliştirme Aşamasında
-> **Son Güncelleme**: 30 Ağustos 2026 — Ekonomi dengeleme UYGULAMA turu senkronu (Round 10 + Round 11 koda işlendi, commit `bb98ad1`)
+> **Motor Sürümü**: Unity 6000.5.6f1 (URP 17.5)
+> **Sürüm**: 0.1.0 (`ProjectSettings.bundleVersion`)
+> **Durum**: Geliştirme Aşamasında — tüm çekirdek sistemler kodda, playtest öncesi
+> **Son Güncelleme**: 13 Eylül 2026 — **kapsam tamamlama turu**: kontroller, mekân/oda planı,
+> oda karartma, telsiz, not defteri, kira-sonrası mekanikler, sanat yönü, ayarlar/erişilebilirlik,
+> üretim durumu, risk kaydı ve sözlük eklendi (§32–42); tutorial/UI/ses/lokalizasyon bölümleri
+> koda karşı tazelendi. Ekonomi bölümleri (§3–7, §13–16, §19, §31) ayrıca doğrulandı: **sapma yok**.
 
 ---
 
@@ -84,7 +88,29 @@
 29. [Teknik Mimari](#29--teknik-mimari)
 30. [Sistem Bağlantı Haritası](#30--sistem-bağlantı-haritası)
 31. [Ekonomi Simülasyon Verileri](#31--ekonomi-simülasyon-verileri)
-32. [Bilinen Riskler ve Açık Sorular](#32--bilinen-riskler-ve-açık-sorular)
+32. [Kontroller ve Giriş Sistemi](#32--kontroller-ve-giriş-sistemi)
+33. [Mekân Tasarımı — Mağaza Planı ve Odalar](#33--mekân-tasarımı--mağaza-planı-ve-odalar)
+34. [Oda Bazlı Görünürlük ve "Stok Kontrolü"](#34--oda-bazlı-görünürlük-ve-stok-kontrolü)
+35. [Telsiz (Sesli İletişim) Sistemi](#35--telsiz-sesli-iletişim-sistemi)
+36. [Not Defteri ve Bilgi Panelleri](#36--not-defteri-ve-bilgi-panelleri)
+37. [Kira Sonrası Açılan Mekanikler (Gün 5 / 9 / 13)](#37--kira-sonrası-açılan-mekanikler-gün-5--9--13)
+38. [Sanat Yönü ve Görsel Kimlik](#38--sanat-yönü-ve-görsel-kimlik)
+39. [Ayarlar, Erişilebilirlik ve Performans](#39--ayarlar-erişilebilirlik-ve-performans)
+40. [Üretim Durumu ve Sürüm Bilgisi](#40--üretim-durumu-ve-sürüm-bilgisi)
+41. [Bilinen Riskler ve Açık Sorular](#41--bilinen-riskler-ve-açık-sorular)
+42. [Sözlük](#42--sözlük)
+
+### 📚 Okuma Rehberi (bölüm grupları)
+
+| Grup | Bölümler | Kimin için |
+|------|----------|-----------|
+| **Vizyon ve döngü** | 1–2 | Herkes — 5 dakikada oyunu anlamak için |
+| **Zaman ve ekonomi** | 3–7, 19, 31 | Ekonomist / tasarımcı — sayısal denge |
+| **Çekirdek mekanikler** | 8–12, 17–18, 20, 37 | Gameplay geliştirici |
+| **Meta sistemler** | 13–16, 21 | Tasarımcı — ilerleme ve karar katmanı |
+| **Oyuncu arayüzü ve deneyim** | 22, 26, 32–34, 36, 38–39 | UI/UX ve grafik |
+| **Çok oyunculu ve platform** | 23–25, 35 | Ağ / DevOps |
+| **Teknik ve üretim** | 27–30, 40–42 | Tüm ekip / dış paydaş |
 
 ---
 
@@ -109,9 +135,11 @@ Oyuncu, küçük bir kargo mağazasının çalışanıdır. Her gün gelen müş
 
 1. **PlateUp tarzı günlük müşteri kotası** — Her günün müşteri sayısı önceden belli ve gün numarasına bağlı; oyuncu kotayı bitirince gün erken kapanır (bkz. §7)
 2. **Çok katmanlı ekonomi** — Kira, prestij, görev ödülleri ve oyuncu-sayısına ölçekli upgrade maliyetleri iç içe geçmiş dengeli bir ekonomi
-3. **17 farklı günlük etkinlik** — Her oyun farklı hissettiren rastgele olaylar
+3. **16 farklı günlük etkinlik** — Her oyun farklı hissettiren rastgele olaylar (§15)
 4. **Prestij-bazlı bonus sistemi** — İyi oynamak eksponansiyel ödüller getirir
 5. **Kooperatif kaos** — 4 oyuncuya kadar eşzamanlı mağaza yönetimi
+6. **Oda bazlı görüş kısıtı + dahili telsiz** — Takım arkadaşını göremezsin, konuşarak koordine olursun; "stok kontrolü" (X) yalnız eşyaları gösterir, insanları değil (§34, §35)
+7. **Kira takvimine bağlı kural açılımları** — Gün 5 iade, gün 9 çift sipariş, gün 13 karışık tır: her kira, oyuna yeni bir kural katmanı getirir (§37)
 
 ### 1.5 Referans Oyunlar
 
@@ -179,7 +207,9 @@ Oyun saati ↔ gerçek saniye dönüşümü lineerdir: `saniye = (saat − 7) / 
 4. **Fırlat** → Kutuyu fırlat (riskli — düşerse ceza)
 5. **Teslim Et** → Tıra doğru renk kutuyu ver
 6. **Telefonla Çağır** → E'yi **basılı tut** (1sn), sıradaki müşteriyi öne çek: +20 TL, +0.4 prestij, karşılığında gün saati ileri sarılır (bkz. §14)
-7. **Upgrade Satın Al** → Mağazayı geliştir
+7. **Upgrade Satın Al** → Ofis terminaline git, 3 karttan birini seç (saat 10:00 sonrası, §13)
+8. **Stok Kontrolü Yap** → **X** ile haritaya çık, diğer odalardaki eşyaları gör (§34.3)
+9. **Telsizle Konuş** → **V** basılı tut, takımla konuş (§35)
 
 ---
 
@@ -1228,8 +1258,9 @@ $$\text{gerçekSaniye} = T[P] \times \frac{200}{11 \times 60} = T[P] \times 0{,}
 | 4P | **47** | **14.2 sn** | 21 sn | **%68** |
 
 Yani bir çağrı, "sıradaki müşteriyi beklemek" yerine geçen sürenin **%67-79'unu** yakar —
-kazanç, kalan **%21-33'lük** zaman tasarrufu + 20 TL + 0.4 prestij. 1P kasıtlı olarak en pahalı
-bant (tek oyuncunun eğrisi zaten sağlıklıydı, dokunulmadı).
+kazanç, kalan **%21-33'lük** zaman tasarrufu + 0.4 prestij (2026-09-18: doğrudan para ödülü
+KALDIRILDI, bkz. aşağıdaki kutu — para artık yalnız çağrılan müşteri servis edilirse tırdan
+gelir). 1P kasıtlı olarak en pahalı bant (tek oyuncunun eğrisi zaten sağlıklıydı, dokunulmadı).
 
 **Gün uzadıkça çağrı ucuzlar** (bedel gerçek-saniye cinsinden sabit, gün ise uzuyor):
 
@@ -1255,24 +1286,25 @@ bant (tek oyuncunun eğrisi zaten sağlıklıydı, dokunulmadı).
 > beceri-ters bir tuzağa çevirir. Alanın tooltip'i bu davranışı açıklayacak şekilde güncellendi
 > (`GameEconomySettings.cs:116`). **`SkipTime`'ın taban-200s dönüşümüne DOKUNMAYIN.**
 
-**Kullanım rehberi (16 hücre × 5 oran taraması, `runFullSim` v5.0 — Round 10):**
-- Sağlıklı bant: müşterilerin **%10-25'ini** telefonla çağırmak
-- **"Her fırsatta çevir" (%100) tepe noktanın belirgin altında** — spam edilmemeli
-- Optimum bant-bağımlı: Normal/strict %15-20, optimistic bantların çoğunda **%0**
-  (Round 7'nin "%25" tablosu servis penceresinin kısalmasını modellemiyordu, fazla iyimserdi)
+**Kullanım rehberi (16 hücre × geniş oran taraması, `runFullSim` v5.1 — 2026-09-18 sonrası):**
+- Sağlıklı bant (Normal): optimum telefon oranı **%10-15** (önceki %15-25'ten hafif düştü —
+  beklenen: koşulsuz para ödülü kalkınca marjinal fayda küçüldü, ama karar hâlâ gerçek).
+- **Slow/strict P1/P2'nin eski %100 "spam" optimumu KIRILDI** → P1: %0, P2: %20. Bu iki hücrenin
+  düşük kasa değeri (176-240 TL, gün 16) telefon fix'inin YAN ETKİSİ değil, önceden telefonun
+  gizlediği zayıf-bant sorunudur ([[economy_full_balance_round2]]) — ayrı bir iş.
+- Optimistic bantların çoğunda optimum hâlâ **%0** (arz-sınırlı, telefon zaten kâr etmiyordu).
 - Öğretilebilir tek kural: **"boşta beklerken çevir, kuyruk doluyken çevirme"**
 
-> [!WARNING]
-> **Telefon oyunun İKİNCİ ve KOŞULSUZ para musluğu.** `PhoneCallManager.ExecuteCall` (cs:469)
-> müşteri servis edilsin edilmesin `AddMoney(20)` yapıyor. Mekanik-bağlı (üretim kapasitesinin
-> düşük olduğu) bantlarda bu, tırdan gelen gelirin ÖNÜNE geçebiliyor: yeni kirayla Slow/strict
-> P1/P2'de optimal telefon oranı **%100** çıkıyor (gün 16, P1: telefon 120 TL vs tır 48 TL).
-> Round 10'da dört farklı `callMoneyReward` (0/10/12/15) denendi; hiçbiri Normal bandı bozmadan
-> çözmüyor → **20 TL korundu**.
->
-> Kalan yapısal seçenek (öneri değil, not): çağrı para ödülünü yalnız çağrılan müşteri SERVİS
-> EDİLİRSE vermek — o zaman ödül otomatik olarak kapasiteye oranlanır ve spam kendini finanse
-> edemez. Bu, "para yalnız tırdan gelir" invariant'ını da geri getirir.
+> [!NOTE]
+> **2026-09-18 düzeltme — "ikinci koşulsuz para musluğu" kapatıldı.** `PhoneCallManager.ExecuteCall`
+> eskiden müşteri servis edilsin edilmesin `AddMoney(20)` yapıyordu (bkz. denetim
+> `docs/playtest/tasarim-denetimi-2026-09-18.md` #2). **Karar: seçenek (a)** — doğrudan para
+> ödülü **20 → 0** (`GameEconomySettings.cs` `callMoneyReward`, asset + sim.js `SRC4` ile
+> birlikte), prestij ödülü (+0.4) ve zorunlu müşteri spawn'ı DOKUNULMADAN kaldı. Para artık
+> yalnız çağrılan müşteri gerçekten servis edilirse tırdan gelir → "para yalnız tırdan gelir"
+> invariantı geri geldi. Seçenek (b) (parayı yalnız servis edilirse ver) yeni bir gameplay hook'u
+> gerektirdiği için ertelendi; seçenek (c) (küçük sabit para) Round 10'da 3 farklı değerle
+> (10/12/15) denenmiş ve Slow/strict P1/P2'yi %100'den kurtaramamıştı → (a) tek net çözümdü.
 
 ---
 
@@ -1669,8 +1701,12 @@ stateDiagram-v2
 
 > **Kaynak**: [SkinToneManager.cs](file:///c:/Users/cicek/Documents/GitHub/Cargor/Assets/NewCss/SkinToneManager.cs)
 
-- Ten rengi seçimi
-- Ana menüde özelleştirme UI'ı (`MainMenuCustomizationUI`)
+- Ten rengi seçimi (`SkinToneManager`), oyuncular arası ağ senkronize
+- Ana menüde özelleştirme UI'ı (`MainMenuCustomizationUI`) — oyuna girmeden seçilir
+- Karakter tabanı: `Assets/ithappy/Creative_Characters_FREE/` modelleri + `M_Character_Toon` materyali
+- Müşteriler 4 ayrı materyalle çeşitlenir (`M_NPC1`–`M_NPC4`)
+
+> Kıyafet/aksesuar katmanı henüz yok — özelleştirme tek eksenlidir (ten rengi).
 
 ---
 
@@ -1723,19 +1759,22 @@ Gün sonunda tüm oyuncuların dinlenme odasında toplanması gerekmektedir. Bu,
 | **Hangar bekleme** | `hangarStayDurationByPlayerCount` | 120s | 60s | 40s | 30s |
 | **Telefon zaman bedeli** | `timeSkipAmountByPlayerCount` | 115 dk | 49 dk | 47 dk | 47 dk |
 | **Görev Kademesi fiyatı** | `UpgradePanel.GetCostMultiplier` **MUAF** | 80/100 | 80/100 | 80/100 | 80/100 |
+| **Müşteri sabrı** (min–max) | `DifficultyManager.prefab` base 15/20, −2s/oyuncu, floor 5/10 | 15–20s | 13–18s | 11–16s | 9–14s |
+| **Stamina yenilenme** | `DifficultyManager.ScaledStaminaRegenRate` (owner-side uygulanır) | ×1.00 | ÷1.10 | ÷1.21 | ÷1.33 |
 
-> [!CAUTION]
-> **`DifficultyManager`'ın müşteri/sabır ölçeklemeleri ÖLÜ KABLO.** `ScaledCustomerCount`,
-> `ScaledMinPatience`, `ScaledMaxPatience`, `ScaledStaminaRegenRate` property'lerinin
-> `DifficultyManager.cs` **DIŞINDA tek bir tüketicisi yok** (grep ile doğrulandı; yalnız
-> `GetDifficultyInfo()` log'a basıyor). Dolayısıyla `baseCustomerCount=10`,
-> `customerCountPerPlayer=5`, `baseMinPatience=35`, `baseMaxPatience=55`,
-> `patienceReductionPerPlayer=5` alanları **hiçbir şey yapmıyor**:
-> - Müşteri sayısını `GameEconomySettings` kota tablosu belirliyor (§7.1)
-> - Sabri `Customer.prefab`'ın `minWaitTime=15` / `maxWaitTime=20` alanları belirliyor (§9.4)
->
-> `ScaledStartingMoney` ise CANLI (`DifficultyManager.cs:455` → `MoneySystem.startingMoney`).
-> Eski GDD'nin "müşteri 10/12/14/16" ve "sabır 8-14s → 2-8s" satırları hiçbir zaman canlı olmadı.
+> [!NOTE]
+> **2026-09-18: sabır + stamina ölçeklemesi CANLIYA ALINDI** (dal `fix/difficulty-scaling-and-dead-code`).
+> - Oyuncu sayısı artık tek seferlik snapshot değil: `DifficultyManager` server'da
+>   `OnClientConnectedCallback/OnClientDisconnectCallback`'e abone, geç katılan/ayrılan oyuncuda
+>   `ConnectedClientsList.Count` (host dahil) ile yeniden hesaplanır ve NetworkVariable ile yayılır.
+> - `CustomerManager.SpawnCustomer` her müşteriye spawn anında (server, `Spawn()` öncesi)
+>   `ScaledMinPatience/ScaledMaxPatience` yazar; `Customer.prefab`'ın 15/20'si artık yalnızca fallback.
+> - `PlayerMovement.OnNetworkSpawn` (IsOwner) `ScaledStaminaRegenRate`'i kendi instance'ına yazar ve
+>   `OnDifficultyChanged` ile günceller — `staminaRegenRate` düz alan olduğu için server-side atama
+>   uzak client'a ulaşmaz, gerçek yol owner-side'dır.
+> - Prefab'daki eski 8/14 tabanı 15/20'ye çekildi ki solo his değişmesin (economist kararı).
+> - `ScaledCustomerCount` (`baseCustomerCount=10`, `customerCountPerPlayer=5`) HÂLÂ ÖLÜ: müşteri
+>   sayısını `GameEconomySettings` kota tablosu belirliyor (§7.1).
 
 > [!NOTE]
 > **Telefon ve upgrade maliyeti artık `DifficultyManager`'da DEĞİL.**
@@ -1847,21 +1886,45 @@ flowchart TD
 
 | Özellik | Detay |
 |---------|-------|
-| Yapı | Adım bazlı (step-based) akış |
-| Metin efekti | Daktiloğraf (typewriter) efekti |
-| Vurgulama | Hedef objelere outline |
-| Kapı yönetimi | Tutorial kapıları ilerlemeye göre açılır/kapanır |
-| Lokalizasyon | Türkçe + İngilizce |
-| Ağ | NetworkBehaviour ile multiplayer senkronize |
-| Sahne | Ayrı "Tutorial" sahnesi |
+| Yapı | Adım bazlı akış — **10 adım (0–9)** (`TutorialManager.cs:59`) |
+| Sahne | Ayrı, bağımsız `Assets/Scenes/Tutorial.unity` |
+| Metin efekti | Daktilo (typewriter) — noktada ×8, virgülde ×4, boşlukta ×0.5 gecikme |
+| Atlama | **Space** — hem daktilo efektini hem bekleme adımını atlar |
+| Tekrar | `RestartTutorial()` ile baştan oynanabilir |
+| Vurgulama | Hedef objeye outline (kalınlık 5) |
+| Kapı yönetimi | `TutorialDoor` — ilerlemeye göre açılır/kapanır |
+| Lokalizasyon | **17 dil** — `instructionLocalizationKey` ile StringTable; dil değişiminde canlı yenilenir |
+| Ağ | `NetworkBehaviour` ile senkronize; raf durumu server-only (`TutorialShelfState`) |
+| Karartma | Tutorial sahnesinde `RoomVolume` yok → oda karartma kapalı (§34.3) |
 
-### 22.2 Tutorial Akışı
+**Zamanlama sabitleri**: başlangıç gecikmesi **1.0 s** · adım koşulu kontrol aralığı **0.1 s** ·
+daktilo taban hızı **0.05 s/karakter** · yazı boyutu otomatik **18–36**.
 
-1. Oyuncu Tutorial sahnesine girer
-2. Adım adım yönergeler gösterilir (typewriter efektiyle)
-3. Her adımda hedef obje vurgulanır (outline)
-4. Oyuncu eylemi tamamladığında sonraki adıma geçilir
-5. Tüm adımlar tamamlanınca ana oyun sahnesine geçilir
+### 22.2 Tutorial Akışı (10 adım)
+
+| # | Adım | Tamamlanma koşulu |
+|---|------|-------------------|
+| 0 | Hoş geldin ekranı | `PressKey` — Space |
+| 1 | Müşteriyle etkileş, teslim masasından ürünü al | `TakeFromTable` |
+| 2 | Ürünü paketleme masasına götür ve bırak | `PlaceOnTable` |
+| 3 | Raftan **kırmızı** kutu al | `TakeFromShelf` (`requiredBoxType = Red`) |
+| 4 | Kutuyu paketleme masasına koy → otomatik paketlenir | `PlaceOnTable` |
+| 5 | Paketlenmiş kutuyu al | `TakeFromTable` |
+| 6 | Kutuyu rafa yerleştir | `PlaceOnShelf` |
+| 7 | Bekle — tır geliyor | `WaitForTime` (2–3 s, atlanabilir) |
+| 8 | Paketi raftan tekrar al | `TakeFromShelf` (`requiredBoxType = Red`) |
+| 9 | Tıra teslim et | `DeliverToTruck` (`requiredDeliveryCount = 1`) → **CompleteTutorial()** |
+
+Akış, oyunun tam üretim hattını küçük ölçekte tekrar ettirir: **müşteri → paketleme → raf → tır**.
+
+> [!WARNING]
+> **Enum tuzağı**: adım 3 ve 8'deki `requiredBoxType` `NetworkedShelf.BoxType` (Red = 0),
+> adım 9'daki `requiredTruckBoxType` ise `BoxInfo.BoxType` (Red = 2) enum'unu kullanır.
+> Sıralar farklıdır — Inspector'da **isimden** seçilmelidir, indeksten değil.
+
+> Tutorial sahnesinde `CustomerManager` yoktur; `TutorialManager` servis istasyonunu doğrudan
+> atar (`AssignServiceStation`, cs:362). Adımlar ve highlight'lar
+> `Tools/Cargor/Tutorial/Setup Tutorial Steps` editör aracıyla sahneye yazılır.
 
 ---
 
@@ -1964,18 +2027,39 @@ sequenceDiagram
 | `Assets/LocalSettings/` | Yerel ayarlar |
 | `Assets/Figma/` | Figma tasarım referansları |
 
-### 26.2 Oyun İçi HUD Elemanları
+### 26.2 Ekran ve Panel Envanteri
+
+| Ekran / Panel | Yöneten script | Ne zaman açılır |
+|---------------|----------------|-----------------|
+| Intro | `IntroScene` | Oyun açılışı (build sırası 1) |
+| Ana menü + karakter özelleştirme | `MainMenuCustomizationUI` | Intro sonrası |
+| Lobi (oluştur / katıl) | `SteamManager` + lobi UI | Host/Join seçilince (§24.2) |
+| Oyun içi HUD | `DayCycleManager`, `MoneySystem`, `PrestigeManager` | Oyun sahnesi boyunca |
+| Telsiz HUD | `RadioHudController` | Runtime bootstrap (DontDestroyOnLoad canvas) |
+| Upgrade paneli | `UpgradePanel` ← `OfficeTerminal` | Ofis terminaline yaklaşınca, **saat 10:00'dan sonra** |
+| Görev kartları | `QuestUIController` | Günlük 3 teklif (§16.1) |
+| Telefon çevirme barı | `PhoneCallManager` | Telefon alanında E basılı tutulurken |
+| Not defteri | `PagedUIPanel` ← `UITriggerZone` | Tetikleme bölgesine girince (§36) |
+| Gün sonu ekranı | `NextDayUIManager` | Dinlenme odasında herkes toplanınca (§18) |
+| Kazanma / kaybetme | `GameStateManager` + `WinLoseUI` | Gün 16 / iflas / prestij ≤ 0 (§21) |
+| Escape menüsü + ayarlar | `EscapeMenuManager`, `UnifiedSettingsManager` | Esc (§39) |
+
+### 26.3 Oyun İçi HUD Elemanları
 
 | Eleman | Konum | Güncelleme |
 |--------|-------|-----------|
-| Gün sayısı ("Day N") | Üst | Her gün |
-| Saat | Üst | 10 FPS throttle |
+| Gün + saat ("Gün 5, 14:30") | Üst | 10 FPS throttle (`dayTimeText`) |
 | Para | Üst-sağ | `OnMoneyChanged` event |
 | Prestij | Üst-sağ | Anlık |
+| Kota / kalan müşteri | Üst | Gün başında hesaplanır, servis başına düşer |
+| Aktif görev takibi | Yan | `QuestTracker` bildirimleri (§16.7) |
 | Müşteri sabır barı | Müşteri üzeri | Sürekli |
-| Telefon bekleme barı | Telefon alanı | E basılıyken |
+| Stamina barı | Oyuncu üzeri | Koşarken (`NetworkStaminaBarUI`) |
+| Telefon bekleme barı | Telefon alanı | E basılıyken (1 sn hold) |
+| Telsiz konuşmacı satırları | Ekran kenarı | Biri konuştuğu sürece (§35.3) |
+| Dünya etiketleri (TMP) | Objeler üzeri | **C** basılı tutulunca fade-in |
 
-### 26.3 Animasyonlar
+### 26.4 Animasyonlar
 
 | Animasyon | Dosya | Kullanım |
 |-----------|-------|----------|
@@ -1986,7 +2070,7 @@ sequenceDiagram
 | Takvim kapanış | `DateExit.anim` | Etkinlik takvimi kapanış |
 | Upgrade panel | `UpgradePanel.controller` | Panel açılış/kapanış |
 
-### 26.4 Escape Menüsü
+### 26.5 Escape Menüsü
 
 > **Kaynak**: [EscapeMenuManager.cs](file:///c:/Users/cicek/Documents/GitHub/Cargor/Assets/NewCss/EscapeMenuManager.cs)
 
@@ -2009,19 +2093,30 @@ sequenceDiagram
 
 ### 27.2 Ses Kategorileri
 
-| Kategori | Klasör | Örnekler |
-|----------|--------|---------|
-| Müzik | `Assets/Music/` | Arka plan müziği |
-| Ses efektleri | `Assets/Sounds/` | Genel ses efektleri |
-| Tır sesleri | TruckScripts içinde | Motor, çıkış, bekleme |
-| Etkileşim sesleri | PlayerInventory.Audio | Alma, bırakma, fırlatma |
-| UI sesleri | Çeşitli | Buton, bildirim |
+| Kategori | Klasör / kaynak | Örnekler |
+|----------|-----------------|---------|
+| Müzik | `Assets/Music/` | **Midtempo caz seti** — trompet solo ağırlıklı 7 döngü; mağaza/ofis atmosferi |
+| Ses efektleri | `Assets/Sounds/` | `alma.wav`, `bırakma.wav`, `drop.wav`, `Pick.wav` |
+| Telefon | `Assets/Sounds/` | `telefon.wav`, `old-telephone-ringing`, `sound-effect-old-phone` |
+| Tır sesleri | `TruckScripts` | Motor (geliş), bekleme döngüsü, çıkış |
+| Etkileşim sesleri | `PlayerInventory.Audio` | Alma, bırakma, fırlatma, adım sesleri |
+| UI sesleri | Menü scriptleri | Buton tıklaması (ana menü + oyun içi), bildirim |
+
+> **Ses karışımı**: Master / Müzik / SFX / Telsiz dört ayrı seviye olarak ayarlardan kontrol
+> edilir (§39.1). Telsiz zinciri ayrı bir audio graph üzerinden çalar (§35.1).
 
 ### 27.3 3D Spatial Audio
 
-- Kutu düşme sesleri 3D spatial audio ile oynatılır
+- Kutu düşme sesleri 3D spatial audio ile oynatılır (≥1 m/s çarpmada)
 - Tır motor sesleri mesafeye göre zayıflar
 - Müşteri ses efektleri pozisyona bağlı
+
+> [!CAUTION]
+> **Ses bu projede iki kez "sessizce" öldü.** (1) 2026-08-13: `AudioSource` inspector'da bağlı
+> değildi — kod doğruydu, hata yoktu, ses yoktu. (2) 2026-08-31: Unity'nin otomatik yeniden
+> serileştirme commit'i sahneden `successCallSound` referansını sildi.
+> **Kural**: otomatik sahne diff'lerinde düşen her `fileID`'yi grep'le; ses eklerken "kod yazıldı"
+> ile "sahnede bağlı" ayrı iki doğrulamadır.
 
 ---
 
@@ -2029,19 +2124,38 @@ sequenceDiagram
 
 > **Kaynak**: [LocalizationHelper.cs](file:///c:/Users/cicek/Documents/GitHub/Cargor/Assets/NewCss/Localization/LocalizationHelper.cs)
 
-### 28.1 Desteklenen Diller
+### 28.1 Desteklenen Diller — **17**
 
-| Dil | Kod | Durum |
-|-----|-----|-------|
-| 🇹🇷 Türkçe | `tr` | Birincil |
-| 🇬🇧 İngilizce | `en` | İkincil |
+| Dil | Kod | Dil | Kod | Dil | Kod |
+|-----|-----|-----|-----|-----|-----|
+| 🇹🇷 Türkçe (birincil) | `tr` | 🇩🇪 Almanca | `de` | 🇱🇻 Letonca | `lv` |
+| 🇬🇧 İngilizce (ikincil) | `en` | 🇮🇹 İtalyanca | `it` | 🇱🇹 Litvanca | `lt` |
+| 🇫🇷 Fransızca | `fr` | 🇳🇱 Felemenkçe | `nl` | 🇪🇪 Estonca | `et` |
+| 🇪🇸 İspanyolca | `es` | 🇵🇱 Lehçe | `pl` | 🇭🇺 Macarca | `hu` |
+| 🇵🇹 Portekizce | `pt` | 🇨🇿 Çekçe | `cs` | 🇭🇷 Hırvatça | `hr` |
+| | | 🇸🇰 Slovakça | `sk` | 🇸🇮 Slovence | `sl` |
+
+Dil tabloları Addressables üzerinden dil başına ayrı grup olarak paketlenir
+(`Assets/AddressableAssetsData/AssetGroups/Localization-String-Tables-*`).
 
 ### 28.2 Sistem
 
-- Unity Localization paketi kullanılır
+- Unity Localization 1.5.12 paketi kullanılır
 - `LocalizationHelper.GetLocalizedString(key)` ile merkezi erişim
 - Upgrade isimleri lokalize edilir (`Upgrade_{ItemType}` formatında)
-- Tutorial metinleri her iki dilde
+- Tutorial metinleri 17 dilde (`TutorialLocalizationSetup` editör aracıyla kuruldu)
+- Ana menü 17 dilde
+- Dil değişimi **runtime'da canlı** uygulanır (tutorial talimatları dahil yenilenir)
+
+### 28.3 Kapsam Sınırları
+
+> [!WARNING]
+> **Font kapsamı desteklenen dilleri aşmıyor.** Space Grotesk SDF atlas'ı **U+0000–U+017F**
+> (Latin + Latin-A) ile sınırlı üretildi. Bu, mevcut 17 dilin tamamını karşılar; ancak
+> **Kiril (rus/ukrayna), Yunanca, CJK ve Arapça eklenirse atlas yeniden üretilmelidir** —
+> aksi halde metin tofu (□□□) olarak görünür.
+>
+> **Not defteri metinleri (§36) henüz StringTable'a bağlanmadı** — şu an sabit metindir.
 
 ---
 
@@ -2066,16 +2180,22 @@ Assets/
 │   ├── Notes/                  # Not sistemi
 │   ├── Phone/                  # Telefon sistemi
 │   ├── PickUpScripts/          # Pickup sistemi (v1)
-│   ├── Quest/                  # Görev sistemi
+│   ├── Quest/                  # Görev sistemi (UI tarafı)
+│   ├── Roguelite/              # Draft havuzu, reroll eğrisi
+│   ├── Rooms/                  # Oda hacimleri, karartma, görünürlük (§34)
 │   ├── Steam/                  # Steam entegrasyonu
 │   ├── TableScripts/           # Raf ve masa
-│   ├── TruckScripts/           # Tır sistemi
+│   ├── TruckScripts/           # Tır sistemi + karışık renk mantığı
 │   ├── Tutorial/               # Eğitim sistemi
-│   ├── UIScripts/              # UI bileşenleri
+│   ├── UIScripts/              # UI bileşenleri (DayCycleManager, MoneySystem, OfficeTerminal)
 │   ├── UpgradeScripts/         # Yükseltme sistemi
+│   ├── UpgradeUiFolder/        # Upgrade panel görselleri
+│   ├── Voice/                  # Telsiz / sesli iletişim (§35)
 │   ├── GameEconomySettings.cs  # Ekonomi ScriptableObject
+│   ├── PostRentFeatureUnlocks.cs # Gün 5/9/13 kilit açma sabitleri (§37)
 │   ├── PlayerSpawner.cs        # Oyuncu spawn
 │   ├── DayLightController.cs   # Aydınlatma
+│   ├── InputBindingManager.cs  # Tuş atamaları (§32)
 │   ├── EscapeMenuManager.cs    # Pause menü
 │   └── SkinToneManager.cs      # Karakter özelleştirme
 ├── Scripts/
@@ -2103,11 +2223,16 @@ Assets/
 
 ### 29.3 Sahne Yapısı
 
-| Sahne | Dosya | Amaç |
-|-------|-------|------|
-| Main Menu | `MainMenu` (klasör) | Ana menü, lobi, ayarlar |
-| Tutorial | `Tutorial.unity` (1.2 MB) | Eğitim sahnesi |
-| The Main Office | `The Main Office.unity` (6.4 MB) | Ana oyun sahnesi |
+**Build sırası** (`EditorBuildSettings`):
+
+| # | Sahne | Dosya | Amaç |
+|---|-------|-------|------|
+| 0 | Intro | `MainMenu/IntroScene.unity` | Açılış / stüdyo logosu |
+| 1 | Main Menu | `MainMenu/MainMenu.unity` | Ana menü, lobi, ayarlar, karakter özelleştirme |
+| 2 | The Main Office | `Scenes/The Main Office.unity` (6.4 MB) | **Ana oyun sahnesi** — 5 odalı mağaza (§33) |
+| 3 | Tutorial | `Scenes/Tutorial.unity` (1.2 MB) | Eğitim sahnesi (§22) |
+
+`MainMenu/Figma.unity` ve `MainMenu/OnlineRoom.unity` build dışıdır (tasarım/çalışma sahneleri).
 
 ### 29.4 Render Pipeline
 
@@ -2294,12 +2419,12 @@ düşürmek oldu (§5.2).
 **Kota → para dönüşümü** (Round 2 §4): strict bantta 16/16 gün mekanik-bağlı, kota hiç bağlayıcı
 değil; kutu/kota oranı Normal/strict 0.31-0.47, Slow/strict 0.20-0.31, Normal/optimistic 1.21-1.23.
 
-> [!WARNING]
-> **Kalan, kabul edilmiş denge açığı**: Slow/strict P1 ve P2'de optimal telefon kullanım oranı
-> **%100** çıkıyor (spam baskın). Kök neden telefon sabitleri değil, o bantta tır veriminin
-> mekanik-bağlı olması: günü kısaltmak hiçbir kutu kaybettirmiyor, düz 20 TL/çağrı ise günlük
-> gelirin %60-70'i oluyor. Round 10'da denenen `callMoneyReward` değişiklikleri (0/10/12/15)
-> Normal bandı bozmadan bunu çözmüyor → **bilinçli olarak açık bırakıldı** (bkz. §14.4 uyarısı).
+> [!NOTE]
+> **KAPANDI (2026-09-18)**: Slow/strict P1/P2'nin eski %100 telefon-spam optimumu
+> `callMoneyReward: 20 → 0` ile kırıldı (bkz. §14.4 notu). Kök nedeni telefon sabitleri
+> değildi — o bantta tır veriminin mekanik-bağlı olması, günü kısaltmanın kutu kaybettirmemesiydi
+> — ama koşulsuz para ödülünü kaldırmak spam'i finansal olarak anlamsızlaştırdı (P1 optimum
+> %0, P2 %20). Bu bantların düşük kasa değeri (176-240 TL gün 16) hâlâ AYRI bir açık.
 
 **Modelin bilinen açıkları** (sonuçların YÖNÜ güvenilir, BÜYÜKLÜĞÜ değil): oyuncu tepki gecikmesi
 ve `HandleFailedInteraction` kaskadı modellenmiyor (`lost`/`missedQuota` sayıları ALT SINIR) ·
@@ -2308,7 +2433,540 @@ doygunluk platosu ölçüme dayanmıyor · `wrongProductRate` kanalı varsayıla
 
 ---
 
+## 32. 🕹️ Kontroller ve Giriş Sistemi
+
+> **Kaynaklar**: [InputBindingManager.cs](file:///c:/Users/cicek/Documents/GitHub/Cargor/Assets/NewCss/InputBindingManager.cs),
+> [CameraFollow.cs](file:///c:/Users/cicek/Documents/GitHub/Cargor/Assets/NewCss/CharacterScript/CameraFollow.cs),
+> `Assets/MENUUI/UnifiedSettingsManager.cs`
+
+### 32.1 Giriş Mimarisi
+
+| Özellik | Değer |
+|---------|-------|
+| Giriş sistemi | **Legacy Input Manager** (`KeyCode` + `Input.GetMouseButton`) |
+| Merkezî yönetim | `InputBindingManager` — **static** sınıf, sahneden bağımsız |
+| Kalıcılık | `PlayerPrefs`, anahtar deseni `KeyBind_{action}_{IsMouse/Key/Mouse}` |
+| Yeniden atama | **13 eylemin tamamı** ayarlardan değiştirilebilir |
+| Eylem ekleme | `GameAction` enum'a eklemek yeterli — kayıt/okuma döngüsü generic |
+
+> [!WARNING]
+> **`Assets/InputSystem_Actions.inputactions` OYUNUN kontrol şeması DEĞİLDİR.** O asset'e yalnız
+> üçüncü parti demo kodu (`Assets/ithappy/Creative_Characters_FREE/...`) referans veriyor; oyun
+> kodunda tek bir `PlayerInput` / `InputActionAsset` tüketicisi yok (grep ile doğrulandı).
+> Dolayısıyla **oyun içinde gamepad desteği YOKTUR** — o dosyadaki gamepad binding'leri Unity'nin
+> hazır şablonundan gelir ve hiçbir şey yapmaz. Gamepad açık bir üretim maddesidir (bkz. §41).
+
+### 32.2 Tam Kontrol Şeması
+
+| Eylem | Varsayılan | `GameAction` | Ne yapar |
+|-------|-----------|--------------|----------|
+| İleri / Geri / Sol / Sağ | **W / S / A / D** | `MoveUp/Down/Left/Right` | Karakter hareketi (X-Z düzlemi) |
+| Koşma | **Sol Shift** | `Sprint` | 5 → 7 m/s, stamina tüketir (§17.1) |
+| Eşya al | **Sol Tık** | `Pickup` | 45° koni / 3 m menzilde hedeflenen eşyayı alır (§11.2) |
+| Eşya bırak | **Sağ Tık** | `Drop` | Elindekini bırakır / masaya-rafa koyar |
+| Eşya fırlat | **Orta Tık** | `Throw` | Kutuyu fırlatır — ≥3 m/s çarpmada −5 TL / −0.04 prestij (§10.2) |
+| Etkileşim | **E** | `Interact` | Müşteri servisi, telefon çevirme (1 sn basılı tut), terminal/panel etkileşimi |
+| Yakınlaştır | **Z** | `Zoom` | Kamerayı yakınlaştırır (basılı tutuldukça) |
+| Harita görünümü | **X** | `MapView` | Kamerayı top-down'a çıkarır **+ diğer odalardaki eşyaları görünür kılar** = "stok kontrolü" (§34.3) |
+| Etiketleri göster | **C** | `Reveal` | Basılı tutuldukça dünyadaki TMP etiketlerini fade-in eder (`TMPRevealSystem`) |
+| Telsiz bas-konuş | **V** | `PushToTalk` | Mikrofonu açar, bırakınca 200 ms kuyruk sesi gönderir (§35) |
+| Raf slotu seçimi | **Fare tekerleği** | — (sabit) | Raftaki 3 renk slotu arasında gezinir (`PlayerInventory.Shelf.cs:121`) |
+| Duraklat / menü | **Esc** | — (sabit) | Escape menüsü (§26.4) |
+| Not sayfası ileri/geri | **Ok tuşları / A-D** | — (sabit) | Not paneli açıkken sayfa çevirme (§36) |
+| Tutorial atlama | **Space** | — (sabit) | Daktilo efektini veya bekleme adımını atlar (§22) |
+
+> **Zıplama yoktur** — `PlayerMovement` içinde zıplama kodu bulunmuyor; dikey hareket yalnız
+> zemin/rampa kaynaklıdır.
+
+### 32.3 Kamera
+
+| Özellik | Davranış |
+|---------|----------|
+| Tip | Sabit rotasyonlu takip kamerası (omuz üstü / hafif izometrik) |
+| Takip | `smoothSpeed` ile yumuşatılmış offset takibi |
+| Zoom (Z) | Ayrı bir `zoomOffset` hedefine yumuşak geçiş |
+| Harita (X) | Ayrı pozisyon + **X rotasyonu 90° (tam top-down)** |
+| Sınırlama | İsteğe bağlı min/max dünya sınırı (`useBounds`) |
+
+---
+
+## 33. 🗺️ Mekân Tasarımı — Mağaza Planı ve Odalar
+
+> **Kaynak**: `Assets/Scenes/The Main Office.unity` — sahnedeki `RoomVolume` bileşenleri
+> ([RoomVolume.cs](file:///c:/Users/cicek/Documents/GitHub/Cargor/Assets/NewCss/Rooms/RoomVolume.cs))
+
+### 33.1 Oda Listesi (sahneden birebir)
+
+Odalar kodda sabit DEĞİL; `roomId` / `roomName` ve dünya sınırları tamamen sahneden gelir.
+Aynı `roomId`'yi birden çok hacim paylaşabilir (L şeklindeki oda = 2+ kutu, tek kimlik).
+
+| id | `roomName` | Merkez (x, z) | Ölçü (G × D) | İşlev |
+|----|-----------|---------------|--------------|-------|
+| 1 | `hangar` | −55.9, −2.3 | **≈25 × 20 m** | Tır/teslimat alanı, garaj kapıları, hangar spawn noktaları (§8) |
+| 2 | `paket` | −40.8, −2.3 | **≈6 × 20 m** | Paketleme istasyonu — ürün → kutu dönüşümü (§12) |
+| 3 | `resepsiyon` | −33.4, −2.3 | **≈9 × 20 m** | Müşteri kuyruğu, servis istasyonu, sergi masası (§9) |
+| 4 | `breakroom` | −63.4, −14.8 | **≈10 × 5 m** | Gün sonu toplanma odası (§18) |
+| 5 | `office` | −51.0, −14.7 | **≈15 × 5 m** | Ofis terminali → upgrade paneli (§13.4), takvim, not defteri |
+
+**Toplam iç mekân ayak izi ≈ 40 × 25 m.**
+
+### 33.2 Yerleşim ve Üretim Hattı
+
+```
+  Z ↑
+    │   ┌──────────────┬──────────┬──────────────┐
+ +8 ┤   │              │          │              │
+    │   │  1 HANGAR    │ 2 PAKET  │ 3 RESEPSİYON │ ← müşteri girişi (doğu)
+    │   │  🚚 tırlar    │  📦 → 🎁  │   👥 kuyruk   │
+−12 ┤   └──────┬───────┴─────┬────┴──────────────┘
+    │   ┌──────┴────┬────────┴─────┐
+−17 ┤   │4 BREAKROOM│   5 OFFICE   │
+    │   │  🛏️ gün    │ 🖥️ terminal   │
+    │   │    sonu    │  📅 takvim    │
+    └───┴───────────┴──────────────┴──────────────→ X
+      −68          −58            −43            −29
+```
+
+**Malzeme akışı doğudan batıya:** müşteri **resepsiyonda** ürün ister → oyuncu ürünü sergi
+masasından/raftan alır → **pakete** taşıyıp kutuya koyar → dolu kutuyu **hangara** götürüp doğru
+renkli tıra yükler. Para yalnız bu son adımda üretilir (§4.1).
+
+**Güney şeridi meta katmandır:** ofis terminali upgrade panelini açar (saat 10:00'dan sonra),
+dinlenme odası günü kapatır. Bu ayrım kasıtlıdır — para kazandıran hat ile karar verdiren hat
+fiziksel olarak ayrıdır, böylece "upgrade'e gitmek" gerçek bir zaman maliyetidir.
+
+### 33.3 Tasarım Sonuçları
+
+- **Tek servis istasyonu** resepsiyondadır ve P3/P4'te mekanik doygunluğun kök nedenidir —
+  4. oyuncunun ek müşteri işleyememesinin sebebi budur (bkz. §7.1).
+- **Sahnede `Table` taşıyan tam 2 obje var**, ikisi de Paketleme İstasyonu upgrade'inin
+  `levelObjects`'i → **sv0'da fiilen tek masa**. `tableBusySeconds` ekonomi modelinin 2. en
+  duyarlı girdisidir (§31.1).
+- Hangar en büyük hacimdir ama kullanım oranı düşüktür (tır penceresinin %10–42'si, §8.1) —
+  darboğaz mekân değil, insan üretim hızıdır.
+
+---
+
+## 34. 🌓 Oda Bazlı Görünürlük ve "Stok Kontrolü"
+
+> **Kaynaklar**: `Assets/NewCss/Rooms/` — `RoomVolume.cs`, `RoomRegistry`, `RoomResolver`,
+> `RoomViewController.cs`, `RoomViewSettings.cs`, `PlayerRoomVisibility.cs`, `RoomItemVisibility.cs`
+
+### 34.1 Amaç
+
+Oyuncu yalnız **içinde bulunduğu odayı** net görür; diğer odalar karartılır ve o odalardaki
+oyuncular/eşyalar gizlenir. Bu, co-op'ta bilgiyi kıtlaştırır: takım arkadaşının ne yaptığını
+öğrenmek için ya oraya yürümek, ya telsizle sormak (§35), ya da harita görünümüne geçmek gerekir.
+
+### 34.2 Teknik Model
+
+| Katman | Mekanizma |
+|--------|-----------|
+| Oda tanımı | Collider değil, **AABB `Bounds`** (`RoomVolume.worldBounds`) |
+| Kayıt | `RoomRegistry` — `OnEnable`/`OnDisable` ile otomatik statik liste |
+| Oda çözümü | `RoomResolver` + kapı toleransı (`doorwayMargin`) ile histerezis |
+| Karartma | Global shader dizileri: `_CargoRoomMin[]`, `_CargoRoomMax[]`, `_CargoRoomMaskCount` (**maks 16 kutu**), `_CargoRoomFade`, `_CargoRoomBlend`, `_CargoRoomDesat`, `_CargoRoomDim` |
+| Obje gizleme | `Renderer.enabled = false` — **kenar tetiklemeli** (oda değişince), her karede değil |
+| Ağ | **Tamamen client-local, 0 bayt ağ yükü** — görünürlük bir render kararıdır, oyun durumu değil |
+
+**Varsayılan ayarlar** (`RoomViewController`): oda geçiş fade **0.6 s** · harita fade **0.2 s** ·
+desatürasyon **1.0** · harita desatürasyonu **0.6** · karartma şiddeti **0.35**.
+
+### 34.3 Görünürlük Kuralları
+
+| Durum | Oyuncular | Eşyalar |
+|-------|-----------|---------|
+| Aynı odada | Görünür | Görünür |
+| Başka oda, **X kapalı** | **Gizli** | **Gizli** |
+| Başka oda, **X açık** (harita) | **Gizli kalır** | **Görünür** ← "stok kontrolü" |
+| Oda sistemi yok (ör. Tutorial, `RoomRegistry` boş) | Görünür | Görünür |
+| Yerel oyuncunun kendisi | **Her zaman görünür** | — |
+
+> **Tasarım niyeti:** X tuşu bir *envanter röntgeni*dir, bir *takım radarı* değil. Eşyaların
+> nerede olduğunu görebilirsin — arkadaşlarının nerede olduğunu göremezsin. Koordinasyon yükü
+> oyuncunun üstünde kalır.
+
+### 34.4 Bilinen Tuzaklar
+
+1. **Pickup/Drop'ta yeniden başlatma**: eşya `SetActive(false)` olup tekrar aktifleşirse
+   `RoomItemVisibility._initialized` sıfırlanmalı, yoksa yanlış görünürlükte takılır.
+2. **`GetComponentsInChildren` allokasyonu** kenar tetiklemelidir; her kareye taşınırsa GC baskısı
+   yaratır.
+3. **Oda dışı / çözümsüz konum** güvenli tarafa düşer: görünür bırakılır.
+4. Tutorial sahnesinde oda yoktur → karartma tamamen kapalıdır.
+
+**Durum**: kod + odalar + cila turu tamamlandı, 19/19 test geçiyor, `kontrol` iki turda da ONAY
+verdi. **Kalan tek adım: çok oyunculu playtest.**
+
+---
+
+## 35. 📻 Telsiz (Sesli İletişim) Sistemi
+
+> **Kaynak**: `Assets/NewCss/Voice/` — `RadioVoiceRuntime`, `RadioVoiceCapture`,
+> `RadioVoiceTransport`, `RadioVoicePlayback`, `RadioVoiceSpeakerSlot`, `RadioVoicePrefs`,
+> `UI/RadioHudController`
+
+### 35.1 Mimari
+
+| Bileşen | Sorumluluk |
+|---------|-----------|
+| `RadioVoiceRuntime` | Bootstrap, PTT durum makinesi, ağ yaşam döngüsü |
+| `RadioVoiceCapture` | Mikrofon yakalama + Steam tarafı sıkıştırma |
+| `RadioVoiceTransport` | **Server-authoritative relay** (Up mesajı → sunucu → Down yayını) |
+| `RadioVoicePlayback` | 3 slotluk konuşmacı havuzu, clientId → slot eşlemesi, mute |
+| `RadioVoiceSpeakerSlot` | Ring buffer + PCM decode + audio graph (konuşmacı başına) |
+| `RadioVoicePrefs` | `PlayerPrefs`: etkin / ses seviyesi / self-monitor |
+
+### 35.2 Parametreler
+
+| Parametre | Değer |
+|-----------|-------|
+| Ses API | **Steam Voice** (`SteamUser.VoiceRecord` / `ReadVoiceData`) |
+| Aktarım | `CustomMessagingManager`, `NetworkDelivery.Unreliable` |
+| Örnekleme döngüsü | **30 Hz** |
+| PTT kuyruk (tail) süresi | **200 ms** (son heceyi kesmemek için) |
+| Paket tavanı | yakalama **4096 B** → ağda **800 B/mesaj** (parçalama) |
+| Eşzamanlı konuşmacı | **3 slot** |
+| Burst timeout | **400 ms** |
+| Örnekleme hızı | Steam cihaz değeri, fallback **48 000 Hz** |
+| Mesafe modeli | **YOK — global yayın** (proximity, v1 kapsamı dışında) |
+
+### 35.3 Davranış
+
+- Mikrofon **yalnız Transmitting + Tail** durumunda açıktır; boştayken tamamen kapalıdır
+  (gizlilik + bant genişliği).
+- Durum makinesi: `Disabled → Idle → Transmitting → Tail`, ayrıca geçici `Degraded`.
+- Telsiz **yalnız oyun haritalarında** çalışır; ana menü / lobi / tutorial'da kapalıdır.
+- HUD (`RadioHudController`) o an konuşanları satır havuzunda listeler, RMS seviye barı ve mute
+  düğmesi gösterir. **Kendi ad/mikrofon satırı bilinçli olarak kaldırıldı** (`919f321`) — oyuncu
+  kendi adını değil, kimin konuştuğunu görür.
+- Oyuncu bağlantısı koparsa slot anında serbest bırakılır.
+
+### 35.4 Editör Araçları
+
+`Tools ▸ Cargor ▸ Voice` altında: **PTT Test** (yakalama durumu, paket/bayt sayaçları) ve
+**Steam Raw Mic Test** (pipeline'ı atlayıp doğrudan Steam'den okuma).
+
+### 35.5 Durum ve Açık Maddeler
+
+- Mikrofon sorunu **kapandı** (kök neden Steam tarafındaydı).
+- **AÇIK**: client'ta WASD'ın ölmesi — `PlayerMovement.cs` içindeki geçici `[TESHIS]` teşhis
+  kodu hâlâ duruyor ve log geldiğinde silinecek.
+- **AÇIK**: host → client yönünde ara ara kesiklik.
+- Dissonance ($120) ticari çözümüne geçiş kararı **ertelendi**; şu an Steam Voice kullanılıyor.
+
+---
+
+## 36. 📓 Not Defteri ve Bilgi Panelleri
+
+> **Kaynak**: `Assets/NewCss/Notes/` — `PagedUIPanel.cs`, `UITriggerZone.cs`
+
+| Özellik | Davranış |
+|---------|----------|
+| Açılış | Oyuncu tetikleme bölgesine (trigger) girince **otomatik** açılır |
+| Kapanış | Bölgeden çıkınca otomatik kapanır |
+| İçerik | Sayfalanmış TMP metni; ileri/geri butonları + ok tuşları / A-D |
+| Sayfa göstergesi | `"Sayfa {0} / {1}"` (biçim özelleştirilebilir) |
+| Hareket kilidi | `lockPlayerMovement` ile panel açıkken hareket kilitlenebilir |
+| Animasyon | Açılış **0.3 s**, kapanış **0.2 s** (Animator) |
+| Ağ | `IsOwner` kontrollü — panel **yalnız yerel oyuncuda** açılır |
+
+Kullanım amacı: kural/ipucu referansı (mağaza kuralları, renk eşleşmesi, gün akışı). Metin
+taslakları `plans/notdefteri-metinleri.md` dosyasında tutulur.
+
+> [!WARNING]
+> **Not defteri metinleri henüz lokalize edilmedi** — `StringTable` anahtarlarına bağlanması açık
+> bir iştir (bkz. §41). 17 dil desteklenen bir oyunda sabit Türkçe metin kalırsa diğer 16 dilde
+> okunamaz kalır.
+
+---
+
+## 37. 🔓 Kira Sonrası Açılan Mekanikler (Gün 5 / 9 / 13)
+
+> **Kaynak**: [PostRentFeatureUnlocks.cs](file:///c:/Users/cicek/Documents/GitHub/Cargor/Assets/NewCss/PostRentFeatureUnlocks.cs)
+> — tek kaynak sabitler sınıfı; tüketiciler `CustomerManager`, `CustomerAI`, `TruckSpawner`,
+> `TruckColorMixing`
+
+### 37.1 Tasarım Kararı
+
+Roguelite kart sistemi yerine **sabit, tahmin edilebilir 3 kilometre taşı** seçildi: her kira
+ödemesinden sonraki gün oyuna yeni bir kural katmanı girer. Oyuncu ne zaman ne geleceğini bilir,
+ama zorluk artışı yine de hissedilir. Bu, PlateUp'ın "her gün biraz daha karmaşık mutfak"
+ritmini kira takvimiyle hizalar.
+
+| Gün | Kira dönemi | Açılan mekanik |
+|-----|-------------|----------------|
+| **5** | 1. kiradan sonra | **İade modu** (BoxRequest) |
+| **9** | 2. kiradan sonra | **2 kalemli sipariş** (Dual item) |
+| **13** | 3. kiradan sonra | **Karışık renkli tır** (Mixed truck) |
+
+### 37.2 Gün 5 — İade Modu
+
+| Parametre | Değer | Kaynak |
+|-----------|-------|--------|
+| `RETURN_UNLOCK_DAY` | **5** | `PostRentFeatureUnlocks.cs:16` |
+| `RETURN_MODE_CHANCE` | **0.25** (müşterilerin %25'i) | `PostRentFeatureUnlocks.cs:22` |
+| Karar noktası | `ShouldEnterBoxRequestMode(day, Random.value)` | `CustomerManager.cs:1091` |
+
+Müşteri ürün **almak** yerine elindeki kutuyu **iade etmek** ister: 3 renkten birini talep eder,
+oyuncu o renkte kutuyu getirmek zorundadır.
+
+> [!CAUTION]
+> **Bu mod aynı zamanda bilinen bir istismar yüzeyidir.** İade modundaki müşteriye yanlış renk
+> vermek onu ANINDA çıkarır (`CustomerAI.cs:1228-1259`) ve 17:30 cezasından muaf tutar; sabrın
+> dolmasını beklemek ise hem −0.4 prestij hem istasyon işgali demektir.
+> `wrongProductPrestigePenalty` −0.08'den **−0.20**'ye çıkarılarak fark 5 kattan 2 kata indirildi,
+> ama asimetri tamamen kapanmadı (§6.2).
+
+### 37.3 Gün 9 — 2 Kalemli Sipariş
+
+| Parametre | Değer | Kaynak |
+|-----------|-------|--------|
+| `DUAL_ITEM_UNLOCK_DAY` | **9** | `PostRentFeatureUnlocks.cs:25` |
+| Oran | **%100** (gün eşiği, olasılık yok) | `CustomerManager.cs:1114` |
+| Etkileşim süresi çarpanı — ProductSupply | **×1.30** | `CustomerAI.cs:1174` |
+| Etkileşim süresi çarpanı — BoxRequest | **×1.15** (bacak başına; tek seferde tek kutu taşınır) | `CustomerAI.cs:1173` |
+
+Gün 9'dan itibaren müşteriler iki farklı ürün isteyebilir. Maliyet **süre** cinsindendir: servis
+etkileşimi uzar, dolayısıyla tek servis istasyonundaki çekişme artar. Para/prestij değerleri
+değişmez — zorluk ekonomiden değil **zamandan** alınır.
+
+### 37.4 Gün 13 — Karışık Renkli Tır
+
+| Parametre | Değer | Kaynak |
+|-----------|-------|--------|
+| `MIXED_TRUCK_UNLOCK_DAY` | **13** | `PostRentFeatureUnlocks.cs:28` |
+| Oran | **%100** (gün eşiği) | `TruckSpawner.cs:526` |
+| Üretim | Gün 13+ `GenerateMixedTruckData()`, öncesi tek renk (eski davranış korunur) | `TruckSpawner.cs:521-529` |
+
+Tır tek renk yerine **2–3 renkli karışık yük** ister; renkler ağırlıklı dağıtımla belirlenir
+(baskın renk + azınlık renkler, `TruckColorMixing.cs`). Bu, son 4 günde "tırın rengine bak, o
+renkten taşı" refleksini kırar ve oyuncuyu tekrar okumaya zorlar.
+
+> **QA sonucu**: dal (`feature/post-rent-mechanics`) 3 bug ile döndü, üçü de kapatıldı; `kontrol`
+> **1. turda ONAY** verdi. Dal main'e merge edilmiş durumdadır. Kalan tek adım Unity playtest'i.
+
+---
+
+## 38. 🎨 Sanat Yönü ve Görsel Kimlik
+
+### 38.1 Görsel Dil
+
+| Öğe | Yaklaşım |
+|-----|----------|
+| Genel stil | **Düz gölgeli (flat-lit) stilize / toon** — gerçekçilik değil okunabilirlik hedefi |
+| Karakterler | Stilize, düşük poligonlu; `M_Character_Toon` materyali, 4 ayrı NPC materyali (`M_NPC1-4`) |
+| Custom shader'lar | `FlatLit`, `FlatLitEnvironment`, `FlatLitMetal`, `FlatLitProps` (`Assets/Shaders/`) |
+| Global materyal varyantları | `GlobalShader`, `GlobalShaderDark`, `GlobalShaderSoft`, `GlobalShaderGarage` — mekâna göre ton |
+| Vurgulama | QuickOutline (sarı outline) — hedeflenen eşya ve tutorial highlight'ı |
+| Aydınlatma | Gün döngüsüne bağlı tek yönlü ışık (§20) + oda karartma shader'ı (§34.2) |
+
+### 38.2 Renk Okunabilirliği (mekaniğin temeli)
+
+Oyunun tüm ekonomisi **3 renkli bir eşleştirme oyununa** dayanır: 🔴 Kırmızı · 🟡 Sarı · 🔵 Mavi.
+Aynı üç renk dört ayrı yerde tekrar eder — kutu modeli, tır gövdesi/kapıları, raf slotu, müşteri
+talep balonu. Bu yüzden renk paleti bir estetik tercih değil, bir **okunabilirlik sözleşmesidir**:
+tır gövdesinin rengi 20 metre uzaktan, hareket hâlindeyken ve karartılmış bir odadan bakıldığında
+ayırt edilebilir olmalıdır.
+
+> [!WARNING]
+> **Renk körlüğü için alternatif işaret yok.** Üç renk yalnız renkle ayrışıyor; sembol/desen/
+> yazı ikinci kanalı bulunmuyor. Protanopi/döteranopi oyuncular için kırmızı-sarı ayrımı riskli.
+> Açık erişilebilirlik maddesi (bkz. §41).
+
+### 38.3 Sahne ve Nesne Kütüphanesi
+
+- `Assets/Models/` — kargo kutuları (`Cargo_Boxes.fbx`), mobilya, duvar/zemin materyalleri, takvim,
+  duvar telefonu, duvar saati, kahve/kitap gibi set giydirme objeleri
+- `Assets/ithappy/Creative_Characters_FREE/` — karakter taban modelleri
+- `Assets/CharacterModel/PickUp_Animatte.fbx` — taşıma animasyonu
+- Animasyonlar: `Walk_Forward.anim`, `ShopOpening.anim`, `ShopExit.anim`, `DateOpening/DateExit.anim`,
+  `UpgradePanel.controller`
+
+### 38.4 UI Stili
+
+Ana menü ve panel tasarımları **Figma'da** üretilip `UnityFigmaBridge` ile içeri alınır
+(`Assets/Figma/`, `UnityFigmaBridgeSettings.asset`). Yazı tipleri: Inter 800, Montserrat 600/800,
+Poppins 600, Space Grotesk (SDF atlas'ları `Assets/Figma/Fonts/`).
+
+---
+
+## 39. ⚙️ Ayarlar, Erişilebilirlik ve Performans
+
+> **Kaynak**: `Assets/MENUUI/UnifiedSettingsManager.cs` (Escape menüsü → Seçenekler)
+
+### 39.1 Ses Sekmesi
+
+| Ayar | Tip | Aralık / Değer | Varsayılan |
+|------|-----|----------------|-----------|
+| Ana ses (Master) | Slider | 0.0 – 1.0 | 0.5 |
+| Müzik | Slider | 0.0 – 1.0 | 0.5 |
+| Efektler (SFX) | Slider | 0.0 – 1.0 | 0.5 |
+| Telsiz sesi | Slider | 0.0 – 1.0 | `RadioVoicePrefs` |
+| Telsiz etkin | Toggle | Açık / Kapalı | Açık |
+| Kendini dinle (loopback) | Toggle | Açık / Kapalı | Kapalı |
+
+### 39.2 Görüntü Sekmesi
+
+| Ayar | Tip | Seçenekler | Varsayılan |
+|------|-----|-----------|-----------|
+| Grafik kalitesi | Slider | VeryLow / Low / Medium / High / Ultra | Sistem otomatik |
+| Ekran modu | Dropdown | Pencereli / Tam ekran pencereli / Tam ekran | Pencereli |
+| VSync | Toggle | Açık / Kapalı | Açık |
+| FPS sınırı (VSync kapalıyken) | Sabit | 144 | — |
+
+URP kalite profilleri: `PC_RPAssetMEDIUM`, `PC_RPAssetHIGHT`, `PC_RPAssetULTRA` (+ iki mobil
+profil, PC yapımında kullanılmıyor). Referans çözünürlük 1024×768, varsayılan mod tam ekran
+pencereli (`ProjectSettings.asset`).
+
+### 39.3 Kontroller Sekmesi
+
+| Ayar | Tip | Aralık | Varsayılan |
+|------|-----|--------|-----------|
+| Fare hassasiyeti | Slider | 0.1 – 5.0 | 1.0 |
+| Y eksenini ters çevir | Toggle | Açık / Kapalı | Kapalı |
+| Tuş atamaları | 13 satır | Tüm `GameAction`'lar | §32.2 |
+| Varsayılanlara dön | Buton | — | — |
+
+### 39.4 Dil Sekmesi
+
+Dropdown ile **17 dil** (§28). Varsayılan: sistem dili.
+
+### 39.5 Erişilebilirlik Durumu
+
+| Alan | Durum |
+|------|-------|
+| Tam tuş yeniden atama | ✅ Var (13 eylem) |
+| Ses kategorisi bazlı seviye | ✅ Var (master/müzik/SFX/telsiz ayrı) |
+| Dil desteği | ✅ 17 dil |
+| Renk körlüğü modu | ❌ Yok — kritik (bkz. §38.2, §41) |
+| Metin boyutu ölçekleme | ❌ Yok |
+| Altyazı / görsel ses göstergesi | ⚠️ Kısmi — telsiz HUD'u kimin konuştuğunu gösterir, oyun sesleri için gösterge yok |
+| Tek elle / gamepad oynanabilirlik | ❌ Gamepad bağlı değil (§32.1) |
+
+---
+
+## 40. 🚦 Üretim Durumu ve Sürüm Bilgisi
+
+### 40.1 Teknik Künye
+
+| Alan | Değer |
+|------|-------|
+| Ürün adı / şirket | **Cargor** / **Eclion Software** |
+| Sürüm (`bundleVersion`) | **0.1.0** |
+| Unity | **6000.5.6f1** (tek doğru kaynak: `ProjectSettings/ProjectVersion.txt`) |
+| Render pipeline | URP 17.5.0 |
+| Netcode | Unity Netcode for GameObjects 2.13.0 + Facepunch (Steam) transport |
+| Localization | com.unity.localization 1.5.12 + Addressables |
+| Diğer paketler | Input System 1.20.0 (oyunda kullanılmıyor, §32.1) · AI Navigation 2.0.14 · Animation Rigging 1.4.1 · Timeline · Post Processing · Adaptive Performance · **AI Inference 2.6.1 (Sentis — oyunda tüketicisi yok)** |
+| Build sahneleri (sırayla) | `IntroScene` → `MainMenu` → `The Main Office` → `Tutorial` |
+
+### 40.2 Sistem Olgunluk Tablosu
+
+| Sistem | Durum | Kalan iş |
+|--------|-------|----------|
+| Gün döngüsü / ekonomi / kira / prestij | ✅ Kod tam, 11 round dengeleme uygulanmış, invariant denetçili | Playtest ölçümü (`kutu/dk/oyuncu`) |
+| Müşteri · tır · kutu · pickup | ✅ Tam | — |
+| Upgrade / perk draft (25 kart) | ✅ Tam | 6 kart `disabledInDraft` (ölü) — canlandırma kararı |
+| Görev sistemi (30 asset) | ✅ Tam | — |
+| Etkinlikler (16) | ✅ Tam | Kota-yukarı event'leri ölü kol (§7.2) |
+| Kira sonrası mekanikler (gün 5/9/13) | ✅ Kod + QA + kontrol ONAY | Unity playtest |
+| Oda karartma / stok kontrolü | ✅ Kod + 19/19 test + kontrol ONAY | Çok oyunculu playtest |
+| Telsiz | ⚠️ Çalışıyor, iki açık bug | WASD ölmesi, host→client kesiklik, `[TESHIS]` kodunun temizliği |
+| Tutorial (10 adım) | ✅ Yeniden yazıldı, 17 dil | — |
+| Lokalizasyon | ⚠️ 17 dil altyapısı var | Not defteri metinleri bağlı değil; font kapsamı Latin-A ile sınırlı |
+| Steam entegrasyonu | ⚠️ Lobi/transport çalışıyor | **`steam_appid.txt = 480`** (Spacewar test kimliği) — gerçek App ID gerekli |
+| Discord Rich Presence | ✅ Var | — |
+| Gamepad | ❌ Yok | Bağlanması gerek |
+| Kayıt / ilerleme (save) | ❌ Yok | Oyun tek oturumda 16 gün; ara kayıt yok |
+
+### 40.3 Doğrulama Araçları
+
+| Araç | Ne yapar |
+|------|----------|
+| `Cargor / Ekonomi Değerlerini Doğrula` | `EconomyInvariantCheck.cs` — 79 `Expect*` çağrısı (çalışma anında ~196 kontrol) GDD ↔ kod uyumunu denetler |
+| `node tools/economy-sim/sim.js` | `runFullSim` v5.1 — 16 senaryo ekonomi simülasyonu (§31) |
+| Headless EditMode testleri | `-batchmode -runTests` (⚠️ `-quit` ile birlikte KULLANILMAZ; sonuç XML'den okunur) — güncel: **79/79 geçiyor** |
+| `Tools ▸ Cargor ▸ Voice` | Telsiz yakalama/Steam mikrofon teşhisi |
+| `Tools/Cargor/Tutorial/Setup Tutorial Steps` | Tutorial adımlarını ve highlight'larını sahneye yazar |
+
+---
+
+## 41. ⚠️ Bilinen Riskler ve Açık Sorular
+
+### 41.1 Yayına Engel (blocker) Maddeler
+
+| # | Risk | Etki | Not |
+|---|------|------|-----|
+| B1 | **`steam_appid.txt = 480`** (Spacewar test kimliği) | Mağaza yayını imkânsız, lobi/istatistik test kimliğine yazıyor | Gerçek App ID alınınca değiştirilmeli |
+| B2 | **Kayıt sistemi yok** | 16 günlük oyun tek oturumda bitmeli; kopan co-op oturumu tamamen kaybolur | Tasarım kararı mı, eksik mi — netleştirilmeli |
+| B3 | **Telsizde client WASD ölmesi** | Oynanamaz duruma düşme riski | `[TESHIS]` logu bekleniyor (§35.5) |
+
+### 41.2 Tasarım Riskleri
+
+| # | Risk | Kaynak |
+|---|------|--------|
+| D1 | **Prestij ölü bir fail-state** — 16/16 simülasyon senaryosunda hiç sıfıra inmiyor; kaybetmenin tek gerçek yolu nakit iflası | §6.4, §21.2 |
+| D2 | **Kota çoğu bantta bağlayıcı değil** → kota-yukarı event'leri (BUSY DAY, MARKETING DAY) fiilen ölü kol | §7.2 |
+| D3 | **Telefon spam'i Slow/strict P1-P2'de baskın strateji** (optimal kullanım %100) — bilinçli açık bırakıldı | §31.3 |
+| D4 | **"Fakir kal" grace istismarı** — kira gününden hemen önce parayı harcamak ≈ +%20 kira kazandırıyor | §5.4 |
+| D5 | **İade modunda müşteriyi bilerek bozmak** hâlâ sabrı beklemekten 2 kat ucuz | §37.2 |
+| D6 | **6 upgrade `disabledInDraft`** — teklif havuzuna hiç girmiyor (ölü içerik) | §13.1 |
+| D7 | **P3 ≈ P4 mekanik doygunluğu** — 4. oyuncu ek müşteri işleyemiyor (tek servis istasyonu) | §7.1, §33.3 |
+
+### 41.3 Teknik Borç
+
+| # | Borç | Kaynak |
+|---|------|--------|
+| T1 | **`PerkEffect` ScriptableObject'e runtime'da yazıyor** (8 alan) ve geri almıyor → Editor'de asset kalıcı bozulabilir; snapshot/restore listesi elle güncel tutulmak zorunda | §4.2 |
+| T2 | **`EventEffectManager` ve `CustomerManager` aynı statik `OnNewDay`'e abone**, çağrı sırası deterministik değil → kota event çarpanı 1 gün geriden gelebilir | §3.4 |
+| T3 | **Ölü kablolar**: `DifficultyManager`'ın müşteri/sabır ölçeklemeleri, `PrestigeManager.GetCustomerCapacity`, `PrestigeManager.SetPrestige`'in kayıp kapısı | §19.1, §6.3 |
+| T4 | **Gamepad bağlı değil** — `.inputactions` asset'i yanıltıcı biçimde duruyor | §32.1 |
+| T5 | **Renk körlüğü ikinci kanalı yok** | §38.2 |
+| T6 | **Not defteri lokalize değil** | §36 |
+| T7 | **Font kapsamı U+0000–017F** (Space Grotesk) → Kiril / Yunan / CJK dilleri desteklenen 17 dilin dışında kalır | §28 |
+| T8 | **`com.unity.ai.inference` (Sentis) paketi** projede duruyor ama tüketicisi yok; batchmode'da define artefaktı üretiyor | §40.1 |
+
+### 41.4 Ölçülmemiş Varsayımlar
+
+1. **`kutu/dk/oyuncu`** — ekonomi modelinin en duyarlı girdisi hâlâ tahmin; 1.2 ↔ 2.0 aralığı 1P
+   kümülatif gelirini **%117** değiştiriyor (§31.1). Playtest'te ölçülünce tüm denge tablosu tek
+   katsayıyla kayabilir.
+2. **`tableBusySeconds`** — 4s ↔ 8s aralığı Paketleme İstasyonu'nun değerini 4× değiştiriyor.
+3. **`agile_crew` perkinin üretime yansıması** hiç ölçülmedi.
+4. **Oyuncu tepki gecikmesi** simülasyonda modellenmiyor → `lost` / `missedQuota` sayıları
+   **alt sınırdır**.
+
+---
+
+## 42. 📖 Sözlük
+
+| Terim | Anlamı |
+|-------|--------|
+| **P** | Oyuncu sayısı (1–4). Neredeyse tüm ekonomik sabitler P-bazlı dizidir. |
+| **Tier (prestij)** | Her 8 prestij = 1 kademe; kutu başına +5 TL ödül. |
+| **Grace period** | Kirayı ödeyememe hâlinde tek seferlik af: eldeki nakdin %80'i alınır. |
+| **Kota** | O günün göndereceği müşteri sayısı (PlateUp modeli). Kaybetme koşulu DEĞİL. |
+| **Draft** | Upgrade panelinde gün başına sunulan 3 kartlık roguelite teklifi. |
+| **Perk** | Draft'tan gelen, `effectId` taşıyan tek seviyeli kart (omurga yükseltmelerinden ayrı). |
+| **Omurga (Backbone)** | Kalıcı mağaza yükseltmesi (raf, masa, hangar) — perk değil. |
+| **Bant (band)** | Simülasyon senaryosu: Normal/Slow × strict/optimistic. |
+| **Stok kontrolü** | X tuşuyla açılan harita görünümünde diğer odaların eşyalarının görünmesi. |
+| **Telsiz** | Oyun içi bas-konuş sesli iletişim (Steam Voice). |
+| **`kontrol`** | Her büyük işin sonunda çalışan zorunlu kalite kapısı (ONAY / DÜZELTME GEREKLİ). |
+
+---
+
 
 > **Bu belge, Cargor projesinin canlı bir tasarım referansıdır. Oyun geliştikçe güncellenmelidir.**
 >
-> 📝 *Son güncelleme: 30 Ağustos 2026 — Eclion Software (ekonomi Round 12: Round 10/11 uygulama-sonrası GDD senkronu, commit `bb98ad1`)*
+> **Bakım kuralı**: bir sistemi değiştirirken yalnız ilgili bölümü aç ve güncelle; ekonomik bir
+> sabiti değiştirirsen `Assets/Editor/EconomyInvariantCheck.cs` de güncellenmeli, yoksa
+> `Cargor / Ekonomi Değerlerini Doğrula` kırmızı yanar. Yeni bir sistem eklenirse bölüm numarası
+> sonuna eklenir (mevcut numaralar değiştirilmez — belge içi `§` referansları buna dayanıyor).
+>
+> 📝 *Son güncelleme: 13 Eylül 2026 — Eclion Software. Kapsam tamamlama turu: §32–42 eklendi
+> (kontroller, mekân planı, oda karartma, telsiz, not defteri, kira-sonrası mekanikler, sanat
+> yönü, ayarlar/erişilebilirlik, üretim durumu, risk kaydı, sözlük); §1, §2.3, §17.5, §22, §26,
+> §27, §28, §29 koda karşı tazelendi. Ekonomi bölümleri (§13/§16 dahil) yeniden doğrulandı —
+> sapma bulunmadı.*

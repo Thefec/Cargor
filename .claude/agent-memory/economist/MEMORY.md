@@ -1,6 +1,10 @@
 # Economist Agent Memory Index
 
 ## ⭐ EN GÜNCEL TABAN (buradan başla — Round 10+11 KODA İŞLENDİ, commit `bb98ad1`)
+- [⭐⭐⭐⭐⭐Telefon koşulsuz +20 TL KALDIRILDI 2026-09-18](phone_unconditional_money_removed_2026-09-18.md) — callMoneyReward 20→0 (cs+asset+sim), Slow/strict P1/P2 %100 spam optimumu kırıldı→%0/%20
+- [⭐⭐⭐⭐⭐DifficultyManager sabir/stamina kablolamasi CANLI + prefab-vs-cs sapma fix'i 2026-09-18](difficulty_patience_wiring_2026-09-18.md) — gercek deger PREFAB'ta yasiyordu (8/14/2, cs 35/55/5 degil); karar 15/20/2, 1P=canliyla ayni
+- [⭐⭐⭐⭐sim.js SIFIR RNG + "unloseable" ekonomi bulgusu 2026-09-18](a1_determinism_audit_2026-09-18.md) — runFullSim %100 deterministik (Math.random YOK); +-90%/gün gürültüde bile winRate>=%98.3; iflas SADECE gün12/16 kira kapısında; day-5 finalCash'i ZAYIF öngörüyor (r=0.27-0.48)
+- [⭐⭐⭐GDD §13/§16 doğrulama 2026-09-13](gdd_section13_16_verified_current_2026-09-13.md) — SIFIR sapma; upgrade sayısı gerçekte 25 (26 değil); 2 hafta boşlukta kod-GDD hiç ayrışmadı
 - [⭐⭐Round 12: GDD uygulama-sonrası senkron 2026-08-30](economy_full_balance_round12_gdd_resync_2026-08-30.md) — GDD 14 bölümde ~30 düzeltme + §16.1 best-of-K EKLENDİ; canlı değer↔dosya:satır tablosu; 2 yeni açık
 - [⭐⭐Round 11: quest best-of-K yeniden tasarımı 2026-08-30](economy_full_balance_round11_2026-08-30.md) — U6 oyunda NO-OP çıkıp geri alındı; K-aday+adaptif fizibilite → T2<T0 4/16→0/16; Hard cezası 53→30
 - [⭐⭐Round 10 FİNAL: nihai uygulama listesi 2026-08-30](economy_full_balance_round10_2026-08-30.md) — sim v5.0 (5 model hatası); **12 UYGULA / 11 ÖLÇÜMLE-RED**; her reddin gerekçesi §4'te

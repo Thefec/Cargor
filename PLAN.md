@@ -5,6 +5,7 @@
 > Bir iş bitince buradan çıkar, `plans/archive/` altına taşı.
 
 ---
+- **Optimizasyon teftişi (2026-09-18):** 4 madde UYGULANDI (commit yok) → `plans/optimizasyon-teftisi.md`
 
 ## 🎯 Şu an aktif iş
 
