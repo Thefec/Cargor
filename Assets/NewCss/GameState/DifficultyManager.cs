@@ -69,8 +69,8 @@ namespace NewCss
         [Range(1f, 2f)]
         private float staminaDrainMultiplierPerPlayer = 1.1f;
 
-        [SerializeField, Tooltip("Oyuncu sayısına göre upgrade/perk/reroll maliyet çarpanı (1P,2P,3P,4P). index = oyuncuSayısı-1. FAZ4: gelir ölçeğine kalibre dizi (bkz. plans/economy-rebuild-2026-07-30-faz4-final.md §B.8) — geometrik tek skaler 2P/3P'de %19-25 sapıyordu, bu yüzden dizi seçildi.")]
-        private float[] upgradeCostMultiplierByPlayerCount = { 1.00f, 2.00f, 2.95f, 3.70f };
+        [SerializeField, Tooltip("Oyuncu sayısına göre upgrade/perk/reroll maliyet çarpanı (1P,2P,3P,4P). index = oyuncuSayısı-1. FAZ4: gelir ölçeğine kalibre dizi (bkz. plans/economy-rebuild-2026-07-30-faz4-final.md §B.8) — geometrik tek skaler 2P/3P'de %19-25 sapıyordu, bu yüzden dizi seçildi. Ekonomi denetimi 2026-09-18 (docs/economy/05-oneriler.md Ö2): eski dizi {1.00,2.00,2.95,3.70} kart fiyatlarını P ile 3.7 katına çıkarıyordu ama kartların getirisi o oranda büyümüyor (kota P3=P4, tek servis istasyonu) — 4P en riskli oyuncu sayısıydı (kayıp %50 vs 2P %25.6). Yeni dizi ölçüldü: 4P kayıp %41.6, Ö1+Ö3 ile birlikte %9.6. DEĞER PREFAB'TA DA VAR (Assets/DifficultyManager.prefab) ve prefab kazanır — ikisi birlikte güncellenmeli.")]
+        private float[] upgradeCostMultiplierByPlayerCount = { 1.00f, 1.60f, 2.10f, 2.50f };
 
         #endregion
 

@@ -27168,8 +27168,8 @@ MonoBehaviour:
     TruckValue: 10
     WaitTime: 5
     maxLevel: 2
-    baseCost: 60
-    costStep: 30
+    baseCost: 25
+    costStep: 10
     kind: 0
     tier: 0
     effectId: 
@@ -27354,8 +27354,8 @@ MonoBehaviour:
     TruckValue: 10
     WaitTime: 5
     maxLevel: 2
-    baseCost: 80
-    costStep: 20
+    baseCost: 40
+    costStep: 10
     kind: 0
     tier: 0
     effectId: 
@@ -27374,8 +27374,8 @@ MonoBehaviour:
     TruckValue: 10
     WaitTime: 5
     maxLevel: 3
-    baseCost: 130
-    costStep: 30
+    baseCost: 70
+    costStep: 15
     kind: 1
     tier: 2
     effectId: cheap_rent
@@ -27393,8 +27393,8 @@ MonoBehaviour:
     TruckValue: 10
     WaitTime: 5
     maxLevel: 2
-    baseCost: 130
-    costStep: 15
+    baseCost: 80
+    costStep: 10
     kind: 1
     tier: 2
     effectId: prestige_broker
@@ -27425,8 +27425,8 @@ MonoBehaviour:
     garageDoorControllers: []
   - displayName: "H\u0131zl\u0131 Hangar"
     displayNameLocKey: 
-    contentText: "T\u0131r\u0131n hangarda kalma s\xFCresi %30 uzar \u2014 y\xFCklemeye
-      daha \xE7ok zaman."
+    contentText: "T\u0131r\u0131n hangarda kalma s\xFCresi %25 k\u0131sal\u0131r \u2014
+      hangar daha h\u0131zl\u0131 d\xF6ner."
     contentTextLocKey: 
     starterValue: 0
     StaminaValue: 1
@@ -27452,7 +27452,7 @@ MonoBehaviour:
     TruckValue: 10
     WaitTime: 5
     maxLevel: 1
-    baseCost: 100
+    baseCost: 55
     costStep: 0
     kind: 1
     tier: 0
@@ -27471,7 +27471,7 @@ MonoBehaviour:
     TruckValue: 10
     WaitTime: 5
     maxLevel: 1
-    baseCost: 180
+    baseCost: 110
     costStep: 0
     kind: 1
     tier: 0
@@ -27490,7 +27490,7 @@ MonoBehaviour:
     TruckValue: 10
     WaitTime: 5
     maxLevel: 1
-    baseCost: 120
+    baseCost: 60
     costStep: 0
     kind: 1
     tier: 0
@@ -27548,7 +27548,7 @@ MonoBehaviour:
     TruckValue: 10
     WaitTime: 5
     maxLevel: 1
-    baseCost: 160
+    baseCost: 60
     costStep: 0
     kind: 1
     tier: 0
@@ -27568,7 +27568,7 @@ MonoBehaviour:
     TruckValue: 10
     WaitTime: 5
     maxLevel: 1
-    baseCost: 300
+    baseCost: 120
     costStep: 0
     kind: 1
     tier: 0
@@ -27628,7 +27628,7 @@ MonoBehaviour:
     TruckValue: 10
     WaitTime: 5
     maxLevel: 1
-    baseCost: 250
+    baseCost: 90
     costStep: 0
     kind: 1
     tier: 0
@@ -27667,7 +27667,7 @@ MonoBehaviour:
     TruckValue: 10
     WaitTime: 5
     maxLevel: 1
-    baseCost: 80
+    baseCost: 30
     costStep: 0
     kind: 1
     tier: 0

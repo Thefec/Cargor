@@ -1,0 +1,292 @@
+{
+ "config_overrides": [],
+ "runs": 200,
+ "sensitivity": {
+  "base": {
+   "P1_orta_mantikli_ev": {
+    "finalMoney": 256,
+    "deathRate": 0.625,
+    "finalPrestige": 23.5624
+   },
+   "P2_orta_mantikli_ev": {
+    "finalMoney": 810,
+    "deathRate": 0.23,
+    "finalPrestige": 50.3004
+   },
+   "P3_orta_mantikli_ev": {
+    "finalMoney": 1318,
+    "deathRate": 0.275,
+    "finalPrestige": 63.4192
+   },
+   "P4_orta_mantikli_ev": {
+    "finalMoney": 1606,
+    "deathRate": 0.51,
+    "finalPrestige": 63.7478
+   }
+  },
+  "t_pack-30%": {
+   "P1_orta_mantikli_ev": {
+    "finalMoney": 286,
+    "deathRate": 0.48,
+    "finalPrestige": 30.2292
+   },
+   "P2_orta_mantikli_ev": {
+    "finalMoney": 1390,
+    "deathRate": 0.11,
+    "finalPrestige": 62.3618
+   },
+   "P3_orta_mantikli_ev": {
+    "finalMoney": 1853,
+    "deathRate": 0.125,
+    "finalPrestige": 74.4198
+   },
+   "P4_orta_mantikli_ev": {
+    "finalMoney": 1741,
+    "deathRate": 0.28,
+    "finalPrestige": 73.1678
+   }
+  },
+  "t_pack+30%": {
+   "P1_orta_mantikli_ev": {
+    "finalMoney": 283,
+    "deathRate": 0.9,
+    "finalPrestige": 18.6938
+   },
+   "P2_orta_mantikli_ev": {
+    "finalMoney": 576,
+    "deathRate": 0.535,
+    "finalPrestige": 37.3874
+   },
+   "P3_orta_mantikli_ev": {
+    "finalMoney": 1024,
+    "deathRate": 0.56,
+    "finalPrestige": 52.313
+   },
+   "P4_orta_mantikli_ev": {
+    "finalMoney": 1625,
+    "deathRate": 0.775,
+    "finalPrestige": 54.182
+   }
+  },
+  "phone_use=0": {
+   "P1_orta_mantikli_ev": {
+    "finalMoney": 246,
+    "deathRate": 0.545,
+    "finalPrestige": 24.810200000000002
+   },
+   "P2_orta_mantikli_ev": {
+    "finalMoney": 862,
+    "deathRate": 0.115,
+    "finalPrestige": 49.1238
+   },
+   "P3_orta_mantikli_ev": {
+    "finalMoney": 1400,
+    "deathRate": 0.2,
+    "finalPrestige": 55.2684
+   },
+   "P4_orta_mantikli_ev": {
+    "finalMoney": 1772,
+    "deathRate": 0.385,
+    "finalPrestige": 49.5926
+   }
+  },
+  "phone_use=1": {
+   "P1_orta_mantikli_ev": {
+    "finalMoney": 258,
+    "deathRate": 0.64,
+    "finalPrestige": 22.4626
+   },
+   "P2_orta_mantikli_ev": {
+    "finalMoney": 685,
+    "deathRate": 0.31,
+    "finalPrestige": 48.2888
+   },
+   "P3_orta_mantikli_ev": {
+    "finalMoney": 1151,
+    "deathRate": 0.325,
+    "finalPrestige": 62.6712
+   },
+   "P4_orta_mantikli_ev": {
+    "finalMoney": 1573,
+    "deathRate": 0.495,
+    "finalPrestige": 65.7056
+   }
+  },
+  "S_pack=3": {
+   "P1_orta_mantikli_ev": {
+    "finalMoney": 256,
+    "deathRate": 0.625,
+    "finalPrestige": 23.5624
+   },
+   "P2_orta_mantikli_ev": {
+    "finalMoney": 798,
+    "deathRate": 0.245,
+    "finalPrestige": 48.921
+   },
+   "P3_orta_mantikli_ev": {
+    "finalMoney": 1243,
+    "deathRate": 0.23,
+    "finalPrestige": 63.794
+   },
+   "P4_orta_mantikli_ev": {
+    "finalMoney": 1603,
+    "deathRate": 0.425,
+    "finalPrestige": 65.4666
+   }
+  },
+  "S_pack=10": {
+   "P1_orta_mantikli_ev": {
+    "finalMoney": 256,
+    "deathRate": 0.625,
+    "finalPrestige": 23.5624
+   },
+   "P2_orta_mantikli_ev": {
+    "finalMoney": 832,
+    "deathRate": 0.23,
+    "finalPrestige": 52.1852
+   },
+   "P3_orta_mantikli_ev": {
+    "finalMoney": 1352,
+    "deathRate": 0.37,
+    "finalPrestige": 63.3914
+   },
+   "P4_orta_mantikli_ev": {
+    "finalMoney": 1609,
+    "deathRate": 0.57,
+    "finalPrestige": 62.8454
+   }
+  },
+  "wrongDeliv=0": {
+   "P1_orta_mantikli_ev": {
+    "finalMoney": 250,
+    "deathRate": 0.49,
+    "finalPrestige": 25.022
+   },
+   "P2_orta_mantikli_ev": {
+    "finalMoney": 1187,
+    "deathRate": 0.095,
+    "finalPrestige": 53.1646
+   },
+   "P3_orta_mantikli_ev": {
+    "finalMoney": 1961,
+    "deathRate": 0.145,
+    "finalPrestige": 69.7366
+   },
+   "P4_orta_mantikli_ev": {
+    "finalMoney": 2007,
+    "deathRate": 0.24,
+    "finalPrestige": 73.0356
+   }
+  },
+  "wrongDeliv=0.2": {
+   "P1_orta_mantikli_ev": {
+    "finalMoney": 281,
+    "deathRate": 0.865,
+    "finalPrestige": 21.7026
+   },
+   "P2_orta_mantikli_ev": {
+    "finalMoney": 588,
+    "deathRate": 0.585,
+    "finalPrestige": 43.9976
+   },
+   "P3_orta_mantikli_ev": {
+    "finalMoney": 1044,
+    "deathRate": 0.69,
+    "finalPrestige": 54.3732
+   },
+   "P4_orta_mantikli_ev": {
+    "finalMoney": 1659,
+    "deathRate": 0.89,
+    "finalPrestige": 53.0694
+   }
+  },
+  "rentGrowth=1.10": {
+   "P1_orta_mantikli_ev": {
+    "finalMoney": 221,
+    "deathRate": 0.55,
+    "finalPrestige": 24.0988
+   },
+   "P2_orta_mantikli_ev": {
+    "finalMoney": 858,
+    "deathRate": 0.15,
+    "finalPrestige": 50.9678
+   },
+   "P3_orta_mantikli_ev": {
+    "finalMoney": 1420,
+    "deathRate": 0.185,
+    "finalPrestige": 65.9972
+   },
+   "P4_orta_mantikli_ev": {
+    "finalMoney": 1593,
+    "deathRate": 0.4,
+    "finalPrestige": 66.4184
+   }
+  },
+  "rentGrowth=1.35": {
+   "P1_orta_mantikli_ev": {
+    "finalMoney": 381,
+    "deathRate": 0.86,
+    "finalPrestige": 23.0112
+   },
+   "P2_orta_mantikli_ev": {
+    "finalMoney": 712,
+    "deathRate": 0.375,
+    "finalPrestige": 48.744
+   },
+   "P3_orta_mantikli_ev": {
+    "finalMoney": 1220,
+    "deathRate": 0.5,
+    "finalPrestige": 60.245
+   },
+   "P4_orta_mantikli_ev": {
+    "finalMoney": 1995,
+    "deathRate": 0.775,
+    "finalPrestige": 59.5324
+   }
+  },
+  "hangarStay×0.75": {
+   "P1_orta_mantikli_ev": {
+    "finalMoney": 262,
+    "deathRate": 0.59,
+    "finalPrestige": 23.7754
+   },
+   "P2_orta_mantikli_ev": {
+    "finalMoney": 779,
+    "deathRate": 0.2,
+    "finalPrestige": 49.8634
+   },
+   "P3_orta_mantikli_ev": {
+    "finalMoney": 1348,
+    "deathRate": 0.34,
+    "finalPrestige": 62.4474
+   },
+   "P4_orta_mantikli_ev": {
+    "finalMoney": 1791,
+    "deathRate": 0.545,
+    "finalPrestige": 62.848
+   }
+  },
+  "arrival×0.7": {
+   "P1_orta_mantikli_ev": {
+    "finalMoney": 252,
+    "deathRate": 0.72,
+    "finalPrestige": 20.0882
+   },
+   "P2_orta_mantikli_ev": {
+    "finalMoney": 558,
+    "deathRate": 0.48,
+    "finalPrestige": 40.0592
+   },
+   "P3_orta_mantikli_ev": {
+    "finalMoney": 1024,
+    "deathRate": 0.44,
+    "finalPrestige": 53.9608
+   },
+   "P4_orta_mantikli_ev": {
+    "finalMoney": 1499,
+    "deathRate": 0.655,
+    "finalPrestige": 55.2454
+   }
+  }
+ }
+}

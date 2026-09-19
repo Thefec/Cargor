@@ -1,0 +1,872 @@
+{
+  "_comment": "Cargor ekonomi simülasyonu — TÜM parametreler burada. Kaynak: docs/economy/01-parametreler.md (dosya:satır referansları orada). 'assumptions'/'profiles' kod-dışı VARSAYIM. index = oyuncuSayısı-1 olan diziler P-bazlı. GUNCEL: 2026-09-19'da Ö1+Ö2+Ö3 canliya uygulandi, bu config canli degerleri yansitir.",
+  "economy": {
+    "startingMoney": 500,
+    "moneyMultiplierPerPlayer": 1.2,
+    "startingPrestige": 12.0,
+    "maxPrestige": 100.0,
+    "baseRentByPlayerCount": [
+      290,
+      650,
+      1140,
+      1630
+    ],
+    "rentGrowthMultiplier": 1.2,
+    "rentIntervalDays": 4,
+    "gracePaymentPercent": 0.8,
+    "emergencyBrakePrestigePenalty": -2.0,
+    "maxDays": 16,
+    "realDurationInSeconds": 200.0,
+    "dailyDurationIncrease": 10.0,
+    "dynamicDurationStartDay": 3,
+    "startHour": 7,
+    "endHour": 18,
+    "dailyCustomerCount": [
+      [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        5,
+        5,
+        5,
+        5,
+        5,
+        6,
+        6,
+        6,
+        6
+      ],
+      [
+        7,
+        7,
+        7,
+        8,
+        8,
+        9,
+        9,
+        9,
+        10,
+        10,
+        10,
+        11,
+        11,
+        11,
+        12,
+        12
+      ],
+      [
+        8,
+        8,
+        8,
+        8,
+        9,
+        9,
+        9,
+        10,
+        10,
+        10,
+        11,
+        11,
+        12,
+        12,
+        12,
+        13
+      ],
+      [
+        8,
+        8,
+        8,
+        8,
+        9,
+        9,
+        9,
+        10,
+        10,
+        10,
+        11,
+        11,
+        12,
+        12,
+        12,
+        13
+      ]
+    ],
+    "minCustomersPerDay": 1,
+    "maxCustomersPerDay": 50,
+    "customerArrivalIntervalByPlayerCount": [
+      44.0,
+      22.0,
+      21.0,
+      21.0
+    ],
+    "spawnTimeRandomness": 0.2,
+    "spawnStartHour": 8.0,
+    "spawnEndHour": 17.0,
+    "customerExitHour": 17.5,
+    "maxQueueSize": 2,
+    "serviceStations": 1,
+    "wavePeriods": [
+      {
+        "start": 8,
+        "end": 12,
+        "maxCustomers": 4,
+        "rate": 1.0
+      },
+      {
+        "start": 12,
+        "end": 14,
+        "maxCustomers": 6,
+        "rate": 1.5
+      },
+      {
+        "start": 14,
+        "end": 15,
+        "maxCustomers": 2,
+        "rate": 0.5
+      },
+      {
+        "start": 15,
+        "end": 16,
+        "maxCustomers": 3,
+        "rate": 0.8
+      },
+      {
+        "start": 16,
+        "end": 17,
+        "maxCustomers": 4,
+        "rate": 1.3
+      },
+      {
+        "start": 17,
+        "end": 18,
+        "maxCustomers": 2,
+        "rate": 0.6
+      }
+    ],
+    "baseMinPatience": 15.0,
+    "baseMaxPatience": 20.0,
+    "patienceReductionPerPlayer": 2.0,
+    "patienceFloorMin": 5.0,
+    "patienceFloorMax": 10.0,
+    "interactionTime": 2.0,
+    "dayEndGraceSeconds": 30.0,
+    "returnUnlockDay": 5,
+    "returnModeChance": 0.25,
+    "dualItemUnlockDay": 9,
+    "dualItemInteractionMult": 1.3,
+    "dualItemBoxRequestMult": 1.15,
+    "mixedTruckUnlockDay": 13,
+    "rewardPerBoxByPlayerCount": [
+      50,
+      55,
+      70,
+      88
+    ],
+    "penaltyPerBox": 40,
+    "prestigePerBonus": 8.0,
+    "bonusPerTier": 5.0,
+    "hangarStayDurationByPlayerCount": [
+      120,
+      60,
+      40,
+      30
+    ],
+    "truckCargoMinByPlayerCount": [
+      1,
+      2,
+      2,
+      2
+    ],
+    "truckCargoMaxExclusiveByPlayerCount": [
+      3,
+      4,
+      5,
+      6
+    ],
+    "exitDelay": 2.0,
+    "respawnDelayRange": [
+      3.0,
+      5.0
+    ],
+    "truckStartHour": 8,
+    "truckEndHour": 17,
+    "hangarsAtStart": 1,
+    "packingTablesAtStart": 1,
+    "boxDropMoneyPenalty": 5,
+    "boxDropPrestigePenalty": -0.04,
+    "customerLostPrestigePenalty": -0.4,
+    "customerMissedQuotaPrestigePenalty": -0.2,
+    "customerServedPrestigeBonus": 0.4,
+    "wrongProductPrestigePenalty": -0.2,
+    "wrongDeliveryPrestigePenalty": -0.16,
+    "timeSkipAmountByPlayerCount": [
+      115.0,
+      49.0,
+      47.0,
+      47.0
+    ],
+    "phoneCooldownSeconds": 3.0,
+    "callMoneyReward": 0,
+    "callPrestigeReward": 0.4,
+    "phoneStartHour": 8,
+    "phoneEndHour": 18,
+    "festivalRentShare": [
+      0.1,
+      0.2
+    ],
+    "upgradeCostMultiplierByPlayerCount": [
+      1.0,
+      1.6,
+      2.1,
+      2.5
+    ],
+    "rerollCosts": [
+      50,
+      90,
+      160,
+      290,
+      525
+    ],
+    "draftOfferCount": 3,
+    "t2UnlockDay": 5,
+    "t3UnlockDay": 9,
+    "panelOpenHour": 10,
+    "upgradeActivationDelayDays": 1,
+    "exclusiveGroups": [
+      [
+        "gambler_case",
+        "all_in"
+      ],
+      [
+        "leveraged_rent",
+        "all_in"
+      ]
+    ]
+  },
+  "upgrades": [
+    {
+      "id": "wide_storage",
+      "name": "Geniş Ambar",
+      "kind": "backbone",
+      "tier": 0,
+      "maxLevel": 2,
+      "baseCost": 25,
+      "costStep": 10
+    },
+    {
+      "id": "packing_station",
+      "name": "Paketleme İstasyonu",
+      "kind": "backbone",
+      "tier": 0,
+      "maxLevel": 1,
+      "baseCost": 150,
+      "costStep": 150
+    },
+    {
+      "id": "extra_hangar",
+      "name": "Ek Hangar",
+      "kind": "backbone",
+      "tier": 0,
+      "maxLevel": 1,
+      "baseCost": 200,
+      "costStep": 100
+    },
+    {
+      "id": "quest_tier",
+      "name": "Görev Kademesi",
+      "kind": "backbone",
+      "tier": 0,
+      "maxLevel": 2,
+      "baseCost": 40,
+      "costStep": 10,
+      "pExempt": true
+    },
+    {
+      "id": "cheap_rent",
+      "name": "Ucuz Kira",
+      "kind": "perk",
+      "tier": 2,
+      "maxLevel": 3,
+      "baseCost": 70,
+      "costStep": 15
+    },
+    {
+      "id": "prestige_broker",
+      "name": "Prestij Simsarı",
+      "kind": "perk",
+      "tier": 2,
+      "maxLevel": 2,
+      "baseCost": 80,
+      "costStep": 10
+    },
+    {
+      "id": "prestige_master",
+      "name": "Prestij Ustası",
+      "kind": "perk",
+      "tier": 1,
+      "maxLevel": 2,
+      "baseCost": 175,
+      "costStep": 25
+    },
+    {
+      "id": "fast_hangar",
+      "name": "Hızlı Hangar",
+      "kind": "perk",
+      "tier": 1,
+      "maxLevel": 1,
+      "baseCost": 120,
+      "costStep": 0
+    },
+    {
+      "id": "energetic_crew",
+      "name": "Enerjik Ekip",
+      "kind": "perk",
+      "tier": 0,
+      "maxLevel": 1,
+      "baseCost": 55,
+      "costStep": 0
+    },
+    {
+      "id": "agile_crew",
+      "name": "Çevik Ekip",
+      "kind": "perk",
+      "tier": 0,
+      "maxLevel": 1,
+      "baseCost": 110,
+      "costStep": 0
+    },
+    {
+      "id": "patient_customers",
+      "name": "Sabırlı Müşteriler",
+      "kind": "perk",
+      "tier": 0,
+      "maxLevel": 1,
+      "baseCost": 60,
+      "costStep": 0
+    },
+    {
+      "id": "gambler_case",
+      "name": "Kumarbaz Kasası",
+      "kind": "perk",
+      "tier": 1,
+      "maxLevel": 1,
+      "baseCost": 350,
+      "costStep": 0
+    },
+    {
+      "id": "phone_line",
+      "name": "Telefon Hattı",
+      "kind": "perk",
+      "tier": 0,
+      "maxLevel": 1,
+      "baseCost": 60,
+      "costStep": 0
+    },
+    {
+      "id": "overtime",
+      "name": "Mesai Saati",
+      "kind": "perk",
+      "tier": 0,
+      "maxLevel": 1,
+      "baseCost": 120,
+      "costStep": 0
+    },
+    {
+      "id": "leveraged_rent",
+      "name": "Kaldıraçlı Kira",
+      "kind": "perk",
+      "tier": 2,
+      "maxLevel": 1,
+      "baseCost": 300,
+      "costStep": 0
+    },
+    {
+      "id": "high_volatility",
+      "name": "Yüksek Volatilite",
+      "kind": "perk",
+      "tier": 1,
+      "maxLevel": 1,
+      "baseCost": 320,
+      "costStep": 0
+    },
+    {
+      "id": "emergency_brake",
+      "name": "Acil Fren",
+      "kind": "perk",
+      "tier": 0,
+      "maxLevel": 1,
+      "baseCost": 90,
+      "costStep": 0
+    },
+    {
+      "id": "all_in",
+      "name": "Kelle Koltukta",
+      "kind": "perk",
+      "tier": 2,
+      "maxLevel": 1,
+      "baseCost": 320,
+      "costStep": 0
+    },
+    {
+      "id": "bulk_buy",
+      "name": "Toplu Alım",
+      "kind": "perk",
+      "tier": 0,
+      "maxLevel": 1,
+      "baseCost": 30,
+      "costStep": 0
+    }
+  ],
+  "perkEffects": {
+    "cheap_rent_growth_step": 0.03,
+    "prestige_broker_bonus_step": 0.5,
+    "prestige_master_served_step": 0.12,
+    "fast_hangar_mult": 0.75,
+    "agile_speed_mult": 1.15,
+    "energetic_labor_mult": 0.95,
+    "patient_interaction_mult": 0.6,
+    "gambler_reward_mult": 1.3,
+    "gambler_penalty_mult": 1.55,
+    "phone_line_skip_mult": 0.8,
+    "overtime_mult": 1.125,
+    "leveraged_rent_mult": 0.75,
+    "volatility_range": 0.35,
+    "volatility_mean": 1.15,
+    "all_in_reward_mult": 1.25,
+    "bulk_buy_discount": 0.5,
+    "wide_storage_slots_per_level": 4
+  },
+  "events": {
+    "freeDays": 3,
+    "intervalMin": 1,
+    "intervalMax": 2,
+    "initialPositiveCount": 2,
+    "guaranteedNegativeIndex": 2,
+    "pool": [
+      {
+        "name": "BUSY DAY",
+        "type": "neg",
+        "customers": 1.35,
+        "wait": 0.85
+      },
+      {
+        "name": "DELIVERY BONUS",
+        "type": "pos",
+        "reward": 1.2
+      },
+      {
+        "name": "ANGRY CUSTOMERS",
+        "type": "neg",
+        "wait": 0.6,
+        "customers": 1.1
+      },
+      {
+        "name": "RELAXED DAY",
+        "type": "pos",
+        "wait": 1.3
+      },
+      {
+        "name": "SLOW LOGISTICS",
+        "type": "neg",
+        "reward": 0.92,
+        "exit": 1.5
+      },
+      {
+        "name": "EXPRESS CARGO",
+        "type": "pos",
+        "reward": 1.08,
+        "exit": 0.7
+      },
+      {
+        "name": "HEAVY BOXES",
+        "type": "neg",
+        "move": 0.85
+      },
+      {
+        "name": "GOLDEN BOX DAY",
+        "type": "pos",
+        "reward": 1.15,
+        "customers": 1.15,
+        "exit": 0.8,
+        "move": 1.08
+      },
+      {
+        "name": "OPPORTUNITY DAY",
+        "type": "pos",
+        "upgradeCost": 0.8
+      },
+      {
+        "name": "FATIGUE PROBLEM",
+        "type": "neg",
+        "move": 0.9,
+        "customers": 0.85
+      },
+      {
+        "name": "VIP SERVICE",
+        "type": "pos",
+        "reward": 1.12
+      },
+      {
+        "name": "SURPRISE AUDIT",
+        "type": "neg",
+        "penalty": 2.0
+      },
+      {
+        "name": "RAINY DAY",
+        "type": "neg",
+        "customers": 0.8
+      },
+      {
+        "name": "MARKETING DAY",
+        "type": "neg",
+        "reward": 0.7,
+        "customers": 1.2
+      },
+      {
+        "name": "CUSTOMER SUPPORT",
+        "type": "pos",
+        "phoneSkip": 0.5
+      },
+      {
+        "name": "FESTIVAL DAY",
+        "type": "pos",
+        "festival": true
+      }
+    ]
+  },
+  "quests": {
+    "dailyOfferCount": 3,
+    "tierRewards": {
+      "0": {
+        "money": 28,
+        "prestige": 0.6,
+        "moneyPen": 15,
+        "prestigePen": 0.32
+      },
+      "1": {
+        "money": 60,
+        "prestige": 1.2,
+        "moneyPen": 20,
+        "prestigePen": 0.4
+      },
+      "2": {
+        "money": 150,
+        "prestige": 3.0,
+        "moneyPen": 30,
+        "prestigePen": 0.6
+      }
+    },
+    "assets": [
+      {
+        "id": "easy_truck_1",
+        "tier": 0,
+        "type": "truck",
+        "target": 1,
+        "colorLocked": false
+      },
+      {
+        "id": "easy_shelf_4",
+        "tier": 0,
+        "type": "shelf",
+        "target": 4,
+        "colorLocked": false
+      },
+      {
+        "id": "easy_shelf_red",
+        "tier": 0,
+        "type": "shelf",
+        "target": 2,
+        "colorLocked": true
+      },
+      {
+        "id": "easy_pack_4",
+        "tier": 0,
+        "type": "pack",
+        "target": 4,
+        "colorLocked": false
+      },
+      {
+        "id": "easy_pack_toy",
+        "tier": 0,
+        "type": "pack",
+        "target": 2,
+        "colorLocked": true
+      },
+      {
+        "id": "easy_phone_1",
+        "tier": 0,
+        "type": "phone",
+        "target": 1,
+        "colorLocked": false
+      },
+      {
+        "id": "easy_shelf_yellow",
+        "tier": 0,
+        "type": "shelf",
+        "target": 2,
+        "colorLocked": true
+      },
+      {
+        "id": "easy_shelf_blue",
+        "tier": 0,
+        "type": "shelf",
+        "target": 2,
+        "colorLocked": true
+      },
+      {
+        "id": "easy_pack_cloth",
+        "tier": 0,
+        "type": "pack",
+        "target": 2,
+        "colorLocked": true
+      },
+      {
+        "id": "easy_pack_glass",
+        "tier": 0,
+        "type": "pack",
+        "target": 2,
+        "colorLocked": true
+      },
+      {
+        "id": "easy_shelf_6",
+        "tier": 0,
+        "type": "shelf",
+        "target": 6,
+        "colorLocked": false
+      },
+      {
+        "id": "med_truck_2",
+        "tier": 1,
+        "type": "truck",
+        "target": 2,
+        "colorLocked": false
+      },
+      {
+        "id": "med_shelf_7",
+        "tier": 1,
+        "type": "shelf",
+        "target": 7,
+        "colorLocked": false
+      },
+      {
+        "id": "med_shelf_blue",
+        "tier": 1,
+        "type": "shelf",
+        "target": 3,
+        "colorLocked": true
+      },
+      {
+        "id": "med_pack_7",
+        "tier": 1,
+        "type": "pack",
+        "target": 7,
+        "colorLocked": false
+      },
+      {
+        "id": "med_pack_cloth",
+        "tier": 1,
+        "type": "pack",
+        "target": 3,
+        "colorLocked": true
+      },
+      {
+        "id": "med_phone_2",
+        "tier": 1,
+        "type": "phone",
+        "target": 2,
+        "colorLocked": false
+      },
+      {
+        "id": "med_shelf_yellow",
+        "tier": 1,
+        "type": "shelf",
+        "target": 3,
+        "colorLocked": true
+      },
+      {
+        "id": "med_shelf_red",
+        "tier": 1,
+        "type": "shelf",
+        "target": 3,
+        "colorLocked": true
+      },
+      {
+        "id": "med_pack_toy",
+        "tier": 1,
+        "type": "pack",
+        "target": 3,
+        "colorLocked": true
+      },
+      {
+        "id": "med_pack_glass",
+        "tier": 1,
+        "type": "pack",
+        "target": 3,
+        "colorLocked": true
+      },
+      {
+        "id": "hard_truck_3",
+        "tier": 2,
+        "type": "truck",
+        "target": 3,
+        "colorLocked": false
+      },
+      {
+        "id": "hard_shelf_12",
+        "tier": 2,
+        "type": "shelf",
+        "target": 12,
+        "colorLocked": false
+      },
+      {
+        "id": "hard_shelf_yellow",
+        "tier": 2,
+        "type": "shelf",
+        "target": 5,
+        "colorLocked": true
+      },
+      {
+        "id": "hard_pack_12",
+        "tier": 2,
+        "type": "pack",
+        "target": 12,
+        "colorLocked": false
+      },
+      {
+        "id": "hard_pack_glass",
+        "tier": 2,
+        "type": "pack",
+        "target": 5,
+        "colorLocked": true
+      },
+      {
+        "id": "hard_shelf_blue",
+        "tier": 2,
+        "type": "shelf",
+        "target": 5,
+        "colorLocked": true
+      },
+      {
+        "id": "hard_shelf_red",
+        "tier": 2,
+        "type": "shelf",
+        "target": 5,
+        "colorLocked": true
+      },
+      {
+        "id": "hard_pack_toy",
+        "tier": 2,
+        "type": "pack",
+        "target": 5,
+        "colorLocked": true
+      },
+      {
+        "id": "hard_pack_cloth",
+        "tier": 2,
+        "type": "pack",
+        "target": 5,
+        "colorLocked": true
+      }
+    ]
+  },
+  "assumptions": {
+    "_comment": "Kodda olmayan sabitler. Kaynak: docs/economy/02-model.md §6",
+    "truckEnterAnimSeconds": 3.0,
+    "truckExitAnimSeconds": 3.0,
+    "customerWalkInSeconds": 2.0,
+    "shopTripSeconds": 8.0,
+    "idleRecheckSeconds": 3.0,
+    "walkShare": 0.6,
+    "shelfSlotsBase": 8
+  },
+  "profiles": {
+    "zayif": {
+      "t_serve": 10,
+      "t_pack": 40,
+      "S_pack": 8,
+      "t_load": 14,
+      "t_phone": 6,
+      "p_wrongProduct": 0.08,
+      "p_wrongDelivery": 0.15,
+      "p_drop": 0.09,
+      "phone_use": 0.05,
+      "reaction": 2.0,
+      "quest_accept": 0.3
+    },
+    "orta": {
+      "t_serve": 7,
+      "t_pack": 26,
+      "S_pack": 6,
+      "t_load": 10,
+      "t_phone": 5,
+      "p_wrongProduct": 0.04,
+      "p_wrongDelivery": 0.08,
+      "p_drop": 0.05,
+      "phone_use": 0.3,
+      "reaction": 1.0,
+      "quest_accept": 0.7
+    },
+    "iyi": {
+      "t_serve": 5,
+      "t_pack": 18,
+      "S_pack": 5,
+      "t_load": 7,
+      "t_phone": 4,
+      "p_wrongProduct": 0.01,
+      "p_wrongDelivery": 0.03,
+      "p_drop": 0.02,
+      "phone_use": 0.6,
+      "reaction": 0.5,
+      "quest_accept": 1.0
+    }
+  },
+  "strategies": {
+    "hic": {
+      "buy": false
+    },
+    "acgozlu": {
+      "buy": true,
+      "mode": "cheapest_first",
+      "reserveFrac": 0.25,
+      "reroll": false
+    },
+    "mantikli": {
+      "buy": true,
+      "mode": "priority",
+      "reserveFrac": 0.6,
+      "reroll": true,
+      "rerollMaxPerDay": 1,
+      "priority": [
+        "extra_hangar",
+        "packing_station",
+        "fast_hangar",
+        "all_in",
+        "gambler_case",
+        "cheap_rent",
+        "prestige_master",
+        "patient_customers",
+        "overtime",
+        "phone_line",
+        "agile_crew",
+        "prestige_broker",
+        "high_volatility",
+        "quest_tier",
+        "bulk_buy",
+        "energetic_crew",
+        "wide_storage",
+        "emergency_brake",
+        "leveraged_rent"
+      ]
+    }
+  },
+  "sim": {
+    "dt": 1.0,
+    "runs": 300,
+    "days": 16,
+    "seed": 20260918
+  }
+}

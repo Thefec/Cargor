@@ -220,9 +220,26 @@ public static class EconomyInvariantCheck
 
         r.Checked++;
 
-        CheckUpgrade(r, upgrades, "Geniş Ambar",          maxLevel: 2, baseCost: 60,  costStep: 30);
+        // Ekonomi denetimi 2026-09-18 Ö1: 11 kartın fiyatı ölçülen amortismana çekildi
+        // (docs/economy/05-oneriler.md). Geniş Ambar 60/30 → 25/10. Paketleme İstasyonu ve
+        // Ek Hangar DEĞİŞMEDİ (ikisi de zaten amorti eden kartlar).
+        CheckUpgrade(r, upgrades, "Geniş Ambar",          maxLevel: 2, baseCost: 25,  costStep: 10);
         CheckUpgrade(r, upgrades, "Paketleme İstasyonu",  maxLevel: 1, baseCost: 150);
         CheckUpgrade(r, upgrades, "Ek Hangar",            maxLevel: 1, baseCost: 200);
+        // Ö1 ile fiyatı değişen perkler. Eşleşme effectId ile — displayName'ler 2026-07-25'te
+        // Türkçeleştirilince tüm eşleşmeler sessizce kopmuştu (bkz. UpgradePanel.UpgradeKeyAliases
+        // yorumu), o tuzağa ikinci kez düşmeyelim.
+        CheckUpgradeByEffect(r, upgrades, "cheap_rent",        maxLevel: 3, baseCost: 70,  costStep: 15);
+        CheckUpgradeByEffect(r, upgrades, "prestige_broker",   maxLevel: 2, baseCost: 80,  costStep: 10);
+        CheckUpgradeByEffect(r, upgrades, "phone_line",        maxLevel: 1, baseCost: 60);
+        CheckUpgradeByEffect(r, upgrades, "overtime",          maxLevel: 1, baseCost: 120);
+        CheckUpgradeByEffect(r, upgrades, "emergency_brake",   maxLevel: 1, baseCost: 90);
+        CheckUpgradeByEffect(r, upgrades, "patient_customers", maxLevel: 1, baseCost: 60);
+        CheckUpgradeByEffect(r, upgrades, "energetic_crew",    maxLevel: 1, baseCost: 55);
+        CheckUpgradeByEffect(r, upgrades, "agile_crew",        maxLevel: 1, baseCost: 110);
+        CheckUpgradeByEffect(r, upgrades, "bulk_buy",          maxLevel: 1, baseCost: 30);
+        // Görev Kademesi omurgadır (effectId boş) → displayName ile.
+        CheckUpgrade(r, upgrades, "Görev Kademesi",       maxLevel: 2, baseCost: 40,  costStep: 10);
 
         CheckPerkFlag(r, upgrades, "emergency_brake", expectTier: PerkTier.T1, expectDisabled: null);
         CheckPerkFlag(r, upgrades, "long_queue",     expectTier: null,          expectDisabled: true);
@@ -249,6 +266,23 @@ public static class EconomyInvariantCheck
         r.Expect($"upgrade \"{displayName}\".baseCost", u.baseCost, baseCost);
         if (costStep.HasValue)
             r.Expect($"upgrade \"{displayName}\".costStep", u.costStep, costStep.Value);
+    }
+
+    /// <summary>Fiyat/seviye kontrolü — effectId ile eşleşir (displayName'den bağımsız, kalıcı).</summary>
+    private static void CheckUpgradeByEffect(Report r, List<UpgradeDefinition> list, string effectId,
+                                             int maxLevel, int baseCost, int? costStep = null)
+    {
+        var u = list.FirstOrDefault(x => x != null && x.effectId == effectId);
+        if (u == null)
+        {
+            r.Failures.Add($"sahne perk bulunamadı: effectId \"{effectId}\" (fiyat kontrolü yapılamadı)");
+            return;
+        }
+
+        r.Expect($"perk \"{effectId}\".maxLevel", u.maxLevel, maxLevel);
+        r.Expect($"perk \"{effectId}\".baseCost", u.baseCost, baseCost);
+        if (costStep.HasValue)
+            r.Expect($"perk \"{effectId}\".costStep", u.costStep, costStep.Value);
     }
 
     private static void CheckPerkFlag(Report r, List<UpgradeDefinition> list, string effectId,
@@ -375,8 +409,17 @@ public static class EconomyInvariantCheck
         var dm = prefab.GetComponent<DifficultyManager>();
         if (dm == null) { r.Failures.Add("DifficultyManager component'i prefab'da yok"); return; }
 
+        // Ekonomi denetimi 2026-09-18 Ö2 (docs/economy/05-oneriler.md): {1.00,2.00,2.95,3.70} →
+        // {1.00,1.60,2.10,2.50}.
+        //
+        // DİKKAT — bu kontrol gerçek bir hata yakaladı (2026-09-19): alan önceden prefab'ta
+        // serialize EDİLMEMİŞTİ, ama Unity prefab'ı yüklerken kendi cache'inden ESKİ değeri
+        // ({1,2,2.95,3.7}) döndürüyordu; yani C# field initializer'ını değiştirmek TEK BAŞINA
+        // canlı değeri değiştirmedi. Çözüm: değer Assets/DifficultyManager.prefab'a AÇIKÇA
+        // yazıldı (liste formatı, hex DEĞİL — float[] hex'te sessizce boş dizi olur). Artık
+        // canlı kaynak PREFAB; .cs initializer'ı yalnız fallback. İkisi birlikte güncellenmeli.
         var arr = ReadPrivate<float[]>(dm, "upgradeCostMultiplierByPlayerCount");
-        r.ExpectArray("upgradeCostMultiplierByPlayerCount", arr, new[] { 1.00f, 2.00f, 2.95f, 3.70f });
+        r.ExpectArray("upgradeCostMultiplierByPlayerCount", arr, new[] { 1.00f, 1.60f, 2.10f, 2.50f });
 
         r.ExpectFloat("moneyMultiplierPerPlayer", ReadPrivate<float>(dm, "moneyMultiplierPerPlayer"), 1.2f);
         r.Expect("baseStartingMoney", ReadPrivate<int>(dm, "baseStartingMoney"), 500);

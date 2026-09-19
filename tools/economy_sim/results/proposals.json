@@ -1,0 +1,7947 @@
+{
+ "BAZ": {
+  "desc": "denetim anındaki değerler (Ö1/Ö2/Ö3 öncesi) — taban: config_baseline_pre.json",
+  "overrides": [],
+  "cells": {
+   "P1_zayif_hic_ev": {
+    "kasa": 217,
+    "p10": 49,
+    "kayip": 19.6,
+    "prestij": 12.8,
+    "gelir": 1286,
+    "upg": 0,
+    "idle%": 12.7,
+    "erken%": 84.9,
+    "kayipMusteri/gun": 2.06,
+    "deaths": {
+     "bankrupt@16": 40,
+     "bankrupt@12": 9
+    }
+   },
+   "P1_zayif_mantikli_ev": {
+    "kasa": 246,
+    "p10": 109,
+    "kayip": 99.2,
+    "prestij": 14.1,
+    "gelir": 621,
+    "upg": 432,
+    "idle%": 13.0,
+    "erken%": 87.4,
+    "kayipMusteri/gun": 2.07,
+    "deaths": {
+     "bankrupt@8": 146,
+     "bankrupt@12": 81,
+     "bankrupt@16": 21
+    }
+   },
+   "P1_orta_hic_ev": {
+    "kasa": 1127,
+    "p10": 674,
+    "kayip": 0.0,
+    "prestij": 25.0,
+    "gelir": 2264,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 89.5,
+    "kayipMusteri/gun": 1.64,
+    "deaths": {}
+   },
+   "P1_orta_mantikli_ev": {
+    "kasa": 252,
+    "p10": 51,
+    "kayip": 62.4,
+    "prestij": 23.4,
+    "gelir": 1773,
+    "upg": 1147,
+    "idle%": 12.4,
+    "erken%": 89.8,
+    "kayipMusteri/gun": 1.62,
+    "deaths": {
+     "bankrupt@8": 71,
+     "bankrupt@12": 54,
+     "bankrupt@16": 31
+    }
+   },
+   "P1_iyi_hic_ev": {
+    "kasa": 2476,
+    "p10": 1852,
+    "kayip": 0.0,
+    "prestij": 37.7,
+    "gelir": 3412,
+    "upg": 0,
+    "idle%": 12.9,
+    "erken%": 91.3,
+    "kayipMusteri/gun": 1.11,
+    "deaths": {}
+   },
+   "P1_iyi_mantikli_ev": {
+    "kasa": 549,
+    "p10": 187,
+    "kayip": 18.8,
+    "prestij": 38.6,
+    "gelir": 3731,
+    "upg": 2574,
+    "idle%": 12.8,
+    "erken%": 93.5,
+    "kayipMusteri/gun": 1.16,
+    "deaths": {
+     "bankrupt@8": 25,
+     "bankrupt@12": 21,
+     "bankrupt@16": 1
+    }
+   },
+   "P2_zayif_hic_ev": {
+    "kasa": 463,
+    "p10": 119,
+    "kayip": 21.2,
+    "prestij": 24.8,
+    "gelir": 3144,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 49.0,
+    "kayipMusteri/gun": 3.27,
+    "deaths": {
+     "bankrupt@16": 15,
+     "bankrupt@12": 36,
+     "bankrupt@8": 2
+    }
+   },
+   "P2_zayif_mantikli_ev": {
+    "kasa": 672,
+    "p10": 460,
+    "kayip": 95.6,
+    "prestij": 24.4,
+    "gelir": 1779,
+    "upg": 590,
+    "idle%": 13.0,
+    "erken%": 47.4,
+    "kayipMusteri/gun": 3.13,
+    "deaths": {
+     "bankrupt@12": 69,
+     "bankrupt@8": 143,
+     "bankrupt@16": 27
+    }
+   },
+   "P2_orta_hic_ev": {
+    "kasa": 3380,
+    "p10": 2614,
+    "kayip": 0.0,
+    "prestij": 54.1,
+    "gelir": 6365,
+    "upg": 0,
+    "idle%": 11.9,
+    "erken%": 74.4,
+    "kayipMusteri/gun": 2.07,
+    "deaths": {}
+   },
+   "P2_orta_mantikli_ev": {
+    "kasa": 798,
+    "p10": 356,
+    "kayip": 25.6,
+    "prestij": 50.0,
+    "gelir": 6532,
+    "upg": 3574,
+    "idle%": 12.6,
+    "erken%": 77.9,
+    "kayipMusteri/gun": 2.38,
+    "deaths": {
+     "bankrupt@8": 39,
+     "bankrupt@12": 20,
+     "bankrupt@16": 5
+    }
+   },
+   "P2_iyi_hic_ev": {
+    "kasa": 6619,
+    "p10": 5622,
+    "kayip": 0.0,
+    "prestij": 76.9,
+    "gelir": 9250,
+    "upg": 0,
+    "idle%": 12.6,
+    "erken%": 88.8,
+    "kayipMusteri/gun": 1.29,
+    "deaths": {}
+   },
+   "P2_iyi_mantikli_ev": {
+    "kasa": 3431,
+    "p10": 1624,
+    "kayip": 2.0,
+    "prestij": 79.3,
+    "gelir": 12874,
+    "upg": 7098,
+    "idle%": 15.1,
+    "erken%": 92.2,
+    "kayipMusteri/gun": 1.88,
+    "deaths": {
+     "bankrupt@8": 3,
+     "bankrupt@12": 2
+    }
+   },
+   "P3_zayif_hic_ev": {
+    "kasa": 904,
+    "p10": 170,
+    "kayip": 45.6,
+    "prestij": 41.3,
+    "gelir": 4704,
+    "upg": 0,
+    "idle%": 19.3,
+    "erken%": 46.1,
+    "kayipMusteri/gun": 2.3,
+    "deaths": {
+     "bankrupt@16": 28,
+     "bankrupt@12": 81,
+     "bankrupt@8": 5
+    }
+   },
+   "P3_zayif_mantikli_ev": {
+    "kasa": 1095,
+    "p10": 791,
+    "kayip": 98.8,
+    "prestij": 32.4,
+    "gelir": 2299,
+    "upg": 643,
+    "idle%": 19.4,
+    "erken%": 45.5,
+    "kayipMusteri/gun": 2.23,
+    "deaths": {
+     "bankrupt@8": 191,
+     "bankrupt@12": 51,
+     "bankrupt@16": 5
+    }
+   },
+   "P3_orta_hic_ev": {
+    "kasa": 4456,
+    "p10": 3462,
+    "kayip": 0.0,
+    "prestij": 71.4,
+    "gelir": 9968,
+    "upg": 0,
+    "idle%": 16.7,
+    "erken%": 87.8,
+    "kayipMusteri/gun": 1.67,
+    "deaths": {}
+   },
+   "P3_orta_mantikli_ev": {
+    "kasa": 1329,
+    "p10": 578,
+    "kayip": 26.8,
+    "prestij": 63.6,
+    "gelir": 9911,
+    "upg": 4677,
+    "idle%": 17.3,
+    "erken%": 88.7,
+    "kayipMusteri/gun": 1.97,
+    "deaths": {
+     "bankrupt@8": 51,
+     "bankrupt@12": 16
+    }
+   },
+   "P3_iyi_hic_ev": {
+    "kasa": 7752,
+    "p10": 6371,
+    "kayip": 0.0,
+    "prestij": 91.7,
+    "gelir": 12868,
+    "upg": 0,
+    "idle%": 16.7,
+    "erken%": 95.9,
+    "kayipMusteri/gun": 1.15,
+    "deaths": {}
+   },
+   "P3_iyi_mantikli_ev": {
+    "kasa": 3723,
+    "p10": 1953,
+    "kayip": 2.4,
+    "prestij": 93.0,
+    "gelir": 17642,
+    "upg": 9358,
+    "idle%": 18.4,
+    "erken%": 96.3,
+    "kayipMusteri/gun": 1.6,
+    "deaths": {
+     "bankrupt@8": 6
+    }
+   },
+   "P4_zayif_hic_ev": {
+    "kasa": 1432,
+    "p10": 344,
+    "kayip": 61.2,
+    "prestij": 44.0,
+    "gelir": 5730,
+    "upg": 0,
+    "idle%": 26.4,
+    "erken%": 64.1,
+    "kayipMusteri/gun": 2.28,
+    "deaths": {
+     "bankrupt@12": 112,
+     "bankrupt@16": 15,
+     "bankrupt@8": 26
+    }
+   },
+   "P4_zayif_mantikli_ev": {
+    "kasa": 1560,
+    "p10": 1195,
+    "kayip": 100.0,
+    "prestij": 34.9,
+    "gelir": 2909,
+    "upg": 682,
+    "idle%": 26.0,
+    "erken%": 67.6,
+    "kayipMusteri/gun": 2.15,
+    "deaths": {
+     "bankrupt@8": 210,
+     "bankrupt@12": 38,
+     "bankrupt@16": 2
+    }
+   },
+   "P4_orta_hic_ev": {
+    "kasa": 4576,
+    "p10": 3147,
+    "kayip": 0.0,
+    "prestij": 78.2,
+    "gelir": 12532,
+    "upg": 0,
+    "idle%": 20.9,
+    "erken%": 93.7,
+    "kayipMusteri/gun": 1.62,
+    "deaths": {}
+   },
+   "P4_orta_mantikli_ev": {
+    "kasa": 1617,
+    "p10": 526,
+    "kayip": 50.0,
+    "prestij": 64.4,
+    "gelir": 10279,
+    "upg": 4469,
+    "idle%": 20.9,
+    "erken%": 94.6,
+    "kayipMusteri/gun": 1.87,
+    "deaths": {
+     "bankrupt@8": 83,
+     "bankrupt@12": 39,
+     "bankrupt@16": 3
+    }
+   },
+   "P4_iyi_hic_ev": {
+    "kasa": 8520,
+    "p10": 6804,
+    "kayip": 0.0,
+    "prestij": 96.3,
+    "gelir": 16100,
+    "upg": 0,
+    "idle%": 20.2,
+    "erken%": 97.4,
+    "kayipMusteri/gun": 1.16,
+    "deaths": {}
+   },
+   "P4_iyi_mantikli_ev": {
+    "kasa": 3545,
+    "p10": 1598,
+    "kayip": 8.4,
+    "prestij": 93.3,
+    "gelir": 19890,
+    "upg": 9954,
+    "idle%": 20.9,
+    "erken%": 98.1,
+    "kayipMusteri/gun": 1.68,
+    "deaths": {
+     "bankrupt@12": 4,
+     "bankrupt@8": 17
+    }
+   }
+  }
+ },
+ "A1": {
+  "desc": "fast_hangar etkisi tersine (hangar süresi ×1.3 → ×0.75)",
+  "overrides": [
+   "perkEffects.fast_hangar_mult=0.75"
+  ],
+  "cells": {
+   "P1_zayif_hic_ev": {
+    "kasa": 217,
+    "p10": 49,
+    "kayip": 19.6,
+    "prestij": 12.8,
+    "gelir": 1286,
+    "upg": 0,
+    "idle%": 12.7,
+    "erken%": 84.9,
+    "kayipMusteri/gun": 2.06,
+    "deaths": {
+     "bankrupt@16": 40,
+     "bankrupt@12": 9
+    }
+   },
+   "P1_zayif_mantikli_ev": {
+    "kasa": 248,
+    "p10": 110,
+    "kayip": 99.2,
+    "prestij": 14.1,
+    "gelir": 621,
+    "upg": 433,
+    "idle%": 12.9,
+    "erken%": 86.8,
+    "kayipMusteri/gun": 2.06,
+    "deaths": {
+     "bankrupt@8": 146,
+     "bankrupt@12": 82,
+     "bankrupt@16": 20
+    }
+   },
+   "P1_orta_hic_ev": {
+    "kasa": 1127,
+    "p10": 674,
+    "kayip": 0.0,
+    "prestij": 25.0,
+    "gelir": 2264,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 89.5,
+    "kayipMusteri/gun": 1.64,
+    "deaths": {}
+   },
+   "P1_orta_mantikli_ev": {
+    "kasa": 240,
+    "p10": 36,
+    "kayip": 60.0,
+    "prestij": 23.4,
+    "gelir": 1782,
+    "upg": 1151,
+    "idle%": 12.4,
+    "erken%": 90.0,
+    "kayipMusteri/gun": 1.62,
+    "deaths": {
+     "bankrupt@8": 71,
+     "bankrupt@12": 54,
+     "bankrupt@16": 25
+    }
+   },
+   "P1_iyi_hic_ev": {
+    "kasa": 2476,
+    "p10": 1852,
+    "kayip": 0.0,
+    "prestij": 37.7,
+    "gelir": 3412,
+    "upg": 0,
+    "idle%": 12.9,
+    "erken%": 91.3,
+    "kayipMusteri/gun": 1.11,
+    "deaths": {}
+   },
+   "P1_iyi_mantikli_ev": {
+    "kasa": 609,
+    "p10": 186,
+    "kayip": 18.0,
+    "prestij": 38.6,
+    "gelir": 3860,
+    "upg": 2629,
+    "idle%": 12.7,
+    "erken%": 93.4,
+    "kayipMusteri/gun": 1.17,
+    "deaths": {
+     "bankrupt@8": 25,
+     "bankrupt@12": 19,
+     "bankrupt@16": 1
+    }
+   },
+   "P2_zayif_hic_ev": {
+    "kasa": 463,
+    "p10": 119,
+    "kayip": 21.2,
+    "prestij": 24.8,
+    "gelir": 3144,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 49.0,
+    "kayipMusteri/gun": 3.27,
+    "deaths": {
+     "bankrupt@16": 15,
+     "bankrupt@12": 36,
+     "bankrupt@8": 2
+    }
+   },
+   "P2_zayif_mantikli_ev": {
+    "kasa": 670,
+    "p10": 466,
+    "kayip": 96.0,
+    "prestij": 24.4,
+    "gelir": 1767,
+    "upg": 589,
+    "idle%": 13.0,
+    "erken%": 47.3,
+    "kayipMusteri/gun": 3.11,
+    "deaths": {
+     "bankrupt@12": 70,
+     "bankrupt@8": 143,
+     "bankrupt@16": 27
+    }
+   },
+   "P2_orta_hic_ev": {
+    "kasa": 3380,
+    "p10": 2614,
+    "kayip": 0.0,
+    "prestij": 54.1,
+    "gelir": 6365,
+    "upg": 0,
+    "idle%": 11.9,
+    "erken%": 74.4,
+    "kayipMusteri/gun": 2.07,
+    "deaths": {}
+   },
+   "P2_orta_mantikli_ev": {
+    "kasa": 826,
+    "p10": 276,
+    "kayip": 24.0,
+    "prestij": 49.8,
+    "gelir": 6640,
+    "upg": 3622,
+    "idle%": 12.5,
+    "erken%": 77.6,
+    "kayipMusteri/gun": 2.37,
+    "deaths": {
+     "bankrupt@8": 39,
+     "bankrupt@12": 17,
+     "bankrupt@16": 4
+    }
+   },
+   "P2_iyi_hic_ev": {
+    "kasa": 6619,
+    "p10": 5622,
+    "kayip": 0.0,
+    "prestij": 76.9,
+    "gelir": 9250,
+    "upg": 0,
+    "idle%": 12.6,
+    "erken%": 88.8,
+    "kayipMusteri/gun": 1.29,
+    "deaths": {}
+   },
+   "P2_iyi_mantikli_ev": {
+    "kasa": 3693,
+    "p10": 1988,
+    "kayip": 1.2,
+    "prestij": 79.8,
+    "gelir": 13196,
+    "upg": 7145,
+    "idle%": 14.8,
+    "erken%": 92.3,
+    "kayipMusteri/gun": 1.85,
+    "deaths": {
+     "bankrupt@8": 3
+    }
+   },
+   "P3_zayif_hic_ev": {
+    "kasa": 904,
+    "p10": 170,
+    "kayip": 45.6,
+    "prestij": 41.3,
+    "gelir": 4704,
+    "upg": 0,
+    "idle%": 19.3,
+    "erken%": 46.1,
+    "kayipMusteri/gun": 2.3,
+    "deaths": {
+     "bankrupt@16": 28,
+     "bankrupt@12": 81,
+     "bankrupt@8": 5
+    }
+   },
+   "P3_zayif_mantikli_ev": {
+    "kasa": 1095,
+    "p10": 791,
+    "kayip": 98.8,
+    "prestij": 32.4,
+    "gelir": 2296,
+    "upg": 641,
+    "idle%": 19.5,
+    "erken%": 46.3,
+    "kayipMusteri/gun": 2.23,
+    "deaths": {
+     "bankrupt@8": 191,
+     "bankrupt@12": 51,
+     "bankrupt@16": 5
+    }
+   },
+   "P3_orta_hic_ev": {
+    "kasa": 4456,
+    "p10": 3462,
+    "kayip": 0.0,
+    "prestij": 71.4,
+    "gelir": 9968,
+    "upg": 0,
+    "idle%": 16.7,
+    "erken%": 87.8,
+    "kayipMusteri/gun": 1.67,
+    "deaths": {}
+   },
+   "P3_orta_mantikli_ev": {
+    "kasa": 1332,
+    "p10": 540,
+    "kayip": 27.2,
+    "prestij": 63.8,
+    "gelir": 9928,
+    "upg": 4696,
+    "idle%": 17.0,
+    "erken%": 88.7,
+    "kayipMusteri/gun": 1.95,
+    "deaths": {
+     "bankrupt@8": 50,
+     "bankrupt@12": 17,
+     "bankrupt@16": 1
+    }
+   },
+   "P3_iyi_hic_ev": {
+    "kasa": 7752,
+    "p10": 6371,
+    "kayip": 0.0,
+    "prestij": 91.7,
+    "gelir": 12868,
+    "upg": 0,
+    "idle%": 16.7,
+    "erken%": 95.9,
+    "kayipMusteri/gun": 1.15,
+    "deaths": {}
+   },
+   "P3_iyi_mantikli_ev": {
+    "kasa": 3761,
+    "p10": 1818,
+    "kayip": 2.8,
+    "prestij": 92.7,
+    "gelir": 17672,
+    "upg": 9362,
+    "idle%": 18.3,
+    "erken%": 96.1,
+    "kayipMusteri/gun": 1.6,
+    "deaths": {
+     "bankrupt@8": 6,
+     "bankrupt@12": 1
+    }
+   },
+   "P4_zayif_hic_ev": {
+    "kasa": 1432,
+    "p10": 344,
+    "kayip": 61.2,
+    "prestij": 44.0,
+    "gelir": 5730,
+    "upg": 0,
+    "idle%": 26.4,
+    "erken%": 64.1,
+    "kayipMusteri/gun": 2.28,
+    "deaths": {
+     "bankrupt@12": 112,
+     "bankrupt@16": 15,
+     "bankrupt@8": 26
+    }
+   },
+   "P4_zayif_mantikli_ev": {
+    "kasa": 1559,
+    "p10": 1195,
+    "kayip": 100.0,
+    "prestij": 34.9,
+    "gelir": 2906,
+    "upg": 680,
+    "idle%": 25.9,
+    "erken%": 70.6,
+    "kayipMusteri/gun": 2.28,
+    "deaths": {
+     "bankrupt@8": 210,
+     "bankrupt@12": 38,
+     "bankrupt@16": 2
+    }
+   },
+   "P4_orta_hic_ev": {
+    "kasa": 4576,
+    "p10": 3147,
+    "kayip": 0.0,
+    "prestij": 78.2,
+    "gelir": 12532,
+    "upg": 0,
+    "idle%": 20.9,
+    "erken%": 93.7,
+    "kayipMusteri/gun": 1.62,
+    "deaths": {}
+   },
+   "P4_orta_mantikli_ev": {
+    "kasa": 1532,
+    "p10": 369,
+    "kayip": 53.6,
+    "prestij": 64.0,
+    "gelir": 9910,
+    "upg": 4369,
+    "idle%": 20.6,
+    "erken%": 94.7,
+    "kayipMusteri/gun": 1.85,
+    "deaths": {
+     "bankrupt@8": 83,
+     "bankrupt@12": 45,
+     "bankrupt@16": 6
+    }
+   },
+   "P4_iyi_hic_ev": {
+    "kasa": 8520,
+    "p10": 6804,
+    "kayip": 0.0,
+    "prestij": 96.3,
+    "gelir": 16100,
+    "upg": 0,
+    "idle%": 20.2,
+    "erken%": 97.4,
+    "kayipMusteri/gun": 1.16,
+    "deaths": {}
+   },
+   "P4_iyi_mantikli_ev": {
+    "kasa": 3796,
+    "p10": 1771,
+    "kayip": 8.0,
+    "prestij": 93.5,
+    "gelir": 20164,
+    "upg": 9945,
+    "idle%": 20.8,
+    "erken%": 98.0,
+    "kayipMusteri/gun": 1.66,
+    "deaths": {
+     "bankrupt@12": 3,
+     "bankrupt@8": 17
+    }
+   }
+  },
+  "payback": {
+   "Geniş Ambar": {
+    "id": "wide_storage",
+    "cost": 300,
+    "gain_total": 13,
+    "gain_per_day": 0.8,
+    "payback_days": 353.8,
+    "finalMoney": 3056,
+    "base_finalMoney": 3351,
+    "finalPrestige": 54.83072,
+    "deathRate": 0.0
+   },
+   "Paketleme İstasyonu": {
+    "id": "packing_station",
+    "cost": 300,
+    "gain_total": -203,
+    "gain_per_day": -13.5,
+    "payback_days": null,
+    "finalMoney": 2844,
+    "base_finalMoney": 3351,
+    "finalPrestige": 49.1992,
+    "deathRate": 0.0
+   },
+   "Ek Hangar": {
+    "id": "extra_hangar",
+    "cost": 400,
+    "gain_total": 840,
+    "gain_per_day": 56.0,
+    "payback_days": 7.1,
+    "finalMoney": 3782,
+    "base_finalMoney": 3351,
+    "finalPrestige": 49.47856,
+    "deathRate": 0.0
+   },
+   "Görev Kademesi": {
+    "id": "quest_tier",
+    "cost": 180,
+    "gain_total": -28,
+    "gain_per_day": -1.9,
+    "payback_days": null,
+    "finalMoney": 3133,
+    "base_finalMoney": 3351,
+    "finalPrestige": 54.67632,
+    "deathRate": 0.0
+   },
+   "Ucuz Kira": {
+    "id": "cheap_rent",
+    "cost": 960,
+    "gain_total": 523,
+    "gain_per_day": 34.9,
+    "payback_days": 27.5,
+    "finalMoney": 2896,
+    "base_finalMoney": 3351,
+    "finalPrestige": 52.9648,
+    "deathRate": 0.068
+   },
+   "Prestij Simsarı": {
+    "id": "prestige_broker",
+    "cost": 550,
+    "gain_total": 384,
+    "gain_per_day": 25.6,
+    "payback_days": 21.5,
+    "finalMoney": 3178,
+    "base_finalMoney": 3351,
+    "finalPrestige": 54.74368,
+    "deathRate": 0.004
+   },
+   "Prestij Ustası": {
+    "id": "prestige_master",
+    "cost": 750,
+    "gain_total": 734,
+    "gain_per_day": 48.9,
+    "payback_days": 15.3,
+    "finalMoney": 3331,
+    "base_finalMoney": 3351,
+    "finalPrestige": 79.91136,
+    "deathRate": 0.004
+   },
+   "Hızlı Hangar": {
+    "id": "fast_hangar",
+    "cost": 240,
+    "gain_total": 48,
+    "gain_per_day": 3.2,
+    "payback_days": 75.5,
+    "finalMoney": 3152,
+    "base_finalMoney": 3351,
+    "finalPrestige": 54.29312,
+    "deathRate": 0.0
+   },
+   "Enerjik Ekip": {
+    "id": "energetic_crew",
+    "cost": 200,
+    "gain_total": 88,
+    "gain_per_day": 5.9,
+    "payback_days": 34.0,
+    "finalMoney": 3237,
+    "base_finalMoney": 3351,
+    "finalPrestige": 56.6792,
+    "deathRate": 0.0
+   },
+   "Çevik Ekip": {
+    "id": "agile_crew",
+    "cost": 360,
+    "gain_total": 249,
+    "gain_per_day": 16.6,
+    "payback_days": 21.7,
+    "finalMoney": 3243,
+    "base_finalMoney": 3351,
+    "finalPrestige": 57.24672,
+    "deathRate": 0.0
+   },
+   "Sabırlı Müşteriler": {
+    "id": "patient_customers",
+    "cost": 240,
+    "gain_total": 47,
+    "gain_per_day": 3.1,
+    "payback_days": 76.9,
+    "finalMoney": 3149,
+    "base_finalMoney": 3351,
+    "finalPrestige": 55.30272,
+    "deathRate": 0.0
+   },
+   "Kumarbaz Kasası": {
+    "id": "gambler_case",
+    "cost": 700,
+    "gain_total": 1096,
+    "gain_per_day": 73.0,
+    "payback_days": 9.6,
+    "finalMoney": 3739,
+    "base_finalMoney": 3351,
+    "finalPrestige": 55.03984,
+    "deathRate": 0.008
+   },
+   "Telefon Hattı": {
+    "id": "phone_line",
+    "cost": 320,
+    "gain_total": 59,
+    "gain_per_day": 3.9,
+    "payback_days": 81.2,
+    "finalMoney": 3084,
+    "base_finalMoney": 3351,
+    "finalPrestige": 55.85392,
+    "deathRate": 0.0
+   },
+   "Mesai Saati": {
+    "id": "overtime",
+    "cost": 600,
+    "gain_total": 39,
+    "gain_per_day": 2.6,
+    "payback_days": 231.5,
+    "finalMoney": 2785,
+    "base_finalMoney": 3351,
+    "finalPrestige": 52.92624,
+    "deathRate": 0.02
+   },
+   "Kaldıraçlı Kira": {
+    "id": "leveraged_rent",
+    "cost": 600,
+    "gain_total": 830,
+    "gain_per_day": 55.3,
+    "payback_days": 10.8,
+    "finalMoney": 3574,
+    "base_finalMoney": 3351,
+    "finalPrestige": 54.1864,
+    "deathRate": 0.02
+   },
+   "Yüksek Volatilite": {
+    "id": "high_volatility",
+    "cost": 640,
+    "gain_total": 846,
+    "gain_per_day": 56.4,
+    "payback_days": 11.3,
+    "finalMoney": 3544,
+    "base_finalMoney": 3351,
+    "finalPrestige": 54.98368,
+    "deathRate": 0.0
+   },
+   "Acil Fren": {
+    "id": "emergency_brake",
+    "cost": 500,
+    "gain_total": 30,
+    "gain_per_day": 2.0,
+    "payback_days": 254.1,
+    "finalMoney": 2873,
+    "base_finalMoney": 3351,
+    "finalPrestige": 54.82272,
+    "deathRate": 0.0
+   },
+   "Kelle Koltukta": {
+    "id": "all_in",
+    "cost": 640,
+    "gain_total": 675,
+    "gain_per_day": 45.0,
+    "payback_days": 14.2,
+    "finalMoney": 3356,
+    "base_finalMoney": 3351,
+    "finalPrestige": 51.10816,
+    "deathRate": 0.128
+   },
+   "Toplu Alım": {
+    "id": "bulk_buy",
+    "cost": 160,
+    "gain_total": 10,
+    "gain_per_day": 0.7,
+    "payback_days": 238.1,
+    "finalMoney": 3193,
+    "base_finalMoney": 3351,
+    "finalPrestige": 54.83072,
+    "deathRate": 0.0
+   }
+  }
+ },
+ "A2": {
+  "desc": "upgrade P-maliyet çarpanı {1,2,2.95,3.7} → {1,1.6,2.1,2.5}",
+  "overrides": [
+   "economy.upgradeCostMultiplierByPlayerCount=[1.0,1.6,2.1,2.5]"
+  ],
+  "cells": {
+   "P1_zayif_hic_ev": {
+    "kasa": 217,
+    "p10": 49,
+    "kayip": 19.6,
+    "prestij": 12.8,
+    "gelir": 1286,
+    "upg": 0,
+    "idle%": 12.7,
+    "erken%": 84.9,
+    "kayipMusteri/gun": 2.06,
+    "deaths": {
+     "bankrupt@16": 40,
+     "bankrupt@12": 9
+    }
+   },
+   "P1_zayif_mantikli_ev": {
+    "kasa": 246,
+    "p10": 109,
+    "kayip": 99.2,
+    "prestij": 14.1,
+    "gelir": 621,
+    "upg": 432,
+    "idle%": 13.0,
+    "erken%": 87.4,
+    "kayipMusteri/gun": 2.07,
+    "deaths": {
+     "bankrupt@8": 146,
+     "bankrupt@12": 81,
+     "bankrupt@16": 21
+    }
+   },
+   "P1_orta_hic_ev": {
+    "kasa": 1127,
+    "p10": 674,
+    "kayip": 0.0,
+    "prestij": 25.0,
+    "gelir": 2264,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 89.5,
+    "kayipMusteri/gun": 1.64,
+    "deaths": {}
+   },
+   "P1_orta_mantikli_ev": {
+    "kasa": 252,
+    "p10": 51,
+    "kayip": 62.4,
+    "prestij": 23.4,
+    "gelir": 1773,
+    "upg": 1147,
+    "idle%": 12.4,
+    "erken%": 89.8,
+    "kayipMusteri/gun": 1.62,
+    "deaths": {
+     "bankrupt@8": 71,
+     "bankrupt@12": 54,
+     "bankrupt@16": 31
+    }
+   },
+   "P1_iyi_hic_ev": {
+    "kasa": 2476,
+    "p10": 1852,
+    "kayip": 0.0,
+    "prestij": 37.7,
+    "gelir": 3412,
+    "upg": 0,
+    "idle%": 12.9,
+    "erken%": 91.3,
+    "kayipMusteri/gun": 1.11,
+    "deaths": {}
+   },
+   "P1_iyi_mantikli_ev": {
+    "kasa": 549,
+    "p10": 187,
+    "kayip": 18.8,
+    "prestij": 38.6,
+    "gelir": 3731,
+    "upg": 2574,
+    "idle%": 12.8,
+    "erken%": 93.5,
+    "kayipMusteri/gun": 1.16,
+    "deaths": {
+     "bankrupt@8": 25,
+     "bankrupt@12": 21,
+     "bankrupt@16": 1
+    }
+   },
+   "P2_zayif_hic_ev": {
+    "kasa": 463,
+    "p10": 119,
+    "kayip": 21.2,
+    "prestij": 24.8,
+    "gelir": 3144,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 49.0,
+    "kayipMusteri/gun": 3.27,
+    "deaths": {
+     "bankrupt@16": 15,
+     "bankrupt@12": 36,
+     "bankrupt@8": 2
+    }
+   },
+   "P2_zayif_mantikli_ev": {
+    "kasa": 626,
+    "p10": 465,
+    "kayip": 98.0,
+    "prestij": 23.6,
+    "gelir": 1490,
+    "upg": 598,
+    "idle%": 13.4,
+    "erken%": 50.1,
+    "kayipMusteri/gun": 3.25,
+    "deaths": {
+     "bankrupt@8": 179,
+     "bankrupt@12": 60,
+     "bankrupt@16": 6
+    }
+   },
+   "P2_orta_hic_ev": {
+    "kasa": 3380,
+    "p10": 2614,
+    "kayip": 0.0,
+    "prestij": 54.1,
+    "gelir": 6365,
+    "upg": 0,
+    "idle%": 11.9,
+    "erken%": 74.4,
+    "kayipMusteri/gun": 2.07,
+    "deaths": {}
+   },
+   "P2_orta_mantikli_ev": {
+    "kasa": 981,
+    "p10": 434,
+    "kayip": 24.4,
+    "prestij": 49.6,
+    "gelir": 6723,
+    "upg": 3655,
+    "idle%": 12.7,
+    "erken%": 80.8,
+    "kayipMusteri/gun": 2.51,
+    "deaths": {
+     "bankrupt@12": 11,
+     "bankrupt@8": 49,
+     "bankrupt@16": 1
+    }
+   },
+   "P2_iyi_hic_ev": {
+    "kasa": 6619,
+    "p10": 5622,
+    "kayip": 0.0,
+    "prestij": 76.9,
+    "gelir": 9250,
+    "upg": 0,
+    "idle%": 12.6,
+    "erken%": 88.8,
+    "kayipMusteri/gun": 1.29,
+    "deaths": {}
+   },
+   "P2_iyi_mantikli_ev": {
+    "kasa": 5282,
+    "p10": 2959,
+    "kayip": 1.6,
+    "prestij": 80.5,
+    "gelir": 13642,
+    "upg": 6136,
+    "idle%": 14.9,
+    "erken%": 92.6,
+    "kayipMusteri/gun": 1.82,
+    "deaths": {
+     "bankrupt@8": 4
+    }
+   },
+   "P3_zayif_hic_ev": {
+    "kasa": 904,
+    "p10": 170,
+    "kayip": 45.6,
+    "prestij": 41.3,
+    "gelir": 4704,
+    "upg": 0,
+    "idle%": 19.3,
+    "erken%": 46.1,
+    "kayipMusteri/gun": 2.3,
+    "deaths": {
+     "bankrupt@16": 28,
+     "bankrupt@12": 81,
+     "bankrupt@8": 5
+    }
+   },
+   "P3_zayif_mantikli_ev": {
+    "kasa": 1091,
+    "p10": 822,
+    "kayip": 100.0,
+    "prestij": 32.0,
+    "gelir": 2333,
+    "upg": 772,
+    "idle%": 17.6,
+    "erken%": 48.2,
+    "kayipMusteri/gun": 2.38,
+    "deaths": {
+     "bankrupt@12": 41,
+     "bankrupt@8": 204,
+     "bankrupt@16": 5
+    }
+   },
+   "P3_orta_hic_ev": {
+    "kasa": 4456,
+    "p10": 3462,
+    "kayip": 0.0,
+    "prestij": 71.4,
+    "gelir": 9968,
+    "upg": 0,
+    "idle%": 16.7,
+    "erken%": 87.8,
+    "kayipMusteri/gun": 1.67,
+    "deaths": {}
+   },
+   "P3_orta_mantikli_ev": {
+    "kasa": 1912,
+    "p10": 871,
+    "kayip": 22.8,
+    "prestij": 66.4,
+    "gelir": 10872,
+    "upg": 4948,
+    "idle%": 17.5,
+    "erken%": 90.4,
+    "kayipMusteri/gun": 2.04,
+    "deaths": {
+     "bankrupt@8": 41,
+     "bankrupt@12": 16
+    }
+   },
+   "P3_iyi_hic_ev": {
+    "kasa": 7752,
+    "p10": 6371,
+    "kayip": 0.0,
+    "prestij": 91.7,
+    "gelir": 12868,
+    "upg": 0,
+    "idle%": 16.7,
+    "erken%": 95.9,
+    "kayipMusteri/gun": 1.15,
+    "deaths": {}
+   },
+   "P3_iyi_mantikli_ev": {
+    "kasa": 6958,
+    "p10": 4591,
+    "kayip": 0.4,
+    "prestij": 96.5,
+    "gelir": 19366,
+    "upg": 8007,
+    "idle%": 18.6,
+    "erken%": 97.2,
+    "kayipMusteri/gun": 1.63,
+    "deaths": {
+     "bankrupt@8": 1
+    }
+   },
+   "P4_zayif_hic_ev": {
+    "kasa": 1432,
+    "p10": 344,
+    "kayip": 61.2,
+    "prestij": 44.0,
+    "gelir": 5730,
+    "upg": 0,
+    "idle%": 26.4,
+    "erken%": 64.1,
+    "kayipMusteri/gun": 2.28,
+    "deaths": {
+     "bankrupt@12": 112,
+     "bankrupt@16": 15,
+     "bankrupt@8": 26
+    }
+   },
+   "P4_zayif_mantikli_ev": {
+    "kasa": 1524,
+    "p10": 1105,
+    "kayip": 99.6,
+    "prestij": 34.2,
+    "gelir": 3015,
+    "upg": 847,
+    "idle%": 25.7,
+    "erken%": 65.0,
+    "kayipMusteri/gun": 2.29,
+    "deaths": {
+     "bankrupt@8": 216,
+     "bankrupt@12": 30,
+     "bankrupt@16": 3
+    }
+   },
+   "P4_orta_hic_ev": {
+    "kasa": 4576,
+    "p10": 3147,
+    "kayip": 0.0,
+    "prestij": 78.2,
+    "gelir": 12532,
+    "upg": 0,
+    "idle%": 20.9,
+    "erken%": 93.7,
+    "kayipMusteri/gun": 1.62,
+    "deaths": {}
+   },
+   "P4_orta_mantikli_ev": {
+    "kasa": 2136,
+    "p10": 1183,
+    "kayip": 41.6,
+    "prestij": 66.8,
+    "gelir": 11726,
+    "upg": 4989,
+    "idle%": 21.2,
+    "erken%": 95.1,
+    "kayipMusteri/gun": 2.05,
+    "deaths": {
+     "bankrupt@8": 69,
+     "bankrupt@12": 34,
+     "bankrupt@16": 1
+    }
+   },
+   "P4_iyi_hic_ev": {
+    "kasa": 8520,
+    "p10": 6804,
+    "kayip": 0.0,
+    "prestij": 96.3,
+    "gelir": 16100,
+    "upg": 0,
+    "idle%": 20.2,
+    "erken%": 97.4,
+    "kayipMusteri/gun": 1.16,
+    "deaths": {}
+   },
+   "P4_iyi_mantikli_ev": {
+    "kasa": 7129,
+    "p10": 4127,
+    "kayip": 1.6,
+    "prestij": 97.2,
+    "gelir": 22688,
+    "upg": 9058,
+    "idle%": 21.0,
+    "erken%": 98.7,
+    "kayipMusteri/gun": 1.71,
+    "deaths": {
+     "bankrupt@8": 3,
+     "bankrupt@12": 1
+    }
+   }
+  }
+ },
+ "A3": {
+  "desc": "ölü kartların fiyatı amortisman hedefine çekildi (≤12 gün)",
+  "overrides": [
+   "upgrades.13.baseCost=120",
+   "upgrades.16.baseCost=90",
+   "upgrades.0.baseCost=25",
+   "upgrades.0.costStep=10",
+   "upgrades.3.baseCost=40",
+   "upgrades.3.costStep=10",
+   "upgrades.18.baseCost=30",
+   "upgrades.10.baseCost=60",
+   "upgrades.12.baseCost=60",
+   "upgrades.5.baseCost=80",
+   "upgrades.5.costStep=10",
+   "upgrades.4.baseCost=70",
+   "upgrades.4.costStep=15",
+   "upgrades.8.baseCost=55",
+   "upgrades.9.baseCost=110"
+  ],
+  "cells": {
+   "P1_zayif_hic_ev": {
+    "kasa": 217,
+    "p10": 49,
+    "kayip": 19.6,
+    "prestij": 12.8,
+    "gelir": 1286,
+    "upg": 0,
+    "idle%": 12.7,
+    "erken%": 84.9,
+    "kayipMusteri/gun": 2.06,
+    "deaths": {
+     "bankrupt@16": 40,
+     "bankrupt@12": 9
+    }
+   },
+   "P1_zayif_mantikli_ev": {
+    "kasa": 310,
+    "p10": 202,
+    "kayip": 90.0,
+    "prestij": 11.7,
+    "gelir": 967,
+    "upg": 668,
+    "idle%": 12.4,
+    "erken%": 88.7,
+    "kayipMusteri/gun": 2.08,
+    "deaths": {
+     "bankrupt@12": 168,
+     "bankrupt@16": 57
+    }
+   },
+   "P1_orta_hic_ev": {
+    "kasa": 1127,
+    "p10": 674,
+    "kayip": 0.0,
+    "prestij": 25.0,
+    "gelir": 2264,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 89.5,
+    "kayipMusteri/gun": 1.64,
+    "deaths": {}
+   },
+   "P1_orta_mantikli_ev": {
+    "kasa": 272,
+    "p10": 50,
+    "kayip": 16.4,
+    "prestij": 26.1,
+    "gelir": 2655,
+    "upg": 1739,
+    "idle%": 12.1,
+    "erken%": 91.9,
+    "kayipMusteri/gun": 1.55,
+    "deaths": {
+     "bankrupt@16": 20,
+     "bankrupt@12": 21
+    }
+   },
+   "P1_iyi_hic_ev": {
+    "kasa": 2476,
+    "p10": 1852,
+    "kayip": 0.0,
+    "prestij": 37.7,
+    "gelir": 3412,
+    "upg": 0,
+    "idle%": 12.9,
+    "erken%": 91.3,
+    "kayipMusteri/gun": 1.11,
+    "deaths": {}
+   },
+   "P1_iyi_mantikli_ev": {
+    "kasa": 1425,
+    "p10": 473,
+    "kayip": 0.8,
+    "prestij": 41.8,
+    "gelir": 4717,
+    "upg": 2649,
+    "idle%": 13.0,
+    "erken%": 95.6,
+    "kayipMusteri/gun": 1.22,
+    "deaths": {
+     "bankrupt@12": 2
+    }
+   },
+   "P2_zayif_hic_ev": {
+    "kasa": 463,
+    "p10": 119,
+    "kayip": 21.2,
+    "prestij": 24.8,
+    "gelir": 3144,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 49.0,
+    "kayipMusteri/gun": 3.27,
+    "deaths": {
+     "bankrupt@16": 15,
+     "bankrupt@12": 36,
+     "bankrupt@8": 2
+    }
+   },
+   "P2_zayif_mantikli_ev": {
+    "kasa": 633,
+    "p10": 445,
+    "kayip": 94.8,
+    "prestij": 24.2,
+    "gelir": 1687,
+    "upg": 730,
+    "idle%": 12.7,
+    "erken%": 63.2,
+    "kayipMusteri/gun": 3.19,
+    "deaths": {
+     "bankrupt@8": 160,
+     "bankrupt@12": 61,
+     "bankrupt@16": 16
+    }
+   },
+   "P2_orta_hic_ev": {
+    "kasa": 3380,
+    "p10": 2614,
+    "kayip": 0.0,
+    "prestij": 54.1,
+    "gelir": 6365,
+    "upg": 0,
+    "idle%": 11.9,
+    "erken%": 74.4,
+    "kayipMusteri/gun": 2.07,
+    "deaths": {}
+   },
+   "P2_orta_mantikli_ev": {
+    "kasa": 1126,
+    "p10": 416,
+    "kayip": 14.8,
+    "prestij": 52.3,
+    "gelir": 7232,
+    "upg": 3942,
+    "idle%": 13.0,
+    "erken%": 89.4,
+    "kayipMusteri/gun": 2.38,
+    "deaths": {
+     "bankrupt@12": 11,
+     "bankrupt@8": 26
+    }
+   },
+   "P2_iyi_hic_ev": {
+    "kasa": 6619,
+    "p10": 5622,
+    "kayip": 0.0,
+    "prestij": 76.9,
+    "gelir": 9250,
+    "upg": 0,
+    "idle%": 12.6,
+    "erken%": 88.8,
+    "kayipMusteri/gun": 1.29,
+    "deaths": {}
+   },
+   "P2_iyi_mantikli_ev": {
+    "kasa": 5998,
+    "p10": 3823,
+    "kayip": 0.0,
+    "prestij": 80.2,
+    "gelir": 13718,
+    "upg": 5556,
+    "idle%": 14.9,
+    "erken%": 94.8,
+    "kayipMusteri/gun": 1.8,
+    "deaths": {}
+   },
+   "P3_zayif_hic_ev": {
+    "kasa": 904,
+    "p10": 170,
+    "kayip": 45.6,
+    "prestij": 41.3,
+    "gelir": 4704,
+    "upg": 0,
+    "idle%": 19.3,
+    "erken%": 46.1,
+    "kayipMusteri/gun": 2.3,
+    "deaths": {
+     "bankrupt@16": 28,
+     "bankrupt@12": 81,
+     "bankrupt@8": 5
+    }
+   },
+   "P3_zayif_mantikli_ev": {
+    "kasa": 1097,
+    "p10": 825,
+    "kayip": 98.0,
+    "prestij": 33.3,
+    "gelir": 2473,
+    "upg": 863,
+    "idle%": 19.5,
+    "erken%": 53.5,
+    "kayipMusteri/gun": 2.27,
+    "deaths": {
+     "bankrupt@8": 193,
+     "bankrupt@12": 42,
+     "bankrupt@16": 10
+    }
+   },
+   "P3_orta_hic_ev": {
+    "kasa": 4456,
+    "p10": 3462,
+    "kayip": 0.0,
+    "prestij": 71.4,
+    "gelir": 9968,
+    "upg": 0,
+    "idle%": 16.7,
+    "erken%": 87.8,
+    "kayipMusteri/gun": 1.67,
+    "deaths": {}
+   },
+   "P3_orta_mantikli_ev": {
+    "kasa": 1762,
+    "p10": 765,
+    "kayip": 19.2,
+    "prestij": 68.8,
+    "gelir": 10823,
+    "upg": 5213,
+    "idle%": 17.4,
+    "erken%": 92.7,
+    "kayipMusteri/gun": 1.89,
+    "deaths": {
+     "bankrupt@8": 31,
+     "bankrupt@12": 17
+    }
+   },
+   "P3_iyi_hic_ev": {
+    "kasa": 7752,
+    "p10": 6371,
+    "kayip": 0.0,
+    "prestij": 91.7,
+    "gelir": 12868,
+    "upg": 0,
+    "idle%": 16.7,
+    "erken%": 95.9,
+    "kayipMusteri/gun": 1.15,
+    "deaths": {}
+   },
+   "P3_iyi_mantikli_ev": {
+    "kasa": 6267,
+    "p10": 3622,
+    "kayip": 0.8,
+    "prestij": 93.6,
+    "gelir": 18644,
+    "upg": 8020,
+    "idle%": 18.3,
+    "erken%": 97.8,
+    "kayipMusteri/gun": 1.61,
+    "deaths": {
+     "bankrupt@8": 1,
+     "bankrupt@12": 1
+    }
+   },
+   "P4_zayif_hic_ev": {
+    "kasa": 1432,
+    "p10": 344,
+    "kayip": 61.2,
+    "prestij": 44.0,
+    "gelir": 5730,
+    "upg": 0,
+    "idle%": 26.4,
+    "erken%": 64.1,
+    "kayipMusteri/gun": 2.28,
+    "deaths": {
+     "bankrupt@12": 112,
+     "bankrupt@16": 15,
+     "bankrupt@8": 26
+    }
+   },
+   "P4_zayif_mantikli_ev": {
+    "kasa": 1520,
+    "p10": 1179,
+    "kayip": 100.0,
+    "prestij": 34.8,
+    "gelir": 2789,
+    "upg": 777,
+    "idle%": 23.9,
+    "erken%": 63.8,
+    "kayipMusteri/gun": 1.87,
+    "deaths": {
+     "bankrupt@8": 227,
+     "bankrupt@12": 22,
+     "bankrupt@16": 1
+    }
+   },
+   "P4_orta_hic_ev": {
+    "kasa": 4576,
+    "p10": 3147,
+    "kayip": 0.0,
+    "prestij": 78.2,
+    "gelir": 12532,
+    "upg": 0,
+    "idle%": 20.9,
+    "erken%": 93.7,
+    "kayipMusteri/gun": 1.62,
+    "deaths": {}
+   },
+   "P4_orta_mantikli_ev": {
+    "kasa": 2083,
+    "p10": 826,
+    "kayip": 28.0,
+    "prestij": 73.4,
+    "gelir": 12853,
+    "upg": 5736,
+    "idle%": 20.8,
+    "erken%": 96.9,
+    "kayipMusteri/gun": 1.78,
+    "deaths": {
+     "bankrupt@8": 41,
+     "bankrupt@12": 27,
+     "bankrupt@16": 2
+    }
+   },
+   "P4_iyi_hic_ev": {
+    "kasa": 8520,
+    "p10": 6804,
+    "kayip": 0.0,
+    "prestij": 96.3,
+    "gelir": 16100,
+    "upg": 0,
+    "idle%": 20.2,
+    "erken%": 97.4,
+    "kayipMusteri/gun": 1.16,
+    "deaths": {}
+   },
+   "P4_iyi_mantikli_ev": {
+    "kasa": 5944,
+    "p10": 3389,
+    "kayip": 0.8,
+    "prestij": 97.0,
+    "gelir": 21932,
+    "upg": 9499,
+    "idle%": 20.9,
+    "erken%": 98.9,
+    "kayipMusteri/gun": 1.66,
+    "deaths": {
+     "bankrupt@8": 2
+    }
+   }
+  },
+  "payback": {
+   "Geniş Ambar": {
+    "id": "wide_storage",
+    "cost": 120,
+    "gain_total": 10,
+    "gain_per_day": 0.7,
+    "payback_days": 178.6,
+    "finalMoney": 3233,
+    "base_finalMoney": 3351,
+    "finalPrestige": 54.83072,
+    "deathRate": 0.0
+   },
+   "Paketleme İstasyonu": {
+    "id": "packing_station",
+    "cost": 300,
+    "gain_total": -203,
+    "gain_per_day": -13.5,
+    "payback_days": null,
+    "finalMoney": 2844,
+    "base_finalMoney": 3351,
+    "finalPrestige": 49.1992,
+    "deathRate": 0.0
+   },
+   "Ek Hangar": {
+    "id": "extra_hangar",
+    "cost": 400,
+    "gain_total": 840,
+    "gain_per_day": 56.0,
+    "payback_days": 7.1,
+    "finalMoney": 3782,
+    "base_finalMoney": 3351,
+    "finalPrestige": 49.47856,
+    "deathRate": 0.0
+   },
+   "Görev Kademesi": {
+    "id": "quest_tier",
+    "cost": 90,
+    "gain_total": -29,
+    "gain_per_day": -1.9,
+    "payback_days": null,
+    "finalMoney": 3223,
+    "base_finalMoney": 3351,
+    "finalPrestige": 54.67632,
+    "deathRate": 0.0
+   },
+   "Ucuz Kira": {
+    "id": "cheap_rent",
+    "cost": 510,
+    "gain_total": 450,
+    "gain_per_day": 30.0,
+    "payback_days": 17.0,
+    "finalMoney": 3283,
+    "base_finalMoney": 3351,
+    "finalPrestige": 54.74368,
+    "deathRate": 0.004
+   },
+   "Prestij Simsarı": {
+    "id": "prestige_broker",
+    "cost": 340,
+    "gain_total": 367,
+    "gain_per_day": 24.5,
+    "payback_days": 13.9,
+    "finalMoney": 3370,
+    "base_finalMoney": 3351,
+    "finalPrestige": 54.83072,
+    "deathRate": 0.0
+   },
+   "Prestij Ustası": {
+    "id": "prestige_master",
+    "cost": 750,
+    "gain_total": 734,
+    "gain_per_day": 48.9,
+    "payback_days": 15.3,
+    "finalMoney": 3331,
+    "base_finalMoney": 3351,
+    "finalPrestige": 79.91136,
+    "deathRate": 0.004
+   },
+   "Hızlı Hangar": {
+    "id": "fast_hangar",
+    "cost": 240,
+    "gain_total": -118,
+    "gain_per_day": -7.8,
+    "payback_days": null,
+    "finalMoney": 2995,
+    "base_finalMoney": 3351,
+    "finalPrestige": 55.39888,
+    "deathRate": 0.0
+   },
+   "Enerjik Ekip": {
+    "id": "energetic_crew",
+    "cost": 110,
+    "gain_total": 88,
+    "gain_per_day": 5.9,
+    "payback_days": 18.8,
+    "finalMoney": 3327,
+    "base_finalMoney": 3351,
+    "finalPrestige": 56.6792,
+    "deathRate": 0.0
+   },
+   "Çevik Ekip": {
+    "id": "agile_crew",
+    "cost": 220,
+    "gain_total": 247,
+    "gain_per_day": 16.4,
+    "payback_days": 13.4,
+    "finalMoney": 3380,
+    "base_finalMoney": 3351,
+    "finalPrestige": 57.24672,
+    "deathRate": 0.0
+   },
+   "Sabırlı Müşteriler": {
+    "id": "patient_customers",
+    "cost": 120,
+    "gain_total": 45,
+    "gain_per_day": 3.0,
+    "payback_days": 39.7,
+    "finalMoney": 3268,
+    "base_finalMoney": 3351,
+    "finalPrestige": 55.30272,
+    "deathRate": 0.0
+   },
+   "Kumarbaz Kasası": {
+    "id": "gambler_case",
+    "cost": 700,
+    "gain_total": 1096,
+    "gain_per_day": 73.0,
+    "payback_days": 9.6,
+    "finalMoney": 3739,
+    "base_finalMoney": 3351,
+    "finalPrestige": 55.03984,
+    "deathRate": 0.008
+   },
+   "Telefon Hattı": {
+    "id": "phone_line",
+    "cost": 120,
+    "gain_total": 59,
+    "gain_per_day": 3.9,
+    "payback_days": 30.4,
+    "finalMoney": 3284,
+    "base_finalMoney": 3351,
+    "finalPrestige": 55.85392,
+    "deathRate": 0.0
+   },
+   "Mesai Saati": {
+    "id": "overtime",
+    "cost": 240,
+    "gain_total": 26,
+    "gain_per_day": 1.7,
+    "payback_days": 139.6,
+    "finalMoney": 3130,
+    "base_finalMoney": 3351,
+    "finalPrestige": 53.31376,
+    "deathRate": 0.0
+   },
+   "Kaldıraçlı Kira": {
+    "id": "leveraged_rent",
+    "cost": 600,
+    "gain_total": 830,
+    "gain_per_day": 55.3,
+    "payback_days": 10.8,
+    "finalMoney": 3574,
+    "base_finalMoney": 3351,
+    "finalPrestige": 54.1864,
+    "deathRate": 0.02
+   },
+   "Yüksek Volatilite": {
+    "id": "high_volatility",
+    "cost": 640,
+    "gain_total": 846,
+    "gain_per_day": 56.4,
+    "payback_days": 11.3,
+    "finalMoney": 3544,
+    "base_finalMoney": 3351,
+    "finalPrestige": 54.98368,
+    "deathRate": 0.0
+   },
+   "Acil Fren": {
+    "id": "emergency_brake",
+    "cost": 180,
+    "gain_total": 10,
+    "gain_per_day": 0.7,
+    "payback_days": 267.9,
+    "finalMoney": 3173,
+    "base_finalMoney": 3351,
+    "finalPrestige": 54.83072,
+    "deathRate": 0.0
+   },
+   "Kelle Koltukta": {
+    "id": "all_in",
+    "cost": 640,
+    "gain_total": 675,
+    "gain_per_day": 45.0,
+    "payback_days": 14.2,
+    "finalMoney": 3356,
+    "base_finalMoney": 3351,
+    "finalPrestige": 51.10816,
+    "deathRate": 0.128
+   },
+   "Toplu Alım": {
+    "id": "bulk_buy",
+    "cost": 60,
+    "gain_total": 10,
+    "gain_per_day": 0.7,
+    "payback_days": 89.3,
+    "finalMoney": 3293,
+    "base_finalMoney": 3351,
+    "finalPrestige": 54.83072,
+    "deathRate": 0.0
+   }
+  }
+ },
+ "B1": {
+  "desc": "kira eğrisi düzleştirme: g 1.20→1.12, taban {330,730,1280,1830} (16-gün toplamı sabit)",
+  "overrides": [
+   "economy.rentGrowthMultiplier=1.12",
+   "economy.baseRentByPlayerCount=[330,730,1280,1830]"
+  ],
+  "cells": {
+   "P1_zayif_hic_ev": {
+    "kasa": 210,
+    "p10": 41,
+    "kayip": 21.6,
+    "prestij": 12.8,
+    "gelir": 1266,
+    "upg": 0,
+    "idle%": 12.7,
+    "erken%": 84.8,
+    "kayipMusteri/gun": 2.06,
+    "deaths": {
+     "bankrupt@16": 35,
+     "bankrupt@12": 19
+    }
+   },
+   "P1_zayif_mantikli_ev": {
+    "kasa": 243,
+    "p10": 110,
+    "kayip": 100.0,
+    "prestij": 14.2,
+    "gelir": 574,
+    "upg": 391,
+    "idle%": 13.2,
+    "erken%": 85.0,
+    "kayipMusteri/gun": 2.1,
+    "deaths": {
+     "bankrupt@8": 154,
+     "bankrupt@16": 9,
+     "bankrupt@12": 87
+    }
+   },
+   "P1_orta_hic_ev": {
+    "kasa": 1108,
+    "p10": 653,
+    "kayip": 0.4,
+    "prestij": 25.0,
+    "gelir": 2263,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 89.5,
+    "kayipMusteri/gun": 1.64,
+    "deaths": {
+     "bankrupt@12": 1
+    }
+   },
+   "P1_orta_mantikli_ev": {
+    "kasa": 256,
+    "p10": 67,
+    "kayip": 66.8,
+    "prestij": 23.0,
+    "gelir": 1669,
+    "upg": 1061,
+    "idle%": 12.3,
+    "erken%": 88.9,
+    "kayipMusteri/gun": 1.63,
+    "deaths": {
+     "bankrupt@8": 88,
+     "bankrupt@12": 49,
+     "bankrupt@16": 30
+    }
+   },
+   "P1_iyi_hic_ev": {
+    "kasa": 2455,
+    "p10": 1834,
+    "kayip": 0.0,
+    "prestij": 37.7,
+    "gelir": 3412,
+    "upg": 0,
+    "idle%": 12.9,
+    "erken%": 91.3,
+    "kayipMusteri/gun": 1.11,
+    "deaths": {}
+   },
+   "P1_iyi_mantikli_ev": {
+    "kasa": 540,
+    "p10": 171,
+    "kayip": 23.6,
+    "prestij": 37.5,
+    "gelir": 3524,
+    "upg": 2427,
+    "idle%": 12.8,
+    "erken%": 93.4,
+    "kayipMusteri/gun": 1.17,
+    "deaths": {
+     "bankrupt@8": 38,
+     "bankrupt@12": 18,
+     "bankrupt@16": 3
+    }
+   },
+   "P2_zayif_hic_ev": {
+    "kasa": 489,
+    "p10": 122,
+    "kayip": 25.6,
+    "prestij": 24.7,
+    "gelir": 3023,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 49.0,
+    "kayipMusteri/gun": 3.28,
+    "deaths": {
+     "bankrupt@12": 53,
+     "bankrupt@16": 6,
+     "bankrupt@8": 5
+    }
+   },
+   "P2_zayif_mantikli_ev": {
+    "kasa": 644,
+    "p10": 459,
+    "kayip": 96.8,
+    "prestij": 24.0,
+    "gelir": 1595,
+    "upg": 508,
+    "idle%": 12.7,
+    "erken%": 50.9,
+    "kayipMusteri/gun": 3.15,
+    "deaths": {
+     "bankrupt@12": 67,
+     "bankrupt@8": 162,
+     "bankrupt@16": 13
+    }
+   },
+   "P2_orta_hic_ev": {
+    "kasa": 3379,
+    "p10": 2613,
+    "kayip": 0.0,
+    "prestij": 54.1,
+    "gelir": 6365,
+    "upg": 0,
+    "idle%": 11.9,
+    "erken%": 74.4,
+    "kayipMusteri/gun": 2.07,
+    "deaths": {}
+   },
+   "P2_orta_mantikli_ev": {
+    "kasa": 798,
+    "p10": 353,
+    "kayip": 35.2,
+    "prestij": 47.5,
+    "gelir": 5831,
+    "upg": 3166,
+    "idle%": 12.7,
+    "erken%": 76.6,
+    "kayipMusteri/gun": 2.37,
+    "deaths": {
+     "bankrupt@8": 68,
+     "bankrupt@12": 17,
+     "bankrupt@16": 3
+    }
+   },
+   "P2_iyi_hic_ev": {
+    "kasa": 6617,
+    "p10": 5621,
+    "kayip": 0.0,
+    "prestij": 76.9,
+    "gelir": 9250,
+    "upg": 0,
+    "idle%": 12.6,
+    "erken%": 88.8,
+    "kayipMusteri/gun": 1.29,
+    "deaths": {}
+   },
+   "P2_iyi_mantikli_ev": {
+    "kasa": 3548,
+    "p10": 1992,
+    "kayip": 2.0,
+    "prestij": 80.2,
+    "gelir": 12956,
+    "upg": 7076,
+    "idle%": 14.9,
+    "erken%": 92.0,
+    "kayipMusteri/gun": 1.76,
+    "deaths": {
+     "bankrupt@8": 4,
+     "bankrupt@12": 1
+    }
+   },
+   "P3_zayif_hic_ev": {
+    "kasa": 923,
+    "p10": 248,
+    "kayip": 52.4,
+    "prestij": 39.5,
+    "gelir": 4232,
+    "upg": 0,
+    "idle%": 19.4,
+    "erken%": 46.0,
+    "kayipMusteri/gun": 2.32,
+    "deaths": {
+     "bankrupt@8": 32,
+     "bankrupt@12": 92,
+     "bankrupt@16": 7
+    }
+   },
+   "P3_zayif_mantikli_ev": {
+    "kasa": 1126,
+    "p10": 877,
+    "kayip": 98.8,
+    "prestij": 32.1,
+    "gelir": 2198,
+    "upg": 539,
+    "idle%": 17.7,
+    "erken%": 47.6,
+    "kayipMusteri/gun": 2.3,
+    "deaths": {
+     "bankrupt@8": 209,
+     "bankrupt@12": 38
+    }
+   },
+   "P3_orta_hic_ev": {
+    "kasa": 4458,
+    "p10": 3464,
+    "kayip": 0.0,
+    "prestij": 71.4,
+    "gelir": 9968,
+    "upg": 0,
+    "idle%": 16.7,
+    "erken%": 87.8,
+    "kayipMusteri/gun": 1.67,
+    "deaths": {}
+   },
+   "P3_orta_mantikli_ev": {
+    "kasa": 1348,
+    "p10": 715,
+    "kayip": 38.4,
+    "prestij": 60.4,
+    "gelir": 9000,
+    "upg": 4255,
+    "idle%": 17.1,
+    "erken%": 88.9,
+    "kayipMusteri/gun": 2.01,
+    "deaths": {
+     "bankrupt@8": 72,
+     "bankrupt@12": 23,
+     "bankrupt@16": 1
+    }
+   },
+   "P3_iyi_hic_ev": {
+    "kasa": 7754,
+    "p10": 6373,
+    "kayip": 0.0,
+    "prestij": 91.7,
+    "gelir": 12868,
+    "upg": 0,
+    "idle%": 16.7,
+    "erken%": 95.9,
+    "kayipMusteri/gun": 1.15,
+    "deaths": {}
+   },
+   "P3_iyi_mantikli_ev": {
+    "kasa": 3755,
+    "p10": 1530,
+    "kayip": 5.2,
+    "prestij": 91.9,
+    "gelir": 17090,
+    "upg": 8917,
+    "idle%": 18.4,
+    "erken%": 95.9,
+    "kayipMusteri/gun": 1.58,
+    "deaths": {
+     "bankrupt@8": 12,
+     "bankrupt@12": 1
+    }
+   },
+   "P4_zayif_hic_ev": {
+    "kasa": 1480,
+    "p10": 609,
+    "kayip": 71.6,
+    "prestij": 41.5,
+    "gelir": 4897,
+    "upg": 0,
+    "idle%": 26.4,
+    "erken%": 63.5,
+    "kayipMusteri/gun": 2.29,
+    "deaths": {
+     "bankrupt@12": 101,
+     "bankrupt@8": 72,
+     "bankrupt@16": 6
+    }
+   },
+   "P4_zayif_mantikli_ev": {
+    "kasa": 1566,
+    "p10": 1183,
+    "kayip": 100.0,
+    "prestij": 34.2,
+    "gelir": 2740,
+    "upg": 532,
+    "idle%": 24.0,
+    "erken%": 63.7,
+    "kayipMusteri/gun": 2.28,
+    "deaths": {
+     "bankrupt@8": 230,
+     "bankrupt@12": 18,
+     "bankrupt@16": 2
+    }
+   },
+   "P4_orta_hic_ev": {
+    "kasa": 4592,
+    "p10": 3155,
+    "kayip": 0.0,
+    "prestij": 78.2,
+    "gelir": 12532,
+    "upg": 0,
+    "idle%": 20.9,
+    "erken%": 93.7,
+    "kayipMusteri/gun": 1.62,
+    "deaths": {}
+   },
+   "P4_orta_mantikli_ev": {
+    "kasa": 1626,
+    "p10": 731,
+    "kayip": 61.6,
+    "prestij": 59.8,
+    "gelir": 8733,
+    "upg": 3752,
+    "idle%": 21.1,
+    "erken%": 94.9,
+    "kayipMusteri/gun": 1.9,
+    "deaths": {
+     "bankrupt@8": 121,
+     "bankrupt@12": 32,
+     "bankrupt@16": 1
+    }
+   },
+   "P4_iyi_hic_ev": {
+    "kasa": 8523,
+    "p10": 6807,
+    "kayip": 0.0,
+    "prestij": 96.3,
+    "gelir": 16100,
+    "upg": 0,
+    "idle%": 20.2,
+    "erken%": 97.4,
+    "kayipMusteri/gun": 1.16,
+    "deaths": {}
+   },
+   "P4_iyi_mantikli_ev": {
+    "kasa": 3745,
+    "p10": 1666,
+    "kayip": 10.0,
+    "prestij": 92.4,
+    "gelir": 19524,
+    "upg": 9525,
+    "idle%": 21.0,
+    "erken%": 97.9,
+    "kayipMusteri/gun": 1.64,
+    "deaths": {
+     "bankrupt@8": 22,
+     "bankrupt@12": 3
+    }
+   }
+  }
+ },
+ "B2": {
+  "desc": "grace 2 kullanım (gün 8 duvarını yumuşat)",
+  "overrides": [
+   "economy.graceUses=2"
+  ],
+  "cells": {
+   "P1_zayif_hic_ev": {
+    "kasa": 167,
+    "p10": 46,
+    "kayip": 2.0,
+    "prestij": 12.7,
+    "gelir": 1304,
+    "upg": 0,
+    "idle%": 12.7,
+    "erken%": 85.0,
+    "kayipMusteri/gun": 2.06,
+    "deaths": {
+     "bankrupt@16": 5
+    }
+   },
+   "P1_zayif_mantikli_ev": {
+    "kasa": 287,
+    "p10": 82,
+    "kayip": 88.0,
+    "prestij": 13.3,
+    "gelir": 1024,
+    "upg": 488,
+    "idle%": 13.0,
+    "erken%": 85.6,
+    "kayipMusteri/gun": 2.07,
+    "deaths": {
+     "bankrupt@16": 92,
+     "bankrupt@12": 128
+    }
+   },
+   "P1_orta_hic_ev": {
+    "kasa": 1127,
+    "p10": 674,
+    "kayip": 0.0,
+    "prestij": 25.0,
+    "gelir": 2264,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 89.5,
+    "kayipMusteri/gun": 1.64,
+    "deaths": {}
+   },
+   "P1_orta_mantikli_ev": {
+    "kasa": 198,
+    "p10": 29,
+    "kayip": 29.2,
+    "prestij": 25.3,
+    "gelir": 2336,
+    "upg": 1416,
+    "idle%": 12.5,
+    "erken%": 89.2,
+    "kayipMusteri/gun": 1.62,
+    "deaths": {
+     "bankrupt@16": 40,
+     "bankrupt@12": 33
+    }
+   },
+   "P1_iyi_hic_ev": {
+    "kasa": 2476,
+    "p10": 1852,
+    "kayip": 0.0,
+    "prestij": 37.7,
+    "gelir": 3412,
+    "upg": 0,
+    "idle%": 12.9,
+    "erken%": 91.3,
+    "kayipMusteri/gun": 1.11,
+    "deaths": {}
+   },
+   "P1_iyi_mantikli_ev": {
+    "kasa": 585,
+    "p10": 141,
+    "kayip": 4.4,
+    "prestij": 40.8,
+    "gelir": 4148,
+    "upg": 2823,
+    "idle%": 12.8,
+    "erken%": 93.6,
+    "kayipMusteri/gun": 1.17,
+    "deaths": {
+     "bankrupt@16": 5,
+     "bankrupt@12": 6
+    }
+   },
+   "P2_zayif_hic_ev": {
+    "kasa": 364,
+    "p10": 99,
+    "kayip": 2.0,
+    "prestij": 25.1,
+    "gelir": 3354,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 49.0,
+    "kayipMusteri/gun": 3.27,
+    "deaths": {
+     "bankrupt@16": 4,
+     "bankrupt@12": 1
+    }
+   },
+   "P2_zayif_mantikli_ev": {
+    "kasa": 668,
+    "p10": 129,
+    "kayip": 76.0,
+    "prestij": 25.8,
+    "gelir": 2931,
+    "upg": 847,
+    "idle%": 13.2,
+    "erken%": 48.0,
+    "kayipMusteri/gun": 3.17,
+    "deaths": {
+     "bankrupt@16": 85,
+     "bankrupt@12": 105
+    }
+   },
+   "P2_orta_hic_ev": {
+    "kasa": 3380,
+    "p10": 2614,
+    "kayip": 0.0,
+    "prestij": 54.1,
+    "gelir": 6365,
+    "upg": 0,
+    "idle%": 11.9,
+    "erken%": 74.4,
+    "kayipMusteri/gun": 2.07,
+    "deaths": {}
+   },
+   "P2_orta_mantikli_ev": {
+    "kasa": 799,
+    "p10": 203,
+    "kayip": 4.0,
+    "prestij": 53.6,
+    "gelir": 7589,
+    "upg": 4115,
+    "idle%": 12.7,
+    "erken%": 77.7,
+    "kayipMusteri/gun": 2.38,
+    "deaths": {
+     "bankrupt@12": 6,
+     "bankrupt@16": 4
+    }
+   },
+   "P2_iyi_hic_ev": {
+    "kasa": 6619,
+    "p10": 5622,
+    "kayip": 0.0,
+    "prestij": 76.9,
+    "gelir": 9250,
+    "upg": 0,
+    "idle%": 12.6,
+    "erken%": 88.8,
+    "kayipMusteri/gun": 1.29,
+    "deaths": {}
+   },
+   "P2_iyi_mantikli_ev": {
+    "kasa": 3464,
+    "p10": 1731,
+    "kayip": 0.0,
+    "prestij": 80.0,
+    "gelir": 13039,
+    "upg": 7182,
+    "idle%": 15.1,
+    "erken%": 92.1,
+    "kayipMusteri/gun": 1.88,
+    "deaths": {}
+   },
+   "P3_zayif_hic_ev": {
+    "kasa": 526,
+    "p10": 147,
+    "kayip": 6.4,
+    "prestij": 43.8,
+    "gelir": 5485,
+    "upg": 0,
+    "idle%": 19.3,
+    "erken%": 46.4,
+    "kayipMusteri/gun": 2.31,
+    "deaths": {
+     "bankrupt@16": 15,
+     "bankrupt@12": 1
+    }
+   },
+   "P3_zayif_mantikli_ev": {
+    "kasa": 1315,
+    "p10": 980,
+    "kayip": 92.8,
+    "prestij": 39.0,
+    "gelir": 4072,
+    "upg": 967,
+    "idle%": 19.6,
+    "erken%": 47.9,
+    "kayipMusteri/gun": 2.32,
+    "deaths": {
+     "bankrupt@12": 171,
+     "bankrupt@16": 61
+    }
+   },
+   "P3_orta_hic_ev": {
+    "kasa": 4456,
+    "p10": 3462,
+    "kayip": 0.0,
+    "prestij": 71.4,
+    "gelir": 9968,
+    "upg": 0,
+    "idle%": 16.7,
+    "erken%": 87.8,
+    "kayipMusteri/gun": 1.67,
+    "deaths": {}
+   },
+   "P3_orta_mantikli_ev": {
+    "kasa": 1335,
+    "p10": 411,
+    "kayip": 4.0,
+    "prestij": 69.8,
+    "gelir": 11843,
+    "upg": 5614,
+    "idle%": 17.3,
+    "erken%": 88.8,
+    "kayipMusteri/gun": 1.97,
+    "deaths": {
+     "bankrupt@12": 10
+    }
+   },
+   "P3_iyi_hic_ev": {
+    "kasa": 7752,
+    "p10": 6371,
+    "kayip": 0.0,
+    "prestij": 91.7,
+    "gelir": 12868,
+    "upg": 0,
+    "idle%": 16.7,
+    "erken%": 95.9,
+    "kayipMusteri/gun": 1.15,
+    "deaths": {}
+   },
+   "P3_iyi_mantikli_ev": {
+    "kasa": 3754,
+    "p10": 2104,
+    "kayip": 0.0,
+    "prestij": 94.1,
+    "gelir": 17937,
+    "upg": 9524,
+    "idle%": 18.4,
+    "erken%": 96.3,
+    "kayipMusteri/gun": 1.6,
+    "deaths": {}
+   },
+   "P4_zayif_hic_ev": {
+    "kasa": 899,
+    "p10": 235,
+    "kayip": 14.0,
+    "prestij": 48.7,
+    "gelir": 7490,
+    "upg": 0,
+    "idle%": 26.3,
+    "erken%": 63.6,
+    "kayipMusteri/gun": 2.28,
+    "deaths": {
+     "bankrupt@12": 17,
+     "bankrupt@16": 18
+    }
+   },
+   "P4_zayif_mantikli_ev": {
+    "kasa": 1939,
+    "p10": 1549,
+    "kayip": 96.4,
+    "prestij": 43.4,
+    "gelir": 5394,
+    "upg": 1155,
+    "idle%": 26.1,
+    "erken%": 66.8,
+    "kayipMusteri/gun": 2.22,
+    "deaths": {
+     "bankrupt@12": 193,
+     "bankrupt@16": 48
+    }
+   },
+   "P4_orta_hic_ev": {
+    "kasa": 4576,
+    "p10": 3147,
+    "kayip": 0.0,
+    "prestij": 78.2,
+    "gelir": 12532,
+    "upg": 0,
+    "idle%": 20.9,
+    "erken%": 93.7,
+    "kayipMusteri/gun": 1.62,
+    "deaths": {}
+   },
+   "P4_orta_mantikli_ev": {
+    "kasa": 1486,
+    "p10": 356,
+    "kayip": 10.0,
+    "prestij": 76.3,
+    "gelir": 14462,
+    "upg": 6365,
+    "idle%": 21.0,
+    "erken%": 94.7,
+    "kayipMusteri/gun": 1.89,
+    "deaths": {
+     "bankrupt@16": 8,
+     "bankrupt@12": 17
+    }
+   },
+   "P4_iyi_hic_ev": {
+    "kasa": 8520,
+    "p10": 6804,
+    "kayip": 0.0,
+    "prestij": 96.3,
+    "gelir": 16100,
+    "upg": 0,
+    "idle%": 20.2,
+    "erken%": 97.4,
+    "kayipMusteri/gun": 1.16,
+    "deaths": {}
+   },
+   "P4_iyi_mantikli_ev": {
+    "kasa": 3687,
+    "p10": 1598,
+    "kayip": 0.4,
+    "prestij": 96.7,
+    "gelir": 21107,
+    "upg": 10557,
+    "idle%": 20.9,
+    "erken%": 98.1,
+    "kayipMusteri/gun": 1.67,
+    "deaths": {
+     "bankrupt@12": 1
+    }
+   }
+  }
+ },
+ "B3": {
+  "desc": "B1 + B2",
+  "overrides": [
+   "economy.rentGrowthMultiplier=1.12",
+   "economy.baseRentByPlayerCount=[330,730,1280,1830]",
+   "economy.graceUses=2"
+  ],
+  "cells": {
+   "P1_zayif_hic_ev": {
+    "kasa": 168,
+    "p10": 36,
+    "kayip": 4.0,
+    "prestij": 12.7,
+    "gelir": 1304,
+    "upg": 0,
+    "idle%": 12.7,
+    "erken%": 85.0,
+    "kayipMusteri/gun": 2.06,
+    "deaths": {
+     "bankrupt@16": 10
+    }
+   },
+   "P1_zayif_mantikli_ev": {
+    "kasa": 295,
+    "p10": 105,
+    "kayip": 92.4,
+    "prestij": 13.4,
+    "gelir": 1012,
+    "upg": 465,
+    "idle%": 12.9,
+    "erken%": 85.4,
+    "kayipMusteri/gun": 2.06,
+    "deaths": {
+     "bankrupt@16": 97,
+     "bankrupt@12": 134
+    }
+   },
+   "P1_orta_hic_ev": {
+    "kasa": 1108,
+    "p10": 653,
+    "kayip": 0.0,
+    "prestij": 25.0,
+    "gelir": 2264,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 89.5,
+    "kayipMusteri/gun": 1.64,
+    "deaths": {}
+   },
+   "P1_orta_mantikli_ev": {
+    "kasa": 203,
+    "p10": 35,
+    "kayip": 32.8,
+    "prestij": 25.0,
+    "gelir": 2278,
+    "upg": 1353,
+    "idle%": 12.3,
+    "erken%": 89.2,
+    "kayipMusteri/gun": 1.6,
+    "deaths": {
+     "bankrupt@16": 40,
+     "bankrupt@12": 42
+    }
+   },
+   "P1_iyi_hic_ev": {
+    "kasa": 2455,
+    "p10": 1834,
+    "kayip": 0.0,
+    "prestij": 37.7,
+    "gelir": 3412,
+    "upg": 0,
+    "idle%": 12.9,
+    "erken%": 91.3,
+    "kayipMusteri/gun": 1.11,
+    "deaths": {}
+   },
+   "P1_iyi_mantikli_ev": {
+    "kasa": 597,
+    "p10": 124,
+    "kayip": 3.6,
+    "prestij": 40.4,
+    "gelir": 4094,
+    "upg": 2769,
+    "idle%": 12.8,
+    "erken%": 93.4,
+    "kayipMusteri/gun": 1.17,
+    "deaths": {
+     "bankrupt@16": 2,
+     "bankrupt@12": 7
+    }
+   },
+   "P2_zayif_hic_ev": {
+    "kasa": 401,
+    "p10": 109,
+    "kayip": 1.6,
+    "prestij": 25.1,
+    "gelir": 3346,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 48.9,
+    "kayipMusteri/gun": 3.27,
+    "deaths": {
+     "bankrupt@12": 3,
+     "bankrupt@16": 1
+    }
+   },
+   "P2_zayif_mantikli_ev": {
+    "kasa": 656,
+    "p10": 122,
+    "kayip": 81.6,
+    "prestij": 25.0,
+    "gelir": 2731,
+    "upg": 785,
+    "idle%": 12.9,
+    "erken%": 49.4,
+    "kayipMusteri/gun": 3.22,
+    "deaths": {
+     "bankrupt@16": 71,
+     "bankrupt@12": 133
+    }
+   },
+   "P2_orta_hic_ev": {
+    "kasa": 3379,
+    "p10": 2613,
+    "kayip": 0.0,
+    "prestij": 54.1,
+    "gelir": 6365,
+    "upg": 0,
+    "idle%": 11.9,
+    "erken%": 74.4,
+    "kayipMusteri/gun": 2.07,
+    "deaths": {}
+   },
+   "P2_orta_mantikli_ev": {
+    "kasa": 810,
+    "p10": 309,
+    "kayip": 4.8,
+    "prestij": 52.7,
+    "gelir": 7433,
+    "upg": 4034,
+    "idle%": 12.9,
+    "erken%": 77.1,
+    "kayipMusteri/gun": 2.39,
+    "deaths": {
+     "bankrupt@12": 10,
+     "bankrupt@16": 2
+    }
+   },
+   "P2_iyi_hic_ev": {
+    "kasa": 6617,
+    "p10": 5621,
+    "kayip": 0.0,
+    "prestij": 76.9,
+    "gelir": 9250,
+    "upg": 0,
+    "idle%": 12.6,
+    "erken%": 88.8,
+    "kayipMusteri/gun": 1.29,
+    "deaths": {}
+   },
+   "P2_iyi_mantikli_ev": {
+    "kasa": 3596,
+    "p10": 2056,
+    "kayip": 0.0,
+    "prestij": 80.9,
+    "gelir": 13131,
+    "upg": 7163,
+    "idle%": 14.9,
+    "erken%": 92.0,
+    "kayipMusteri/gun": 1.76,
+    "deaths": {}
+   },
+   "P3_zayif_hic_ev": {
+    "kasa": 623,
+    "p10": 165,
+    "kayip": 10.8,
+    "prestij": 43.3,
+    "gelir": 5326,
+    "upg": 0,
+    "idle%": 19.3,
+    "erken%": 46.3,
+    "kayipMusteri/gun": 2.31,
+    "deaths": {
+     "bankrupt@12": 19,
+     "bankrupt@16": 8
+    }
+   },
+   "P3_zayif_mantikli_ev": {
+    "kasa": 1196,
+    "p10": 281,
+    "kayip": 88.0,
+    "prestij": 38.7,
+    "gelir": 4047,
+    "upg": 934,
+    "idle%": 19.2,
+    "erken%": 47.1,
+    "kayipMusteri/gun": 2.31,
+    "deaths": {
+     "bankrupt@12": 186,
+     "bankrupt@16": 34
+    }
+   },
+   "P3_orta_hic_ev": {
+    "kasa": 4458,
+    "p10": 3464,
+    "kayip": 0.0,
+    "prestij": 71.4,
+    "gelir": 9968,
+    "upg": 0,
+    "idle%": 16.7,
+    "erken%": 87.8,
+    "kayipMusteri/gun": 1.67,
+    "deaths": {}
+   },
+   "P3_orta_mantikli_ev": {
+    "kasa": 1370,
+    "p10": 448,
+    "kayip": 5.2,
+    "prestij": 69.1,
+    "gelir": 11687,
+    "upg": 5538,
+    "idle%": 17.2,
+    "erken%": 88.9,
+    "kayipMusteri/gun": 2.0,
+    "deaths": {
+     "bankrupt@12": 13
+    }
+   },
+   "P3_iyi_hic_ev": {
+    "kasa": 7754,
+    "p10": 6373,
+    "kayip": 0.0,
+    "prestij": 91.7,
+    "gelir": 12868,
+    "upg": 0,
+    "idle%": 16.7,
+    "erken%": 95.9,
+    "kayipMusteri/gun": 1.15,
+    "deaths": {}
+   },
+   "P3_iyi_mantikli_ev": {
+    "kasa": 3893,
+    "p10": 2191,
+    "kayip": 0.0,
+    "prestij": 94.1,
+    "gelir": 17759,
+    "upg": 9245,
+    "idle%": 18.4,
+    "erken%": 95.9,
+    "kayipMusteri/gun": 1.58,
+    "deaths": {}
+   },
+   "P4_zayif_hic_ev": {
+    "kasa": 1055,
+    "p10": 312,
+    "kayip": 19.6,
+    "prestij": 47.9,
+    "gelir": 7125,
+    "upg": 0,
+    "idle%": 26.3,
+    "erken%": 63.6,
+    "kayipMusteri/gun": 2.27,
+    "deaths": {
+     "bankrupt@12": 46,
+     "bankrupt@16": 3
+    }
+   },
+   "P4_zayif_mantikli_ev": {
+    "kasa": 1766,
+    "p10": 1304,
+    "kayip": 92.8,
+    "prestij": 42.9,
+    "gelir": 5224,
+    "upg": 997,
+    "idle%": 26.4,
+    "erken%": 66.3,
+    "kayipMusteri/gun": 2.27,
+    "deaths": {
+     "bankrupt@12": 202,
+     "bankrupt@16": 30
+    }
+   },
+   "P4_orta_hic_ev": {
+    "kasa": 4592,
+    "p10": 3155,
+    "kayip": 0.0,
+    "prestij": 78.2,
+    "gelir": 12532,
+    "upg": 0,
+    "idle%": 20.9,
+    "erken%": 93.7,
+    "kayipMusteri/gun": 1.62,
+    "deaths": {}
+   },
+   "P4_orta_mantikli_ev": {
+    "kasa": 1551,
+    "p10": 417,
+    "kayip": 13.6,
+    "prestij": 75.4,
+    "gelir": 14067,
+    "upg": 6218,
+    "idle%": 21.1,
+    "erken%": 94.8,
+    "kayipMusteri/gun": 1.9,
+    "deaths": {
+     "bankrupt@16": 6,
+     "bankrupt@12": 28
+    }
+   },
+   "P4_iyi_hic_ev": {
+    "kasa": 8523,
+    "p10": 6807,
+    "kayip": 0.0,
+    "prestij": 96.3,
+    "gelir": 16100,
+    "upg": 0,
+    "idle%": 20.2,
+    "erken%": 97.4,
+    "kayipMusteri/gun": 1.16,
+    "deaths": {}
+   },
+   "P4_iyi_mantikli_ev": {
+    "kasa": 3960,
+    "p10": 1784,
+    "kayip": 0.4,
+    "prestij": 96.6,
+    "gelir": 20992,
+    "upg": 10244,
+    "idle%": 21.0,
+    "erken%": 98.0,
+    "kayipMusteri/gun": 1.62,
+    "deaths": {
+     "bankrupt@12": 1
+    }
+   }
+  }
+ },
+ "C1": {
+  "desc": "2. servis istasyonu bağlanır (sahnedeki boş slot doldurulur)",
+  "overrides": [
+   "economy.serviceStations=2"
+  ],
+  "cells": {
+   "P1_zayif_hic_ev": {
+    "kasa": 206,
+    "p10": 48,
+    "kayip": 18.0,
+    "prestij": 14.1,
+    "gelir": 1292,
+    "upg": 0,
+    "idle%": 11.5,
+    "erken%": 84.8,
+    "kayipMusteri/gun": 1.95,
+    "deaths": {
+     "bankrupt@16": 38,
+     "bankrupt@12": 7
+    }
+   },
+   "P1_zayif_mantikli_ev": {
+    "kasa": 249,
+    "p10": 121,
+    "kayip": 98.8,
+    "prestij": 14.7,
+    "gelir": 609,
+    "upg": 417,
+    "idle%": 12.2,
+    "erken%": 87.5,
+    "kayipMusteri/gun": 1.99,
+    "deaths": {
+     "bankrupt@8": 140,
+     "bankrupt@12": 93,
+     "bankrupt@16": 14
+    }
+   },
+   "P1_orta_hic_ev": {
+    "kasa": 1312,
+    "p10": 846,
+    "kayip": 0.0,
+    "prestij": 28.8,
+    "gelir": 2462,
+    "upg": 0,
+    "idle%": 9.6,
+    "erken%": 89.2,
+    "kayipMusteri/gun": 1.28,
+    "deaths": {}
+   },
+   "P1_orta_mantikli_ev": {
+    "kasa": 254,
+    "p10": 68,
+    "kayip": 59.2,
+    "prestij": 26.8,
+    "gelir": 1913,
+    "upg": 1237,
+    "idle%": 9.9,
+    "erken%": 90.1,
+    "kayipMusteri/gun": 1.3,
+    "deaths": {
+     "bankrupt@8": 71,
+     "bankrupt@12": 47,
+     "bankrupt@16": 30
+    }
+   },
+   "P1_iyi_hic_ev": {
+    "kasa": 2855,
+    "p10": 2275,
+    "kayip": 0.0,
+    "prestij": 43.4,
+    "gelir": 3773,
+    "upg": 0,
+    "idle%": 9.7,
+    "erken%": 91.2,
+    "kayipMusteri/gun": 0.63,
+    "deaths": {}
+   },
+   "P1_iyi_mantikli_ev": {
+    "kasa": 811,
+    "p10": 264,
+    "kayip": 16.0,
+    "prestij": 45.0,
+    "gelir": 4396,
+    "upg": 2972,
+    "idle%": 9.9,
+    "erken%": 93.1,
+    "kayipMusteri/gun": 0.74,
+    "deaths": {
+     "bankrupt@12": 13,
+     "bankrupt@8": 24,
+     "bankrupt@16": 3
+    }
+   },
+   "P2_zayif_hic_ev": {
+    "kasa": 470,
+    "p10": 106,
+    "kayip": 9.6,
+    "prestij": 37.1,
+    "gelir": 3415,
+    "upg": 0,
+    "idle%": 9.1,
+    "erken%": 46.1,
+    "kayipMusteri/gun": 2.22,
+    "deaths": {
+     "bankrupt@16": 8,
+     "bankrupt@12": 16
+    }
+   },
+   "P2_zayif_mantikli_ev": {
+    "kasa": 679,
+    "p10": 452,
+    "kayip": 92.8,
+    "prestij": 31.3,
+    "gelir": 2033,
+    "upg": 636,
+    "idle%": 9.5,
+    "erken%": 45.5,
+    "kayipMusteri/gun": 2.18,
+    "deaths": {
+     "bankrupt@16": 31,
+     "bankrupt@8": 108,
+     "bankrupt@12": 93
+    }
+   },
+   "P2_orta_hic_ev": {
+    "kasa": 3603,
+    "p10": 2794,
+    "kayip": 0.0,
+    "prestij": 61.0,
+    "gelir": 6588,
+    "upg": 0,
+    "idle%": 9.6,
+    "erken%": 72.2,
+    "kayipMusteri/gun": 1.48,
+    "deaths": {}
+   },
+   "P2_orta_mantikli_ev": {
+    "kasa": 953,
+    "p10": 404,
+    "kayip": 20.4,
+    "prestij": 55.4,
+    "gelir": 7041,
+    "upg": 3841,
+    "idle%": 10.4,
+    "erken%": 76.2,
+    "kayipMusteri/gun": 1.88,
+    "deaths": {
+     "bankrupt@8": 41,
+     "bankrupt@12": 9,
+     "bankrupt@16": 1
+    }
+   },
+   "P2_iyi_hic_ev": {
+    "kasa": 6910,
+    "p10": 5814,
+    "kayip": 0.0,
+    "prestij": 82.5,
+    "gelir": 9536,
+    "upg": 0,
+    "idle%": 10.5,
+    "erken%": 88.1,
+    "kayipMusteri/gun": 0.85,
+    "deaths": {}
+   },
+   "P2_iyi_mantikli_ev": {
+    "kasa": 4131,
+    "p10": 2500,
+    "kayip": 2.0,
+    "prestij": 86.1,
+    "gelir": 13780,
+    "upg": 7328,
+    "idle%": 12.8,
+    "erken%": 91.9,
+    "kayipMusteri/gun": 1.35,
+    "deaths": {
+     "bankrupt@8": 5
+    }
+   },
+   "P3_zayif_hic_ev": {
+    "kasa": 941,
+    "p10": 193,
+    "kayip": 51.2,
+    "prestij": 50.4,
+    "gelir": 4579,
+    "upg": 0,
+    "idle%": 16.2,
+    "erken%": 46.8,
+    "kayipMusteri/gun": 1.4,
+    "deaths": {
+     "bankrupt@12": 73,
+     "bankrupt@16": 43,
+     "bankrupt@8": 12
+    }
+   },
+   "P3_zayif_mantikli_ev": {
+    "kasa": 1137,
+    "p10": 850,
+    "kayip": 99.6,
+    "prestij": 37.1,
+    "gelir": 2398,
+    "upg": 679,
+    "idle%": 15.7,
+    "erken%": 52.1,
+    "kayipMusteri/gun": 1.39,
+    "deaths": {
+     "bankrupt@16": 7,
+     "bankrupt@8": 184,
+     "bankrupt@12": 58
+    }
+   },
+   "P3_orta_hic_ev": {
+    "kasa": 4809,
+    "p10": 3628,
+    "kayip": 0.0,
+    "prestij": 80.2,
+    "gelir": 10310,
+    "upg": 0,
+    "idle%": 13.6,
+    "erken%": 88.0,
+    "kayipMusteri/gun": 0.99,
+    "deaths": {}
+   },
+   "P3_orta_mantikli_ev": {
+    "kasa": 1409,
+    "p10": 392,
+    "kayip": 30.0,
+    "prestij": 69.5,
+    "gelir": 10191,
+    "upg": 4962,
+    "idle%": 14.5,
+    "erken%": 88.9,
+    "kayipMusteri/gun": 1.45,
+    "deaths": {
+     "bankrupt@12": 22,
+     "bankrupt@16": 5,
+     "bankrupt@8": 48
+    }
+   },
+   "P3_iyi_hic_ev": {
+    "kasa": 7874,
+    "p10": 6344,
+    "kayip": 0.0,
+    "prestij": 97.3,
+    "gelir": 12992,
+    "upg": 0,
+    "idle%": 13.7,
+    "erken%": 96.2,
+    "kayipMusteri/gun": 0.72,
+    "deaths": {}
+   },
+   "P3_iyi_mantikli_ev": {
+    "kasa": 3990,
+    "p10": 1818,
+    "kayip": 4.0,
+    "prestij": 95.3,
+    "gelir": 17676,
+    "upg": 9214,
+    "idle%": 16.1,
+    "erken%": 96.8,
+    "kayipMusteri/gun": 1.29,
+    "deaths": {
+     "bankrupt@8": 8,
+     "bankrupt@12": 2
+    }
+   },
+   "P4_zayif_hic_ev": {
+    "kasa": 1365,
+    "p10": 381,
+    "kayip": 55.2,
+    "prestij": 52.8,
+    "gelir": 6002,
+    "upg": 0,
+    "idle%": 22.6,
+    "erken%": 63.0,
+    "kayipMusteri/gun": 1.34,
+    "deaths": {
+     "bankrupt@12": 102,
+     "bankrupt@8": 24,
+     "bankrupt@16": 12
+    }
+   },
+   "P4_zayif_mantikli_ev": {
+    "kasa": 1571,
+    "p10": 1140,
+    "kayip": 100.0,
+    "prestij": 39.6,
+    "gelir": 3040,
+    "upg": 735,
+    "idle%": 23.2,
+    "erken%": 62.3,
+    "kayipMusteri/gun": 1.2,
+    "deaths": {
+     "bankrupt@12": 47,
+     "bankrupt@8": 201,
+     "bankrupt@16": 2
+    }
+   },
+   "P4_orta_hic_ev": {
+    "kasa": 4843,
+    "p10": 3373,
+    "kayip": 0.0,
+    "prestij": 87.6,
+    "gelir": 12806,
+    "upg": 0,
+    "idle%": 17.1,
+    "erken%": 94.5,
+    "kayipMusteri/gun": 0.92,
+    "deaths": {}
+   },
+   "P4_orta_mantikli_ev": {
+    "kasa": 1705,
+    "p10": 666,
+    "kayip": 49.6,
+    "prestij": 69.0,
+    "gelir": 10518,
+    "upg": 4578,
+    "idle%": 17.7,
+    "erken%": 95.6,
+    "kayipMusteri/gun": 1.4,
+    "deaths": {
+     "bankrupt@8": 84,
+     "bankrupt@12": 36,
+     "bankrupt@16": 4
+    }
+   },
+   "P4_iyi_hic_ev": {
+    "kasa": 8292,
+    "p10": 6546,
+    "kayip": 0.0,
+    "prestij": 99.2,
+    "gelir": 15856,
+    "upg": 0,
+    "idle%": 16.9,
+    "erken%": 98.2,
+    "kayipMusteri/gun": 0.76,
+    "deaths": {}
+   },
+   "P4_iyi_mantikli_ev": {
+    "kasa": 3839,
+    "p10": 1687,
+    "kayip": 15.2,
+    "prestij": 92.5,
+    "gelir": 19348,
+    "upg": 9572,
+    "idle%": 18.3,
+    "erken%": 98.1,
+    "kayipMusteri/gun": 1.29,
+    "deaths": {
+     "bankrupt@8": 30,
+     "bankrupt@12": 8
+    }
+   }
+  }
+ },
+ "C2": {
+  "desc": "C1 + kuyruk 2→3",
+  "overrides": [
+   "economy.serviceStations=2",
+   "economy.maxQueueSize=3"
+  ],
+  "cells": {
+   "P1_zayif_hic_ev": {
+    "kasa": 197,
+    "p10": 49,
+    "kayip": 18.0,
+    "prestij": 14.0,
+    "gelir": 1281,
+    "upg": 0,
+    "idle%": 11.6,
+    "erken%": 85.3,
+    "kayipMusteri/gun": 1.96,
+    "deaths": {
+     "bankrupt@12": 9,
+     "bankrupt@16": 36
+    }
+   },
+   "P1_zayif_mantikli_ev": {
+    "kasa": 249,
+    "p10": 135,
+    "kayip": 99.2,
+    "prestij": 14.7,
+    "gelir": 602,
+    "upg": 415,
+    "idle%": 12.1,
+    "erken%": 88.3,
+    "kayipMusteri/gun": 1.95,
+    "deaths": {
+     "bankrupt@8": 139,
+     "bankrupt@12": 97,
+     "bankrupt@16": 12
+    }
+   },
+   "P1_orta_hic_ev": {
+    "kasa": 1260,
+    "p10": 809,
+    "kayip": 0.0,
+    "prestij": 28.8,
+    "gelir": 2416,
+    "upg": 0,
+    "idle%": 9.4,
+    "erken%": 88.8,
+    "kayipMusteri/gun": 1.28,
+    "deaths": {}
+   },
+   "P1_orta_mantikli_ev": {
+    "kasa": 249,
+    "p10": 68,
+    "kayip": 56.4,
+    "prestij": 26.6,
+    "gelir": 1929,
+    "upg": 1214,
+    "idle%": 9.8,
+    "erken%": 89.6,
+    "kayipMusteri/gun": 1.31,
+    "deaths": {
+     "bankrupt@8": 61,
+     "bankrupt@12": 57,
+     "bankrupt@16": 23
+    }
+   },
+   "P1_iyi_hic_ev": {
+    "kasa": 2839,
+    "p10": 2249,
+    "kayip": 0.0,
+    "prestij": 43.1,
+    "gelir": 3765,
+    "upg": 0,
+    "idle%": 9.5,
+    "erken%": 91.4,
+    "kayipMusteri/gun": 0.64,
+    "deaths": {}
+   },
+   "P1_iyi_mantikli_ev": {
+    "kasa": 824,
+    "p10": 261,
+    "kayip": 13.2,
+    "prestij": 45.3,
+    "gelir": 4426,
+    "upg": 2975,
+    "idle%": 9.8,
+    "erken%": 93.3,
+    "kayipMusteri/gun": 0.72,
+    "deaths": {
+     "bankrupt@12": 12,
+     "bankrupt@8": 21
+    }
+   },
+   "P2_zayif_hic_ev": {
+    "kasa": 498,
+    "p10": 137,
+    "kayip": 14.8,
+    "prestij": 36.5,
+    "gelir": 3341,
+    "upg": 0,
+    "idle%": 9.0,
+    "erken%": 48.3,
+    "kayipMusteri/gun": 2.27,
+    "deaths": {
+     "bankrupt@12": 26,
+     "bankrupt@16": 11
+    }
+   },
+   "P2_zayif_mantikli_ev": {
+    "kasa": 682,
+    "p10": 433,
+    "kayip": 94.0,
+    "prestij": 31.2,
+    "gelir": 2025,
+    "upg": 615,
+    "idle%": 9.2,
+    "erken%": 49.7,
+    "kayipMusteri/gun": 2.19,
+    "deaths": {
+     "bankrupt@8": 104,
+     "bankrupt@16": 34,
+     "bankrupt@12": 97
+    }
+   },
+   "P2_orta_hic_ev": {
+    "kasa": 3493,
+    "p10": 2661,
+    "kayip": 0.0,
+    "prestij": 61.0,
+    "gelir": 6451,
+    "upg": 0,
+    "idle%": 9.1,
+    "erken%": 75.7,
+    "kayipMusteri/gun": 1.51,
+    "deaths": {}
+   },
+   "P2_orta_mantikli_ev": {
+    "kasa": 902,
+    "p10": 362,
+    "kayip": 21.6,
+    "prestij": 54.7,
+    "gelir": 7014,
+    "upg": 3880,
+    "idle%": 9.9,
+    "erken%": 78.8,
+    "kayipMusteri/gun": 1.93,
+    "deaths": {
+     "bankrupt@8": 39,
+     "bankrupt@12": 12,
+     "bankrupt@16": 3
+    }
+   },
+   "P2_iyi_hic_ev": {
+    "kasa": 6687,
+    "p10": 5580,
+    "kayip": 0.0,
+    "prestij": 82.3,
+    "gelir": 9325,
+    "upg": 0,
+    "idle%": 9.9,
+    "erken%": 90.3,
+    "kayipMusteri/gun": 0.86,
+    "deaths": {}
+   },
+   "P2_iyi_mantikli_ev": {
+    "kasa": 4120,
+    "p10": 2222,
+    "kayip": 2.0,
+    "prestij": 85.8,
+    "gelir": 13677,
+    "upg": 7222,
+    "idle%": 12.2,
+    "erken%": 92.6,
+    "kayipMusteri/gun": 1.39,
+    "deaths": {
+     "bankrupt@8": 5
+    }
+   },
+   "P3_zayif_hic_ev": {
+    "kasa": 923,
+    "p10": 169,
+    "kayip": 55.2,
+    "prestij": 49.6,
+    "gelir": 4366,
+    "upg": 0,
+    "idle%": 15.4,
+    "erken%": 52.4,
+    "kayipMusteri/gun": 1.4,
+    "deaths": {
+     "bankrupt@12": 98,
+     "bankrupt@16": 31,
+     "bankrupt@8": 9
+    }
+   },
+   "P3_zayif_mantikli_ev": {
+    "kasa": 1104,
+    "p10": 792,
+    "kayip": 100.0,
+    "prestij": 36.5,
+    "gelir": 2325,
+    "upg": 675,
+    "idle%": 15.5,
+    "erken%": 52.7,
+    "kayipMusteri/gun": 1.44,
+    "deaths": {
+     "bankrupt@16": 8,
+     "bankrupt@8": 191,
+     "bankrupt@12": 51
+    }
+   },
+   "P3_orta_hic_ev": {
+    "kasa": 4415,
+    "p10": 3091,
+    "kayip": 0.0,
+    "prestij": 77.9,
+    "gelir": 9912,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 90.5,
+    "kayipMusteri/gun": 1.16,
+    "deaths": {}
+   },
+   "P3_orta_mantikli_ev": {
+    "kasa": 1450,
+    "p10": 686,
+    "kayip": 34.0,
+    "prestij": 68.3,
+    "gelir": 9559,
+    "upg": 4512,
+    "idle%": 13.3,
+    "erken%": 91.2,
+    "kayipMusteri/gun": 1.45,
+    "deaths": {
+     "bankrupt@8": 53,
+     "bankrupt@12": 29,
+     "bankrupt@16": 3
+    }
+   },
+   "P3_iyi_hic_ev": {
+    "kasa": 7562,
+    "p10": 6090,
+    "kayip": 0.0,
+    "prestij": 96.5,
+    "gelir": 12680,
+    "upg": 0,
+    "idle%": 12.9,
+    "erken%": 97.2,
+    "kayipMusteri/gun": 0.78,
+    "deaths": {}
+   },
+   "P3_iyi_mantikli_ev": {
+    "kasa": 3976,
+    "p10": 2046,
+    "kayip": 4.4,
+    "prestij": 95.3,
+    "gelir": 17453,
+    "upg": 9058,
+    "idle%": 14.9,
+    "erken%": 97.1,
+    "kayipMusteri/gun": 1.22,
+    "deaths": {
+     "bankrupt@8": 9,
+     "bankrupt@12": 2
+    }
+   },
+   "P4_zayif_hic_ev": {
+    "kasa": 1382,
+    "p10": 327,
+    "kayip": 60.4,
+    "prestij": 52.1,
+    "gelir": 5631,
+    "upg": 0,
+    "idle%": 21.0,
+    "erken%": 72.7,
+    "kayipMusteri/gun": 1.4,
+    "deaths": {
+     "bankrupt@12": 100,
+     "bankrupt@8": 36,
+     "bankrupt@16": 15
+    }
+   },
+   "P4_zayif_mantikli_ev": {
+    "kasa": 1556,
+    "p10": 1208,
+    "kayip": 100.0,
+    "prestij": 39.0,
+    "gelir": 2829,
+    "upg": 659,
+    "idle%": 21.6,
+    "erken%": 67.1,
+    "kayipMusteri/gun": 1.4,
+    "deaths": {
+     "bankrupt@8": 217,
+     "bankrupt@16": 2,
+     "bankrupt@12": 31
+    }
+   },
+   "P4_orta_hic_ev": {
+    "kasa": 4257,
+    "p10": 2740,
+    "kayip": 0.4,
+    "prestij": 86.9,
+    "gelir": 12161,
+    "upg": 0,
+    "idle%": 15.4,
+    "erken%": 96.6,
+    "kayipMusteri/gun": 1.02,
+    "deaths": {
+     "bankrupt@12": 1
+    }
+   },
+   "P4_orta_mantikli_ev": {
+    "kasa": 1700,
+    "p10": 814,
+    "kayip": 58.8,
+    "prestij": 66.1,
+    "gelir": 9307,
+    "upg": 4055,
+    "idle%": 16.2,
+    "erken%": 95.9,
+    "kayipMusteri/gun": 1.43,
+    "deaths": {
+     "bankrupt@8": 106,
+     "bankrupt@12": 35,
+     "bankrupt@16": 6
+    }
+   },
+   "P4_iyi_hic_ev": {
+    "kasa": 7808,
+    "p10": 6218,
+    "kayip": 0.0,
+    "prestij": 99.4,
+    "gelir": 15385,
+    "upg": 0,
+    "idle%": 15.4,
+    "erken%": 98.6,
+    "kayipMusteri/gun": 0.77,
+    "deaths": {}
+   },
+   "P4_iyi_mantikli_ev": {
+    "kasa": 3683,
+    "p10": 1568,
+    "kayip": 14.4,
+    "prestij": 92.9,
+    "gelir": 18882,
+    "upg": 9268,
+    "idle%": 16.8,
+    "erken%": 98.4,
+    "kayipMusteri/gun": 1.24,
+    "deaths": {
+     "bankrupt@8": 33,
+     "bankrupt@12": 3
+    }
+   }
+  }
+ },
+ "C3": {
+  "desc": "C2 + kota P3/P4 ayrıştırılır (P4 +%20) + varış aralığı P3/P4 ×0.8",
+  "overrides": [
+   "economy.serviceStations=2",
+   "economy.maxQueueSize=3",
+   "economy.dailyCustomerCount.3=[10,10,10,10,11,11,11,12,12,12,13,13,14,14,14,16]",
+   "economy.customerArrivalIntervalByPlayerCount=[44,22,19,17]"
+  ],
+  "cells": {
+   "P1_zayif_hic_ev": {
+    "kasa": 197,
+    "p10": 49,
+    "kayip": 18.0,
+    "prestij": 14.0,
+    "gelir": 1281,
+    "upg": 0,
+    "idle%": 11.6,
+    "erken%": 85.3,
+    "kayipMusteri/gun": 1.96,
+    "deaths": {
+     "bankrupt@12": 9,
+     "bankrupt@16": 36
+    }
+   },
+   "P1_zayif_mantikli_ev": {
+    "kasa": 249,
+    "p10": 135,
+    "kayip": 99.2,
+    "prestij": 14.7,
+    "gelir": 602,
+    "upg": 415,
+    "idle%": 12.1,
+    "erken%": 88.3,
+    "kayipMusteri/gun": 1.95,
+    "deaths": {
+     "bankrupt@8": 139,
+     "bankrupt@12": 97,
+     "bankrupt@16": 12
+    }
+   },
+   "P1_orta_hic_ev": {
+    "kasa": 1260,
+    "p10": 809,
+    "kayip": 0.0,
+    "prestij": 28.8,
+    "gelir": 2416,
+    "upg": 0,
+    "idle%": 9.4,
+    "erken%": 88.8,
+    "kayipMusteri/gun": 1.28,
+    "deaths": {}
+   },
+   "P1_orta_mantikli_ev": {
+    "kasa": 249,
+    "p10": 68,
+    "kayip": 56.4,
+    "prestij": 26.6,
+    "gelir": 1929,
+    "upg": 1214,
+    "idle%": 9.8,
+    "erken%": 89.6,
+    "kayipMusteri/gun": 1.31,
+    "deaths": {
+     "bankrupt@8": 61,
+     "bankrupt@12": 57,
+     "bankrupt@16": 23
+    }
+   },
+   "P1_iyi_hic_ev": {
+    "kasa": 2839,
+    "p10": 2249,
+    "kayip": 0.0,
+    "prestij": 43.1,
+    "gelir": 3765,
+    "upg": 0,
+    "idle%": 9.5,
+    "erken%": 91.4,
+    "kayipMusteri/gun": 0.64,
+    "deaths": {}
+   },
+   "P1_iyi_mantikli_ev": {
+    "kasa": 824,
+    "p10": 261,
+    "kayip": 13.2,
+    "prestij": 45.3,
+    "gelir": 4426,
+    "upg": 2975,
+    "idle%": 9.8,
+    "erken%": 93.3,
+    "kayipMusteri/gun": 0.72,
+    "deaths": {
+     "bankrupt@12": 12,
+     "bankrupt@8": 21
+    }
+   },
+   "P2_zayif_hic_ev": {
+    "kasa": 498,
+    "p10": 137,
+    "kayip": 14.8,
+    "prestij": 36.5,
+    "gelir": 3341,
+    "upg": 0,
+    "idle%": 9.0,
+    "erken%": 48.3,
+    "kayipMusteri/gun": 2.27,
+    "deaths": {
+     "bankrupt@12": 26,
+     "bankrupt@16": 11
+    }
+   },
+   "P2_zayif_mantikli_ev": {
+    "kasa": 682,
+    "p10": 433,
+    "kayip": 94.0,
+    "prestij": 31.2,
+    "gelir": 2025,
+    "upg": 615,
+    "idle%": 9.2,
+    "erken%": 49.7,
+    "kayipMusteri/gun": 2.19,
+    "deaths": {
+     "bankrupt@8": 104,
+     "bankrupt@16": 34,
+     "bankrupt@12": 97
+    }
+   },
+   "P2_orta_hic_ev": {
+    "kasa": 3493,
+    "p10": 2661,
+    "kayip": 0.0,
+    "prestij": 61.0,
+    "gelir": 6451,
+    "upg": 0,
+    "idle%": 9.1,
+    "erken%": 75.7,
+    "kayipMusteri/gun": 1.51,
+    "deaths": {}
+   },
+   "P2_orta_mantikli_ev": {
+    "kasa": 902,
+    "p10": 362,
+    "kayip": 21.6,
+    "prestij": 54.7,
+    "gelir": 7014,
+    "upg": 3880,
+    "idle%": 9.9,
+    "erken%": 78.8,
+    "kayipMusteri/gun": 1.93,
+    "deaths": {
+     "bankrupt@8": 39,
+     "bankrupt@12": 12,
+     "bankrupt@16": 3
+    }
+   },
+   "P2_iyi_hic_ev": {
+    "kasa": 6687,
+    "p10": 5580,
+    "kayip": 0.0,
+    "prestij": 82.3,
+    "gelir": 9325,
+    "upg": 0,
+    "idle%": 9.9,
+    "erken%": 90.3,
+    "kayipMusteri/gun": 0.86,
+    "deaths": {}
+   },
+   "P2_iyi_mantikli_ev": {
+    "kasa": 4120,
+    "p10": 2222,
+    "kayip": 2.0,
+    "prestij": 85.8,
+    "gelir": 13677,
+    "upg": 7222,
+    "idle%": 12.2,
+    "erken%": 92.6,
+    "kayipMusteri/gun": 1.39,
+    "deaths": {
+     "bankrupt@8": 5
+    }
+   },
+   "P3_zayif_hic_ev": {
+    "kasa": 968,
+    "p10": 213,
+    "kayip": 69.2,
+    "prestij": 47.7,
+    "gelir": 3771,
+    "upg": 0,
+    "idle%": 13.0,
+    "erken%": 88.3,
+    "kayipMusteri/gun": 1.44,
+    "deaths": {
+     "bankrupt@12": 114,
+     "bankrupt@16": 40,
+     "bankrupt@8": 19
+    }
+   },
+   "P3_zayif_mantikli_ev": {
+    "kasa": 1076,
+    "p10": 823,
+    "kayip": 100.0,
+    "prestij": 35.6,
+    "gelir": 2052,
+    "upg": 560,
+    "idle%": 13.0,
+    "erken%": 91.1,
+    "kayipMusteri/gun": 1.64,
+    "deaths": {
+     "bankrupt@12": 45,
+     "bankrupt@8": 204,
+     "bankrupt@16": 1
+    }
+   },
+   "P3_orta_hic_ev": {
+    "kasa": 4039,
+    "p10": 2899,
+    "kayip": 0.0,
+    "prestij": 76.9,
+    "gelir": 9527,
+    "upg": 0,
+    "idle%": 11.5,
+    "erken%": 96.7,
+    "kayipMusteri/gun": 1.1,
+    "deaths": {}
+   },
+   "P3_orta_mantikli_ev": {
+    "kasa": 1202,
+    "p10": 376,
+    "kayip": 42.0,
+    "prestij": 63.7,
+    "gelir": 8439,
+    "upg": 3995,
+    "idle%": 11.9,
+    "erken%": 96.4,
+    "kayipMusteri/gun": 1.48,
+    "deaths": {
+     "bankrupt@8": 67,
+     "bankrupt@12": 36,
+     "bankrupt@16": 2
+    }
+   },
+   "P3_iyi_hic_ev": {
+    "kasa": 7382,
+    "p10": 6035,
+    "kayip": 0.0,
+    "prestij": 95.8,
+    "gelir": 12495,
+    "upg": 0,
+    "idle%": 12.1,
+    "erken%": 98.6,
+    "kayipMusteri/gun": 0.71,
+    "deaths": {}
+   },
+   "P3_iyi_mantikli_ev": {
+    "kasa": 3258,
+    "p10": 1202,
+    "kayip": 9.2,
+    "prestij": 91.9,
+    "gelir": 16133,
+    "upg": 8645,
+    "idle%": 14.4,
+    "erken%": 98.5,
+    "kayipMusteri/gun": 1.25,
+    "deaths": {
+     "bankrupt@8": 18,
+     "bankrupt@12": 5
+    }
+   },
+   "P4_zayif_hic_ev": {
+    "kasa": 1143,
+    "p10": 264,
+    "kayip": 32.0,
+    "prestij": 63.0,
+    "gelir": 7286,
+    "upg": 0,
+    "idle%": 17.4,
+    "erken%": 51.8,
+    "kayipMusteri/gun": 1.53,
+    "deaths": {
+     "bankrupt@12": 55,
+     "bankrupt@16": 11,
+     "bankrupt@8": 14
+    }
+   },
+   "P4_zayif_mantikli_ev": {
+    "kasa": 1650,
+    "p10": 1297,
+    "kayip": 99.2,
+    "prestij": 43.8,
+    "gelir": 3690,
+    "upg": 1088,
+    "idle%": 17.3,
+    "erken%": 52.8,
+    "kayipMusteri/gun": 1.58,
+    "deaths": {
+     "bankrupt@12": 49,
+     "bankrupt@8": 193,
+     "bankrupt@16": 6
+    }
+   },
+   "P4_orta_hic_ev": {
+    "kasa": 6008,
+    "p10": 4564,
+    "kayip": 0.0,
+    "prestij": 96.4,
+    "gelir": 13999,
+    "upg": 0,
+    "idle%": 13.8,
+    "erken%": 89.9,
+    "kayipMusteri/gun": 1.1,
+    "deaths": {}
+   },
+   "P4_orta_mantikli_ev": {
+    "kasa": 2573,
+    "p10": 1317,
+    "kayip": 29.2,
+    "prestij": 83.4,
+    "gelir": 14952,
+    "upg": 6863,
+    "idle%": 14.5,
+    "erken%": 90.8,
+    "kayipMusteri/gun": 1.68,
+    "deaths": {
+     "bankrupt@8": 52,
+     "bankrupt@12": 21
+    }
+   },
+   "P4_iyi_hic_ev": {
+    "kasa": 10595,
+    "p10": 8537,
+    "kayip": 0.0,
+    "prestij": 99.9,
+    "gelir": 18182,
+    "upg": 0,
+    "idle%": 13.9,
+    "erken%": 96.2,
+    "kayipMusteri/gun": 0.81,
+    "deaths": {}
+   },
+   "P4_iyi_mantikli_ev": {
+    "kasa": 6692,
+    "p10": 4092,
+    "kayip": 1.2,
+    "prestij": 99.4,
+    "gelir": 26463,
+    "upg": 13064,
+    "idle%": 15.7,
+    "erken%": 97.2,
+    "kayipMusteri/gun": 1.51,
+    "deaths": {
+     "bankrupt@8": 3
+    }
+   }
+  }
+ },
+ "D1": {
+  "desc": "prestigePerBonus 8 → 6 (tier eşiği düşer, 1P'ye daha çok kazanç)",
+  "overrides": [
+   "economy.prestigePerBonus=6"
+  ],
+  "cells": {
+   "P1_zayif_hic_ev": {
+    "kasa": 254,
+    "p10": 50,
+    "kayip": 14.0,
+    "prestij": 12.7,
+    "gelir": 1393,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 85.0,
+    "kayipMusteri/gun": 2.06,
+    "deaths": {
+     "bankrupt@16": 33,
+     "bankrupt@12": 2
+    }
+   },
+   "P1_zayif_mantikli_ev": {
+    "kasa": 262,
+    "p10": 134,
+    "kayip": 98.4,
+    "prestij": 14.0,
+    "gelir": 714,
+    "upg": 472,
+    "idle%": 13.1,
+    "erken%": 87.1,
+    "kayipMusteri/gun": 2.05,
+    "deaths": {
+     "bankrupt@8": 137,
+     "bankrupt@12": 77,
+     "bankrupt@16": 32
+    }
+   },
+   "P1_orta_hic_ev": {
+    "kasa": 1294,
+    "p10": 808,
+    "kayip": 0.0,
+    "prestij": 25.0,
+    "gelir": 2432,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 89.5,
+    "kayipMusteri/gun": 1.64,
+    "deaths": {}
+   },
+   "P1_orta_mantikli_ev": {
+    "kasa": 257,
+    "p10": 64,
+    "kayip": 59.2,
+    "prestij": 23.8,
+    "gelir": 1919,
+    "upg": 1251,
+    "idle%": 12.4,
+    "erken%": 88.8,
+    "kayipMusteri/gun": 1.61,
+    "deaths": {
+     "bankrupt@8": 76,
+     "bankrupt@16": 30,
+     "bankrupt@12": 42
+    }
+   },
+   "P1_iyi_hic_ev": {
+    "kasa": 2779,
+    "p10": 2096,
+    "kayip": 0.0,
+    "prestij": 37.7,
+    "gelir": 3715,
+    "upg": 0,
+    "idle%": 12.9,
+    "erken%": 91.3,
+    "kayipMusteri/gun": 1.11,
+    "deaths": {}
+   },
+   "P1_iyi_mantikli_ev": {
+    "kasa": 825,
+    "p10": 251,
+    "kayip": 12.4,
+    "prestij": 40.4,
+    "gelir": 4441,
+    "upg": 2968,
+    "idle%": 12.4,
+    "erken%": 93.9,
+    "kayipMusteri/gun": 1.16,
+    "deaths": {
+     "bankrupt@8": 20,
+     "bankrupt@12": 10,
+     "bankrupt@16": 1
+    }
+   },
+   "P2_zayif_hic_ev": {
+    "kasa": 517,
+    "p10": 122,
+    "kayip": 10.8,
+    "prestij": 24.9,
+    "gelir": 3427,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 49.0,
+    "kayipMusteri/gun": 3.27,
+    "deaths": {
+     "bankrupt@12": 25,
+     "bankrupt@8": 2
+    }
+   },
+   "P2_zayif_mantikli_ev": {
+    "kasa": 689,
+    "p10": 497,
+    "kayip": 96.8,
+    "prestij": 24.3,
+    "gelir": 1933,
+    "upg": 696,
+    "idle%": 13.3,
+    "erken%": 48.0,
+    "kayipMusteri/gun": 3.17,
+    "deaths": {
+     "bankrupt@12": 83,
+     "bankrupt@8": 130,
+     "bankrupt@16": 29
+    }
+   },
+   "P2_orta_hic_ev": {
+    "kasa": 4039,
+    "p10": 3215,
+    "kayip": 0.0,
+    "prestij": 54.1,
+    "gelir": 7025,
+    "upg": 0,
+    "idle%": 11.9,
+    "erken%": 74.4,
+    "kayipMusteri/gun": 2.07,
+    "deaths": {}
+   },
+   "P2_orta_mantikli_ev": {
+    "kasa": 1019,
+    "p10": 387,
+    "kayip": 14.0,
+    "prestij": 51.7,
+    "gelir": 7859,
+    "upg": 4417,
+    "idle%": 13.0,
+    "erken%": 77.9,
+    "kayipMusteri/gun": 2.41,
+    "deaths": {
+     "bankrupt@8": 29,
+     "bankrupt@12": 5,
+     "bankrupt@16": 1
+    }
+   },
+   "P2_iyi_hic_ev": {
+    "kasa": 7767,
+    "p10": 6673,
+    "kayip": 0.0,
+    "prestij": 76.9,
+    "gelir": 10399,
+    "upg": 0,
+    "idle%": 12.6,
+    "erken%": 88.8,
+    "kayipMusteri/gun": 1.29,
+    "deaths": {}
+   },
+   "P2_iyi_mantikli_ev": {
+    "kasa": 5321,
+    "p10": 3017,
+    "kayip": 0.8,
+    "prestij": 80.4,
+    "gelir": 15150,
+    "upg": 7516,
+    "idle%": 15.1,
+    "erken%": 92.3,
+    "kayipMusteri/gun": 1.83,
+    "deaths": {
+     "bankrupt@8": 2
+    }
+   },
+   "P3_zayif_hic_ev": {
+    "kasa": 811,
+    "p10": 252,
+    "kayip": 24.0,
+    "prestij": 42.3,
+    "gelir": 5381,
+    "upg": 0,
+    "idle%": 19.3,
+    "erken%": 46.3,
+    "kayipMusteri/gun": 2.31,
+    "deaths": {
+     "bankrupt@12": 48,
+     "bankrupt@16": 8,
+     "bankrupt@8": 4
+    }
+   },
+   "P3_zayif_mantikli_ev": {
+    "kasa": 1140,
+    "p10": 817,
+    "kayip": 97.6,
+    "prestij": 33.0,
+    "gelir": 2734,
+    "upg": 795,
+    "idle%": 19.7,
+    "erken%": 49.5,
+    "kayipMusteri/gun": 2.36,
+    "deaths": {
+     "bankrupt@12": 60,
+     "bankrupt@8": 170,
+     "bankrupt@16": 14
+    }
+   },
+   "P3_orta_hic_ev": {
+    "kasa": 5468,
+    "p10": 4332,
+    "kayip": 0.0,
+    "prestij": 71.4,
+    "gelir": 10980,
+    "upg": 0,
+    "idle%": 16.7,
+    "erken%": 87.8,
+    "kayipMusteri/gun": 1.67,
+    "deaths": {}
+   },
+   "P3_orta_mantikli_ev": {
+    "kasa": 1866,
+    "p10": 698,
+    "kayip": 14.4,
+    "prestij": 67.5,
+    "gelir": 12333,
+    "upg": 6008,
+    "idle%": 17.3,
+    "erken%": 89.0,
+    "kayipMusteri/gun": 1.97,
+    "deaths": {
+     "bankrupt@8": 30,
+     "bankrupt@12": 6
+    }
+   },
+   "P3_iyi_hic_ev": {
+    "kasa": 9240,
+    "p10": 7624,
+    "kayip": 0.0,
+    "prestij": 91.7,
+    "gelir": 14356,
+    "upg": 0,
+    "idle%": 16.7,
+    "erken%": 95.9,
+    "kayipMusteri/gun": 1.15,
+    "deaths": {}
+   },
+   "P3_iyi_mantikli_ev": {
+    "kasa": 5696,
+    "p10": 3497,
+    "kayip": 0.8,
+    "prestij": 94.8,
+    "gelir": 20534,
+    "upg": 10254,
+    "idle%": 18.5,
+    "erken%": 96.8,
+    "kayipMusteri/gun": 1.62,
+    "deaths": {
+     "bankrupt@12": 1,
+     "bankrupt@8": 1
+    }
+   },
+   "P4_zayif_hic_ev": {
+    "kasa": 1335,
+    "p10": 472,
+    "kayip": 41.2,
+    "prestij": 45.6,
+    "gelir": 6739,
+    "upg": 0,
+    "idle%": 26.4,
+    "erken%": 64.0,
+    "kayipMusteri/gun": 2.29,
+    "deaths": {
+     "bankrupt@12": 83,
+     "bankrupt@16": 4,
+     "bankrupt@8": 16
+    }
+   },
+   "P4_zayif_mantikli_ev": {
+    "kasa": 1610,
+    "p10": 1250,
+    "kayip": 99.2,
+    "prestij": 35.2,
+    "gelir": 3225,
+    "upg": 811,
+    "idle%": 25.6,
+    "erken%": 66.0,
+    "kayipMusteri/gun": 2.19,
+    "deaths": {
+     "bankrupt@8": 205,
+     "bankrupt@12": 37,
+     "bankrupt@16": 6
+    }
+   },
+   "P4_orta_hic_ev": {
+    "kasa": 5708,
+    "p10": 4174,
+    "kayip": 0.0,
+    "prestij": 78.2,
+    "gelir": 13668,
+    "upg": 0,
+    "idle%": 20.9,
+    "erken%": 93.7,
+    "kayipMusteri/gun": 1.62,
+    "deaths": {}
+   },
+   "P4_orta_mantikli_ev": {
+    "kasa": 1962,
+    "p10": 825,
+    "kayip": 37.2,
+    "prestij": 68.5,
+    "gelir": 12967,
+    "upg": 5970,
+    "idle%": 20.8,
+    "erken%": 95.0,
+    "kayipMusteri/gun": 1.92,
+    "deaths": {
+     "bankrupt@8": 56,
+     "bankrupt@12": 36,
+     "bankrupt@16": 1
+    }
+   },
+   "P4_iyi_hic_ev": {
+    "kasa": 10173,
+    "p10": 8294,
+    "kayip": 0.0,
+    "prestij": 96.3,
+    "gelir": 17753,
+    "upg": 0,
+    "idle%": 20.2,
+    "erken%": 97.4,
+    "kayipMusteri/gun": 1.16,
+    "deaths": {}
+   },
+   "P4_iyi_mantikli_ev": {
+    "kasa": 4958,
+    "p10": 2491,
+    "kayip": 3.6,
+    "prestij": 95.8,
+    "gelir": 23079,
+    "upg": 11480,
+    "idle%": 21.0,
+    "erken%": 97.7,
+    "kayipMusteri/gun": 1.68,
+    "deaths": {
+     "bankrupt@12": 2,
+     "bankrupt@8": 7
+    }
+   }
+  }
+ },
+ "D2": {
+  "desc": "maxPrestige 100 → 140 (4P iyi tavana dayanmasın)",
+  "overrides": [
+   "economy.maxPrestige=140"
+  ],
+  "cells": {
+   "P1_zayif_hic_ev": {
+    "kasa": 217,
+    "p10": 49,
+    "kayip": 19.6,
+    "prestij": 12.8,
+    "gelir": 1286,
+    "upg": 0,
+    "idle%": 12.7,
+    "erken%": 84.9,
+    "kayipMusteri/gun": 2.06,
+    "deaths": {
+     "bankrupt@16": 40,
+     "bankrupt@12": 9
+    }
+   },
+   "P1_zayif_mantikli_ev": {
+    "kasa": 246,
+    "p10": 109,
+    "kayip": 99.2,
+    "prestij": 14.1,
+    "gelir": 621,
+    "upg": 432,
+    "idle%": 13.0,
+    "erken%": 87.4,
+    "kayipMusteri/gun": 2.07,
+    "deaths": {
+     "bankrupt@8": 146,
+     "bankrupt@12": 81,
+     "bankrupt@16": 21
+    }
+   },
+   "P1_orta_hic_ev": {
+    "kasa": 1127,
+    "p10": 674,
+    "kayip": 0.0,
+    "prestij": 25.0,
+    "gelir": 2264,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 89.5,
+    "kayipMusteri/gun": 1.64,
+    "deaths": {}
+   },
+   "P1_orta_mantikli_ev": {
+    "kasa": 252,
+    "p10": 51,
+    "kayip": 62.4,
+    "prestij": 23.4,
+    "gelir": 1773,
+    "upg": 1147,
+    "idle%": 12.4,
+    "erken%": 89.8,
+    "kayipMusteri/gun": 1.62,
+    "deaths": {
+     "bankrupt@8": 71,
+     "bankrupt@12": 54,
+     "bankrupt@16": 31
+    }
+   },
+   "P1_iyi_hic_ev": {
+    "kasa": 2476,
+    "p10": 1852,
+    "kayip": 0.0,
+    "prestij": 37.7,
+    "gelir": 3412,
+    "upg": 0,
+    "idle%": 12.9,
+    "erken%": 91.3,
+    "kayipMusteri/gun": 1.11,
+    "deaths": {}
+   },
+   "P1_iyi_mantikli_ev": {
+    "kasa": 549,
+    "p10": 187,
+    "kayip": 18.8,
+    "prestij": 38.6,
+    "gelir": 3731,
+    "upg": 2574,
+    "idle%": 12.8,
+    "erken%": 93.5,
+    "kayipMusteri/gun": 1.16,
+    "deaths": {
+     "bankrupt@8": 25,
+     "bankrupt@12": 21,
+     "bankrupt@16": 1
+    }
+   },
+   "P2_zayif_hic_ev": {
+    "kasa": 463,
+    "p10": 119,
+    "kayip": 21.2,
+    "prestij": 24.8,
+    "gelir": 3144,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 49.0,
+    "kayipMusteri/gun": 3.27,
+    "deaths": {
+     "bankrupt@16": 15,
+     "bankrupt@12": 36,
+     "bankrupt@8": 2
+    }
+   },
+   "P2_zayif_mantikli_ev": {
+    "kasa": 672,
+    "p10": 460,
+    "kayip": 95.6,
+    "prestij": 24.4,
+    "gelir": 1779,
+    "upg": 590,
+    "idle%": 13.0,
+    "erken%": 47.4,
+    "kayipMusteri/gun": 3.13,
+    "deaths": {
+     "bankrupt@12": 69,
+     "bankrupt@8": 143,
+     "bankrupt@16": 27
+    }
+   },
+   "P2_orta_hic_ev": {
+    "kasa": 3380,
+    "p10": 2614,
+    "kayip": 0.0,
+    "prestij": 54.1,
+    "gelir": 6365,
+    "upg": 0,
+    "idle%": 11.9,
+    "erken%": 74.4,
+    "kayipMusteri/gun": 2.07,
+    "deaths": {}
+   },
+   "P2_orta_mantikli_ev": {
+    "kasa": 798,
+    "p10": 356,
+    "kayip": 25.6,
+    "prestij": 50.0,
+    "gelir": 6532,
+    "upg": 3574,
+    "idle%": 12.6,
+    "erken%": 77.9,
+    "kayipMusteri/gun": 2.38,
+    "deaths": {
+     "bankrupt@8": 39,
+     "bankrupt@12": 20,
+     "bankrupt@16": 5
+    }
+   },
+   "P2_iyi_hic_ev": {
+    "kasa": 6619,
+    "p10": 5622,
+    "kayip": 0.0,
+    "prestij": 76.9,
+    "gelir": 9250,
+    "upg": 0,
+    "idle%": 12.6,
+    "erken%": 88.8,
+    "kayipMusteri/gun": 1.29,
+    "deaths": {}
+   },
+   "P2_iyi_mantikli_ev": {
+    "kasa": 3431,
+    "p10": 1624,
+    "kayip": 2.0,
+    "prestij": 79.3,
+    "gelir": 12874,
+    "upg": 7098,
+    "idle%": 15.1,
+    "erken%": 92.2,
+    "kayipMusteri/gun": 1.88,
+    "deaths": {
+     "bankrupt@8": 3,
+     "bankrupt@12": 2
+    }
+   },
+   "P3_zayif_hic_ev": {
+    "kasa": 904,
+    "p10": 170,
+    "kayip": 45.6,
+    "prestij": 41.3,
+    "gelir": 4704,
+    "upg": 0,
+    "idle%": 19.3,
+    "erken%": 46.1,
+    "kayipMusteri/gun": 2.3,
+    "deaths": {
+     "bankrupt@16": 28,
+     "bankrupt@12": 81,
+     "bankrupt@8": 5
+    }
+   },
+   "P3_zayif_mantikli_ev": {
+    "kasa": 1095,
+    "p10": 791,
+    "kayip": 98.8,
+    "prestij": 32.4,
+    "gelir": 2299,
+    "upg": 643,
+    "idle%": 19.4,
+    "erken%": 45.5,
+    "kayipMusteri/gun": 2.23,
+    "deaths": {
+     "bankrupt@8": 191,
+     "bankrupt@12": 51,
+     "bankrupt@16": 5
+    }
+   },
+   "P3_orta_hic_ev": {
+    "kasa": 4456,
+    "p10": 3462,
+    "kayip": 0.0,
+    "prestij": 71.4,
+    "gelir": 9968,
+    "upg": 0,
+    "idle%": 16.7,
+    "erken%": 87.8,
+    "kayipMusteri/gun": 1.67,
+    "deaths": {}
+   },
+   "P3_orta_mantikli_ev": {
+    "kasa": 1329,
+    "p10": 578,
+    "kayip": 26.8,
+    "prestij": 63.6,
+    "gelir": 9911,
+    "upg": 4677,
+    "idle%": 17.3,
+    "erken%": 88.7,
+    "kayipMusteri/gun": 1.97,
+    "deaths": {
+     "bankrupt@8": 51,
+     "bankrupt@12": 16
+    }
+   },
+   "P3_iyi_hic_ev": {
+    "kasa": 7752,
+    "p10": 6371,
+    "kayip": 0.0,
+    "prestij": 91.8,
+    "gelir": 12868,
+    "upg": 0,
+    "idle%": 16.7,
+    "erken%": 95.9,
+    "kayipMusteri/gun": 1.15,
+    "deaths": {}
+   },
+   "P3_iyi_mantikli_ev": {
+    "kasa": 3727,
+    "p10": 1953,
+    "kayip": 2.4,
+    "prestij": 93.7,
+    "gelir": 17646,
+    "upg": 9358,
+    "idle%": 18.4,
+    "erken%": 96.3,
+    "kayipMusteri/gun": 1.6,
+    "deaths": {
+     "bankrupt@8": 6
+    }
+   },
+   "P4_zayif_hic_ev": {
+    "kasa": 1432,
+    "p10": 344,
+    "kayip": 61.2,
+    "prestij": 44.0,
+    "gelir": 5730,
+    "upg": 0,
+    "idle%": 26.4,
+    "erken%": 64.1,
+    "kayipMusteri/gun": 2.28,
+    "deaths": {
+     "bankrupt@12": 112,
+     "bankrupt@16": 15,
+     "bankrupt@8": 26
+    }
+   },
+   "P4_zayif_mantikli_ev": {
+    "kasa": 1560,
+    "p10": 1195,
+    "kayip": 100.0,
+    "prestij": 34.9,
+    "gelir": 2909,
+    "upg": 682,
+    "idle%": 26.0,
+    "erken%": 67.6,
+    "kayipMusteri/gun": 2.15,
+    "deaths": {
+     "bankrupt@8": 210,
+     "bankrupt@12": 38,
+     "bankrupt@16": 2
+    }
+   },
+   "P4_orta_hic_ev": {
+    "kasa": 4576,
+    "p10": 3147,
+    "kayip": 0.0,
+    "prestij": 78.2,
+    "gelir": 12532,
+    "upg": 0,
+    "idle%": 20.9,
+    "erken%": 93.7,
+    "kayipMusteri/gun": 1.62,
+    "deaths": {}
+   },
+   "P4_orta_mantikli_ev": {
+    "kasa": 1617,
+    "p10": 526,
+    "kayip": 50.0,
+    "prestij": 64.4,
+    "gelir": 10279,
+    "upg": 4469,
+    "idle%": 20.9,
+    "erken%": 94.6,
+    "kayipMusteri/gun": 1.87,
+    "deaths": {
+     "bankrupt@8": 83,
+     "bankrupt@12": 39,
+     "bankrupt@16": 3
+    }
+   },
+   "P4_iyi_hic_ev": {
+    "kasa": 8521,
+    "p10": 6804,
+    "kayip": 0.0,
+    "prestij": 96.8,
+    "gelir": 16101,
+    "upg": 0,
+    "idle%": 20.2,
+    "erken%": 97.4,
+    "kayipMusteri/gun": 1.16,
+    "deaths": {}
+   },
+   "P4_iyi_mantikli_ev": {
+    "kasa": 3560,
+    "p10": 1598,
+    "kayip": 8.4,
+    "prestij": 95.5,
+    "gelir": 19905,
+    "upg": 9954,
+    "idle%": 20.9,
+    "erken%": 98.1,
+    "kayipMusteri/gun": 1.68,
+    "deaths": {
+     "bankrupt@12": 4,
+     "bankrupt@8": 17
+    }
+   }
+  }
+ },
+ "E1": {
+  "desc": "event ekonomik etkileri ×2 güçlendirildi (ödül çarpanları tabandan uzaklaştırıldı)",
+  "overrides": [
+   "events.pool.1.reward=1.4",
+   "events.pool.4.reward=0.84",
+   "events.pool.5.reward=1.16",
+   "events.pool.7.reward=1.30",
+   "events.pool.10.reward=1.24",
+   "events.pool.13.reward=0.4",
+   "events.pool.12.customers=0.6",
+   "events.pool.9.customers=0.7"
+  ],
+  "cells": {
+   "P1_zayif_hic_ev": {
+    "kasa": 215,
+    "p10": 43,
+    "kayip": 19.6,
+    "prestij": 12.8,
+    "gelir": 1277,
+    "upg": 0,
+    "idle%": 12.9,
+    "erken%": 85.1,
+    "kayipMusteri/gun": 2.05,
+    "deaths": {
+     "bankrupt@12": 9,
+     "bankrupt@16": 40
+    }
+   },
+   "P1_zayif_mantikli_ev": {
+    "kasa": 248,
+    "p10": 114,
+    "kayip": 99.2,
+    "prestij": 14.1,
+    "gelir": 629,
+    "upg": 434,
+    "idle%": 13.2,
+    "erken%": 86.7,
+    "kayipMusteri/gun": 2.02,
+    "deaths": {
+     "bankrupt@8": 142,
+     "bankrupt@12": 85,
+     "bankrupt@16": 21
+    }
+   },
+   "P1_orta_hic_ev": {
+    "kasa": 1130,
+    "p10": 669,
+    "kayip": 0.0,
+    "prestij": 25.0,
+    "gelir": 2268,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 89.4,
+    "kayipMusteri/gun": 1.63,
+    "deaths": {}
+   },
+   "P1_orta_mantikli_ev": {
+    "kasa": 256,
+    "p10": 64,
+    "kayip": 64.8,
+    "prestij": 23.2,
+    "gelir": 1742,
+    "upg": 1128,
+    "idle%": 12.6,
+    "erken%": 89.9,
+    "kayipMusteri/gun": 1.61,
+    "deaths": {
+     "bankrupt@8": 76,
+     "bankrupt@12": 54,
+     "bankrupt@16": 32
+    }
+   },
+   "P1_iyi_hic_ev": {
+    "kasa": 2470,
+    "p10": 1819,
+    "kayip": 0.0,
+    "prestij": 37.5,
+    "gelir": 3410,
+    "upg": 0,
+    "idle%": 12.9,
+    "erken%": 91.3,
+    "kayipMusteri/gun": 1.11,
+    "deaths": {}
+   },
+   "P1_iyi_mantikli_ev": {
+    "kasa": 504,
+    "p10": 164,
+    "kayip": 23.2,
+    "prestij": 38.0,
+    "gelir": 3587,
+    "upg": 2509,
+    "idle%": 12.9,
+    "erken%": 93.7,
+    "kayipMusteri/gun": 1.17,
+    "deaths": {
+     "bankrupt@8": 31,
+     "bankrupt@12": 22,
+     "bankrupt@16": 5
+    }
+   },
+   "P2_zayif_hic_ev": {
+    "kasa": 472,
+    "p10": 107,
+    "kayip": 21.2,
+    "prestij": 24.8,
+    "gelir": 3172,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 48.5,
+    "kayipMusteri/gun": 3.25,
+    "deaths": {
+     "bankrupt@12": 33,
+     "bankrupt@16": 18,
+     "bankrupt@8": 2
+    }
+   },
+   "P2_zayif_mantikli_ev": {
+    "kasa": 657,
+    "p10": 452,
+    "kayip": 95.2,
+    "prestij": 24.3,
+    "gelir": 1777,
+    "upg": 612,
+    "idle%": 13.1,
+    "erken%": 48.2,
+    "kayipMusteri/gun": 3.13,
+    "deaths": {
+     "bankrupt@12": 78,
+     "bankrupt@16": 21,
+     "bankrupt@8": 139
+    }
+   },
+   "P2_orta_hic_ev": {
+    "kasa": 3350,
+    "p10": 2535,
+    "kayip": 0.0,
+    "prestij": 53.9,
+    "gelir": 6328,
+    "upg": 0,
+    "idle%": 12.0,
+    "erken%": 74.6,
+    "kayipMusteri/gun": 2.07,
+    "deaths": {}
+   },
+   "P2_orta_mantikli_ev": {
+    "kasa": 772,
+    "p10": 233,
+    "kayip": 25.2,
+    "prestij": 49.3,
+    "gelir": 6508,
+    "upg": 3594,
+    "idle%": 12.8,
+    "erken%": 78.1,
+    "kayipMusteri/gun": 2.38,
+    "deaths": {
+     "bankrupt@8": 40,
+     "bankrupt@16": 4,
+     "bankrupt@12": 19
+    }
+   },
+   "P2_iyi_hic_ev": {
+    "kasa": 6545,
+    "p10": 5415,
+    "kayip": 0.0,
+    "prestij": 76.5,
+    "gelir": 9178,
+    "upg": 0,
+    "idle%": 12.7,
+    "erken%": 89.1,
+    "kayipMusteri/gun": 1.29,
+    "deaths": {}
+   },
+   "P2_iyi_mantikli_ev": {
+    "kasa": 3376,
+    "p10": 1528,
+    "kayip": 1.6,
+    "prestij": 79.1,
+    "gelir": 12805,
+    "upg": 7096,
+    "idle%": 15.1,
+    "erken%": 92.1,
+    "kayipMusteri/gun": 1.86,
+    "deaths": {
+     "bankrupt@8": 4
+    }
+   },
+   "P3_zayif_hic_ev": {
+    "kasa": 817,
+    "p10": 133,
+    "kayip": 41.6,
+    "prestij": 41.4,
+    "gelir": 4721,
+    "upg": 0,
+    "idle%": 19.3,
+    "erken%": 46.3,
+    "kayipMusteri/gun": 2.27,
+    "deaths": {
+     "bankrupt@12": 79,
+     "bankrupt@16": 21,
+     "bankrupt@8": 4
+    }
+   },
+   "P3_zayif_mantikli_ev": {
+    "kasa": 1115,
+    "p10": 822,
+    "kayip": 98.8,
+    "prestij": 32.5,
+    "gelir": 2377,
+    "upg": 668,
+    "idle%": 19.9,
+    "erken%": 49.0,
+    "kayipMusteri/gun": 2.3,
+    "deaths": {
+     "bankrupt@8": 189,
+     "bankrupt@12": 49,
+     "bankrupt@16": 9
+    }
+   },
+   "P3_orta_hic_ev": {
+    "kasa": 4414,
+    "p10": 3239,
+    "kayip": 0.0,
+    "prestij": 71.0,
+    "gelir": 9929,
+    "upg": 0,
+    "idle%": 16.7,
+    "erken%": 88.2,
+    "kayipMusteri/gun": 1.66,
+    "deaths": {}
+   },
+   "P3_orta_mantikli_ev": {
+    "kasa": 1212,
+    "p10": 328,
+    "kayip": 27.6,
+    "prestij": 63.1,
+    "gelir": 9754,
+    "upg": 4677,
+    "idle%": 17.4,
+    "erken%": 88.6,
+    "kayipMusteri/gun": 1.99,
+    "deaths": {
+     "bankrupt@8": 50,
+     "bankrupt@12": 19
+    }
+   },
+   "P3_iyi_hic_ev": {
+    "kasa": 7697,
+    "p10": 6250,
+    "kayip": 0.0,
+    "prestij": 91.2,
+    "gelir": 12814,
+    "upg": 0,
+    "idle%": 16.8,
+    "erken%": 95.9,
+    "kayipMusteri/gun": 1.14,
+    "deaths": {}
+   },
+   "P3_iyi_mantikli_ev": {
+    "kasa": 3662,
+    "p10": 1648,
+    "kayip": 3.2,
+    "prestij": 92.8,
+    "gelir": 17449,
+    "upg": 9237,
+    "idle%": 18.4,
+    "erken%": 96.4,
+    "kayipMusteri/gun": 1.56,
+    "deaths": {
+     "bankrupt@8": 7,
+     "bankrupt@12": 1
+    }
+   },
+   "P4_zayif_hic_ev": {
+    "kasa": 1437,
+    "p10": 418,
+    "kayip": 57.2,
+    "prestij": 44.3,
+    "gelir": 5922,
+    "upg": 0,
+    "idle%": 26.1,
+    "erken%": 63.7,
+    "kayipMusteri/gun": 2.22,
+    "deaths": {
+     "bankrupt@12": 105,
+     "bankrupt@16": 13,
+     "bankrupt@8": 25
+    }
+   },
+   "P4_zayif_mantikli_ev": {
+    "kasa": 1558,
+    "p10": 1194,
+    "kayip": 99.6,
+    "prestij": 34.9,
+    "gelir": 2958,
+    "upg": 707,
+    "idle%": 25.6,
+    "erken%": 67.7,
+    "kayipMusteri/gun": 2.15,
+    "deaths": {
+     "bankrupt@8": 209,
+     "bankrupt@12": 38,
+     "bankrupt@16": 2
+    }
+   },
+   "P4_orta_hic_ev": {
+    "kasa": 4586,
+    "p10": 3064,
+    "kayip": 0.0,
+    "prestij": 77.8,
+    "gelir": 12541,
+    "upg": 0,
+    "idle%": 20.8,
+    "erken%": 93.8,
+    "kayipMusteri/gun": 1.61,
+    "deaths": {}
+   },
+   "P4_orta_mantikli_ev": {
+    "kasa": 1682,
+    "p10": 706,
+    "kayip": 50.0,
+    "prestij": 63.7,
+    "gelir": 10344,
+    "upg": 4510,
+    "idle%": 20.9,
+    "erken%": 94.8,
+    "kayipMusteri/gun": 1.9,
+    "deaths": {
+     "bankrupt@8": 84,
+     "bankrupt@12": 40,
+     "bankrupt@16": 1
+    }
+   },
+   "P4_iyi_hic_ev": {
+    "kasa": 8512,
+    "p10": 6914,
+    "kayip": 0.0,
+    "prestij": 95.8,
+    "gelir": 16094,
+    "upg": 0,
+    "idle%": 20.2,
+    "erken%": 97.5,
+    "kayipMusteri/gun": 1.15,
+    "deaths": {}
+   },
+   "P4_iyi_mantikli_ev": {
+    "kasa": 3593,
+    "p10": 1551,
+    "kayip": 8.8,
+    "prestij": 93.6,
+    "gelir": 19909,
+    "upg": 9876,
+    "idle%": 20.9,
+    "erken%": 97.9,
+    "kayipMusteri/gun": 1.64,
+    "deaths": {
+     "bankrupt@12": 9,
+     "bankrupt@8": 13
+    }
+   }
+  }
+ },
+ "F1": {
+  "desc": "Paketleme İstasyonu 2. paketleme masası yerine 2. SERVİS istasyonunu açar + fiyat 150→90",
+  "overrides": [
+   "perkEffects.packing_station_grants_station=1",
+   "upgrades.1.baseCost=90"
+  ],
+  "cells": {
+   "P1_zayif_hic_ev": {
+    "kasa": 217,
+    "p10": 49,
+    "kayip": 19.6,
+    "prestij": 12.8,
+    "gelir": 1286,
+    "upg": 0,
+    "idle%": 12.7,
+    "erken%": 84.9,
+    "kayipMusteri/gun": 2.06,
+    "deaths": {
+     "bankrupt@16": 40,
+     "bankrupt@12": 9
+    }
+   },
+   "P1_zayif_mantikli_ev": {
+    "kasa": 247,
+    "p10": 118,
+    "kayip": 99.6,
+    "prestij": 14.8,
+    "gelir": 574,
+    "upg": 429,
+    "idle%": 12.1,
+    "erken%": 83.8,
+    "kayipMusteri/gun": 2.04,
+    "deaths": {
+     "bankrupt@8": 162,
+     "bankrupt@12": 79,
+     "bankrupt@16": 8
+    }
+   },
+   "P1_orta_hic_ev": {
+    "kasa": 1127,
+    "p10": 674,
+    "kayip": 0.0,
+    "prestij": 25.0,
+    "gelir": 2264,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 89.5,
+    "kayipMusteri/gun": 1.64,
+    "deaths": {}
+   },
+   "P1_orta_mantikli_ev": {
+    "kasa": 250,
+    "p10": 68,
+    "kayip": 60.8,
+    "prestij": 26.4,
+    "gelir": 1839,
+    "upg": 1206,
+    "idle%": 10.2,
+    "erken%": 89.6,
+    "kayipMusteri/gun": 1.32,
+    "deaths": {
+     "bankrupt@12": 53,
+     "bankrupt@16": 23,
+     "bankrupt@8": 76
+    }
+   },
+   "P1_iyi_hic_ev": {
+    "kasa": 2476,
+    "p10": 1852,
+    "kayip": 0.0,
+    "prestij": 37.7,
+    "gelir": 3412,
+    "upg": 0,
+    "idle%": 12.9,
+    "erken%": 91.3,
+    "kayipMusteri/gun": 1.11,
+    "deaths": {}
+   },
+   "P1_iyi_mantikli_ev": {
+    "kasa": 777,
+    "p10": 261,
+    "kayip": 15.6,
+    "prestij": 43.7,
+    "gelir": 4278,
+    "upg": 2876,
+    "idle%": 10.2,
+    "erken%": 94.0,
+    "kayipMusteri/gun": 0.77,
+    "deaths": {
+     "bankrupt@12": 10,
+     "bankrupt@8": 27,
+     "bankrupt@16": 2
+    }
+   },
+   "P2_zayif_hic_ev": {
+    "kasa": 463,
+    "p10": 119,
+    "kayip": 21.2,
+    "prestij": 24.8,
+    "gelir": 3144,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 49.0,
+    "kayipMusteri/gun": 3.27,
+    "deaths": {
+     "bankrupt@16": 15,
+     "bankrupt@12": 36,
+     "bankrupt@8": 2
+    }
+   },
+   "P2_zayif_mantikli_ev": {
+    "kasa": 674,
+    "p10": 474,
+    "kayip": 98.4,
+    "prestij": 28.9,
+    "gelir": 1745,
+    "upg": 551,
+    "idle%": 9.8,
+    "erken%": 47.0,
+    "kayipMusteri/gun": 2.36,
+    "deaths": {
+     "bankrupt@8": 123,
+     "bankrupt@12": 99,
+     "bankrupt@16": 24
+    }
+   },
+   "P2_orta_hic_ev": {
+    "kasa": 3380,
+    "p10": 2614,
+    "kayip": 0.0,
+    "prestij": 54.1,
+    "gelir": 6365,
+    "upg": 0,
+    "idle%": 11.9,
+    "erken%": 74.4,
+    "kayipMusteri/gun": 2.07,
+    "deaths": {}
+   },
+   "P2_orta_mantikli_ev": {
+    "kasa": 728,
+    "p10": 215,
+    "kayip": 28.0,
+    "prestij": 57.4,
+    "gelir": 6173,
+    "upg": 3399,
+    "idle%": 9.9,
+    "erken%": 76.1,
+    "kayipMusteri/gun": 1.65,
+    "deaths": {
+     "bankrupt@8": 49,
+     "bankrupt@12": 16,
+     "bankrupt@16": 5
+    }
+   },
+   "P2_iyi_hic_ev": {
+    "kasa": 6619,
+    "p10": 5622,
+    "kayip": 0.0,
+    "prestij": 76.9,
+    "gelir": 9250,
+    "upg": 0,
+    "idle%": 12.6,
+    "erken%": 88.8,
+    "kayipMusteri/gun": 1.29,
+    "deaths": {}
+   },
+   "P2_iyi_mantikli_ev": {
+    "kasa": 3646,
+    "p10": 1938,
+    "kayip": 2.8,
+    "prestij": 90.0,
+    "gelir": 12837,
+    "upg": 6917,
+    "idle%": 11.0,
+    "erken%": 93.6,
+    "kayipMusteri/gun": 1.26,
+    "deaths": {
+     "bankrupt@8": 7
+    }
+   },
+   "P3_zayif_hic_ev": {
+    "kasa": 904,
+    "p10": 170,
+    "kayip": 45.6,
+    "prestij": 41.3,
+    "gelir": 4704,
+    "upg": 0,
+    "idle%": 19.3,
+    "erken%": 46.1,
+    "kayipMusteri/gun": 2.3,
+    "deaths": {
+     "bankrupt@16": 28,
+     "bankrupt@12": 81,
+     "bankrupt@8": 5
+    }
+   },
+   "P3_zayif_mantikli_ev": {
+    "kasa": 1074,
+    "p10": 833,
+    "kayip": 100.0,
+    "prestij": 32.1,
+    "gelir": 2208,
+    "upg": 677,
+    "idle%": 19.4,
+    "erken%": 48.9,
+    "kayipMusteri/gun": 2.16,
+    "deaths": {
+     "bankrupt@8": 199,
+     "bankrupt@12": 48,
+     "bankrupt@16": 3
+    }
+   },
+   "P3_orta_hic_ev": {
+    "kasa": 4456,
+    "p10": 3462,
+    "kayip": 0.0,
+    "prestij": 71.4,
+    "gelir": 9968,
+    "upg": 0,
+    "idle%": 16.7,
+    "erken%": 87.8,
+    "kayipMusteri/gun": 1.67,
+    "deaths": {}
+   },
+   "P3_orta_mantikli_ev": {
+    "kasa": 1283,
+    "p10": 469,
+    "kayip": 26.8,
+    "prestij": 68.9,
+    "gelir": 10115,
+    "upg": 4925,
+    "idle%": 15.3,
+    "erken%": 89.5,
+    "kayipMusteri/gun": 1.62,
+    "deaths": {
+     "bankrupt@8": 48,
+     "bankrupt@12": 17,
+     "bankrupt@16": 2
+    }
+   },
+   "P3_iyi_hic_ev": {
+    "kasa": 7752,
+    "p10": 6371,
+    "kayip": 0.0,
+    "prestij": 91.7,
+    "gelir": 12868,
+    "upg": 0,
+    "idle%": 16.7,
+    "erken%": 95.9,
+    "kayipMusteri/gun": 1.15,
+    "deaths": {}
+   },
+   "P3_iyi_mantikli_ev": {
+    "kasa": 3101,
+    "p10": 1454,
+    "kayip": 4.0,
+    "prestij": 96.3,
+    "gelir": 16588,
+    "upg": 9041,
+    "idle%": 15.4,
+    "erken%": 97.4,
+    "kayipMusteri/gun": 1.3,
+    "deaths": {
+     "bankrupt@8": 7,
+     "bankrupt@12": 3
+    }
+   },
+   "P4_zayif_hic_ev": {
+    "kasa": 1432,
+    "p10": 344,
+    "kayip": 61.2,
+    "prestij": 44.0,
+    "gelir": 5730,
+    "upg": 0,
+    "idle%": 26.4,
+    "erken%": 64.1,
+    "kayipMusteri/gun": 2.28,
+    "deaths": {
+     "bankrupt@12": 112,
+     "bankrupt@16": 15,
+     "bankrupt@8": 26
+    }
+   },
+   "P4_zayif_mantikli_ev": {
+    "kasa": 1520,
+    "p10": 1184,
+    "kayip": 99.6,
+    "prestij": 34.6,
+    "gelir": 2823,
+    "upg": 705,
+    "idle%": 27.1,
+    "erken%": 60.9,
+    "kayipMusteri/gun": 2.31,
+    "deaths": {
+     "bankrupt@8": 218,
+     "bankrupt@12": 31
+    }
+   },
+   "P4_orta_hic_ev": {
+    "kasa": 4576,
+    "p10": 3147,
+    "kayip": 0.0,
+    "prestij": 78.2,
+    "gelir": 12532,
+    "upg": 0,
+    "idle%": 20.9,
+    "erken%": 93.7,
+    "kayipMusteri/gun": 1.62,
+    "deaths": {}
+   },
+   "P4_orta_mantikli_ev": {
+    "kasa": 1683,
+    "p10": 660,
+    "kayip": 50.4,
+    "prestij": 68.5,
+    "gelir": 10394,
+    "upg": 4542,
+    "idle%": 19.1,
+    "erken%": 95.5,
+    "kayipMusteri/gun": 1.48,
+    "deaths": {
+     "bankrupt@12": 40,
+     "bankrupt@8": 82,
+     "bankrupt@16": 4
+    }
+   },
+   "P4_iyi_hic_ev": {
+    "kasa": 8520,
+    "p10": 6804,
+    "kayip": 0.0,
+    "prestij": 96.3,
+    "gelir": 16100,
+    "upg": 0,
+    "idle%": 20.2,
+    "erken%": 97.4,
+    "kayipMusteri/gun": 1.16,
+    "deaths": {}
+   },
+   "P4_iyi_mantikli_ev": {
+    "kasa": 3080,
+    "p10": 1476,
+    "kayip": 10.0,
+    "prestij": 95.4,
+    "gelir": 18858,
+    "upg": 9390,
+    "idle%": 18.3,
+    "erken%": 98.5,
+    "kayipMusteri/gun": 1.29,
+    "deaths": {
+     "bankrupt@8": 15,
+     "bankrupt@12": 10
+    }
+   }
+  }
+ },
+ "A4": {
+  "desc": "A1 + A2 + A3 birlikte (kart ekonomisi paketi)",
+  "overrides": [
+   "perkEffects.fast_hangar_mult=0.75",
+   "economy.upgradeCostMultiplierByPlayerCount=[1.0,1.6,2.1,2.5]",
+   "upgrades.13.baseCost=120",
+   "upgrades.16.baseCost=90",
+   "upgrades.0.baseCost=25",
+   "upgrades.0.costStep=10",
+   "upgrades.3.baseCost=40",
+   "upgrades.3.costStep=10",
+   "upgrades.18.baseCost=30",
+   "upgrades.10.baseCost=60",
+   "upgrades.12.baseCost=60",
+   "upgrades.5.baseCost=80",
+   "upgrades.5.costStep=10",
+   "upgrades.4.baseCost=70",
+   "upgrades.4.costStep=15",
+   "upgrades.8.baseCost=55",
+   "upgrades.9.baseCost=110"
+  ],
+  "cells": {
+   "P1_zayif_hic_ev": {
+    "kasa": 217,
+    "p10": 49,
+    "kayip": 19.6,
+    "prestij": 12.8,
+    "gelir": 1286,
+    "upg": 0,
+    "idle%": 12.7,
+    "erken%": 84.9,
+    "kayipMusteri/gun": 2.06,
+    "deaths": {
+     "bankrupt@16": 40,
+     "bankrupt@12": 9
+    }
+   },
+   "P1_zayif_mantikli_ev": {
+    "kasa": 312,
+    "p10": 206,
+    "kayip": 90.4,
+    "prestij": 11.8,
+    "gelir": 980,
+    "upg": 679,
+    "idle%": 12.4,
+    "erken%": 88.4,
+    "kayipMusteri/gun": 2.07,
+    "deaths": {
+     "bankrupt@12": 166,
+     "bankrupt@16": 60
+    }
+   },
+   "P1_orta_hic_ev": {
+    "kasa": 1127,
+    "p10": 674,
+    "kayip": 0.0,
+    "prestij": 25.0,
+    "gelir": 2264,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 89.5,
+    "kayipMusteri/gun": 1.64,
+    "deaths": {}
+   },
+   "P1_orta_mantikli_ev": {
+    "kasa": 284,
+    "p10": 59,
+    "kayip": 14.4,
+    "prestij": 26.0,
+    "gelir": 2686,
+    "upg": 1725,
+    "idle%": 12.0,
+    "erken%": 91.9,
+    "kayipMusteri/gun": 1.56,
+    "deaths": {
+     "bankrupt@16": 13,
+     "bankrupt@12": 23
+    }
+   },
+   "P1_iyi_hic_ev": {
+    "kasa": 2476,
+    "p10": 1852,
+    "kayip": 0.0,
+    "prestij": 37.7,
+    "gelir": 3412,
+    "upg": 0,
+    "idle%": 12.9,
+    "erken%": 91.3,
+    "kayipMusteri/gun": 1.11,
+    "deaths": {}
+   },
+   "P1_iyi_mantikli_ev": {
+    "kasa": 1500,
+    "p10": 480,
+    "kayip": 0.4,
+    "prestij": 41.9,
+    "gelir": 4836,
+    "upg": 2669,
+    "idle%": 12.8,
+    "erken%": 95.5,
+    "kayipMusteri/gun": 1.23,
+    "deaths": {
+     "bankrupt@12": 1
+    }
+   },
+   "P2_zayif_hic_ev": {
+    "kasa": 463,
+    "p10": 119,
+    "kayip": 21.2,
+    "prestij": 24.8,
+    "gelir": 3144,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 49.0,
+    "kayipMusteri/gun": 3.27,
+    "deaths": {
+     "bankrupt@16": 15,
+     "bankrupt@12": 36,
+     "bankrupt@8": 2
+    }
+   },
+   "P2_zayif_mantikli_ev": {
+    "kasa": 634,
+    "p10": 374,
+    "kayip": 92.0,
+    "prestij": 24.6,
+    "gelir": 1821,
+    "upg": 843,
+    "idle%": 12.5,
+    "erken%": 69.3,
+    "kayipMusteri/gun": 3.13,
+    "deaths": {
+     "bankrupt@12": 59,
+     "bankrupt@8": 154,
+     "bankrupt@16": 17
+    }
+   },
+   "P2_orta_hic_ev": {
+    "kasa": 3380,
+    "p10": 2614,
+    "kayip": 0.0,
+    "prestij": 54.1,
+    "gelir": 6365,
+    "upg": 0,
+    "idle%": 11.9,
+    "erken%": 74.4,
+    "kayipMusteri/gun": 2.07,
+    "deaths": {}
+   },
+   "P2_orta_mantikli_ev": {
+    "kasa": 2215,
+    "p10": 736,
+    "kayip": 5.6,
+    "prestij": 54.6,
+    "gelir": 8625,
+    "upg": 3994,
+    "idle%": 12.8,
+    "erken%": 86.9,
+    "kayipMusteri/gun": 2.44,
+    "deaths": {
+     "bankrupt@12": 4,
+     "bankrupt@8": 10
+    }
+   },
+   "P2_iyi_hic_ev": {
+    "kasa": 6619,
+    "p10": 5622,
+    "kayip": 0.0,
+    "prestij": 76.9,
+    "gelir": 9250,
+    "upg": 0,
+    "idle%": 12.6,
+    "erken%": 88.8,
+    "kayipMusteri/gun": 1.29,
+    "deaths": {}
+   },
+   "P2_iyi_mantikli_ev": {
+    "kasa": 8226,
+    "p10": 6041,
+    "kayip": 0.0,
+    "prestij": 81.9,
+    "gelir": 14809,
+    "upg": 4429,
+    "idle%": 14.7,
+    "erken%": 95.9,
+    "kayipMusteri/gun": 1.88,
+    "deaths": {}
+   },
+   "P3_zayif_hic_ev": {
+    "kasa": 904,
+    "p10": 170,
+    "kayip": 45.6,
+    "prestij": 41.3,
+    "gelir": 4704,
+    "upg": 0,
+    "idle%": 19.3,
+    "erken%": 46.1,
+    "kayipMusteri/gun": 2.3,
+    "deaths": {
+     "bankrupt@16": 28,
+     "bankrupt@12": 81,
+     "bankrupt@8": 5
+    }
+   },
+   "P3_zayif_mantikli_ev": {
+    "kasa": 1084,
+    "p10": 788,
+    "kayip": 94.8,
+    "prestij": 33.6,
+    "gelir": 2662,
+    "upg": 1083,
+    "idle%": 18.8,
+    "erken%": 65.1,
+    "kayipMusteri/gun": 2.18,
+    "deaths": {
+     "bankrupt@12": 50,
+     "bankrupt@8": 182,
+     "bankrupt@16": 5
+    }
+   },
+   "P3_orta_hic_ev": {
+    "kasa": 4456,
+    "p10": 3462,
+    "kayip": 0.0,
+    "prestij": 71.4,
+    "gelir": 9968,
+    "upg": 0,
+    "idle%": 16.7,
+    "erken%": 87.8,
+    "kayipMusteri/gun": 1.67,
+    "deaths": {}
+   },
+   "P3_orta_mantikli_ev": {
+    "kasa": 3407,
+    "p10": 1384,
+    "kayip": 6.8,
+    "prestij": 71.6,
+    "gelir": 12847,
+    "upg": 5180,
+    "idle%": 16.8,
+    "erken%": 94.8,
+    "kayipMusteri/gun": 2.0,
+    "deaths": {
+     "bankrupt@12": 6,
+     "bankrupt@8": 11
+    }
+   },
+   "P3_iyi_hic_ev": {
+    "kasa": 7752,
+    "p10": 6371,
+    "kayip": 0.0,
+    "prestij": 91.7,
+    "gelir": 12868,
+    "upg": 0,
+    "idle%": 16.7,
+    "erken%": 95.9,
+    "kayipMusteri/gun": 1.15,
+    "deaths": {}
+   },
+   "P3_iyi_mantikli_ev": {
+    "kasa": 10655,
+    "p10": 7699,
+    "kayip": 0.0,
+    "prestij": 95.8,
+    "gelir": 20673,
+    "upg": 5848,
+    "idle%": 18.2,
+    "erken%": 98.2,
+    "kayipMusteri/gun": 1.65,
+    "deaths": {}
+   },
+   "P4_zayif_hic_ev": {
+    "kasa": 1432,
+    "p10": 344,
+    "kayip": 61.2,
+    "prestij": 44.0,
+    "gelir": 5730,
+    "upg": 0,
+    "idle%": 26.4,
+    "erken%": 64.1,
+    "kayipMusteri/gun": 2.28,
+    "deaths": {
+     "bankrupt@12": 112,
+     "bankrupt@16": 15,
+     "bankrupt@8": 26
+    }
+   },
+   "P4_zayif_mantikli_ev": {
+    "kasa": 1493,
+    "p10": 1178,
+    "kayip": 96.0,
+    "prestij": 35.6,
+    "gelir": 3259,
+    "upg": 1011,
+    "idle%": 25.5,
+    "erken%": 72.5,
+    "kayipMusteri/gun": 2.23,
+    "deaths": {
+     "bankrupt@8": 206,
+     "bankrupt@12": 32,
+     "bankrupt@16": 2
+    }
+   },
+   "P4_orta_hic_ev": {
+    "kasa": 4576,
+    "p10": 3147,
+    "kayip": 0.0,
+    "prestij": 78.2,
+    "gelir": 12532,
+    "upg": 0,
+    "idle%": 20.9,
+    "erken%": 93.7,
+    "kayipMusteri/gun": 1.62,
+    "deaths": {}
+   },
+   "P4_orta_mantikli_ev": {
+    "kasa": 4097,
+    "p10": 1672,
+    "kayip": 9.6,
+    "prestij": 77.6,
+    "gelir": 15877,
+    "upg": 5773,
+    "idle%": 20.4,
+    "erken%": 96.8,
+    "kayipMusteri/gun": 1.92,
+    "deaths": {
+     "bankrupt@8": 16,
+     "bankrupt@12": 8
+    }
+   },
+   "P4_iyi_hic_ev": {
+    "kasa": 8520,
+    "p10": 6804,
+    "kayip": 0.0,
+    "prestij": 96.3,
+    "gelir": 16100,
+    "upg": 0,
+    "idle%": 20.2,
+    "erken%": 97.4,
+    "kayipMusteri/gun": 1.16,
+    "deaths": {}
+   },
+   "P4_iyi_mantikli_ev": {
+    "kasa": 11680,
+    "p10": 8157,
+    "kayip": 0.0,
+    "prestij": 98.2,
+    "gelir": 24881,
+    "upg": 7011,
+    "idle%": 20.6,
+    "erken%": 99.0,
+    "kayipMusteri/gun": 1.68,
+    "deaths": {}
+   }
+  },
+  "payback": {
+   "Geniş Ambar": {
+    "id": "wide_storage",
+    "cost": 96,
+    "gain_total": 10,
+    "gain_per_day": 0.7,
+    "payback_days": 142.9,
+    "finalMoney": 3257,
+    "base_finalMoney": 3351,
+    "finalPrestige": 54.83072,
+    "deathRate": 0.0
+   },
+   "Paketleme İstasyonu": {
+    "id": "packing_station",
+    "cost": 240,
+    "gain_total": -203,
+    "gain_per_day": -13.5,
+    "payback_days": null,
+    "finalMoney": 2904,
+    "base_finalMoney": 3351,
+    "finalPrestige": 49.1992,
+    "deathRate": 0.0
+   },
+   "Ek Hangar": {
+    "id": "extra_hangar",
+    "cost": 320,
+    "gain_total": 838,
+    "gain_per_day": 55.9,
+    "payback_days": 5.7,
+    "finalMoney": 3861,
+    "base_finalMoney": 3351,
+    "finalPrestige": 49.47856,
+    "deathRate": 0.0
+   },
+   "Görev Kademesi": {
+    "id": "quest_tier",
+    "cost": 90,
+    "gain_total": -29,
+    "gain_per_day": -1.9,
+    "payback_days": null,
+    "finalMoney": 3223,
+    "base_finalMoney": 3351,
+    "finalPrestige": 54.67632,
+    "deathRate": 0.0
+   },
+   "Ucuz Kira": {
+    "id": "cheap_rent",
+    "cost": 408,
+    "gain_total": 442,
+    "gain_per_day": 29.5,
+    "payback_days": 13.9,
+    "finalMoney": 3377,
+    "base_finalMoney": 3351,
+    "finalPrestige": 54.83072,
+    "deathRate": 0.0
+   },
+   "Prestij Simsarı": {
+    "id": "prestige_broker",
+    "cost": 272,
+    "gain_total": 366,
+    "gain_per_day": 24.4,
+    "payback_days": 11.2,
+    "finalMoney": 3437,
+    "base_finalMoney": 3351,
+    "finalPrestige": 54.83072,
+    "deathRate": 0.0
+   },
+   "Prestij Ustası": {
+    "id": "prestige_master",
+    "cost": 600,
+    "gain_total": 763,
+    "gain_per_day": 50.9,
+    "payback_days": 11.8,
+    "finalMoney": 3510,
+    "base_finalMoney": 3351,
+    "finalPrestige": 80.36256,
+    "deathRate": 0.008
+   },
+   "Hızlı Hangar": {
+    "id": "fast_hangar",
+    "cost": 192,
+    "gain_total": 47,
+    "gain_per_day": 3.1,
+    "payback_days": 61.2,
+    "finalMoney": 3199,
+    "base_finalMoney": 3351,
+    "finalPrestige": 54.29312,
+    "deathRate": 0.0
+   },
+   "Enerjik Ekip": {
+    "id": "energetic_crew",
+    "cost": 88,
+    "gain_total": 88,
+    "gain_per_day": 5.9,
+    "payback_days": 15.0,
+    "finalMoney": 3349,
+    "base_finalMoney": 3351,
+    "finalPrestige": 56.6792,
+    "deathRate": 0.0
+   },
+   "Çevik Ekip": {
+    "id": "agile_crew",
+    "cost": 176,
+    "gain_total": 247,
+    "gain_per_day": 16.4,
+    "payback_days": 10.7,
+    "finalMoney": 3424,
+    "base_finalMoney": 3351,
+    "finalPrestige": 57.24672,
+    "deathRate": 0.0
+   },
+   "Sabırlı Müşteriler": {
+    "id": "patient_customers",
+    "cost": 96,
+    "gain_total": 45,
+    "gain_per_day": 3.0,
+    "payback_days": 31.7,
+    "finalMoney": 3292,
+    "base_finalMoney": 3351,
+    "finalPrestige": 55.30272,
+    "deathRate": 0.0
+   },
+   "Kumarbaz Kasası": {
+    "id": "gambler_case",
+    "cost": 560,
+    "gain_total": 1256,
+    "gain_per_day": 83.7,
+    "payback_days": 6.7,
+    "finalMoney": 4041,
+    "base_finalMoney": 3351,
+    "finalPrestige": 54.83072,
+    "deathRate": 0.0
+   },
+   "Telefon Hattı": {
+    "id": "phone_line",
+    "cost": 96,
+    "gain_total": 59,
+    "gain_per_day": 3.9,
+    "payback_days": 24.4,
+    "finalMoney": 3308,
+    "base_finalMoney": 3351,
+    "finalPrestige": 55.85392,
+    "deathRate": 0.0
+   },
+   "Mesai Saati": {
+    "id": "overtime",
+    "cost": 192,
+    "gain_total": 24,
+    "gain_per_day": 1.6,
+    "payback_days": 118.7,
+    "finalMoney": 3176,
+    "base_finalMoney": 3351,
+    "finalPrestige": 53.31376,
+    "deathRate": 0.0
+   },
+   "Kaldıraçlı Kira": {
+    "id": "leveraged_rent",
+    "cost": 480,
+    "gain_total": 882,
+    "gain_per_day": 58.8,
+    "payback_days": 8.2,
+    "finalMoney": 3745,
+    "base_finalMoney": 3351,
+    "finalPrestige": 54.83072,
+    "deathRate": 0.0
+   },
+   "Yüksek Volatilite": {
+    "id": "high_volatility",
+    "cost": 512,
+    "gain_total": 798,
+    "gain_per_day": 53.2,
+    "payback_days": 9.6,
+    "finalMoney": 3637,
+    "base_finalMoney": 3351,
+    "finalPrestige": 55.26816,
+    "deathRate": 0.004
+   },
+   "Acil Fren": {
+    "id": "emergency_brake",
+    "cost": 144,
+    "gain_total": 10,
+    "gain_per_day": 0.7,
+    "payback_days": 214.3,
+    "finalMoney": 3209,
+    "base_finalMoney": 3351,
+    "finalPrestige": 54.83072,
+    "deathRate": 0.0
+   },
+   "Kelle Koltukta": {
+    "id": "all_in",
+    "cost": 512,
+    "gain_total": 1099,
+    "gain_per_day": 73.3,
+    "payback_days": 7.0,
+    "finalMoney": 3926,
+    "base_finalMoney": 3351,
+    "finalPrestige": 54.12816,
+    "deathRate": 0.024
+   },
+   "Toplu Alım": {
+    "id": "bulk_buy",
+    "cost": 48,
+    "gain_total": 10,
+    "gain_per_day": 0.7,
+    "payback_days": 71.4,
+    "finalMoney": 3305,
+    "base_finalMoney": 3351,
+    "finalPrestige": 54.83072,
+    "deathRate": 0.0
+   }
+  }
+ },
+ "ALL": {
+  "desc": "A1+A2+A3+B1+C1+D1 (B1 dahil — ölçüldü, B1 katkısı YOK)",
+  "overrides": [
+   "perkEffects.fast_hangar_mult=0.75",
+   "economy.upgradeCostMultiplierByPlayerCount=[1.0,1.6,2.1,2.5]",
+   "upgrades.13.baseCost=120",
+   "upgrades.16.baseCost=90",
+   "upgrades.0.baseCost=25",
+   "upgrades.0.costStep=10",
+   "upgrades.3.baseCost=40",
+   "upgrades.3.costStep=10",
+   "upgrades.18.baseCost=30",
+   "upgrades.10.baseCost=60",
+   "upgrades.12.baseCost=60",
+   "upgrades.5.baseCost=80",
+   "upgrades.5.costStep=10",
+   "upgrades.4.baseCost=70",
+   "upgrades.4.costStep=15",
+   "upgrades.8.baseCost=55",
+   "upgrades.9.baseCost=110",
+   "economy.rentGrowthMultiplier=1.12",
+   "economy.baseRentByPlayerCount=[330,730,1280,1830]",
+   "economy.serviceStations=2",
+   "economy.prestigePerBonus=6"
+  ],
+  "cells": {
+   "P1_zayif_hic_ev": {
+    "kasa": 231,
+    "p10": 45,
+    "kayip": 14.8,
+    "prestij": 14.1,
+    "gelir": 1364,
+    "upg": 0,
+    "idle%": 11.5,
+    "erken%": 84.8,
+    "kayipMusteri/gun": 1.95,
+    "deaths": {
+     "bankrupt@12": 14,
+     "bankrupt@16": 23
+    }
+   },
+   "P1_zayif_mantikli_ev": {
+    "kasa": 301,
+    "p10": 102,
+    "kayip": 86.4,
+    "prestij": 12.3,
+    "gelir": 1070,
+    "upg": 728,
+    "idle%": 11.5,
+    "erken%": 87.5,
+    "kayipMusteri/gun": 2.02,
+    "deaths": {
+     "bankrupt@12": 162,
+     "bankrupt@16": 54
+    }
+   },
+   "P1_orta_hic_ev": {
+    "kasa": 1483,
+    "p10": 982,
+    "kayip": 0.0,
+    "prestij": 28.8,
+    "gelir": 2654,
+    "upg": 0,
+    "idle%": 9.6,
+    "erken%": 89.2,
+    "kayipMusteri/gun": 1.28,
+    "deaths": {}
+   },
+   "P1_orta_mantikli_ev": {
+    "kasa": 429,
+    "p10": 103,
+    "kayip": 7.2,
+    "prestij": 30.2,
+    "gelir": 3269,
+    "upg": 2087,
+    "idle%": 9.4,
+    "erken%": 92.5,
+    "kayipMusteri/gun": 1.25,
+    "deaths": {
+     "bankrupt@12": 15,
+     "bankrupt@16": 3
+    }
+   },
+   "P1_iyi_hic_ev": {
+    "kasa": 3201,
+    "p10": 2517,
+    "kayip": 0.0,
+    "prestij": 43.4,
+    "gelir": 4140,
+    "upg": 0,
+    "idle%": 9.7,
+    "erken%": 91.2,
+    "kayipMusteri/gun": 0.63,
+    "deaths": {}
+   },
+   "P1_iyi_mantikli_ev": {
+    "kasa": 2730,
+    "p10": 1481,
+    "kayip": 0.4,
+    "prestij": 48.2,
+    "gelir": 6154,
+    "upg": 2772,
+    "idle%": 9.8,
+    "erken%": 95.8,
+    "kayipMusteri/gun": 0.78,
+    "deaths": {
+     "bankrupt@12": 1
+    }
+   },
+   "P2_zayif_hic_ev": {
+    "kasa": 688,
+    "p10": 255,
+    "kayip": 6.0,
+    "prestij": 37.2,
+    "gelir": 3716,
+    "upg": 0,
+    "idle%": 9.1,
+    "erken%": 46.0,
+    "kayipMusteri/gun": 2.22,
+    "deaths": {
+     "bankrupt@12": 12,
+     "bankrupt@16": 2,
+     "bankrupt@8": 1
+    }
+   },
+   "P2_zayif_mantikli_ev": {
+    "kasa": 619,
+    "p10": 312,
+    "kayip": 85.6,
+    "prestij": 29.9,
+    "gelir": 2084,
+    "upg": 976,
+    "idle%": 9.2,
+    "erken%": 64.0,
+    "kayipMusteri/gun": 2.3,
+    "deaths": {
+     "bankrupt@8": 158,
+     "bankrupt@12": 48,
+     "bankrupt@16": 8
+    }
+   },
+   "P2_orta_hic_ev": {
+    "kasa": 4331,
+    "p10": 3426,
+    "kayip": 0.0,
+    "prestij": 61.0,
+    "gelir": 7316,
+    "upg": 0,
+    "idle%": 9.6,
+    "erken%": 72.2,
+    "kayipMusteri/gun": 1.48,
+    "deaths": {}
+   },
+   "P2_orta_mantikli_ev": {
+    "kasa": 3742,
+    "p10": 1920,
+    "kayip": 4.0,
+    "prestij": 61.1,
+    "gelir": 10452,
+    "upg": 4253,
+    "idle%": 10.3,
+    "erken%": 87.1,
+    "kayipMusteri/gun": 1.97,
+    "deaths": {
+     "bankrupt@8": 10
+    }
+   },
+   "P2_iyi_hic_ev": {
+    "kasa": 8143,
+    "p10": 6919,
+    "kayip": 0.0,
+    "prestij": 82.5,
+    "gelir": 10771,
+    "upg": 0,
+    "idle%": 10.5,
+    "erken%": 88.1,
+    "kayipMusteri/gun": 0.85,
+    "deaths": {}
+   },
+   "P2_iyi_mantikli_ev": {
+    "kasa": 11253,
+    "p10": 8872,
+    "kayip": 0.0,
+    "prestij": 88.4,
+    "gelir": 17837,
+    "upg": 4440,
+    "idle%": 12.6,
+    "erken%": 95.6,
+    "kayipMusteri/gun": 1.43,
+    "deaths": {}
+   },
+   "P3_zayif_hic_ev": {
+    "kasa": 930,
+    "p10": 249,
+    "kayip": 38.0,
+    "prestij": 49.9,
+    "gelir": 4871,
+    "upg": 0,
+    "idle%": 16.2,
+    "erken%": 47.0,
+    "kayipMusteri/gun": 1.41,
+    "deaths": {
+     "bankrupt@12": 65,
+     "bankrupt@8": 22,
+     "bankrupt@16": 8
+    }
+   },
+   "P3_zayif_mantikli_ev": {
+    "kasa": 1122,
+    "p10": 883,
+    "kayip": 97.2,
+    "prestij": 36.5,
+    "gelir": 2611,
+    "upg": 981,
+    "idle%": 16.6,
+    "erken%": 57.9,
+    "kayipMusteri/gun": 1.53,
+    "deaths": {
+     "bankrupt@8": 204,
+     "bankrupt@16": 6,
+     "bankrupt@12": 33
+    }
+   },
+   "P3_orta_hic_ev": {
+    "kasa": 5933,
+    "p10": 4611,
+    "kayip": 0.0,
+    "prestij": 80.2,
+    "gelir": 11432,
+    "upg": 0,
+    "idle%": 13.6,
+    "erken%": 88.0,
+    "kayipMusteri/gun": 0.99,
+    "deaths": {}
+   },
+   "P3_orta_mantikli_ev": {
+    "kasa": 5474,
+    "p10": 1958,
+    "kayip": 6.8,
+    "prestij": 78.2,
+    "gelir": 15154,
+    "upg": 5295,
+    "idle%": 14.4,
+    "erken%": 94.2,
+    "kayipMusteri/gun": 1.52,
+    "deaths": {
+     "bankrupt@8": 17
+    }
+   },
+   "P3_iyi_hic_ev": {
+    "kasa": 9428,
+    "p10": 7690,
+    "kayip": 0.0,
+    "prestij": 97.3,
+    "gelir": 14544,
+    "upg": 0,
+    "idle%": 13.7,
+    "erken%": 96.2,
+    "kayipMusteri/gun": 0.72,
+    "deaths": {}
+   },
+   "P3_iyi_mantikli_ev": {
+    "kasa": 13822,
+    "p10": 10470,
+    "kayip": 0.4,
+    "prestij": 98.4,
+    "gelir": 23855,
+    "upg": 5860,
+    "idle%": 15.8,
+    "erken%": 98.3,
+    "kayipMusteri/gun": 1.29,
+    "deaths": {
+     "bankrupt@8": 1
+    }
+   },
+   "P4_zayif_hic_ev": {
+    "kasa": 1520,
+    "p10": 651,
+    "kayip": 50.0,
+    "prestij": 52.0,
+    "gelir": 6301,
+    "upg": 0,
+    "idle%": 22.6,
+    "erken%": 62.6,
+    "kayipMusteri/gun": 1.34,
+    "deaths": {
+     "bankrupt@12": 71,
+     "bankrupt@8": 49,
+     "bankrupt@16": 5
+    }
+   },
+   "P4_zayif_mantikli_ev": {
+    "kasa": 1577,
+    "p10": 1246,
+    "kayip": 96.4,
+    "prestij": 39.0,
+    "gelir": 3290,
+    "upg": 975,
+    "idle%": 21.7,
+    "erken%": 71.9,
+    "kayipMusteri/gun": 1.3,
+    "deaths": {
+     "bankrupt@8": 223,
+     "bankrupt@12": 18
+    }
+   },
+   "P4_orta_hic_ev": {
+    "kasa": 6086,
+    "p10": 4495,
+    "kayip": 0.0,
+    "prestij": 87.6,
+    "gelir": 14042,
+    "upg": 0,
+    "idle%": 17.1,
+    "erken%": 94.5,
+    "kayipMusteri/gun": 0.92,
+    "deaths": {}
+   },
+   "P4_orta_mantikli_ev": {
+    "kasa": 5617,
+    "p10": 1758,
+    "kayip": 14.4,
+    "prestij": 84.1,
+    "gelir": 17108,
+    "upg": 5731,
+    "idle%": 17.6,
+    "erken%": 97.0,
+    "kayipMusteri/gun": 1.33,
+    "deaths": {
+     "bankrupt@8": 33,
+     "bankrupt@12": 3
+    }
+   },
+   "P4_iyi_hic_ev": {
+    "kasa": 9958,
+    "p10": 8001,
+    "kayip": 0.0,
+    "prestij": 99.2,
+    "gelir": 17520,
+    "upg": 0,
+    "idle%": 16.9,
+    "erken%": 98.2,
+    "kayipMusteri/gun": 0.76,
+    "deaths": {}
+   },
+   "P4_iyi_mantikli_ev": {
+    "kasa": 14791,
+    "p10": 10954,
+    "kayip": 0.4,
+    "prestij": 99.5,
+    "gelir": 28000,
+    "upg": 6973,
+    "idle%": 18.4,
+    "erken%": 98.9,
+    "kayipMusteri/gun": 1.31,
+    "deaths": {
+     "bankrupt@8": 1
+    }
+   }
+  },
+  "payback": {
+   "Geniş Ambar": {
+    "id": "wide_storage",
+    "cost": 96,
+    "gain_total": -13,
+    "gain_per_day": -0.9,
+    "payback_days": null,
+    "finalMoney": 4178,
+    "base_finalMoney": 4293,
+    "finalPrestige": 61.92816,
+    "deathRate": 0.0
+   },
+   "Paketleme İstasyonu": {
+    "id": "packing_station",
+    "cost": 240,
+    "gain_total": -83,
+    "gain_per_day": -5.5,
+    "payback_days": null,
+    "finalMoney": 3967,
+    "base_finalMoney": 4293,
+    "finalPrestige": 56.9592,
+    "deathRate": 0.0
+   },
+   "Ek Hangar": {
+    "id": "extra_hangar",
+    "cost": 320,
+    "gain_total": 1021,
+    "gain_per_day": 68.1,
+    "payback_days": 4.7,
+    "finalMoney": 4973,
+    "base_finalMoney": 4293,
+    "finalPrestige": 55.1224,
+    "deathRate": 0.0
+   },
+   "Görev Kademesi": {
+    "id": "quest_tier",
+    "cost": 90,
+    "gain_total": -20,
+    "gain_per_day": -1.3,
+    "payback_days": null,
+    "finalMoney": 4190,
+    "base_finalMoney": 4293,
+    "finalPrestige": 61.80672,
+    "deathRate": 0.0
+   },
+   "Ucuz Kira": {
+    "id": "cheap_rent",
+    "cost": 408,
+    "gain_total": 428,
+    "gain_per_day": 28.5,
+    "payback_days": 14.3,
+    "finalMoney": 4307,
+    "base_finalMoney": 4293,
+    "finalPrestige": 61.8304,
+    "deathRate": 0.004
+   },
+   "Prestij Simsarı": {
+    "id": "prestige_broker",
+    "cost": 272,
+    "gain_total": 534,
+    "gain_per_day": 35.6,
+    "payback_days": 7.6,
+    "finalMoney": 4550,
+    "base_finalMoney": 4293,
+    "finalPrestige": 61.92816,
+    "deathRate": 0.0
+   },
+   "Prestij Ustası": {
+    "id": "prestige_master",
+    "cost": 600,
+    "gain_total": 1101,
+    "gain_per_day": 73.4,
+    "payback_days": 8.2,
+    "finalMoney": 4795,
+    "base_finalMoney": 4293,
+    "finalPrestige": 89.77024,
+    "deathRate": 0.004
+   },
+   "Hızlı Hangar": {
+    "id": "fast_hangar",
+    "cost": 192,
+    "gain_total": 119,
+    "gain_per_day": 7.9,
+    "payback_days": 24.2,
+    "finalMoney": 4219,
+    "base_finalMoney": 4293,
+    "finalPrestige": 61.25024,
+    "deathRate": 0.0
+   },
+   "Enerjik Ekip": {
+    "id": "energetic_crew",
+    "cost": 88,
+    "gain_total": 213,
+    "gain_per_day": 14.2,
+    "payback_days": 6.2,
+    "finalMoney": 4424,
+    "base_finalMoney": 4293,
+    "finalPrestige": 63.70768,
+    "deathRate": 0.0
+   },
+   "Çevik Ekip": {
+    "id": "agile_crew",
+    "cost": 176,
+    "gain_total": 353,
+    "gain_per_day": 23.5,
+    "payback_days": 7.5,
+    "finalMoney": 4472,
+    "base_finalMoney": 4293,
+    "finalPrestige": 63.88768,
+    "deathRate": 0.0
+   },
+   "Sabırlı Müşteriler": {
+    "id": "patient_customers",
+    "cost": 96,
+    "gain_total": 24,
+    "gain_per_day": 1.6,
+    "payback_days": 61.0,
+    "finalMoney": 4216,
+    "base_finalMoney": 4293,
+    "finalPrestige": 61.83248,
+    "deathRate": 0.0
+   },
+   "Kumarbaz Kasası": {
+    "id": "gambler_case",
+    "cost": 560,
+    "gain_total": 1222,
+    "gain_per_day": 81.5,
+    "payback_days": 6.9,
+    "finalMoney": 4951,
+    "base_finalMoney": 4293,
+    "finalPrestige": 61.8304,
+    "deathRate": 0.004
+   },
+   "Telefon Hattı": {
+    "id": "phone_line",
+    "cost": 96,
+    "gain_total": 77,
+    "gain_per_day": 5.2,
+    "payback_days": 18.6,
+    "finalMoney": 4273,
+    "base_finalMoney": 4293,
+    "finalPrestige": 62.22784,
+    "deathRate": 0.0
+   },
+   "Mesai Saati": {
+    "id": "overtime",
+    "cost": 192,
+    "gain_total": 135,
+    "gain_per_day": 9.0,
+    "payback_days": 21.3,
+    "finalMoney": 4237,
+    "base_finalMoney": 4293,
+    "finalPrestige": 60.7216,
+    "deathRate": 0.0
+   },
+   "Kaldıraçlı Kira": {
+    "id": "leveraged_rent",
+    "cost": 480,
+    "gain_total": 819,
+    "gain_per_day": 54.6,
+    "payback_days": 8.8,
+    "finalMoney": 4625,
+    "base_finalMoney": 4293,
+    "finalPrestige": 61.49856,
+    "deathRate": 0.012
+   },
+   "Yüksek Volatilite": {
+    "id": "high_volatility",
+    "cost": 512,
+    "gain_total": 1051,
+    "gain_per_day": 70.1,
+    "payback_days": 7.3,
+    "finalMoney": 4828,
+    "base_finalMoney": 4293,
+    "finalPrestige": 61.68544,
+    "deathRate": 0.0
+   },
+   "Acil Fren": {
+    "id": "emergency_brake",
+    "cost": 144,
+    "gain_total": -13,
+    "gain_per_day": -0.8,
+    "payback_days": null,
+    "finalMoney": 4131,
+    "base_finalMoney": 4293,
+    "finalPrestige": 61.92816,
+    "deathRate": 0.0
+   },
+   "Kelle Koltukta": {
+    "id": "all_in",
+    "cost": 512,
+    "gain_total": 922,
+    "gain_per_day": 61.5,
+    "payback_days": 8.3,
+    "finalMoney": 4686,
+    "base_finalMoney": 4293,
+    "finalPrestige": 59.54768,
+    "deathRate": 0.06
+   },
+   "Toplu Alım": {
+    "id": "bulk_buy",
+    "cost": 48,
+    "gain_total": -14,
+    "gain_per_day": -0.9,
+    "payback_days": null,
+    "finalMoney": 4225,
+    "base_finalMoney": 4293,
+    "finalPrestige": 61.92816,
+    "deathRate": 0.0
+   }
+  }
+ },
+ "REC": {
+  "desc": "ÖNERİLEN: Ö1+Ö2+Ö3+Ö4+Ö5 (docs/economy/05-oneriler.md)",
+  "overrides": [
+   "perkEffects.fast_hangar_mult=0.75",
+   "economy.upgradeCostMultiplierByPlayerCount=[1.0,1.6,2.1,2.5]",
+   "upgrades.13.baseCost=120",
+   "upgrades.16.baseCost=90",
+   "upgrades.0.baseCost=25",
+   "upgrades.0.costStep=10",
+   "upgrades.3.baseCost=40",
+   "upgrades.3.costStep=10",
+   "upgrades.18.baseCost=30",
+   "upgrades.10.baseCost=60",
+   "upgrades.12.baseCost=60",
+   "upgrades.5.baseCost=80",
+   "upgrades.5.costStep=10",
+   "upgrades.4.baseCost=70",
+   "upgrades.4.costStep=15",
+   "upgrades.8.baseCost=55",
+   "upgrades.9.baseCost=110",
+   "economy.prestigePerBonus=6",
+   "perkEffects.packing_station_grants_station=1",
+   "upgrades.1.baseCost=90"
+  ],
+  "cells": {
+   "P1_zayif_hic_ev": {
+    "kasa": 254,
+    "p10": 50,
+    "kayip": 14.0,
+    "prestij": 12.7,
+    "gelir": 1393,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 85.0,
+    "kayipMusteri/gun": 2.06,
+    "deaths": {
+     "bankrupt@16": 33,
+     "bankrupt@12": 2
+    }
+   },
+   "P1_zayif_mantikli_ev": {
+    "kasa": 301,
+    "p10": 80,
+    "kayip": 78.0,
+    "prestij": 12.9,
+    "gelir": 1215,
+    "upg": 774,
+    "idle%": 12.2,
+    "erken%": 86.0,
+    "kayipMusteri/gun": 1.93,
+    "deaths": {
+     "bankrupt@12": 124,
+     "bankrupt@16": 71
+    }
+   },
+   "P1_orta_hic_ev": {
+    "kasa": 1294,
+    "p10": 808,
+    "kayip": 0.0,
+    "prestij": 25.0,
+    "gelir": 2432,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 89.5,
+    "kayipMusteri/gun": 1.64,
+    "deaths": {}
+   },
+   "P1_orta_mantikli_ev": {
+    "kasa": 454,
+    "p10": 129,
+    "kayip": 6.8,
+    "prestij": 31.0,
+    "gelir": 3394,
+    "upg": 2140,
+    "idle%": 9.6,
+    "erken%": 92.5,
+    "kayipMusteri/gun": 1.27,
+    "deaths": {
+     "bankrupt@12": 15,
+     "bankrupt@16": 2
+    }
+   },
+   "P1_iyi_hic_ev": {
+    "kasa": 2779,
+    "p10": 2096,
+    "kayip": 0.0,
+    "prestij": 37.7,
+    "gelir": 3715,
+    "upg": 0,
+    "idle%": 12.9,
+    "erken%": 91.3,
+    "kayipMusteri/gun": 1.11,
+    "deaths": {}
+   },
+   "P1_iyi_mantikli_ev": {
+    "kasa": 2840,
+    "p10": 1704,
+    "kayip": 0.0,
+    "prestij": 48.5,
+    "gelir": 6198,
+    "upg": 2708,
+    "idle%": 10.0,
+    "erken%": 95.9,
+    "kayipMusteri/gun": 0.83,
+    "deaths": {}
+   },
+   "P2_zayif_hic_ev": {
+    "kasa": 517,
+    "p10": 122,
+    "kayip": 10.8,
+    "prestij": 24.9,
+    "gelir": 3427,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 49.0,
+    "kayipMusteri/gun": 3.27,
+    "deaths": {
+     "bankrupt@12": 25,
+     "bankrupt@8": 2
+    }
+   },
+   "P2_zayif_mantikli_ev": {
+    "kasa": 626,
+    "p10": 310,
+    "kayip": 84.0,
+    "prestij": 30.2,
+    "gelir": 2202,
+    "upg": 1017,
+    "idle%": 9.7,
+    "erken%": 56.8,
+    "kayipMusteri/gun": 2.27,
+    "deaths": {
+     "bankrupt@8": 118,
+     "bankrupt@12": 74,
+     "bankrupt@16": 18
+    }
+   },
+   "P2_orta_hic_ev": {
+    "kasa": 4039,
+    "p10": 3215,
+    "kayip": 0.0,
+    "prestij": 54.1,
+    "gelir": 7025,
+    "upg": 0,
+    "idle%": 11.9,
+    "erken%": 74.4,
+    "kayipMusteri/gun": 2.07,
+    "deaths": {}
+   },
+   "P2_orta_mantikli_ev": {
+    "kasa": 3851,
+    "p10": 2066,
+    "kayip": 0.4,
+    "prestij": 66.3,
+    "gelir": 10667,
+    "upg": 4285,
+    "idle%": 10.0,
+    "erken%": 85.9,
+    "kayipMusteri/gun": 1.79,
+    "deaths": {
+     "bankrupt@8": 1
+    }
+   },
+   "P2_iyi_hic_ev": {
+    "kasa": 7767,
+    "p10": 6673,
+    "kayip": 0.0,
+    "prestij": 76.9,
+    "gelir": 10399,
+    "upg": 0,
+    "idle%": 12.6,
+    "erken%": 88.8,
+    "kayipMusteri/gun": 1.29,
+    "deaths": {}
+   },
+   "P2_iyi_mantikli_ev": {
+    "kasa": 11044,
+    "p10": 8871,
+    "kayip": 0.0,
+    "prestij": 94.5,
+    "gelir": 17518,
+    "upg": 4409,
+    "idle%": 11.1,
+    "erken%": 95.2,
+    "kayipMusteri/gun": 1.31,
+    "deaths": {}
+   },
+   "P3_zayif_hic_ev": {
+    "kasa": 811,
+    "p10": 252,
+    "kayip": 24.0,
+    "prestij": 42.3,
+    "gelir": 5381,
+    "upg": 0,
+    "idle%": 19.3,
+    "erken%": 46.3,
+    "kayipMusteri/gun": 2.31,
+    "deaths": {
+     "bankrupt@12": 48,
+     "bankrupt@16": 8,
+     "bankrupt@8": 4
+    }
+   },
+   "P3_zayif_mantikli_ev": {
+    "kasa": 1110,
+    "p10": 837,
+    "kayip": 94.4,
+    "prestij": 34.7,
+    "gelir": 2821,
+    "upg": 1151,
+    "idle%": 17.9,
+    "erken%": 65.7,
+    "kayipMusteri/gun": 1.71,
+    "deaths": {
+     "bankrupt@8": 175,
+     "bankrupt@12": 57,
+     "bankrupt@16": 4
+    }
+   },
+   "P3_orta_hic_ev": {
+    "kasa": 5468,
+    "p10": 4332,
+    "kayip": 0.0,
+    "prestij": 71.4,
+    "gelir": 10980,
+    "upg": 0,
+    "idle%": 16.7,
+    "erken%": 87.8,
+    "kayipMusteri/gun": 1.67,
+    "deaths": {}
+   },
+   "P3_orta_mantikli_ev": {
+    "kasa": 5710,
+    "p10": 3216,
+    "kayip": 2.4,
+    "prestij": 82.1,
+    "gelir": 15726,
+    "upg": 5441,
+    "idle%": 14.4,
+    "erken%": 95.1,
+    "kayipMusteri/gun": 1.54,
+    "deaths": {
+     "bankrupt@8": 6
+    }
+   },
+   "P3_iyi_hic_ev": {
+    "kasa": 9240,
+    "p10": 7624,
+    "kayip": 0.0,
+    "prestij": 91.7,
+    "gelir": 14356,
+    "upg": 0,
+    "idle%": 16.7,
+    "erken%": 95.9,
+    "kayipMusteri/gun": 1.15,
+    "deaths": {}
+   },
+   "P3_iyi_mantikli_ev": {
+    "kasa": 13013,
+    "p10": 9910,
+    "kayip": 0.0,
+    "prestij": 99.6,
+    "gelir": 22885,
+    "upg": 5712,
+    "idle%": 15.0,
+    "erken%": 99.0,
+    "kayipMusteri/gun": 1.33,
+    "deaths": {}
+   },
+   "P4_zayif_hic_ev": {
+    "kasa": 1335,
+    "p10": 472,
+    "kayip": 41.2,
+    "prestij": 45.6,
+    "gelir": 6739,
+    "upg": 0,
+    "idle%": 26.4,
+    "erken%": 64.0,
+    "kayipMusteri/gun": 2.29,
+    "deaths": {
+     "bankrupt@12": 83,
+     "bankrupt@16": 4,
+     "bankrupt@8": 16
+    }
+   },
+   "P4_zayif_mantikli_ev": {
+    "kasa": 1555,
+    "p10": 1253,
+    "kayip": 94.8,
+    "prestij": 36.5,
+    "gelir": 3544,
+    "upg": 1127,
+    "idle%": 24.0,
+    "erken%": 70.5,
+    "kayipMusteri/gun": 1.82,
+    "deaths": {
+     "bankrupt@8": 199,
+     "bankrupt@12": 37,
+     "bankrupt@16": 1
+    }
+   },
+   "P4_orta_hic_ev": {
+    "kasa": 5708,
+    "p10": 4174,
+    "kayip": 0.0,
+    "prestij": 78.2,
+    "gelir": 13668,
+    "upg": 0,
+    "idle%": 20.9,
+    "erken%": 93.7,
+    "kayipMusteri/gun": 1.62,
+    "deaths": {}
+   },
+   "P4_orta_mantikli_ev": {
+    "kasa": 5885,
+    "p10": 2420,
+    "kayip": 3.6,
+    "prestij": 90.2,
+    "gelir": 18613,
+    "upg": 6262,
+    "idle%": 17.9,
+    "erken%": 97.3,
+    "kayipMusteri/gun": 1.32,
+    "deaths": {
+     "bankrupt@8": 8,
+     "bankrupt@12": 1
+    }
+   },
+   "P4_iyi_hic_ev": {
+    "kasa": 10173,
+    "p10": 8294,
+    "kayip": 0.0,
+    "prestij": 96.3,
+    "gelir": 17753,
+    "upg": 0,
+    "idle%": 20.2,
+    "erken%": 97.4,
+    "kayipMusteri/gun": 1.16,
+    "deaths": {}
+   },
+   "P4_iyi_mantikli_ev": {
+    "kasa": 13538,
+    "p10": 9640,
+    "kayip": 0.4,
+    "prestij": 99.7,
+    "gelir": 26582,
+    "upg": 6836,
+    "idle%": 17.7,
+    "erken%": 99.6,
+    "kayipMusteri/gun": 1.36,
+    "deaths": {
+     "bankrupt@12": 1
+    }
+   }
+  }
+ },
+ "REC6": {
+  "desc": "ÖNERİLEN + Ö6 (taban kira +%15 → {335,750,1310,1875})",
+  "overrides": [
+   "perkEffects.fast_hangar_mult=0.75",
+   "economy.upgradeCostMultiplierByPlayerCount=[1.0,1.6,2.1,2.5]",
+   "upgrades.13.baseCost=120",
+   "upgrades.16.baseCost=90",
+   "upgrades.0.baseCost=25",
+   "upgrades.0.costStep=10",
+   "upgrades.3.baseCost=40",
+   "upgrades.3.costStep=10",
+   "upgrades.18.baseCost=30",
+   "upgrades.10.baseCost=60",
+   "upgrades.12.baseCost=60",
+   "upgrades.5.baseCost=80",
+   "upgrades.5.costStep=10",
+   "upgrades.4.baseCost=70",
+   "upgrades.4.costStep=15",
+   "upgrades.8.baseCost=55",
+   "upgrades.9.baseCost=110",
+   "economy.prestigePerBonus=6",
+   "perkEffects.packing_station_grants_station=1",
+   "upgrades.1.baseCost=90",
+   "economy.baseRentByPlayerCount=[335,750,1310,1875]"
+  ],
+  "cells": {
+   "P1_zayif_hic_ev": {
+    "kasa": 234,
+    "p10": 66,
+    "kayip": 34.4,
+    "prestij": 12.9,
+    "gelir": 1345,
+    "upg": 0,
+    "idle%": 12.7,
+    "erken%": 84.8,
+    "kayipMusteri/gun": 2.06,
+    "deaths": {
+     "bankrupt@16": 61,
+     "bankrupt@12": 25
+    }
+   },
+   "P1_zayif_mantikli_ev": {
+    "kasa": 366,
+    "p10": 280,
+    "kayip": 95.2,
+    "prestij": 13.0,
+    "gelir": 1017,
+    "upg": 674,
+    "idle%": 12.2,
+    "erken%": 86.3,
+    "kayipMusteri/gun": 1.96,
+    "deaths": {
+     "bankrupt@12": 189,
+     "bankrupt@16": 49
+    }
+   },
+   "P1_orta_hic_ev": {
+    "kasa": 1061,
+    "p10": 567,
+    "kayip": 0.4,
+    "prestij": 25.0,
+    "gelir": 2430,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 89.5,
+    "kayipMusteri/gun": 1.64,
+    "deaths": {
+     "bankrupt@12": 1
+    }
+   },
+   "P1_orta_mantikli_ev": {
+    "kasa": 415,
+    "p10": 142,
+    "kayip": 14.0,
+    "prestij": 29.6,
+    "gelir": 3219,
+    "upg": 1971,
+    "idle%": 9.7,
+    "erken%": 92.1,
+    "kayipMusteri/gun": 1.29,
+    "deaths": {
+     "bankrupt@12": 27,
+     "bankrupt@16": 8
+    }
+   },
+   "P1_iyi_hic_ev": {
+    "kasa": 2541,
+    "p10": 1855,
+    "kayip": 0.0,
+    "prestij": 37.7,
+    "gelir": 3715,
+    "upg": 0,
+    "idle%": 12.9,
+    "erken%": 91.3,
+    "kayipMusteri/gun": 1.11,
+    "deaths": {}
+   },
+   "P1_iyi_mantikli_ev": {
+    "kasa": 2585,
+    "p10": 1373,
+    "kayip": 0.8,
+    "prestij": 47.6,
+    "gelir": 6102,
+    "upg": 2696,
+    "idle%": 10.2,
+    "erken%": 96.1,
+    "kayipMusteri/gun": 0.85,
+    "deaths": {
+     "bankrupt@12": 2
+    }
+   },
+   "P2_zayif_hic_ev": {
+    "kasa": 549,
+    "p10": 88,
+    "kayip": 42.0,
+    "prestij": 24.7,
+    "gelir": 3108,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 49.0,
+    "kayipMusteri/gun": 3.28,
+    "deaths": {
+     "bankrupt@16": 27,
+     "bankrupt@12": 72,
+     "bankrupt@8": 6
+    }
+   },
+   "P2_zayif_mantikli_ev": {
+    "kasa": 747,
+    "p10": 566,
+    "kayip": 96.4,
+    "prestij": 28.3,
+    "gelir": 1799,
+    "upg": 737,
+    "idle%": 9.6,
+    "erken%": 53.8,
+    "kayipMusteri/gun": 2.28,
+    "deaths": {
+     "bankrupt@16": 14,
+     "bankrupt@8": 164,
+     "bankrupt@12": 63
+    }
+   },
+   "P2_orta_hic_ev": {
+    "kasa": 3510,
+    "p10": 2678,
+    "kayip": 0.0,
+    "prestij": 54.1,
+    "gelir": 7025,
+    "upg": 0,
+    "idle%": 11.9,
+    "erken%": 74.4,
+    "kayipMusteri/gun": 2.07,
+    "deaths": {}
+   },
+   "P2_orta_mantikli_ev": {
+    "kasa": 3188,
+    "p10": 1160,
+    "kayip": 6.0,
+    "prestij": 64.0,
+    "gelir": 9899,
+    "upg": 3991,
+    "idle%": 10.0,
+    "erken%": 84.3,
+    "kayipMusteri/gun": 1.79,
+    "deaths": {
+     "bankrupt@8": 12,
+     "bankrupt@12": 3
+    }
+   },
+   "P2_iyi_hic_ev": {
+    "kasa": 7238,
+    "p10": 6136,
+    "kayip": 0.0,
+    "prestij": 76.9,
+    "gelir": 10399,
+    "upg": 0,
+    "idle%": 12.6,
+    "erken%": 88.8,
+    "kayipMusteri/gun": 1.29,
+    "deaths": {}
+   },
+   "P2_iyi_mantikli_ev": {
+    "kasa": 10629,
+    "p10": 8604,
+    "kayip": 0.0,
+    "prestij": 93.8,
+    "gelir": 17576,
+    "upg": 4421,
+    "idle%": 10.9,
+    "erken%": 94.8,
+    "kayipMusteri/gun": 1.28,
+    "deaths": {}
+   },
+   "P3_zayif_hic_ev": {
+    "kasa": 1165,
+    "p10": 238,
+    "kayip": 70.0,
+    "prestij": 38.6,
+    "gelir": 4260,
+    "upg": 0,
+    "idle%": 19.4,
+    "erken%": 46.0,
+    "kayipMusteri/gun": 2.33,
+    "deaths": {
+     "bankrupt@12": 121,
+     "bankrupt@8": 31,
+     "bankrupt@16": 23
+    }
+   },
+   "P3_zayif_mantikli_ev": {
+    "kasa": 1217,
+    "p10": 937,
+    "kayip": 98.4,
+    "prestij": 33.2,
+    "gelir": 2504,
+    "upg": 801,
+    "idle%": 18.8,
+    "erken%": 60.0,
+    "kayipMusteri/gun": 1.91,
+    "deaths": {
+     "bankrupt@8": 214,
+     "bankrupt@12": 26,
+     "bankrupt@16": 6
+    }
+   },
+   "P3_orta_hic_ev": {
+    "kasa": 4569,
+    "p10": 3420,
+    "kayip": 0.0,
+    "prestij": 71.4,
+    "gelir": 10980,
+    "upg": 0,
+    "idle%": 16.7,
+    "erken%": 87.8,
+    "kayipMusteri/gun": 1.67,
+    "deaths": {}
+   },
+   "P3_orta_mantikli_ev": {
+    "kasa": 4505,
+    "p10": 1560,
+    "kayip": 10.4,
+    "prestij": 78.4,
+    "gelir": 14345,
+    "upg": 4953,
+    "idle%": 14.6,
+    "erken%": 94.7,
+    "kayipMusteri/gun": 1.53,
+    "deaths": {
+     "bankrupt@8": 21,
+     "bankrupt@12": 5
+    }
+   },
+   "P3_iyi_hic_ev": {
+    "kasa": 8342,
+    "p10": 6732,
+    "kayip": 0.0,
+    "prestij": 91.7,
+    "gelir": 14356,
+    "upg": 0,
+    "idle%": 16.7,
+    "erken%": 95.9,
+    "kayipMusteri/gun": 1.15,
+    "deaths": {}
+   },
+   "P3_iyi_mantikli_ev": {
+    "kasa": 11781,
+    "p10": 9034,
+    "kayip": 0.0,
+    "prestij": 99.1,
+    "gelir": 22432,
+    "upg": 5755,
+    "idle%": 15.1,
+    "erken%": 98.7,
+    "kayipMusteri/gun": 1.36,
+    "deaths": {}
+   },
+   "P4_zayif_hic_ev": {
+    "kasa": 1783,
+    "p10": 838,
+    "kayip": 86.0,
+    "prestij": 40.5,
+    "gelir": 4751,
+    "upg": 0,
+    "idle%": 26.4,
+    "erken%": 64.1,
+    "kayipMusteri/gun": 2.26,
+    "deaths": {
+     "bankrupt@12": 130,
+     "bankrupt@16": 11,
+     "bankrupt@8": 74
+    }
+   },
+   "P4_zayif_mantikli_ev": {
+    "kasa": 1613,
+    "p10": 1224,
+    "kayip": 99.6,
+    "prestij": 34.3,
+    "gelir": 2836,
+    "upg": 705,
+    "idle%": 23.7,
+    "erken%": 62.7,
+    "kayipMusteri/gun": 1.77,
+    "deaths": {
+     "bankrupt@8": 244,
+     "bankrupt@12": 5
+    }
+   },
+   "P4_orta_hic_ev": {
+    "kasa": 4449,
+    "p10": 2871,
+    "kayip": 0.0,
+    "prestij": 78.2,
+    "gelir": 13668,
+    "upg": 0,
+    "idle%": 20.9,
+    "erken%": 93.7,
+    "kayipMusteri/gun": 1.62,
+    "deaths": {}
+   },
+   "P4_orta_mantikli_ev": {
+    "kasa": 4469,
+    "p10": 1896,
+    "kayip": 18.8,
+    "prestij": 82.7,
+    "gelir": 15984,
+    "upg": 5206,
+    "idle%": 18.2,
+    "erken%": 97.3,
+    "kayipMusteri/gun": 1.33,
+    "deaths": {
+     "bankrupt@8": 36,
+     "bankrupt@12": 11
+    }
+   },
+   "P4_iyi_hic_ev": {
+    "kasa": 8877,
+    "p10": 6979,
+    "kayip": 0.0,
+    "prestij": 96.3,
+    "gelir": 17753,
+    "upg": 0,
+    "idle%": 20.2,
+    "erken%": 97.4,
+    "kayipMusteri/gun": 1.16,
+    "deaths": {}
+   },
+   "P4_iyi_mantikli_ev": {
+    "kasa": 11316,
+    "p10": 7960,
+    "kayip": 0.4,
+    "prestij": 99.5,
+    "gelir": 25486,
+    "upg": 6841,
+    "idle%": 18.0,
+    "erken%": 99.6,
+    "kayipMusteri/gun": 1.36,
+    "deaths": {
+     "bankrupt@12": 1
+    }
+   }
+  }
+ },
+ "REC6b": {
+  "desc": "REC + taban kira +%30 (ölçüldü: çok sert)",
+  "overrides": [
+   "perkEffects.fast_hangar_mult=0.75",
+   "economy.upgradeCostMultiplierByPlayerCount=[1.0,1.6,2.1,2.5]",
+   "upgrades.13.baseCost=120",
+   "upgrades.16.baseCost=90",
+   "upgrades.0.baseCost=25",
+   "upgrades.0.costStep=10",
+   "upgrades.3.baseCost=40",
+   "upgrades.3.costStep=10",
+   "upgrades.18.baseCost=30",
+   "upgrades.10.baseCost=60",
+   "upgrades.12.baseCost=60",
+   "upgrades.5.baseCost=80",
+   "upgrades.5.costStep=10",
+   "upgrades.4.baseCost=70",
+   "upgrades.4.costStep=15",
+   "upgrades.8.baseCost=55",
+   "upgrades.9.baseCost=110",
+   "economy.prestigePerBonus=6",
+   "perkEffects.packing_station_grants_station=1",
+   "upgrades.1.baseCost=90",
+   "economy.baseRentByPlayerCount=[377,845,1482,2119]"
+  ],
+  "cells": {
+   "P1_zayif_hic_ev": {
+    "kasa": 292,
+    "p10": 57,
+    "kayip": 62.8,
+    "prestij": 13.0,
+    "gelir": 1238,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 84.8,
+    "kayipMusteri/gun": 2.07,
+    "deaths": {
+     "bankrupt@16": 86,
+     "bankrupt@12": 71
+    }
+   },
+   "P1_zayif_mantikli_ev": {
+    "kasa": 409,
+    "p10": 316,
+    "kayip": 98.4,
+    "prestij": 12.8,
+    "gelir": 950,
+    "upg": 593,
+    "idle%": 11.6,
+    "erken%": 87.1,
+    "kayipMusteri/gun": 2.0,
+    "deaths": {
+     "bankrupt@12": 212,
+     "bankrupt@16": 34
+    }
+   },
+   "P1_orta_hic_ev": {
+    "kasa": 853,
+    "p10": 361,
+    "kayip": 0.8,
+    "prestij": 25.0,
+    "gelir": 2430,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 89.5,
+    "kayipMusteri/gun": 1.64,
+    "deaths": {
+     "bankrupt@16": 1,
+     "bankrupt@12": 1
+    }
+   },
+   "P1_orta_mantikli_ev": {
+    "kasa": 388,
+    "p10": 96,
+    "kayip": 21.2,
+    "prestij": 28.5,
+    "gelir": 3031,
+    "upg": 1803,
+    "idle%": 9.9,
+    "erken%": 92.8,
+    "kayipMusteri/gun": 1.31,
+    "deaths": {
+     "bankrupt@12": 41,
+     "bankrupt@16": 12
+    }
+   },
+   "P1_iyi_hic_ev": {
+    "kasa": 2320,
+    "p10": 1631,
+    "kayip": 0.0,
+    "prestij": 37.7,
+    "gelir": 3715,
+    "upg": 0,
+    "idle%": 12.9,
+    "erken%": 91.3,
+    "kayipMusteri/gun": 1.11,
+    "deaths": {}
+   },
+   "P1_iyi_mantikli_ev": {
+    "kasa": 2261,
+    "p10": 1032,
+    "kayip": 0.8,
+    "prestij": 46.9,
+    "gelir": 5912,
+    "upg": 2652,
+    "idle%": 10.2,
+    "erken%": 95.5,
+    "kayipMusteri/gun": 0.81,
+    "deaths": {
+     "bankrupt@12": 1,
+     "bankrupt@8": 1
+    }
+   },
+   "P2_zayif_hic_ev": {
+    "kasa": 802,
+    "p10": 223,
+    "kayip": 78.8,
+    "prestij": 24.3,
+    "gelir": 2632,
+    "upg": 0,
+    "idle%": 12.9,
+    "erken%": 49.1,
+    "kayipMusteri/gun": 3.29,
+    "deaths": {
+     "bankrupt@16": 47,
+     "bankrupt@12": 129,
+     "bankrupt@8": 21
+    }
+   },
+   "P2_zayif_mantikli_ev": {
+    "kasa": 745,
+    "p10": 540,
+    "kayip": 100.0,
+    "prestij": 23.8,
+    "gelir": 1362,
+    "upg": 516,
+    "idle%": 12.1,
+    "erken%": 53.2,
+    "kayipMusteri/gun": 2.5,
+    "deaths": {
+     "bankrupt@8": 222,
+     "bankrupt@12": 27,
+     "bankrupt@16": 1
+    }
+   },
+   "P2_orta_hic_ev": {
+    "kasa": 3010,
+    "p10": 2168,
+    "kayip": 0.0,
+    "prestij": 54.1,
+    "gelir": 7025,
+    "upg": 0,
+    "idle%": 11.9,
+    "erken%": 74.4,
+    "kayipMusteri/gun": 2.07,
+    "deaths": {}
+   },
+   "P2_orta_mantikli_ev": {
+    "kasa": 2621,
+    "p10": 928,
+    "kayip": 12.8,
+    "prestij": 57.6,
+    "gelir": 9144,
+    "upg": 3668,
+    "idle%": 10.9,
+    "erken%": 91.9,
+    "kayipMusteri/gun": 2.09,
+    "deaths": {
+     "bankrupt@8": 29,
+     "bankrupt@12": 3
+    }
+   },
+   "P2_iyi_hic_ev": {
+    "kasa": 6735,
+    "p10": 5626,
+    "kayip": 0.0,
+    "prestij": 76.9,
+    "gelir": 10399,
+    "upg": 0,
+    "idle%": 12.6,
+    "erken%": 88.8,
+    "kayipMusteri/gun": 1.29,
+    "deaths": {}
+   },
+   "P2_iyi_mantikli_ev": {
+    "kasa": 9357,
+    "p10": 7236,
+    "kayip": 0.0,
+    "prestij": 87.9,
+    "gelir": 16690,
+    "upg": 4345,
+    "idle%": 11.7,
+    "erken%": 96.7,
+    "kayipMusteri/gun": 1.51,
+    "deaths": {}
+   },
+   "P3_zayif_hic_ev": {
+    "kasa": 1443,
+    "p10": 904,
+    "kayip": 96.8,
+    "prestij": 34.8,
+    "gelir": 3102,
+    "upg": 0,
+    "idle%": 19.5,
+    "erken%": 47.1,
+    "kayipMusteri/gun": 2.31,
+    "deaths": {
+     "bankrupt@8": 101,
+     "bankrupt@12": 128,
+     "bankrupt@16": 13
+    }
+   },
+   "P3_zayif_mantikli_ev": {
+    "kasa": 1265,
+    "p10": 956,
+    "kayip": 99.6,
+    "prestij": 31.6,
+    "gelir": 2144,
+    "upg": 518,
+    "idle%": 20.7,
+    "erken%": 49.4,
+    "kayipMusteri/gun": 1.93,
+    "deaths": {
+     "bankrupt@8": 242,
+     "bankrupt@12": 7
+    }
+   },
+   "P3_orta_hic_ev": {
+    "kasa": 3678,
+    "p10": 2546,
+    "kayip": 0.0,
+    "prestij": 71.4,
+    "gelir": 10980,
+    "upg": 0,
+    "idle%": 16.7,
+    "erken%": 87.8,
+    "kayipMusteri/gun": 1.67,
+    "deaths": {}
+   },
+   "P3_orta_mantikli_ev": {
+    "kasa": 3713,
+    "p10": 1498,
+    "kayip": 22.8,
+    "prestij": 72.7,
+    "gelir": 12777,
+    "upg": 4274,
+    "idle%": 14.8,
+    "erken%": 94.0,
+    "kayipMusteri/gun": 1.56,
+    "deaths": {
+     "bankrupt@8": 45,
+     "bankrupt@12": 12
+    }
+   },
+   "P3_iyi_hic_ev": {
+    "kasa": 7433,
+    "p10": 5832,
+    "kayip": 0.0,
+    "prestij": 91.7,
+    "gelir": 14356,
+    "upg": 0,
+    "idle%": 16.7,
+    "erken%": 95.9,
+    "kayipMusteri/gun": 1.15,
+    "deaths": {}
+   },
+   "P3_iyi_mantikli_ev": {
+    "kasa": 10311,
+    "p10": 6934,
+    "kayip": 0.4,
+    "prestij": 98.5,
+    "gelir": 21716,
+    "upg": 5747,
+    "idle%": 15.1,
+    "erken%": 99.0,
+    "kayipMusteri/gun": 1.35,
+    "deaths": {
+     "bankrupt@8": 1
+    }
+   },
+   "P4_zayif_hic_ev": {
+    "kasa": 1892,
+    "p10": 1299,
+    "kayip": 98.4,
+    "prestij": 36.3,
+    "gelir": 3405,
+    "upg": 0,
+    "idle%": 26.9,
+    "erken%": 66.6,
+    "kayipMusteri/gun": 2.37,
+    "deaths": {
+     "bankrupt@8": 166,
+     "bankrupt@12": 80
+    }
+   },
+   "P4_zayif_mantikli_ev": {
+    "kasa": 1702,
+    "p10": 1273,
+    "kayip": 100.0,
+    "prestij": 33.9,
+    "gelir": 2713,
+    "upg": 452,
+    "idle%": 33.1,
+    "erken%": 68.5,
+    "kayipMusteri/gun": 1.27,
+    "deaths": {
+     "bankrupt@8": 250
+    }
+   },
+   "P4_orta_hic_ev": {
+    "kasa": 3374,
+    "p10": 2077,
+    "kayip": 2.0,
+    "prestij": 77.9,
+    "gelir": 13565,
+    "upg": 0,
+    "idle%": 20.9,
+    "erken%": 93.7,
+    "kayipMusteri/gun": 1.62,
+    "deaths": {
+     "bankrupt@12": 5
+    }
+   },
+   "P4_orta_mantikli_ev": {
+    "kasa": 3408,
+    "p10": 1768,
+    "kayip": 51.6,
+    "prestij": 68.8,
+    "gelir": 11505,
+    "upg": 3590,
+    "idle%": 18.6,
+    "erken%": 96.6,
+    "kayipMusteri/gun": 1.35,
+    "deaths": {
+     "bankrupt@8": 102,
+     "bankrupt@12": 27
+    }
+   },
+   "P4_iyi_hic_ev": {
+    "kasa": 7587,
+    "p10": 5685,
+    "kayip": 0.0,
+    "prestij": 96.3,
+    "gelir": 17753,
+    "upg": 0,
+    "idle%": 20.2,
+    "erken%": 97.4,
+    "kayipMusteri/gun": 1.16,
+    "deaths": {}
+   },
+   "P4_iyi_mantikli_ev": {
+    "kasa": 9300,
+    "p10": 6276,
+    "kayip": 1.6,
+    "prestij": 98.6,
+    "gelir": 24273,
+    "upg": 6649,
+    "idle%": 18.2,
+    "erken%": 99.5,
+    "kayipMusteri/gun": 1.38,
+    "deaths": {
+     "bankrupt@8": 4
+    }
+   }
+  }
+ },
+ "REC7": {
+  "desc": "ÖNERİLEN + Ö6 + Ö7 (4P kotası P3'ten ayrılır)",
+  "overrides": [
+   "perkEffects.fast_hangar_mult=0.75",
+   "economy.upgradeCostMultiplierByPlayerCount=[1.0,1.6,2.1,2.5]",
+   "upgrades.13.baseCost=120",
+   "upgrades.16.baseCost=90",
+   "upgrades.0.baseCost=25",
+   "upgrades.0.costStep=10",
+   "upgrades.3.baseCost=40",
+   "upgrades.3.costStep=10",
+   "upgrades.18.baseCost=30",
+   "upgrades.10.baseCost=60",
+   "upgrades.12.baseCost=60",
+   "upgrades.5.baseCost=80",
+   "upgrades.5.costStep=10",
+   "upgrades.4.baseCost=70",
+   "upgrades.4.costStep=15",
+   "upgrades.8.baseCost=55",
+   "upgrades.9.baseCost=110",
+   "economy.prestigePerBonus=6",
+   "perkEffects.packing_station_grants_station=1",
+   "upgrades.1.baseCost=90",
+   "economy.baseRentByPlayerCount=[335,750,1310,1875]",
+   "economy.dailyCustomerCount.3=[10,10,10,10,11,11,11,12,12,12,13,13,14,14,14,16]"
+  ],
+  "cells": {
+   "P1_zayif_hic_ev": {
+    "kasa": 234,
+    "p10": 66,
+    "kayip": 34.4,
+    "prestij": 12.9,
+    "gelir": 1345,
+    "upg": 0,
+    "idle%": 12.7,
+    "erken%": 84.8,
+    "kayipMusteri/gun": 2.06,
+    "deaths": {
+     "bankrupt@16": 61,
+     "bankrupt@12": 25
+    }
+   },
+   "P1_zayif_mantikli_ev": {
+    "kasa": 366,
+    "p10": 280,
+    "kayip": 95.2,
+    "prestij": 13.0,
+    "gelir": 1017,
+    "upg": 674,
+    "idle%": 12.2,
+    "erken%": 86.3,
+    "kayipMusteri/gun": 1.96,
+    "deaths": {
+     "bankrupt@12": 189,
+     "bankrupt@16": 49
+    }
+   },
+   "P1_orta_hic_ev": {
+    "kasa": 1061,
+    "p10": 567,
+    "kayip": 0.4,
+    "prestij": 25.0,
+    "gelir": 2430,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 89.5,
+    "kayipMusteri/gun": 1.64,
+    "deaths": {
+     "bankrupt@12": 1
+    }
+   },
+   "P1_orta_mantikli_ev": {
+    "kasa": 415,
+    "p10": 142,
+    "kayip": 14.0,
+    "prestij": 29.6,
+    "gelir": 3219,
+    "upg": 1971,
+    "idle%": 9.7,
+    "erken%": 92.1,
+    "kayipMusteri/gun": 1.29,
+    "deaths": {
+     "bankrupt@12": 27,
+     "bankrupt@16": 8
+    }
+   },
+   "P1_iyi_hic_ev": {
+    "kasa": 2541,
+    "p10": 1855,
+    "kayip": 0.0,
+    "prestij": 37.7,
+    "gelir": 3715,
+    "upg": 0,
+    "idle%": 12.9,
+    "erken%": 91.3,
+    "kayipMusteri/gun": 1.11,
+    "deaths": {}
+   },
+   "P1_iyi_mantikli_ev": {
+    "kasa": 2585,
+    "p10": 1373,
+    "kayip": 0.8,
+    "prestij": 47.6,
+    "gelir": 6102,
+    "upg": 2696,
+    "idle%": 10.2,
+    "erken%": 96.1,
+    "kayipMusteri/gun": 0.85,
+    "deaths": {
+     "bankrupt@12": 2
+    }
+   },
+   "P2_zayif_hic_ev": {
+    "kasa": 549,
+    "p10": 88,
+    "kayip": 42.0,
+    "prestij": 24.7,
+    "gelir": 3108,
+    "upg": 0,
+    "idle%": 12.8,
+    "erken%": 49.0,
+    "kayipMusteri/gun": 3.28,
+    "deaths": {
+     "bankrupt@16": 27,
+     "bankrupt@12": 72,
+     "bankrupt@8": 6
+    }
+   },
+   "P2_zayif_mantikli_ev": {
+    "kasa": 747,
+    "p10": 566,
+    "kayip": 96.4,
+    "prestij": 28.3,
+    "gelir": 1799,
+    "upg": 737,
+    "idle%": 9.6,
+    "erken%": 53.8,
+    "kayipMusteri/gun": 2.28,
+    "deaths": {
+     "bankrupt@16": 14,
+     "bankrupt@8": 164,
+     "bankrupt@12": 63
+    }
+   },
+   "P2_orta_hic_ev": {
+    "kasa": 3510,
+    "p10": 2678,
+    "kayip": 0.0,
+    "prestij": 54.1,
+    "gelir": 7025,
+    "upg": 0,
+    "idle%": 11.9,
+    "erken%": 74.4,
+    "kayipMusteri/gun": 2.07,
+    "deaths": {}
+   },
+   "P2_orta_mantikli_ev": {
+    "kasa": 3188,
+    "p10": 1160,
+    "kayip": 6.0,
+    "prestij": 64.0,
+    "gelir": 9899,
+    "upg": 3991,
+    "idle%": 10.0,
+    "erken%": 84.3,
+    "kayipMusteri/gun": 1.79,
+    "deaths": {
+     "bankrupt@8": 12,
+     "bankrupt@12": 3
+    }
+   },
+   "P2_iyi_hic_ev": {
+    "kasa": 7238,
+    "p10": 6136,
+    "kayip": 0.0,
+    "prestij": 76.9,
+    "gelir": 10399,
+    "upg": 0,
+    "idle%": 12.6,
+    "erken%": 88.8,
+    "kayipMusteri/gun": 1.29,
+    "deaths": {}
+   },
+   "P2_iyi_mantikli_ev": {
+    "kasa": 10629,
+    "p10": 8604,
+    "kayip": 0.0,
+    "prestij": 93.8,
+    "gelir": 17576,
+    "upg": 4421,
+    "idle%": 10.9,
+    "erken%": 94.8,
+    "kayipMusteri/gun": 1.28,
+    "deaths": {}
+   },
+   "P3_zayif_hic_ev": {
+    "kasa": 1165,
+    "p10": 238,
+    "kayip": 70.0,
+    "prestij": 38.6,
+    "gelir": 4260,
+    "upg": 0,
+    "idle%": 19.4,
+    "erken%": 46.0,
+    "kayipMusteri/gun": 2.33,
+    "deaths": {
+     "bankrupt@12": 121,
+     "bankrupt@8": 31,
+     "bankrupt@16": 23
+    }
+   },
+   "P3_zayif_mantikli_ev": {
+    "kasa": 1217,
+    "p10": 937,
+    "kayip": 98.4,
+    "prestij": 33.2,
+    "gelir": 2504,
+    "upg": 801,
+    "idle%": 18.8,
+    "erken%": 60.0,
+    "kayipMusteri/gun": 1.91,
+    "deaths": {
+     "bankrupt@8": 214,
+     "bankrupt@12": 26,
+     "bankrupt@16": 6
+    }
+   },
+   "P3_orta_hic_ev": {
+    "kasa": 4569,
+    "p10": 3420,
+    "kayip": 0.0,
+    "prestij": 71.4,
+    "gelir": 10980,
+    "upg": 0,
+    "idle%": 16.7,
+    "erken%": 87.8,
+    "kayipMusteri/gun": 1.67,
+    "deaths": {}
+   },
+   "P3_orta_mantikli_ev": {
+    "kasa": 4505,
+    "p10": 1560,
+    "kayip": 10.4,
+    "prestij": 78.4,
+    "gelir": 14345,
+    "upg": 4953,
+    "idle%": 14.6,
+    "erken%": 94.7,
+    "kayipMusteri/gun": 1.53,
+    "deaths": {
+     "bankrupt@8": 21,
+     "bankrupt@12": 5
+    }
+   },
+   "P3_iyi_hic_ev": {
+    "kasa": 8342,
+    "p10": 6732,
+    "kayip": 0.0,
+    "prestij": 91.7,
+    "gelir": 14356,
+    "upg": 0,
+    "idle%": 16.7,
+    "erken%": 95.9,
+    "kayipMusteri/gun": 1.15,
+    "deaths": {}
+   },
+   "P3_iyi_mantikli_ev": {
+    "kasa": 11781,
+    "p10": 9034,
+    "kayip": 0.0,
+    "prestij": 99.1,
+    "gelir": 22432,
+    "upg": 5755,
+    "idle%": 15.1,
+    "erken%": 98.7,
+    "kayipMusteri/gun": 1.36,
+    "deaths": {}
+   },
+   "P4_zayif_hic_ev": {
+    "kasa": 1791,
+    "p10": 666,
+    "kayip": 78.4,
+    "prestij": 41.2,
+    "gelir": 5489,
+    "upg": 0,
+    "idle%": 26.6,
+    "erken%": 2.8,
+    "kayipMusteri/gun": 2.4,
+    "deaths": {
+     "bankrupt@12": 121,
+     "bankrupt@8": 58,
+     "bankrupt@16": 17
+    }
+   },
+   "P4_zayif_mantikli_ev": {
+    "kasa": 1667,
+    "p10": 1358,
+    "kayip": 98.8,
+    "prestij": 34.8,
+    "gelir": 3075,
+    "upg": 802,
+    "idle%": 25.1,
+    "erken%": 6.7,
+    "kayipMusteri/gun": 2.01,
+    "deaths": {
+     "bankrupt@8": 242,
+     "bankrupt@12": 5
+    }
+   },
+   "P4_orta_hic_ev": {
+    "kasa": 6012,
+    "p10": 4394,
+    "kayip": 0.0,
+    "prestij": 90.4,
+    "gelir": 15290,
+    "upg": 0,
+    "idle%": 21.2,
+    "erken%": 22.2,
+    "kayipMusteri/gun": 1.83,
+    "deaths": {}
+   },
+   "P4_orta_mantikli_ev": {
+    "kasa": 8395,
+    "p10": 4135,
+    "kayip": 7.6,
+    "prestij": 95.8,
+    "gelir": 21992,
+    "upg": 6275,
+    "idle%": 18.8,
+    "erken%": 55.2,
+    "kayipMusteri/gun": 1.59,
+    "deaths": {
+     "bankrupt@8": 16,
+     "bankrupt@12": 3
+    }
+   },
+   "P4_iyi_hic_ev": {
+    "kasa": 12421,
+    "p10": 10472,
+    "kayip": 0.0,
+    "prestij": 99.9,
+    "gelir": 21287,
+    "upg": 0,
+    "idle%": 20.1,
+    "erken%": 57.2,
+    "kayipMusteri/gun": 1.22,
+    "deaths": {}
+   },
+   "P4_iyi_mantikli_ev": {
+    "kasa": 19619,
+    "p10": 15869,
+    "kayip": 0.0,
+    "prestij": 99.9,
+    "gelir": 33751,
+    "upg": 6722,
+    "idle%": 17.6,
+    "erken%": 79.8,
+    "kayipMusteri/gun": 1.54,
+    "deaths": {}
+   }
+  }
+ }
+}

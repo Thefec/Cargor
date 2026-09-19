@@ -213,14 +213,20 @@ namespace NewCss
             ctx.Economy.customerServedPrestigeBonus = 0.4f + 0.12f * level;
         }
 
-        // Hızlı Hangar (relic): hangarStayDuration taban(Economy P-bazlı GetHangarStayDuration) × 1.30.
-        // Taban artık oyuncu sayısına göre (1P=90..4P=30); perk P-uygun tabana uygulanır ki
-        // sapma P'ye göre sabit %30 kalsın (eski flat-30 taban P-bazlı dizide yanlış olurdu).
+        // Hızlı Hangar (relic): hangarStayDuration taban(Economy P-bazlı GetHangarStayDuration) × 0.75.
+        // Taban oyuncu sayısına göre (1P=120..4P=30); perk P-uygun tabana uygulanır ki sapma
+        // P'ye göre sabit %25 kalsın.
+        //
+        // YÖN DEĞİŞİKLİĞİ (ekonomi denetimi 2026-09-18, docs/economy/05-oneriler.md Ö3): eski
+        // çarpan 1.30f idi, yani bekleme süresini UZATIYORDU. Uzun bekleme tırın dolma şansını
+        // artırıyor ama günlük tır devrini düşürüyor; ölçümde bu perk oyunun TEK negatif kartıydı
+        // (2P orta: -5.3 TL/gün, kartı alan oyuncu para verip zarar ediyordu). Süreyi kısaltmak
+        // kartı adına ve sahne açıklamasına ("hangar daha hızlı döner") da uygun hale getirir.
         private static void ApplyFastHangarToTruck(int level, Truck truck, PerkContext ctx)
         {
             if (ctx.Economy == null || level <= 0) return;
             int pc = DifficultyManager.Instance != null ? DifficultyManager.Instance.PlayerCount : 1;
-            truck.hangarStayDuration = ctx.Economy.GetHangarStayDuration(pc) * 1.30f;
+            truck.hangarStayDuration = ctx.Economy.GetHangarStayDuration(pc) * 0.75f;
         }
 
         // Enerjik Ekip (relic): staminaRegenRate 1 → 2.5 (mevcut mekaniğe bağlanış, ekonomik değer

@@ -1,0 +1,134 @@
+{
+ "config_overrides": [],
+ "runs": 300,
+ "eventIso": {
+  "BUSY DAY": {
+   "event_days": 9,
+   "d_finalMoney_per_day": -5.4,
+   "d_income_per_day": 6.1,
+   "d_finalPrestige_per_day": -0.34,
+   "deathRate": 0.24333333333333335,
+   "base_deathRate": 0.24333333333333335
+  },
+  "DELIVERY BONUS": {
+   "event_days": 9,
+   "d_finalMoney_per_day": 17.2,
+   "d_income_per_day": 82.1,
+   "d_finalPrestige_per_day": -0.01,
+   "deathRate": 0.23333333333333334,
+   "base_deathRate": 0.24333333333333335
+  },
+  "ANGRY CUSTOMERS": {
+   "event_days": 9,
+   "d_finalMoney_per_day": -9.6,
+   "d_income_per_day": -39.1,
+   "d_finalPrestige_per_day": -0.47,
+   "deathRate": 0.29,
+   "base_deathRate": 0.24333333333333335
+  },
+  "RELAXED DAY": {
+   "event_days": 9,
+   "d_finalMoney_per_day": 6.8,
+   "d_income_per_day": 30.2,
+   "d_finalPrestige_per_day": 0.32,
+   "deathRate": 0.23333333333333334,
+   "base_deathRate": 0.24333333333333335
+  },
+  "SLOW LOGISTICS": {
+   "event_days": 9,
+   "d_finalMoney_per_day": -14.8,
+   "d_income_per_day": -48.6,
+   "d_finalPrestige_per_day": 0.02,
+   "deathRate": 0.2633333333333333,
+   "base_deathRate": 0.24333333333333335
+  },
+  "EXPRESS CARGO": {
+   "event_days": 9,
+   "d_finalMoney_per_day": 2.8,
+   "d_income_per_day": 35.5,
+   "d_finalPrestige_per_day": 0.04,
+   "deathRate": 0.23,
+   "base_deathRate": 0.24333333333333335
+  },
+  "HEAVY BOXES": {
+   "event_days": 9,
+   "d_finalMoney_per_day": -18.6,
+   "d_income_per_day": -65.3,
+   "d_finalPrestige_per_day": -0.34,
+   "deathRate": 0.28,
+   "base_deathRate": 0.24333333333333335
+  },
+  "GOLDEN BOX DAY": {
+   "event_days": 9,
+   "d_finalMoney_per_day": 36.9,
+   "d_income_per_day": 143.9,
+   "d_finalPrestige_per_day": 0.25,
+   "deathRate": 0.21333333333333335,
+   "base_deathRate": 0.24333333333333335
+  },
+  "OPPORTUNITY DAY": {
+   "event_days": 9,
+   "d_finalMoney_per_day": 8.9,
+   "d_income_per_day": 8.3,
+   "d_finalPrestige_per_day": 0.0,
+   "deathRate": 0.24666666666666667,
+   "base_deathRate": 0.24333333333333335
+  },
+  "FATIGUE PROBLEM": {
+   "event_days": 9,
+   "d_finalMoney_per_day": -31.5,
+   "d_income_per_day": -154.2,
+   "d_finalPrestige_per_day": -0.6,
+   "deathRate": 0.3233333333333333,
+   "base_deathRate": 0.24333333333333335
+  },
+  "VIP SERVICE": {
+   "event_days": 9,
+   "d_finalMoney_per_day": 8.8,
+   "d_income_per_day": 48.6,
+   "d_finalPrestige_per_day": -0.01,
+   "deathRate": 0.24333333333333335,
+   "base_deathRate": 0.24333333333333335
+  },
+  "SURPRISE AUDIT": {
+   "event_days": 9,
+   "d_finalMoney_per_day": -21.3,
+   "d_income_per_day": -55.7,
+   "d_finalPrestige_per_day": -1.03,
+   "deathRate": 0.27666666666666667,
+   "base_deathRate": 0.24333333333333335
+  },
+  "RAINY DAY": {
+   "event_days": 9,
+   "d_finalMoney_per_day": -28.7,
+   "d_income_per_day": -161.6,
+   "d_finalPrestige_per_day": -0.56,
+   "deathRate": 0.34,
+   "base_deathRate": 0.24333333333333335
+  },
+  "MARKETING DAY": {
+   "event_days": 9,
+   "d_finalMoney_per_day": -23.1,
+   "d_income_per_day": -109.2,
+   "d_finalPrestige_per_day": 0.18,
+   "deathRate": 0.25333333333333335,
+   "base_deathRate": 0.24333333333333335
+  },
+  "CUSTOMER SUPPORT": {
+   "event_days": 9,
+   "d_finalMoney_per_day": -1.9,
+   "d_income_per_day": 7.2,
+   "d_finalPrestige_per_day": 0.13,
+   "deathRate": 0.25333333333333335,
+   "base_deathRate": 0.24333333333333335
+  },
+  "FESTIVAL DAY": {
+   "event_days": 9,
+   "d_finalMoney_per_day": 16.4,
+   "d_income_per_day": 45.1,
+   "d_finalPrestige_per_day": -0.12,
+   "deathRate": 0.22666666666666666,
+   "base_deathRate": 0.24333333333333335
+  }
+ }
+}

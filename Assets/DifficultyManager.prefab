@@ -80,4 +80,9 @@ MonoBehaviour:
   moneyMultiplierPerPlayer: 1.2
   patienceReductionPerPlayer: 2
   staminaDrainMultiplierPerPlayer: 1.1
+  upgradeCostMultiplierByPlayerCount:
+  - 1
+  - 1.6
+  - 2.1
+  - 2.5
   difficultyIndicatorText: {fileID: 0}

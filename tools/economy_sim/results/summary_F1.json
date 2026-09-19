@@ -1,0 +1,217 @@
+{
+ "config_overrides": [
+  "perkEffects.packing_station_grants_station=1"
+ ],
+ "runs": 250,
+ "payback": {
+  "Geniş Ambar": {
+   "id": "wide_storage",
+   "cost": 300,
+   "gain_total": 13,
+   "gain_per_day": 0.8,
+   "payback_days": 353.8,
+   "finalMoney": 3056,
+   "base_finalMoney": 3351,
+   "finalPrestige": 54.83072,
+   "deathRate": 0.0
+  },
+  "Paketleme İstasyonu": {
+   "id": "packing_station",
+   "cost": 300,
+   "gain_total": 161,
+   "gain_per_day": 10.7,
+   "payback_days": 27.9,
+   "finalMoney": 3206,
+   "base_finalMoney": 3351,
+   "finalPrestige": 61.49104,
+   "deathRate": 0.0
+  },
+  "Ek Hangar": {
+   "id": "extra_hangar",
+   "cost": 400,
+   "gain_total": 840,
+   "gain_per_day": 56.0,
+   "payback_days": 7.1,
+   "finalMoney": 3782,
+   "base_finalMoney": 3351,
+   "finalPrestige": 49.47856,
+   "deathRate": 0.0
+  },
+  "Görev Kademesi": {
+   "id": "quest_tier",
+   "cost": 180,
+   "gain_total": -28,
+   "gain_per_day": -1.9,
+   "payback_days": null,
+   "finalMoney": 3133,
+   "base_finalMoney": 3351,
+   "finalPrestige": 54.67632,
+   "deathRate": 0.0
+  },
+  "Ucuz Kira": {
+   "id": "cheap_rent",
+   "cost": 960,
+   "gain_total": 523,
+   "gain_per_day": 34.9,
+   "payback_days": 27.5,
+   "finalMoney": 2896,
+   "base_finalMoney": 3351,
+   "finalPrestige": 52.9648,
+   "deathRate": 0.068
+  },
+  "Prestij Simsarı": {
+   "id": "prestige_broker",
+   "cost": 550,
+   "gain_total": 384,
+   "gain_per_day": 25.6,
+   "payback_days": 21.5,
+   "finalMoney": 3178,
+   "base_finalMoney": 3351,
+   "finalPrestige": 54.74368,
+   "deathRate": 0.004
+  },
+  "Prestij Ustası": {
+   "id": "prestige_master",
+   "cost": 750,
+   "gain_total": 734,
+   "gain_per_day": 48.9,
+   "payback_days": 15.3,
+   "finalMoney": 3331,
+   "base_finalMoney": 3351,
+   "finalPrestige": 79.91136,
+   "deathRate": 0.004
+  },
+  "Hızlı Hangar": {
+   "id": "fast_hangar",
+   "cost": 240,
+   "gain_total": -118,
+   "gain_per_day": -7.8,
+   "payback_days": null,
+   "finalMoney": 2995,
+   "base_finalMoney": 3351,
+   "finalPrestige": 55.39888,
+   "deathRate": 0.0
+  },
+  "Enerjik Ekip": {
+   "id": "energetic_crew",
+   "cost": 200,
+   "gain_total": 88,
+   "gain_per_day": 5.9,
+   "payback_days": 34.0,
+   "finalMoney": 3237,
+   "base_finalMoney": 3351,
+   "finalPrestige": 56.6792,
+   "deathRate": 0.0
+  },
+  "Çevik Ekip": {
+   "id": "agile_crew",
+   "cost": 360,
+   "gain_total": 249,
+   "gain_per_day": 16.6,
+   "payback_days": 21.7,
+   "finalMoney": 3243,
+   "base_finalMoney": 3351,
+   "finalPrestige": 57.24672,
+   "deathRate": 0.0
+  },
+  "Sabırlı Müşteriler": {
+   "id": "patient_customers",
+   "cost": 240,
+   "gain_total": 47,
+   "gain_per_day": 3.1,
+   "payback_days": 76.9,
+   "finalMoney": 3149,
+   "base_finalMoney": 3351,
+   "finalPrestige": 55.30272,
+   "deathRate": 0.0
+  },
+  "Kumarbaz Kasası": {
+   "id": "gambler_case",
+   "cost": 700,
+   "gain_total": 1096,
+   "gain_per_day": 73.0,
+   "payback_days": 9.6,
+   "finalMoney": 3739,
+   "base_finalMoney": 3351,
+   "finalPrestige": 55.03984,
+   "deathRate": 0.008
+  },
+  "Telefon Hattı": {
+   "id": "phone_line",
+   "cost": 320,
+   "gain_total": 59,
+   "gain_per_day": 3.9,
+   "payback_days": 81.2,
+   "finalMoney": 3084,
+   "base_finalMoney": 3351,
+   "finalPrestige": 55.85392,
+   "deathRate": 0.0
+  },
+  "Mesai Saati": {
+   "id": "overtime",
+   "cost": 600,
+   "gain_total": 39,
+   "gain_per_day": 2.6,
+   "payback_days": 231.5,
+   "finalMoney": 2785,
+   "base_finalMoney": 3351,
+   "finalPrestige": 52.92624,
+   "deathRate": 0.02
+  },
+  "Kaldıraçlı Kira": {
+   "id": "leveraged_rent",
+   "cost": 600,
+   "gain_total": 830,
+   "gain_per_day": 55.3,
+   "payback_days": 10.8,
+   "finalMoney": 3574,
+   "base_finalMoney": 3351,
+   "finalPrestige": 54.1864,
+   "deathRate": 0.02
+  },
+  "Yüksek Volatilite": {
+   "id": "high_volatility",
+   "cost": 640,
+   "gain_total": 846,
+   "gain_per_day": 56.4,
+   "payback_days": 11.3,
+   "finalMoney": 3544,
+   "base_finalMoney": 3351,
+   "finalPrestige": 54.98368,
+   "deathRate": 0.0
+  },
+  "Acil Fren": {
+   "id": "emergency_brake",
+   "cost": 500,
+   "gain_total": 30,
+   "gain_per_day": 2.0,
+   "payback_days": 254.1,
+   "finalMoney": 2873,
+   "base_finalMoney": 3351,
+   "finalPrestige": 54.82272,
+   "deathRate": 0.0
+  },
+  "Kelle Koltukta": {
+   "id": "all_in",
+   "cost": 640,
+   "gain_total": 675,
+   "gain_per_day": 45.0,
+   "payback_days": 14.2,
+   "finalMoney": 3356,
+   "base_finalMoney": 3351,
+   "finalPrestige": 51.10816,
+   "deathRate": 0.128
+  },
+  "Toplu Alım": {
+   "id": "bulk_buy",
+   "cost": 160,
+   "gain_total": 10,
+   "gain_per_day": 0.7,
+   "payback_days": 238.1,
+   "finalMoney": 3193,
+   "base_finalMoney": 3351,
+   "finalPrestige": 54.83072,
+   "deathRate": 0.0
+  }
+ }
+}
