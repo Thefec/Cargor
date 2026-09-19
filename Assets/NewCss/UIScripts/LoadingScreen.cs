@@ -56,6 +56,37 @@ namespace NewCss.UIScripts
             // ve ilk Show()/LoadScene() çağrısı Resources'tan İKİNCİ bir kopya daha yaratırdı.
             _instance = this;
             DontDestroyOnLoad(gameObject);
+
+            SceneManager.sceneLoaded += HandleSceneLoaded;
+        }
+
+        private void OnDestroy()
+        {
+            if (_instance == this)
+            {
+                SceneManager.sceneLoaded -= HandleSceneLoaded;
+            }
+        }
+
+        /// <summary>
+        /// Ekranı kapatmanın SON GARANTİSİ. Ekranı açan tarafların bir kısmı, yüklenen sahneyle
+        /// birlikte yok oluyor — en önemlisi <c>SteamManager</c> (MainMenu sahnesindeki
+        /// "steammanager" objesinde yaşıyor, DontDestroyOnLoad DEĞİL). NGO harita sahnesini
+        /// LoadSceneMode.Single ile yükleyince MainMenu boşalır, SteamManager yok olur ve onun
+        /// <c>HideLoadingScreenCoroutine</c>'i (kapatmadan önce ~1.5 sn bekliyor) ölür; kapatma
+        /// adımı hiç çalışmaz ve ekran kalıcı takılır.
+        ///
+        /// Bu singleton kalıcı olduğu için sceneLoaded olayını her zaman alır. Sahne yüklendiyse
+        /// yükleme bitmiştir — ekranı kimin açtığından bağımsız olarak burada kapatıyoruz.
+        /// Additive yüklemeler geçişi temsil etmediği için yok sayılır.
+        /// </summary>
+        private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            if (mode != LoadSceneMode.Single) return;
+            if (!gameObject.activeSelf) return;
+
+            StopDotsInternal();
+            gameObject.SetActive(false);
         }
 
         #region Ham API (SteamManager delegasyonu için)
