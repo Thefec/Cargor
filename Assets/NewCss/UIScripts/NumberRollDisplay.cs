@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using NewCss.Audio;
 
 namespace NewCss
 {
@@ -7,10 +8,17 @@ namespace NewCss
     /// Bir TMP_Text'e takılıp değeri "sayarak" (count-up) gösterir, artış/azalışta
     /// renk flaşı + punch scale tetikler. NumberRoller'ı sürer (bkz. Core/NumberRoller.cs).
     /// Sahnede bu componentin eklenmesi/bağlanması bu iş kapsamında YAPILMADI — bkz. rapor.
+    ///
+    /// Faz B (bkz. plans/ses-tasarimi.md §3): sayaç her tam sayıyı geçtiğinde SfxId.CounterTick
+    /// çalar. En çok hissedilen juice olduğu için hız sınırlı (COUNTER_TICK_MIN_INTERVAL) ve
+    /// hafif pitch varyasyonlu — hızlı sayarken her rakamda çalıp rahatsız etmesin.
     /// </summary>
     [DisallowMultipleComponent]
     public class NumberRollDisplay : MonoBehaviour
     {
+        private const float COUNTER_TICK_MIN_INTERVAL = 0.05f;
+        private const float COUNTER_TICK_PITCH_VARIATION = 0.08f;
+
         [Header("Hedef Text")]
         [Tooltip("Sayının yazılacağı TMP_Text. Boş bırakılırsa bu objedeki TMP_Text otomatik alınır.")]
         [SerializeField] private TMP_Text targetText;
@@ -46,6 +54,11 @@ namespace NewCss
 
         private bool _hasValue;
         private float _lastTarget;
+
+        // CounterTick: bir önceki karede gösterilen tam sayı — değiştiğinde (animasyon sırasında)
+        // "tık" sesi tetiklenir. SetValueInstant'ta senkronlanır ki spawn/ilk değer tık çalmasın.
+        private int _lastTickInt;
+        private bool _lastTickIntCached;
 
         private bool _flashing;
         private float _flashElapsed;
@@ -140,6 +153,11 @@ namespace NewCss
                 targetText.color = _baseColor;
             transform.localScale = _baseScale;
 
+            // Spawn/ilk değer "tık" çalmasın — tam sayıyı burada senkronla, Update() bunu
+            // bir sonraki animasyondan önceki gerçek başlangıç sanır.
+            _lastTickInt = Mathf.RoundToInt(_roller.Displayed);
+            _lastTickIntCached = true;
+
             WriteText();
         }
 
@@ -151,9 +169,25 @@ namespace NewCss
 
             _roller.Tick(dt);
             WriteText();
+            TickCounterSound();
 
             TickFlash(dt);
             TickPunch(dt);
+        }
+
+        /// <summary>Animasyon sırasında gösterilen tam sayı değiştiğinde CounterTick çalar.
+        /// SnapTo/instant değerlerde (animasyon yok) tetiklenmez — sadece "sayarak" ilerlerken.</summary>
+        private void TickCounterSound()
+        {
+            if (!_roller.IsAnimating) return;
+
+            int currentInt = Mathf.RoundToInt(_roller.Displayed);
+            if (_lastTickIntCached && currentInt == _lastTickInt) return;
+
+            _lastTickInt = currentInt;
+            _lastTickIntCached = true;
+
+            SfxBus.Play(SfxId.CounterTick, COUNTER_TICK_MIN_INTERVAL, COUNTER_TICK_PITCH_VARIATION);
         }
 
         private void WriteText()

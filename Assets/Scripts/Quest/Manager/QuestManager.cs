@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using NewCss.Audio;
 
 namespace NewCss.Quest
 {
@@ -378,6 +379,13 @@ namespace NewCss.Quest
                     var quest = changeEvent.Value;
                     OnQuestStatusChanged?.Invoke(quest.questId.ToString(), quest.status);
                     OnQuestProgressUpdated?.Invoke(quest.questId.ToString(), quest.currentProgress, quest.targetProgress);
+
+                    // Faz B (plans/ses-tasarimi.md §3): NetworkList.OnListChanged zaten her
+                    // peer'de replike tetikleniyor — yeni RPC gerekmez.
+                    if (quest.status == QuestStatus.Completed)
+                    {
+                        SfxBus.Play(SfxId.QuestComplete);
+                    }
                     break;
             }
         }

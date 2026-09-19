@@ -7,6 +7,7 @@ using UnityEngine.Localization.Settings;
 using UnityEngine.SceneManagement;
 using TMPro;
 using NewCss.Quest;
+using NewCss.Audio;
 
 namespace NewCss
 {
@@ -959,6 +960,9 @@ namespace NewCss
         private void ShowDayEndScreenClientRpc()
         {
             SetDayEndScreenActive(true);
+            // Faz B (plans/ses-tasarimi.md §3): mevcut ClientRpc'ye tek satır — yeni RPC açmadan
+            // tüm client'larda yerel çalar (bu metot zaten her peer'de tetikleniyor).
+            SfxBus.Play(SfxId.DayEnd);
         }
 
         [ClientRpc]
@@ -985,6 +989,16 @@ namespace NewCss
         private void HandleCurrentDayChanged(int previousValue, int newValue)
         {
             UpdateUI();
+
+            // Faz B (plans/ses-tasarimi.md §3): kira günü yaklaşma uyarısı. NetworkVariable
+            // OnValueChanged zaten her peer'de (host dahil, TEK sefer) tetiklenir — OnNewDay
+            // static event'inin aksine (server'da doğrudan + ClientRpc ile host'ta ÇİFT tetiklenir,
+            // bkz. NextDay() yorumu), burada çifte çalma riski yok. Yeni gün BİR kira günüyse
+            // (day % rentIntervalDays == 0) o günün başında bir kez çalar.
+            if (rentIntervalDays > 0 && newValue != previousValue && newValue % rentIntervalDays == 0)
+            {
+                SfxBus.Play(SfxId.RentWarning);
+            }
         }
 
         private void HandleDayOverChanged(bool previousValue, bool newValue)

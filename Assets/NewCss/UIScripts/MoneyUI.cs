@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using NewCss.Audio;
 
 namespace NewCss
 {
@@ -11,6 +12,12 @@ namespace NewCss
         // üzerinden gider; yoksa eski "$<sayı>" davranışına sessizce düşülür.
         private NumberRollDisplay _rollDisplay;
         private bool _rollDisplayCached;
+
+        // Faz B (plans/ses-tasarimi.md §3.2): MoneyEarned — bağlantı noktası hazır, klip henüz
+        // seçilmedi. OnMoneyChanged NetworkVariable.OnValueChanged üzerinden zaten her client'ta
+        // replike tetikleniyor (yeni RPC gerekmez), ARTIŞ tespiti için önceki tutarı burada tutuyoruz.
+        private int _lastKnownAmount;
+        private bool _lastKnownAmountCached;
 
         public void Initialize(MoneySystem sys)
         {
@@ -55,6 +62,16 @@ namespace NewCss
 
         void UpdateText(int newAmount)
         {
+            // Faz B: klip henüz seçilmedi — MoneyEarned SfxLibrary'de bilerek boş slot
+            // (AudioSlotValidator raporlar). SetValue'dan ÖNCE değerlendir: yalnızca gerçek bir
+            // artış (rent/upgrade harcaması gibi azalışlar DEĞİL) tetiklesin.
+            if (_lastKnownAmountCached && newAmount > _lastKnownAmount)
+            {
+                SfxBus.Play(SfxId.MoneyEarned);
+            }
+            _lastKnownAmount = newAmount;
+            _lastKnownAmountCached = true;
+
             var roll = RollDisplay;
             if (roll != null)
             {
@@ -68,6 +85,11 @@ namespace NewCss
 
         void UpdateTextInstant(int newAmount)
         {
+            // İlk gösterim / anlık senkron — "kazanma" sayılmaz, sesi tetiklemeden başlangıç
+            // değerini senkronla (aksi halde oturum başında sahte bir "para kazandın" sesi çalar).
+            _lastKnownAmount = newAmount;
+            _lastKnownAmountCached = true;
+
             var roll = RollDisplay;
             if (roll != null)
             {

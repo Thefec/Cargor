@@ -9,6 +9,7 @@ using UnityEngine.Animations.Rigging;
 using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
+using NewCss.Audio;
 
 namespace NewCss
 {
@@ -843,6 +844,12 @@ namespace NewCss
             int newLevel = changeEvent.Value;
 
             ReplayUpgradeLevel(upgradeIndex, newLevel);
+
+            // Faz B (plans/ses-tasarimi.md §3): NetworkList.OnListChanged zaten her peer'de
+            // replike tetikleniyor (ReplayPurchasedUpgradeLevels'ın çağırdığı ReplayUpgradeLevel
+            // BURADAN geçmez, o yüzden geç-join replay'inde tekrar çalmaz — yalnız gerçek satın
+            // alma/aktivasyon anında).
+            SfxBus.Play(SfxId.UpgradeBought);
 
             RefreshAllUpgradeUI();
         }

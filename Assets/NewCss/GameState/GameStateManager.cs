@@ -10,6 +10,7 @@ using System.Text;
 using UnityEngine.SceneManagement;
 using Steamworks;
 using TMPro;
+using NewCss.Audio;
 
 namespace NewCss
 {
@@ -108,12 +109,16 @@ namespace NewCss
                     playerWon = true;
                     Time.timeScale = 0f;
                     ShowWinScreen();
+                    // Faz B (plans/ses-tasarimi.md §3): bu metot NetworkVariable.OnValueChanged
+                    // üzerinden zaten her peer'de (+ late-join'de ApplyGameEndState ile) tetikleniyor.
+                    SfxBus.Play(SfxId.Victory);
                     break;
                 case GameEndState.Lost:
                     gameEnded = true;
                     playerWon = false;
                     Time.timeScale = 0f;
                     ShowLoseScreen();
+                    SfxBus.Play(SfxId.Bankrupt);
                     break;
                 case GameEndState.None:
                     // Server ResetGameState() ile _gameEndState.Value'yu None'a çekince
