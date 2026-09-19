@@ -177,15 +177,11 @@ public class SteamManager : MonoBehaviour
     private Sprite emptySlotSprite;
 
     [Header("=== LOADING SCREEN ===")]
-    [SerializeField, Tooltip("Yükleme ekranı")]
-    private GameObject loadingScreen;
-
-    [SerializeField, Tooltip("Yükleme text'i")]
-    private TextMeshProUGUI loadingText;
-
-    [SerializeField, Tooltip("Yükleme progress bar'ı")]
-    private Slider loadingProgressBar;
-
+    // Yükleme ekranının görsel parçaları artık burada DEĞİL: kalıcı LoadingScreen singleton'ı
+    // (Resources/UI/LoadingScreen.prefab) sahipleniyor, bu sınıf ona delege ediyor. Eskiden burada
+    // loadingScreen / loadingText / loadingProgressBar SerializeField'ları vardı ve MainMenu
+    // sahnesindeki Canvas/LoadScreen'e bağlıydı; o alt ağaç kaldırıldı, alanlar da öksüz kalmasın
+    // diye silindi (boş Inspector slotu = sessiz bağlanmama tuzağı). Bkz. plans/loading-screen-gecisleri.md
     [SerializeField, Tooltip("Minimum yükleme süresi")]
     private float minimumLoadTime = 1f;
 

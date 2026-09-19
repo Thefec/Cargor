@@ -6,24 +6,36 @@
 
 ---
 - **Optimizasyon teftişi (2026-09-18):** 4 madde UYGULANDI (commit yok) → `plans/optimizasyon-teftisi.md`
-- **Loading screen → 4 sahne geçişi (2026-09-19):** mimari ONAYLI, implementasyon BEKLİYOR → `plans/loading-screen-gecisleri.md`
+- **Loading screen → 4 sahne geçişi (2026-09-19):** BİTTİ, kontrol ONAY, commit `d16be51`+`6aa74f1`, PUSH'LU → `plans/loading-screen-gecisleri.md` (kalan: adım 8 tamamlandı)
 
 ## 🎯 Şu an aktif iş
 
-**🎓 TUTORIAL SİSTEMİ SIFIRDAN YENİDEN YAZILIYOR — Adım 1-5 BİTTİ, `kontrol` ONAY.** (2026-08-31, dal
-`feature/tutorial-rewrite`, commit YOK push, 6 commit merge'siz). Ana harita işleri bitti, kullanıcı
-boşalan kapasiteyi Tutorial'a yönlendirdi. Yapılanlar: 6 script `Assets/Tutorialassets/`'ten
-`Assets/NewCss/Tutorial/`'a guid korunarak taşındı (klasör ikiliği kapandı) · BoxType karışıklığı
-(`NetworkedShelf.BoxType` vs `BoxInfo.BoxType`, farklı enum sırası) tooltip'le netleştirildi ·
-kapsam dışı condition tipleri işaretlendi · gerçek bir bug bulundu+kapatıldı (`CompleteTutorial()`
-`_currentStep`'i null'lamıyordu, skip/dil-değişimi tamamlanma akışını tekrar tetikleyebiliyordu).
-qa + kontrol ikisi de temiz ONAY (bağımsız doğrulandı: guid, content-preserving taşıma, kapsam
-taşması yok, headless derleme 0 CS). **SIRADAKİ: kullanıcı Unity Editor'de manuel işler** (adım
-listesini Inspector'da doldurma, highlight/trigger referansları bağlama — kod ajanı sahneye obje
-yerleştiremiyor), sonra `plans/playtest-checklist.md` yeni **T-serisi** (T1-T9). Tam plan:
-**[plans/tutorial-rewrite.md](plans/tutorial-rewrite.md)**. Level tasarımı (mevcut statik FBX
-korunuyor) ve içerik (sadece çekirdek döngü — telefon/quest/oda-görünürlük öğretimi kapsam DIŞI)
-bu turun kapsamıydı.
+**🟢 Kodlanmış bekleyen iş YOK.** Loading screen işi (4 sahne geçişi) 2026-09-19'da bitti, kontrol
+ONAY, dal `fix/difficulty-scaling-and-dead-code`'ta commit+push'lu. Kullanıcı bu haliyle **build aldı**.
+
+**🔴 BUILD DENETİMİNDE BULUNAN AÇIK MADDELER (2026-09-19, qa + economist, öncelik sırasıyla):**
+1. **Co-op spawn — `The Main Office.unity:29413` `spawnPoints` dizisinde TEK eleman.**
+   `PlayerSpawner.cs:320` `clientId % 1` → hep 0, yani 2-4 oyuncunun HEPSİ aynı pozisyon+rotasyonda
+   spawn oluyor. Tek oyuncu testinde görünmez. Sahneye 3 transform eklemek yeterli. **Küçük iş, büyük etki.**
+2. **`MainMenu.unity` `ErrorMessageText` = `fileID: 0`** → "Steam bağlantısı yok!", "Lobi
+   oluşturulamadı!" gibi TÜM hata mesajları oyuncuya görünmüyor (kod null-guard'lı, sessizce yutuyor).
+3. **Zayıf-tier ekonomi tuzağı:** zayıf oyuncu kart alırsa %89-100 iflas, hiç almazsa %19-68.
+   Hiçbir Ö raporunda ölçülmemişti. Ö4-Ö10'un hepsinden öncelikli. Bkz. `docs/economy/`.
+4. **İki "Missing (Mono Script)":** `The Main Office.unity` içinde `QuotaManager` (sınıf kodda YOK,
+   kota sistemi kaldırılmış ama obje kalmış) ve `TruckLogManager` (sahne guid'i dosya guid'iyle
+   uyuşmuyor). İkisi de inert — Editor konsol gürültüsü, gameplay'i durdurmuyor.
+5. **`MainMenu.unity`'de ölü `SceneLoader`** — eski paralel loading sistemi, hiçbir koddan/butondan
+   çağrılmıyor. Temizlenebilir.
+
+**⚠️ COMMIT EDİLMEMİŞ + TEST EDİLMEMİŞ:** `Packages/manifest.json` (netcode 2.13.0→2.13.2 +
+unity-mcp/ai.assistant geliştirici paketleri) ve `Assets/Scenes/Tutorial.unity` **ATOMİK BAĞLI**
+(netcode `NetworkObject` alan adı migrasyonu). Ayrıca `Tutorial.unity`'de açıklanmamış bir
+`redBoxItemData: RedBox.asset → RedBoxOpen.asset` değişikliği var. `ProjectSettings.asset` kişisel
+cloud bağlaması taşıyor. Bunlar bilerek commit DIŞI.
+
+**✅ Tutorial BİTMİŞ** — `PLAN.md`'nin eski kaydı yanlıştı. `feature/tutorial-rewrite` dalı artık yok,
+commit'leri (`7bf5f2a`, `9813b41`, `983cd2e`) mevcut dalın atası, `Tutorial.unity:5246`
+`tutorialSteps` 10 adımla DOLU. Manuel Inspector işi diye bekleyen bir şey kalmamış.
 
 **🟢 Ana harita: kodlanmış bekleyen iş YOK — her şey `main`'de, tek kalan kapı PLAYTEST.** (2026-08-31)
 

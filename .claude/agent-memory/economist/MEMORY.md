@@ -1,6 +1,8 @@
 # Economist Agent Memory Index
 
-## ⭐ EN GÜNCEL TABAN (buradan başla — Round 10+11 KODA İŞLENDİ, commit `bb98ad1`)
+## ⭐ EN GÜNCEL TABAN (buradan başla — Round 10+11 KODA İŞLENDİ `bb98ad1`; Ö1+Ö2+Ö3 KODA İŞLENDİ `3424460`, main'de)
+- [⭐⭐⭐⭐⭐build-hazırlık denetimi: zayıf-beceri kart alma tuzağı 2026-09-19](zayif_tier_upgrade_trap_2026-09-19.md) — Ö1-3 SONRASI DA değişmedi; zayıf+açgözlü/mantıklı %89-100 kayıp vs zayıf+hiç %19-68; Ö1-10 hiçbirinde raporlanmamış, sonraki tur adayı
+- [Ö4-Ö10 açık öneri listesi durumu 2026-09-19](oneriler_o4_o10_status_2026-09-19.md) — build-hazırlık denetiminde tek tek doğrulandı, hepsi hâlâ UYGULANMADI, ciddiyet etiketli
 - [⭐⭐⭐⭐⭐Telefon koşulsuz +20 TL KALDIRILDI 2026-09-18](phone_unconditional_money_removed_2026-09-18.md) — callMoneyReward 20→0 (cs+asset+sim), Slow/strict P1/P2 %100 spam optimumu kırıldı→%0/%20
 - [⭐⭐⭐⭐⭐DifficultyManager sabir/stamina kablolamasi CANLI + prefab-vs-cs sapma fix'i 2026-09-18](difficulty_patience_wiring_2026-09-18.md) — gercek deger PREFAB'ta yasiyordu (8/14/2, cs 35/55/5 degil); karar 15/20/2, 1P=canliyla ayni
 - [⭐⭐⭐⭐sim.js SIFIR RNG + "unloseable" ekonomi bulgusu 2026-09-18](a1_determinism_audit_2026-09-18.md) — runFullSim %100 deterministik (Math.random YOK); +-90%/gün gürültüde bile winRate>=%98.3; iflas SADECE gün12/16 kira kapısında; day-5 finalCash'i ZAYIF öngörüyor (r=0.27-0.48)
