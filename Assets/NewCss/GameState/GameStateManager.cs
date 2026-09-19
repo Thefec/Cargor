@@ -11,6 +11,8 @@ using UnityEngine.SceneManagement;
 using Steamworks;
 using TMPro;
 using NewCss.Audio;
+using NewCss.UIScripts;
+
 
 namespace NewCss
 {
@@ -912,6 +914,8 @@ namespace NewCss
 
         private IEnumerator ExitToMenuCoroutine()
         {
+            LoadingScreen.Show("Menüye dönülüyor");
+
             // Network'ü kapat
             if (NetworkManager.Singleton != null)
             {
@@ -938,7 +942,8 @@ namespace NewCss
             }
             
             // Menu scene'ini yükle
-            SceneManager.LoadScene("MainMenu");
+            // void: coroutine singleton üzerinde döner, bu obje yok olsa bile ekran kapanır.
+            LoadingScreen.LoadScene("MainMenu", "Menüye dönülüyor");
         }
 
         // Debug için helper metod

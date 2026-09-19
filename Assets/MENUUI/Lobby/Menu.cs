@@ -5,6 +5,8 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using NewCss.Audio;
+using NewCss.UIScripts;
+
 
 /// <summary>
 /// Ana menü sistemi.
@@ -768,13 +770,13 @@ public class Menu : MonoBehaviour
         if (_tutorialConfirmRt == null)
         {
             Go(tutorialConfirmPanel, false);
-            SceneManager.LoadScene(SCENE_TUT);
+            LoadingScreen.LoadScene(SCENE_TUT, "Tutorial yükleniyor");
             return;
         }
         SlideOut(_tutorialConfirmRt, _tutorialConfirmRestPos, () =>
         {
             Go(tutorialConfirmPanel, false);
-            SceneManager.LoadScene(SCENE_TUT);
+            LoadingScreen.LoadScene(SCENE_TUT, "Tutorial yükleniyor");
         });
     }
 

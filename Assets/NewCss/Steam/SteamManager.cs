@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using NewCss.UIScripts;
 using Netcode.Transports.Facepunch;
 using Steamworks;
 using Steamworks.Data;
@@ -238,6 +239,13 @@ public class SteamManager : MonoBehaviour
     // generic bir string ile dolduğu için ayrım için kullanılamaz).
     private bool _clientConnectedThisSession;
     private Coroutine _loadingDotsCoroutine;
+
+    // loadingText'in TEK render yolu. Durum mesajı ("Preparing", "Loading Scene",
+    // "Connecting.. .", "Ready!") taban metindir; nokta animasyonu onun ÜSTÜNE eklenir.
+    // Daha önce iki ayrı yazar vardı (dots coroutine sabit "Loading" yazıyor, ilerleme
+    // ve sahne-olayı çağrıları kendi mesajlarını yazıyordu) ve birbirlerini eziyorlardı.
+    private string _loadingStatusMessage = "";
+    private int _loadingDotCount;
     private Coroutine _lobbyIdColorCoroutine;
 
     // Player slot update throttling
@@ -1656,19 +1664,31 @@ public class SteamManager : MonoBehaviour
         _loadingDotsCoroutine = StartCoroutine(AnimateLoadingDotsCoroutine());
     }
 
+    /// <summary>
+    /// Nokta animasyonunu durdurur. Handle daha önce saklanıyordu ama hiç kullanılmıyordu;
+    /// loadingText'e yazan tek sahibi burada kapatıyoruz ki son durum metni ("Ready!") kalsın.
+    /// </summary>
+    private void StopLoadingDots()
+    {
+        if (_loadingDotsCoroutine != null)
+        {
+            StopCoroutine(_loadingDotsCoroutine);
+            _loadingDotsCoroutine = null;
+        }
+    }
+
+    /// <summary>
+    /// Yalnızca nokta SAYISINI ilerletir; metni kendisi kurmaz. Taban durum mesajını
+    /// UpdateLoadingProgress belirler, ikisini RenderLoadingText birleştirir. Böylece
+    /// "Preparing" / "Loading Scene" / "Connecting.. ." mesajları noktalarla birlikte
+    /// görünür kalır — eskiden bu coroutine sabit "Loading" yazıp onları eziyordu.
+    /// </summary>
     private IEnumerator AnimateLoadingDotsCoroutine()
     {
-        int dotCount = 0;
-
         while (_isLoadingScene)
         {
-            dotCount = (dotCount + 1) % 4;
-            string dots = new string('.', dotCount);
-
-            if (loadingText != null)
-            {
-                loadingText.text = $"Loading{dots}";
-            }
+            _loadingDotCount = (_loadingDotCount + 1) % 4;
+            RenderLoadingText();
 
             yield return new WaitForSeconds(LOADING_DOT_INTERVAL);
         }
@@ -1677,6 +1697,11 @@ public class SteamManager : MonoBehaviour
     private IEnumerator HideLoadingScreenCoroutine()
     {
         yield return new WaitForSeconds(minimumLoadTime);
+
+        // "Ready!" yazmadan ÖNCE nokta animasyonunu durdur. Aksi halde dots coroutine
+        // (_isLoadingScene hâlâ true olduğu için çalışmaya devam eder) aşağıdaki
+        // LOADING_COMPLETE_DELAY beklemesi sırasında "Ready!"i "Loading..." ile ezer.
+        StopLoadingDots();
 
         UpdateLoadingProgress(1f, "Ready!");
 
@@ -1697,7 +1722,10 @@ public class SteamManager : MonoBehaviour
             progress = Mathf.Clamp(progress, SCENE_LOAD_START_PROGRESS, MAX_TRACKING_PROGRESS);
             timer += Time.deltaTime;
 
-            UpdateLoadingProgress(progress, "Loading");
+            // Metin parametresi BİLEREK verilmiyor: bu coroutine yalnızca ilerleme çubuğunu
+            // sürer, taban durum mesajına dokunmaz. Her frame bir metin geçilseydi
+            // UpdateLoadingProgress nokta sayacını sürekli sıfırlayıp animasyonu dondururdu.
+            UpdateLoadingProgress(progress);
 
             yield return null;
         }
@@ -1711,15 +1739,28 @@ public class SteamManager : MonoBehaviour
 
     private void UpdateLoadingProgress(float progress, string text = null)
     {
-        if (loadingProgressBar != null)
-        {
-            loadingProgressBar.value = progress;
-        }
+        LoadingScreen.SetProgress(progress);
 
-        if (loadingText != null && !string.IsNullOrEmpty(text))
+        if (!string.IsNullOrEmpty(text))
         {
-            loadingText.text = text;
+            // Yeni durum mesajı: noktaları sıfırla ki mesaj baştan "." ile saymaya başlasın.
+            _loadingStatusMessage = text;
+            _loadingDotCount = 0;
+            RenderLoadingText();
         }
+    }
+
+    /// <summary>
+    /// loadingText'e yazan TEK yer: taban durum mesajı + nokta animasyonu.
+    /// Başka hiçbir yerden loadingText.text'e atama yapılmamalı.
+    /// </summary>
+    private void RenderLoadingText()
+    {
+        string fullText = _loadingDotCount > 0
+            ? _loadingStatusMessage + new string('.', _loadingDotCount)
+            : _loadingStatusMessage;
+
+        LoadingScreen.SetText(fullText);
     }
 
     #endregion
@@ -1829,9 +1870,13 @@ public class SteamManager : MonoBehaviour
 
     private void SetLoadingScreenActive(bool active)
     {
-        if (loadingScreen != null)
+        if (active)
         {
-            loadingScreen.SetActive(active);
+            LoadingScreen.Show();
+        }
+        else
+        {
+            LoadingScreen.Hide();
         }
     }
 

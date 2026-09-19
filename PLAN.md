@@ -6,6 +6,7 @@
 
 ---
 - **Optimizasyon teftişi (2026-09-18):** 4 madde UYGULANDI (commit yok) → `plans/optimizasyon-teftisi.md`
+- **Loading screen → 4 sahne geçişi (2026-09-19):** mimari ONAYLI, implementasyon BEKLİYOR → `plans/loading-screen-gecisleri.md`
 
 ## 🎯 Şu an aktif iş
 

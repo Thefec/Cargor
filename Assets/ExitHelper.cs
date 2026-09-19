@@ -3,6 +3,8 @@ using UnityEngine.SceneManagement;
 using Unity.Netcode;
 using Steamworks;
 using System.Collections;
+using NewCss.UIScripts;
+
 
 /// <summary>
 /// NetworkBehaviour'dan bağımsız exit işlemlerini yöneten helper sınıf
@@ -43,6 +45,8 @@ public class ExitHelper :  MonoBehaviour
 
     private IEnumerator ExitCoroutine(bool isHost, bool isHostShutdown)
     {
+        LoadingScreen.Show("Menüye dönülüyor");
+
         Debug. Log($"[ExitHelper] Starting exit process. IsHost={isHost}, HostShutdown={isHostShutdown}");
 
         // 1. Zamanı normale döndür
@@ -79,7 +83,8 @@ public class ExitHelper :  MonoBehaviour
 
         // 5. Scene yükle
         Debug.Log("[ExitHelper] Loading MainMenu");
-        SceneManager.LoadScene("MainMenu");
+        // void: coroutine singleton üzerinde döner, bu obje yok olsa bile ekran kapanır.
+        LoadingScreen.LoadScene("MainMenu", "Menüye dönülüyor");
     }
 
     private void ResetAllGameManagers()
