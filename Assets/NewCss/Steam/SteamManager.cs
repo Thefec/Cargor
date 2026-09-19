@@ -10,6 +10,7 @@ using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Localization.Components;
 using UnityEngine.Localization.Settings;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -218,6 +219,13 @@ public class SteamManager : MonoBehaviour
     private bool _isLoadingScene;
     private Coroutine _errorMessageCoroutine;
 
+    // Lobi ID text'i localize edilmiş bir etiket ("Lobi ID:") + dinamik lobi koduna
+    // bölünüyor; LocalizeStringEvent kendi OnEnable'ında string'i ezdiği için etiket
+    // parçasını burada saklayıp kodu sonuna ekliyoruz (bkz. ApplyLobbyIdText).
+    private string _lobbyCodeDisplay = "";
+    private string _lobbyIdLabel = "";
+    private LocalizeStringEvent _lobbyIdLocalizer;
+
     // Late-join reddi UX: whitelist-dışı biri NGO ConnectionApproval'da reddedilince
     // (bkz. LateJoinGuard.ApproveConnection) client tarafında mesaj göstermek + temiz
     // çıkış yapmak için. Bkz. HookLateJoinRejectionHandler / HandleLateJoinRejection.
@@ -271,6 +279,14 @@ public class SteamManager : MonoBehaviour
         UnsubscribeFromSteamEvents();
         UnsubscribeFromSceneEvents();
         UnsubscribeFromNetworkEvents();
+    }
+
+    private void OnDestroy()
+    {
+        if (_lobbyIdLocalizer != null)
+        {
+            _lobbyIdLocalizer.OnUpdateString.RemoveListener(OnLobbyIdLabelLocalized);
+        }
     }
 
     private void Start()
@@ -340,6 +356,38 @@ public class SteamManager : MonoBehaviour
 
         // Raycast'i aktif et (tıklama algılaması için gerekli)
         LobbyID.raycastTarget = true;
+
+        // Authored fallback: LocalizeStringEvent henüz tetiklenmediyse Inspector'daki
+        // metni kullan. LocalizeStringEvent varsa OnUpdateString üzerinden etiketi
+        // güncel tutuyoruz (persistent call runtime listener'lardan önce çalışır,
+        // bu yüzden bizim listener'ımız her zaman en son metni yazar).
+        _lobbyIdLabel = LobbyID.text;
+        _lobbyIdLocalizer = LobbyID.GetComponent<LocalizeStringEvent>();
+        if (_lobbyIdLocalizer != null)
+        {
+            _lobbyIdLocalizer.OnUpdateString.AddListener(OnLobbyIdLabelLocalized);
+        }
+    }
+
+    /// <summary>
+    /// LocalizeStringEvent etiketi (örn. "Lobi ID:") her tazelendiğinde çağrılır.
+    /// </summary>
+    private void OnLobbyIdLabelLocalized(string label)
+    {
+        _lobbyIdLabel = label;
+        ApplyLobbyIdText();
+    }
+
+    /// <summary>
+    /// LobbyID text'ini localize etiket + dinamik lobi kodundan birleştirip yazar.
+    /// </summary>
+    private void ApplyLobbyIdText()
+    {
+        if (LobbyID == null) return;
+
+        LobbyID.text = string.IsNullOrEmpty(_lobbyCodeDisplay)
+            ? _lobbyIdLabel
+            : $"{_lobbyIdLabel} {_lobbyCodeDisplay}";
     }
 
     #endregion
@@ -815,7 +863,8 @@ public class SteamManager : MonoBehaviour
 
         if (LobbyID != null)
         {
-            LobbyID.text = LobbyCodeConverter.Encode(lobby.Id);
+            _lobbyCodeDisplay = LobbyCodeConverter.Encode(lobby.Id);
+            ApplyLobbyIdText();
         }
     }
 
@@ -989,6 +1038,10 @@ public class SteamManager : MonoBehaviour
         ClearAllPlayerSlots();
         SetStartButtonActive(false);
         RefreshUI();
+
+        // Eski lobi kodu ekranda kalmasın; sadece etiket görünür kalır.
+        _lobbyCodeDisplay = "";
+        ApplyLobbyIdText();
     }
 
     /// <summary>
@@ -1725,6 +1778,10 @@ public class SteamManager : MonoBehaviour
         LeaveCurrentLobby();
 
         LobbySaver.instance?.ForceClearLobby();
+
+        // Eski lobi kodu ekranda kalmasın; sadece etiket görünür kalır.
+        _lobbyCodeDisplay = "";
+        ApplyLobbyIdText();
     }
 
     /// <summary>
