@@ -1491,12 +1491,19 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092673
-    m_Localized: "Porta la scatola al tavolo d'imballaggio, premi [{0}] \u2014 l'oggetto
-      verr\xE0 imballato automaticamente."
+    m_Localized: "Porta la scatola al tavolo d'imballaggio e premi [{0}] \u2014 l'oggetto viene messo dentro, ma la scatola resta aperta finch\xE9 non la sigilli con il nastro."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263129
+    m_Localized: "Premi [{0}] alla stazione del nastro per prendere un rotolo di nastro adesivo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263130
+    m_Localized: "Con il nastro in mano, premi [{0}] al tavolo d'imballaggio per sigillare la scatola aperta."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092674
-    m_Localized: Premi di nuovo [{0}] davanti al tavolo per ritirare la scatola imballata.
+    m_Localized: "Premi di nuovo [{0}] davanti al tavolo per ritirare la scatola sigillata."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092675

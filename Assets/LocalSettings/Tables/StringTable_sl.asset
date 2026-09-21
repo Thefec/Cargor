@@ -1457,12 +1457,19 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092673
-    m_Localized: "Odnesi \u0161katlo na mizo za pakiranje, pritisni [{0}] \u2014
-      izdelek bo samodejno zapakiran."
+    m_Localized: "Odnesi \u0161katlo na mizo za pakiranje in pritisni [{0}] \u2014 izdelek gre v \u0161katlo, a ta ostane odprta, dokler je ne zalepi\u0161 s trakom."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263129
+    m_Localized: "Pritisni [{0}] pri postaji s trakom, da vzame\u0161 kolut lepilnega traku."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263130
+    m_Localized: "Medtem ko dr\u017Ei\u0161 trak, pritisni [{0}] pri mizi za pakiranje, da zapre\u0161 odprto \u0161katlo."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092674
-    m_Localized: "Znova pritisni [{0}] pri mizi, da prevzame\u0161 zapakirano \u0161katlo."
+    m_Localized: "Znova pritisni [{0}] pri mizi, da prevzame\u0161 zalepljeno \u0161katlo."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092675

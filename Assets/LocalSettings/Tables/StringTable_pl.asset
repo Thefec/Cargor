@@ -1482,13 +1482,19 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092673
-    m_Localized: "Zanie\u015B pude\u0142ko do sto\u0142u pakowania, naci\u015Bnij
-      [{0}] \u2014 przedmiot zostanie automatycznie zapakowany."
+    m_Localized: "Zanie\u015B pude\u0142ko do sto\u0142u pakowania i naci\u015Bnij [{0}] \u2014 przedmiot trafia do \u015Brodka, ale pude\u0142ko zostaje otwarte, dop\xF3ki go nie zakleisz ta\u015Bm\u0105."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263129
+    m_Localized: "Naci\u015Bnij [{0}] przy stacji z ta\u015Bm\u0105, aby wzi\u0105\u0107 rolk\u0119 ta\u015Bmy."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263130
+    m_Localized: "Trzymaj\u0105c ta\u015Bm\u0119, naci\u015Bnij [{0}] przy stole pakowania, aby zaklei\u0107 otwarte pude\u0142ko."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092674
-    m_Localized: "Naci\u015Bnij ponownie [{0}] przy stole, aby odebra\u0107 zapakowane
-      pude\u0142ko."
+    m_Localized: "Naci\u015Bnij ponownie [{0}] przy stole, aby odebra\u0107 zaklejone pude\u0142ko."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092675

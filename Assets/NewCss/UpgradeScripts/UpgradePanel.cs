@@ -256,6 +256,12 @@ namespace NewCss
         [SerializeField, Tooltip("Reroll maliyet metni")]
         private TMP_Text rerollCostText;
 
+        [SerializeField, Tooltip("Çıkış (kapat) butonu — OfficeTerminal.ClosePanel'i çağırır")]
+        private Button exitButton;
+
+        [SerializeField, Tooltip("Paneli açan terminal (boşsa sahnede aranır)")]
+        private UIScripts.OfficeTerminal officeTerminal;
+
         #endregion
 
         #region Serialized Fields - Upgrades
@@ -464,6 +470,7 @@ namespace NewCss
             SubscribeToMoneySystem();
 
             if (rerollButton != null) rerollButton.onClick.AddListener(OnReroll);
+            if (exitButton != null) exitButton.onClick.AddListener(OnExitClicked);
             RefreshRerollUI();
         }
 
@@ -474,6 +481,7 @@ namespace NewCss
             UnsubscribeFromMoneySystem();
 
             if (rerollButton != null) rerollButton.onClick.RemoveListener(OnReroll);
+            if (exitButton != null) exitButton.onClick.RemoveListener(OnExitClicked);
 
             // PerkEffect (ve InitializeStaminaBaseValue) oturum boyunca kirlettiği SO/prefab alanlarını
             // authored haline döndür — bkz. RestorePerkAssetSnapshot / CapturePerkAssetSnapshotIfNeeded.
@@ -1286,6 +1294,17 @@ namespace NewCss
         private void TogglePanelServerRpc()
         {
             _isPanelOpen.Value = !_isPanelOpen.Value;
+        }
+
+        /// <summary>
+        /// Exit butonu: panel OfficeTerminal üzerinden client-local açıldığı için kapatma da oradan
+        /// yapılır (kapanış animasyonu + oyuncu hareket kilidinin açılması).
+        /// </summary>
+        private void OnExitClicked()
+        {
+            if (officeTerminal == null) officeTerminal = FindFirstObjectByType<UIScripts.OfficeTerminal>();
+            if (officeTerminal != null) officeTerminal.ClosePanel();
+            else LogError("Exit clicked but no OfficeTerminal found");
         }
 
         #endregion

@@ -76,6 +76,10 @@ public partial class PlayerInventory : NetworkBehaviour
     [SerializeField, Tooltip("Öncelik sıralaması (ilk = en yüksek öncelik)")]
     private string[] priorityLayers = { "GroundItem", "TableItem", "ShelfItem" };
 
+    [Header("=== TABLE INTERACTION REACH ===")]
+    [SerializeField, Range(0.5f, 3f), Tooltip("Masanın en yakın fiziksel yüzeyine izin verilen yatay etkileşim mesafesi (bkz. InteractionReach)")]
+    private float tableInteractReach = 1.2f;
+
     [Header("=== OUTLINE SETTINGS ===")]
     [SerializeField, Tooltip("Hedeflenen item'ın outline rengi")]
     private Color outlineColor = Color.yellow;
@@ -128,6 +132,24 @@ public partial class PlayerInventory : NetworkBehaviour
     private const int COLLIDER_BUFFER_SIZE = 30;
     private const float MIN_SCROLL_THRESHOLD = 0.01f;
 
+    // Masa arama sırasında OverlapSphere yarıçapına eklenen pay - tableInteractReach sadece
+    // "kabul" eşiği, arama yarıçapı büyük masaların gövdesini de yakalayabilsin diye daha geniş.
+    private const float TABLE_SEARCH_RADIUS_MARGIN = 2.5f;
+
+    // Bant elde ve reach dışında ama hemen ötesinde bir masa varsa "ıska" sayılıp drop iptal
+    // edilir (bkz. plan bölüm 3 madde 4) - bu payın büyüklüğü.
+    private const float TAPE_NEAR_MISS_MARGIN = 1f;
+
+    // GetNearbyTable/HasNearMissTableForTapeDrop için ayrı, alloc'suz collider buffer'ı
+    // (item detection'ın _colliderBuffer'ından bağımsız - bkz. QA bulgusu #1). Sahnedeki masa
+    // sayısı item sayısından çok daha az olduğundan daha küçük bir buffer yeterli.
+    private const int TABLE_COLLIDER_BUFFER_SIZE = 16;
+
+    // UpdateTargetedTable (outline/görsel geri bildirim) throttle aralığı - tıklama anındaki
+    // GetNearbyTable çağrıları (HandlePickupInteraction/HandleDropInteraction) bundan ETKİLENMEZ,
+    // her zaman taze kalır. Sadece per-frame outline taraması 10Hz'e düşürülür (bkz. QA bulgusu #1).
+    private const float TABLE_TARGET_UPDATE_INTERVAL = 0.1f;
+
     private Coroutine _currentAnimationCoroutine;
     private float _lastInputTime;
     private const float INPUT_SPAM_COOLDOWN = 0.15f;
@@ -160,6 +182,11 @@ public partial class PlayerInventory : NetworkBehaviour
     private readonly List<NetworkWorldItem> _itemsInRange = new();
     private readonly HashSet<NetworkWorldItem> _previousFrameItems = new();
 
+    // Table Targeting (outline + gerçek etkileşimle aynı kural, bkz. PlayerInventory.Shelf.cs)
+    private Table _targetedTable;
+    private Collider[] _tableColliderBuffer;
+    private float _lastTableTargetUpdateTime;
+
     // Shelf Item System
     private NetworkWorldItem _targetedShelfItem;
     private NetworkWorldItem _previousTargetedShelfItem;
@@ -190,6 +217,7 @@ public partial class PlayerInventory : NetworkBehaviour
     public NetworkWorldItem TargetedItem => _targetedItem;
     public bool IsProcessingInteraction => _isProcessingInteraction;
     public float DetectionRange => detectionRange;
+    public float TableInteractReach => tableInteractReach;
 
     public Color OutlineColor
     {
@@ -216,6 +244,7 @@ public partial class PlayerInventory : NetworkBehaviour
     {
         InitializeAudioSource();
         _colliderBuffer = new Collider[COLLIDER_BUFFER_SIZE];
+        _tableColliderBuffer = new Collider[TABLE_COLLIDER_BUFFER_SIZE];
     }
 
     private void Start()
@@ -235,6 +264,7 @@ public partial class PlayerInventory : NetworkBehaviour
     {
         UnsubscribeFromNetworkEvents();
         CleanupOutlines();
+        ClearTargetedTableHighlight();
 
         // Animasyon temizliği
         if (_currentAnimationCoroutine != null)
@@ -294,6 +324,7 @@ public partial class PlayerInventory : NetworkBehaviour
     {
         if (!IsOwner) return;
 
+        UpdateTargetedTable();
         UpdateShelfItemSystem();
         HandleThrowInput();
         HandleInput();

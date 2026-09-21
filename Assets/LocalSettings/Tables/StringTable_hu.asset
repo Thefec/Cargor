@@ -1475,13 +1475,19 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092673
-    m_Localized: "Vidd a dobozt a csomagol\xF3 asztalhoz, nyomd meg a [{0}] gombot
-      \u2014 a term\xE9k automatikusan becsomagol\xF3dik."
+    m_Localized: "Vidd a dobozt a csomagol\xF3 asztalhoz, \xE9s nyomd meg a [{0}] gombot \u2014 a term\xE9k beker\xFCl a dobozba, de az nyitva marad, am\xEDg le nem ragasztod szalaggal."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263129
+    m_Localized: "Nyomd meg a [{0}] gombot a ragaszt\xF3szalag-\xE1llom\xE1sn\xE1l, hogy elvegy\xE9l egy tekercs ragaszt\xF3szalagot."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263130
+    m_Localized: "A ragaszt\xF3szalaggal a kezedben nyomd meg a [{0}] gombot a csomagol\xF3 asztaln\xE1l, hogy leragaszd a nyitott dobozt."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092674
-    m_Localized: "Nyomd meg \xFAjra a [{0}] gombot az asztaln\xE1l, hogy felvedd
-      a becsomagolt dobozt."
+    m_Localized: "Nyomd meg \xFAjra a [{0}] gombot az asztaln\xE1l, hogy felvedd a leragasztott dobozt."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092675

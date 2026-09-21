@@ -44,7 +44,10 @@ public enum TutorialConditionType
     InteractWithCustomer,
 
     /// <summary>Özel koşul</summary>
-    Custom
+    Custom,
+
+    /// <summary>Açık+dolu kutuyu bantla kapattı mı (Table.PerformSealing başarı yolu)? </summary>
+    SealBox
 }
 
 /// <summary>

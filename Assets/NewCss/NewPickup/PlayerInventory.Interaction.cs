@@ -261,8 +261,57 @@ public partial class PlayerInventory : NetworkBehaviour
             return;
         }
 
+        // Bant elde ve reach dışında ama hemen ötesinde bir masa varsa bu bir "ıska"dır -
+        // yere düşürme, hiçbir şey yapma (oyuncu tekrar dener). Diğer item'larda normal drop
+        // davranışı korunur (bkz. plan bölüm 3 madde 4).
+        if (IsHoldingTape() && HasNearMissTableForTapeDrop())
+        {
+            Debug.Log("[PlayerInventory] Bant elde, masa menzil dışında biraz ötede - drop iptal edildi (ıska koruması)");
+            return;
+        }
+
         // Default: Normal drop
         PerformNormalDrop();
+    }
+
+    /// <summary>
+    /// Elde tutulan item bant mı? Table.ProcessPlayerHasItem'daki holdingTape kontrolüyle
+    /// AYNI ifade (bkz. Table.cs) - client/server ayrışmasın diye.
+    /// </summary>
+    private bool IsHoldingTape()
+    {
+        return _currentItemData?.visualPrefab?.GetComponent<TapeInfo>() != null;
+    }
+
+    /// <summary>
+    /// GetNearbyTable() reach içinde masa bulamadı, ama tableInteractReach + TAPE_NEAR_MISS_MARGIN
+    /// içinde fiziksel bir masa var mı? Varsa bu bir "ıska"dır, normal drop'a düşülmemeli.
+    /// </summary>
+    private bool HasNearMissTableForTapeDrop()
+    {
+        var detectionPos = GetDetectionCenterPosition();
+        float nearMissReach = tableInteractReach + TAPE_NEAR_MISS_MARGIN;
+        float searchRadius = nearMissReach + TABLE_SEARCH_RADIUS_MARGIN;
+        // GetNearbyTable ile aynı, alloc'suz buffer'ı paylaşır (bkz. QA bulgusu #1) - bu metod
+        // sadece drop anında, tek seferlik çağrılır, ekstra buffer'a gerek yok.
+        int hitCount = Physics.OverlapSphereNonAlloc(detectionPos, searchRadius, _tableColliderBuffer);
+
+        for (int i = 0; i < hitCount; i++)
+        {
+            var collider = _tableColliderBuffer[i];
+            if (collider == null) continue;
+
+            var table = collider.GetComponentInParent<Table>();
+            if (table == null) continue;
+
+            float distance = InteractionReach.GetHorizontalDistanceToSurface(table.gameObject, detectionPos);
+            if (distance <= nearMissReach)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
     #region Server RPCs - Tutorial Shelf Interaction
 
@@ -384,7 +433,7 @@ public partial class PlayerInventory : NetworkBehaviour
 
         foreach (var collider in colliders)
         {
-            var shelf = collider.GetComponent<TutorialShelfState>();
+            var shelf = collider.GetComponentInParent<TutorialShelfState>();
             if (shelf == null) continue;
 
             if (!shelf.IsPlayerInRange(playerTransform))
@@ -393,7 +442,8 @@ public partial class PlayerInventory : NetworkBehaviour
                 continue;
             }
 
-            float distance = Vector3.Distance(playerTransform.position, shelf.transform.position);
+            // Pivota değil en yakın fiziksel yüzeye göre sırala (InteractionReach, Table ile aynı kural).
+            float distance = InteractionReach.GetHorizontalDistanceToSurface(shelf.gameObject, playerTransform.position);
             if (distance < closestDistance)
             {
                 closestDistance = distance;

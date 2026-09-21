@@ -1886,7 +1886,7 @@ flowchart TD
 
 | Özellik | Detay |
 |---------|-------|
-| Yapı | Adım bazlı akış — **10 adım (0–9)** (`TutorialManager.cs:59`) |
+| Yapı | Adım bazlı akış — **12 adım (0–11)** (`TutorialManager.cs:59`); PackItem'dan sonra **TakeTape** (5, `TutorialTapeStation`'dan bant al) + **SealBox** (6, `TutorialConditionType.SealBox`, `Table.PerformSealing` → `OnBoxSealed`) |
 | Sahne | Ayrı, bağımsız `Assets/Scenes/Tutorial.unity` |
 | Metin efekti | Daktilo (typewriter) — noktada ×8, virgülde ×4, boşlukta ×0.5 gecikme |
 | Atlama | **Space** — hem daktilo efektini hem bekleme adımını atlar |

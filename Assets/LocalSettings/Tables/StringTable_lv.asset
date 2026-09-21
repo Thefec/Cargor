@@ -1477,13 +1477,19 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092673
-    m_Localized: "Aiznes kasti uz iepako\u0161anas galdu, nospied [{0}] \u2014 prece
-      tiks iepakota autom\u0101tiski."
+    m_Localized: "Aiznes kasti uz iepako\u0161anas galdu un nospied [{0}] \u2014 prece non\u0101k kast\u0113, bet t\u0101 paliek atv\u0113rta, kam\u0113r to neaizl\u012Bm\u0113 ar l\u012Bmlenti."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263129
+    m_Localized: "Nospied [{0}] pie l\u012Bmlentes stacijas, lai pa\u0146emtu l\u012Bmlentes ru\u013C\u013Cu."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263130
+    m_Localized: "Ar l\u012Bmlenti rok\u0101 nospied [{0}] pie iepako\u0161anas galda, lai aizl\u012Bm\u0113tu atv\u0113rto kasti."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092674
-    m_Localized: "V\u0113lreiz nospied [{0}] pie galda, lai pa\u0146emtu iepakoto
-      kasti."
+    m_Localized: "V\u0113lreiz nospied [{0}] pie galda, lai pa\u0146emtu aizl\u012Bm\u0113to kasti."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092675

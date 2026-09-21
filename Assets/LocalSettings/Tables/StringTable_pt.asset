@@ -1456,12 +1456,19 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092673
-    m_Localized: "Leva a caixa at\xE9 a mesa de embalagem, pressiona [{0}] \u2014
-      o item ser\xE1 embalado automaticamente."
+    m_Localized: "Leva a caixa at\xE9 a mesa de embalagem e pressiona [{0}] \u2014 o item \xE9 colocado dentro, mas a caixa fica aberta at\xE9 a selares com fita."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263129
+    m_Localized: "Pressiona [{0}] na esta\xE7\xE3o de fita para pegar um rolo de fita adesiva."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263130
+    m_Localized: "Com a fita na m\xE3o, pressiona [{0}] na mesa de embalagem para selar a caixa aberta."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092674
-    m_Localized: "Pressiona [{0}] novamente junto \xE0 mesa para pegar a caixa embalada."
+    m_Localized: "Pressiona [{0}] novamente junto \xE0 mesa para pegar a caixa selada."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092675

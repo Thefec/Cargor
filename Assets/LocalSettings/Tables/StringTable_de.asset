@@ -1458,12 +1458,19 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092673
-    m_Localized: "Bring die Kiste zum Packtisch und dr\xFCcke [{0}] \u2014 der Artikel
-      wird automatisch verpackt."
+    m_Localized: "Bring die Kiste zum Packtisch und dr\xFCcke [{0}] \u2014 der Artikel kommt in die Kiste, sie bleibt aber offen, bis du sie mit Klebeband verschlie\xDFt."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263129
+    m_Localized: "Dr\xFCcke [{0}] an der Klebebandstation, um eine Rolle Klebeband zu nehmen."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263130
+    m_Localized: "Dr\xFCcke mit dem Klebeband in der Hand [{0}] am Packtisch, um die offene Kiste zu verschlie\xDFen."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092674
-    m_Localized: "Dr\xFCcke [{0}] erneut am Tisch, um die verpackte Kiste aufzunehmen."
+    m_Localized: "Dr\xFCcke [{0}] erneut am Tisch, um die versiegelte Kiste aufzunehmen."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092675

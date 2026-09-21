@@ -5,6 +5,7 @@
 > Bir iş bitince buradan çıkar, `plans/archive/` altına taşı.
 
 ---
+- **Tutorial bantlama masası + 2 adım (2026-09-21):** UYGULANDI, kontrol ONAY (2. tur), commit yok, playtest bekliyor → `plans/tutorial-bant-masasi.md`
 - **Optimizasyon teftişi (2026-09-18):** 4 madde UYGULANDI (commit yok) → `plans/optimizasyon-teftisi.md`
 - **Loading screen → 4 sahne geçişi (2026-09-19):** BİTTİ, kontrol ONAY, commit `d16be51`+`6aa74f1`, PUSH'LU → `plans/loading-screen-gecisleri.md` (kalan: adım 8 tamamlandı)
 

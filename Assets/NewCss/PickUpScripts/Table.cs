@@ -21,6 +21,11 @@ namespace NewCss
         private const float PLACE_POINT_GIZMO_SIZE = 0.3f;
         private const float CENTER_GIZMO_RADIUS = 0.1f;
 
+        // Server, client'ın PlayerInventory.TableInteractReach ile hesapladığı reach'e bu payı
+        // ekler (lag payı) - server-authoritative kalır ama client'ın kabul ettiği hedefi
+        // gecikme yüzünden sessizce reddetmez (bkz. plan bölüm 3 madde 2).
+        private const float SERVER_REACH_TOLERANCE = 0.5f;
+
         #endregion
 
         #region Serialized Fields
@@ -189,8 +194,14 @@ namespace NewCss
         {
             if (itemPlacePoint == null)
             {
-                itemPlacePoint = transform;
-                LogWarning("No itemPlacePoint set, using transform");
+                // Masanin kendi transform'u model import rotasyonu tasiyabilir (orn. Tutorial masasi
+                // {-0.5,-0.5,-0.5,0.5}) ve kutular bu rotasyonu kopyalayinca yan yatiyor.
+                // Dunya rotasyonu identity olan bir child olustur — sahnedeki PlacePoint'lerle ayni yonelim.
+                var autoPoint = new GameObject("AutoPlacePoint").transform;
+                autoPoint.SetParent(transform, false);
+                autoPoint.SetPositionAndRotation(transform.position, Quaternion.identity);
+                itemPlacePoint = autoPoint;
+                LogWarning("No itemPlacePoint set, using upright AutoPlacePoint at table position");
             }
         }
 
@@ -216,8 +227,11 @@ namespace NewCss
         }
 
         /// <summary>
-        /// QuickOutline component'ini kurar (kapalı başlar). Oyuncu etkileşim alanına
-        /// girince client-side açılır — raflardaki etkileşim geri bildiriminin masa karşılığı.
+        /// QuickOutline component'ini kurar (kapalı başlar). Eskiden bir trigger-collider
+        /// (OnTriggerEnter/Exit) fiziksel yaklaşımla açıyordu; bu, gerçek etkileşimin kullandığı
+        /// InteractionReach kuralından FARKLI bir geometriydi (bkz. plan bölüm 3 madde 3) - masa
+        /// vurgulu görünürken tık reddedilebiliyordu. Artık outline SADECE SetHighlighted üzerinden,
+        /// PlayerInventory'nin GetNearbyTable() ile AYNI hesapla tetiklenir (client-side, per-player).
         /// </summary>
         private void SetupOutline()
         {
@@ -233,33 +247,16 @@ namespace NewCss
             _outline.enabled = false;
         }
 
-        private void OnTriggerEnter(Collider other)
-        {
-            if (_outline != null && IsLocalPlayer(other))
-            {
-                _outline.enabled = true;
-            }
-        }
-
-        private void OnTriggerExit(Collider other)
-        {
-            if (_outline != null && IsLocalPlayer(other))
-            {
-                _outline.enabled = false;
-            }
-        }
-
         /// <summary>
-        /// Etkileşim outline'ı yalnızca bu makinenin kendi oyuncusu için tetiklenir
-        /// (client-side görsel). Aksi halde başka oyuncular yaklaşınca da yanardı.
+        /// PlayerInventory.UpdateTargetedTable tarafından çağrılır: local oyuncu bu masayı o an
+        /// gerçek etkileşim kuralıyla (InteractionReach) hedefliyorsa true, değilse false.
         /// </summary>
-        private bool IsLocalPlayer(Collider other)
+        public void SetHighlighted(bool highlighted)
         {
-            if (!other.CompareTag("Character")) return false;
-            // Collider NetworkObject ile aynı GameObject'te olmayabilir → parent fallback
-            // (codebase deseni: PagedUIPanelTrigger).
-            var netObj = other.GetComponent<NetworkObject>() ?? other.GetComponentInParent<NetworkObject>();
-            return netObj != null && netObj.IsOwner && netObj.IsLocalPlayer;
+            if (_outline != null)
+            {
+                _outline.enabled = highlighted;
+            }
         }
 
         private BoxCollider FindOrCreateInteractionTrigger()
@@ -358,14 +355,17 @@ namespace NewCss
         }
 
         /// <summary>
-        /// Transform bazlı range kontrolü + client'ın hedef-seçim geometrisiyle (OverlapSphere+koni)
-        /// hizalamak için mesafe-tabanlı fallback. Client bir hedefi sunmuşsa (detectionRange içindeyse)
-        /// server sessizce reddetmesin - oriented-box dışında olsa bile mesafe eşiği içindeyse kabul et.
+        /// Transform bazlı range kontrolü + client'ın hedef-seçiminde kullandığı TEK kuralla
+        /// (InteractionReach: masanın en yakın fiziksel yüzeyine yatay mesafe) hizalanmış
+        /// fallback. clientTableReach, çağıranın PlayerInventory.TableInteractReach'idir;
+        /// server buna SERVER_REACH_TOLERANCE payı ekleyerek client'ın kabul ettiği hedefi
+        /// lag yüzünden sessizce reddetmez - ama yetki her zaman server'da kalır (NGO).
         /// </summary>
-        public bool IsPlayerInRange(Transform playerTransform, float clientDetectionRange)
+        public bool IsPlayerInRange(Transform playerTransform, float clientTableReach)
         {
             if (playerTransform == null) return false;
 
+            // Hızlı yol: eski oriented-box alanı (Inspector'dan ayarlı interactionBoxSize/Offset).
             Vector3 localPoint = transform.InverseTransformPoint(playerTransform.position);
             Vector3 halfSize = interactionBoxSize * 0.5f;
 
@@ -374,10 +374,10 @@ namespace NewCss
                 return true;
             }
 
-            if (clientDetectionRange > 0f)
+            if (clientTableReach > 0f)
             {
-                float distance = Vector3.Distance(playerTransform.position, transform.position);
-                return distance <= clientDetectionRange;
+                float serverReach = clientTableReach + SERVER_REACH_TOLERANCE;
+                return InteractionReach.IsWithinReach(gameObject, playerTransform.position, serverReach);
             }
 
             return false;
@@ -570,8 +570,8 @@ namespace NewCss
             }
 
             // Range check - oriented-box VEYA client'ın hedef-seçiminde kullandığı
-            // detectionRange mesafesi (client-offer / server-accept geometri hizalaması)
-            if (!IsPlayerInRange(playerTransform, player.DetectionRange))
+            // TableInteractReach (client-offer / server-accept geometri hizalaması, InteractionReach)
+            if (!IsPlayerInRange(playerTransform, player.TableInteractReach))
             {
                 float distance = Vector3.Distance(playerTransform.position, transform.position);
                 LogWarning($"Client {clientId} is NOT in range!  Distance: {distance}");
@@ -976,6 +976,7 @@ namespace NewCss
             StartCoroutine(SealAndReleaseLockCoroutine(boxInfo.boxType));
 
             NotifyBoxPackedClientRpc(requesterClientId, (int)boxInfo.boxType);
+            NotifyTutorialManagerBoxSealed();
         }
 
         private IEnumerator SealAndReleaseLockCoroutine(BoxInfo.BoxType boxType)
@@ -1156,6 +1157,11 @@ namespace NewCss
         private void NotifyTutorialManager(bool isPlacing)
         {
             TutorialManager.Instance?.OnTableInteraction(isPlacing);
+        }
+
+        private void NotifyTutorialManagerBoxSealed()
+        {
+            TutorialManager.Instance?.OnBoxSealed();
         }
 
         

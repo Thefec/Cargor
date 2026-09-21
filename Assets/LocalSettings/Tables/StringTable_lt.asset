@@ -1478,13 +1478,19 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092673
-    m_Localized: "Nune\u0161k d\u0117\u017E\u0119 prie pakavimo stalo, spausk [{0}]
-      \u2014 prek\u0117 bus supakuota automati\u0161kai."
+    m_Localized: "Nune\u0161k d\u0117\u017E\u0119 prie pakavimo stalo ir spausk [{0}] \u2014 prek\u0117 patenka \u012F d\u0117\u017E\u0119, bet ji lieka atvira, kol jos neu\u017Eklijuosi juosta."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263129
+    m_Localized: "Spausk [{0}] prie juostos stotel\u0117s, kad paimtum lipnios juostos ritin\u012F."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263130
+    m_Localized: "Laikydamas juost\u0105, spausk [{0}] prie pakavimo stalo, kad u\u017Eklijuotum atvir\u0105 d\u0117\u017E\u0119."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092674
-    m_Localized: "Dar kart\u0105 spausk [{0}] prie stalo, kad paimtum supakuot\u0105
-      d\u0117\u017E\u0119."
+    m_Localized: "Dar kart\u0105 spausk [{0}] prie stalo, kad paimtum u\u017Eklijuot\u0105 d\u0117\u017E\u0119."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092675

@@ -1458,12 +1458,19 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092673
-    m_Localized: "Lleva la caja a la mesa de embalaje, pulsa [{0}] \u2014 el art\xEDculo
-      se empaquetar\xE1 autom\xE1ticamente."
+    m_Localized: "Lleva la caja a la mesa de embalaje y pulsa [{0}] \u2014 el art\xEDculo se coloca dentro, pero la caja queda abierta hasta que la selles con cinta."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263129
+    m_Localized: "Pulsa [{0}] en la estaci\xF3n de cinta para coger un rollo de cinta adhesiva."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263130
+    m_Localized: "Con la cinta en la mano, pulsa [{0}] en la mesa de embalaje para sellar la caja abierta."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092674
-    m_Localized: Pulsa [{0}] otra vez frente a la mesa para recoger la caja empaquetada.
+    m_Localized: "Pulsa [{0}] otra vez frente a la mesa para recoger la caja sellada."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092675

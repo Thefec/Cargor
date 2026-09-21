@@ -1331,6 +1331,14 @@ MonoBehaviour:
     m_Key: TutorialPackItem
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263129
+    m_Key: TutorialTakeTape
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263130
+    m_Key: TutorialSealBox
+    m_Metadata:
+      m_Items: []
   - m_Id: 143536416856092674
     m_Key: TutorialTakePackedBox
     m_Metadata:

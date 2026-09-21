@@ -1472,13 +1472,19 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092673
-    m_Localized: "Apporte la bo\xEEte \xE0 la table d'emballage, appuie sur [{0}]
-      \u2014 l'article sera emball\xE9 automatiquement."
+    m_Localized: "Apporte la bo\xEEte \xE0 la table d'emballage et appuie sur [{0}] \u2014 l'article est rang\xE9 dans la bo\xEEte, mais elle reste ouverte tant que tu ne la scelles pas avec du ruban."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263129
+    m_Localized: "Appuie sur [{0}] \xE0 la station de ruban adh\xE9sif pour prendre un rouleau de ruban."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263130
+    m_Localized: "Avec le ruban en main, appuie sur [{0}] \xE0 la table d'emballage pour sceller la bo\xEEte ouverte."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092674
-    m_Localized: "Appuie \xE0 nouveau sur [{0}] devant la table pour r\xE9cup\xE9rer
-      la bo\xEEte emball\xE9e."
+    m_Localized: "Appuie \xE0 nouveau sur [{0}] devant la table pour r\xE9cup\xE9rer la bo\xEEte scell\xE9e."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092675

@@ -1474,12 +1474,19 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092673
-    m_Localized: "Odnes krabici na balic\xED st\u016Fl, stiskni [{0}] \u2014 p\u0159edm\u011Bt
-      se automaticky zabal\xED."
+    m_Localized: "Odnes krabici na balic\xED st\u016Fl a stiskni [{0}] \u2014 p\u0159edm\u011Bt se vlo\u017E\xED dovnit\u0159, ale krabice z\u016Fstane otev\u0159en\xE1, dokud ji nezalep\xED\u0161 p\xE1skou."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263129
+    m_Localized: "Stiskni [{0}] u stanice s p\xE1skou, abys vzal roli lepic\xED p\xE1sky."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263130
+    m_Localized: "S p\xE1skou v ruce stiskni [{0}] u balic\xEDho stolu, abys zalepil otev\u0159enou krabici."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092674
-    m_Localized: Znovu stiskni [{0}] u stolu, abys vyzvedl zabalenou krabici.
+    m_Localized: "Znovu stiskni [{0}] u stolu, abys vyzvedl zalepenou krabici."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092675

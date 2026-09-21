@@ -293,12 +293,13 @@ public static class TutorialSceneSetup
     }
 
     /// <summary>
-    /// plans/tutorial-rewrite.md'deki güncel 10 adımlık içerik taslağını (2026-09-09)
+    /// plans/tutorial-rewrite.md'deki güncel 10 adımlık içerik taslağını (2026-09-09) + PackItem
+    /// sonrasına eklenen TakeTape/SealBox adımlarını (plans/tutorial-bant-masasi.md, 2026-09-21)
     /// TutorialManager.tutorialSteps'e yazar + her adımın objectToHighlight'ını ilgili
     /// sahne objesine bağlar. Sahneyi diskten yeniden açar (OpenScene, Single) — bu yüzden
     /// menüye tıklamadan önce Inspector'da kaydetmediğin elle-girilmiş adım varsa kaybolur
     /// (zaten tamamının üstüne yazılacaktı, sorun değil). Tekrar çalıştırmak güvenlidir:
-    /// tutorialSteps her seferinde bu 10 adımla TAMAMEN değiştirilir (idempotent overwrite,
+    /// tutorialSteps her seferinde bu 12 adımla TAMAMEN değiştirilir (idempotent overwrite,
     /// birikmeli ekleme değil).
     /// </summary>
     [MenuItem("Tools/Cargor/Tutorial/Setup Tutorial Steps")]
@@ -334,6 +335,7 @@ public static class TutorialSceneSetup
         // TakePackageAgain adımlarının objectToHighlight'ını sessizce null'a düşürüyordu.
         var shelfGO = GameObject.Find("TutorialShelfState");
         var truckGO = GameObject.Find("TutorialTruck");
+        var tapeStationGO = GameObject.Find("TutorialTapeStation");
 
         var steps = new[]
         {
@@ -346,6 +348,10 @@ public static class TutorialSceneSetup
             new StepDef("TakeBox", TutorialConditionType.TakeFromShelf, "TutorialTakeBox",
                 highlight: shelfGO, requiresBoxType: true, boxType: NetworkedShelf.BoxType.Red),
             new StepDef("PackItem", TutorialConditionType.PlaceOnTable, "TutorialPackItem",
+                highlight: packingTableGO),
+            new StepDef("TakeTape", TutorialConditionType.PickupItem, "TutorialTakeTape",
+                highlight: tapeStationGO, requiresItemPickup: true, requiredItemName: "DuctTape"),
+            new StepDef("SealBox", TutorialConditionType.SealBox, "TutorialSealBox",
                 highlight: packingTableGO),
             new StepDef("TakePackedBox", TutorialConditionType.TakeFromTable, "TutorialTakePackedBox",
                 highlight: packingTableGO),
@@ -374,8 +380,8 @@ public static class TutorialSceneSetup
             el.FindPropertyRelative("waitDuration").floatValue = s.WaitDuration;
             // Unity array büyürken yeni elemanları son elemandan kopyalar (fresh default değil) —
             // kullanılmayan alanları burada açıkça sıfırlamazsak önceki içerikten kalıntı kalır.
-            el.FindPropertyRelative("requiresItemPickup").boolValue = false;
-            el.FindPropertyRelative("requiredItemName").stringValue = "";
+            el.FindPropertyRelative("requiresItemPickup").boolValue = s.RequiresItemPickup;
+            el.FindPropertyRelative("requiredItemName").stringValue = s.RequiredItemName;
             el.FindPropertyRelative("triggerTag").stringValue = "";
             // KeyCode duz sirali bir enum degil (None=0, Tab=9, Space=32, A=97...) -
             // enumValueIndex tanim sirasindaki index'i ister, gercek int degerini degil.
@@ -410,11 +416,13 @@ public static class TutorialSceneSetup
         public int RequiredDeliveryCount;
         public bool RequiresTruckBoxType;
         public BoxInfo.BoxType TruckBoxType;
+        public bool RequiresItemPickup;
+        public string RequiredItemName;
 
         public StepDef(string name, TutorialConditionType condition, string instructionKey, GameObject highlight = null,
             KeyCode requiredKey = KeyCode.None, float waitDuration = 3f, bool requiresBoxType = false,
             NetworkedShelf.BoxType boxType = default, int requiredDeliveryCount = 1, bool requiresTruckBoxType = false,
-            BoxInfo.BoxType truckBoxType = default)
+            BoxInfo.BoxType truckBoxType = default, bool requiresItemPickup = false, string requiredItemName = "")
         {
             Name = name;
             Condition = condition;
@@ -427,6 +435,8 @@ public static class TutorialSceneSetup
             RequiredDeliveryCount = requiredDeliveryCount;
             RequiresTruckBoxType = requiresTruckBoxType;
             TruckBoxType = truckBoxType;
+            RequiresItemPickup = requiresItemPickup;
+            RequiredItemName = requiredItemName;
         }
     }
 }

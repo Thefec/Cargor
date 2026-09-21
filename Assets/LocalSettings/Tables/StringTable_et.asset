@@ -1451,11 +1451,19 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092673
-    m_Localized: "Vii kast pakkimislauale, vajuta [{0}] \u2014 toode pakitakse automaatselt."
+    m_Localized: "Vii kast pakkimislauale ja vajuta [{0}] \u2014 toode pannakse kasti, kuid see j\xE4\xE4b avatuks, kuni sa selle teibiga kinni ei teipa."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263129
+    m_Localized: "Vajuta teibijaama juures [{0}], et v\xF5tta rull teipi."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263130
+    m_Localized: "Teibiga k\xE4es vajuta pakkimislaua juures [{0}], et avatud kast kinni teibata."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092674
-    m_Localized: "Vajuta laua juures uuesti [{0}], et v\xF5tta pakitud kast."
+    m_Localized: "Vajuta laua juures uuesti [{0}], et v\xF5tta teibitud kast."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092675

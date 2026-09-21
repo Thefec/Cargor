@@ -202,21 +202,84 @@ public partial class PlayerInventory : NetworkBehaviour
     #endregion
     #region Nearby Object Detection
 
+    /// <summary>
+    /// TEK hedefleme kuralı (bkz. InteractionReach): masanın pivotuna değil, en yakın
+    /// FİZİKSEL yüzey noktasına yatay mesafe ≤ tableInteractReach. Koni testi YOK — eskiden
+    /// pivota dar bir koniyle bakılıyordu, bu da 2m'lik bir masanın sadece orta ~1m'lik
+    /// kısmından çalışmasına yol açıyordu (bkz. plan bölüm 3 madde 1). Birden fazla aday
+    /// varsa EN YAKIN yüzeyli olan seçilir (ilk bulunan değil).
+    ///
+    /// Tıklama anında (HandlePickupInteraction/HandleDropInteraction) DOĞRUDAN çağrılır -
+    /// throttle'sız, her zaman taze. Görsel outline güncellemesi (UpdateTargetedTable) ayrıca
+    /// throttle'lıdır ama bu metodun kendisi etkilenmez (bkz. QA bulgusu #1).
+    /// </summary>
     private Table GetNearbyTable()
     {
         var detectionPos = GetDetectionCenterPosition();
-        var colliders = Physics.OverlapSphere(detectionPos, detectionRange);
+        float searchRadius = tableInteractReach + TABLE_SEARCH_RADIUS_MARGIN;
+        int hitCount = Physics.OverlapSphereNonAlloc(detectionPos, searchRadius, _tableColliderBuffer);
 
-        foreach (var collider in colliders)
+        Table closestTable = null;
+        float closestDistance = float.MaxValue;
+
+        for (int i = 0; i < hitCount; i++)
         {
-            var table = collider.GetComponent<Table>();
-            if (table != null && IsPositionInCone(table.transform.position))
+            var collider = _tableColliderBuffer[i];
+            if (collider == null) continue;
+
+            // Visual/collider ayrı child'ta olabilen kutu prefab'larıyla aynı ders: component
+            // collider'la aynı objede olsa da GetComponentInParent kullanmak daha güvenli.
+            var table = collider.GetComponentInParent<Table>();
+            if (table == null) continue;
+
+            float distance = InteractionReach.GetHorizontalDistanceToSurface(table.gameObject, detectionPos);
+            if (distance <= tableInteractReach && distance < closestDistance)
             {
-                return table;
+                closestDistance = distance;
+                closestTable = table;
             }
         }
 
-        return null;
+        return closestTable;
+    }
+
+    /// <summary>
+    /// Masa outline'ının gerçek etkileşimle (GetNearbyTable) TUTARLI olmasını sağlar: eskiden
+    /// outline ayrı bir trigger-collider mantığıyla yanıyordu (Table.OnTriggerEnter/Exit),
+    /// gerçek etkileşim ise farklı bir kuralla reddedilebiliyordu (bkz. plan bölüm 3 madde 3).
+    /// Sadece owner client'ta, her frame çağrılır - ama içerideki OverlapSphere taraması
+    /// TABLE_TARGET_UPDATE_INTERVAL (~0.1s) ile throttle'lanır (görsel geri bildirim, 10Hz
+    /// yeterli). Tıklama anındaki GetNearbyTable çağrıları bu throttle'dan ETKİLENMEZ
+    /// (bkz. QA bulgusu #1).
+    /// </summary>
+    private void UpdateTargetedTable()
+    {
+        if (Time.time - _lastTableTargetUpdateTime < TABLE_TARGET_UPDATE_INTERVAL) return;
+        _lastTableTargetUpdateTime = Time.time;
+
+        var nearbyTable = GetNearbyTable();
+        if (nearbyTable == _targetedTable) return;
+
+        if (_targetedTable != null)
+        {
+            _targetedTable.SetHighlighted(false);
+        }
+
+        _targetedTable = nearbyTable;
+
+        if (_targetedTable != null)
+        {
+            _targetedTable.SetHighlighted(true);
+        }
+    }
+
+    private void ClearTargetedTableHighlight()
+    {
+        if (_targetedTable != null)
+        {
+            _targetedTable.SetHighlighted(false);
+            _targetedTable = null;
+        }
     }
 
     private ShelfState GetNearbyShelf()
@@ -237,10 +300,12 @@ public partial class PlayerInventory : NetworkBehaviour
 
         foreach (var collider in colliders)
         {
-            var shelf = collider.GetComponent<TutorialShelfState>();
+            var shelf = collider.GetComponentInParent<TutorialShelfState>();
             if (shelf != null && shelf.IsPlayerInRange(playerTransform))
             {
-                float distance = Vector3.Distance(playerTransform.position, shelf.transform.position);
+                // Pivota değil en yakın fiziksel yüzeye göre sırala (Table ile aynı kural,
+                // bkz. InteractionReach) - birden fazla raf menzildeyse gerçekten en yakını seçilsin.
+                float distance = InteractionReach.GetHorizontalDistanceToSurface(shelf.gameObject, playerTransform.position);
                 if (distance < closestDistance)
                 {
                     closestDistance = distance;
@@ -262,10 +327,12 @@ public partial class PlayerInventory : NetworkBehaviour
 
         foreach (var collider in colliders)
         {
-            var shelf = collider.GetComponent<ShelfState>();
+            var shelf = collider.GetComponentInParent<ShelfState>();
             if (shelf != null && shelf.IsPlayerInRange(playerTransform))
             {
-                float distance = Vector3.Distance(playerTransform.position, shelf.transform.position);
+                // Pivota değil en yakın fiziksel yüzeye göre sırala (Table ile aynı kural,
+                // bkz. InteractionReach) - birden fazla raf menzildeyse gerçekten en yakını seçilsin.
+                float distance = InteractionReach.GetHorizontalDistanceToSurface(shelf.gameObject, playerTransform.position);
                 if (distance < closestDistance)
                 {
                     closestDistance = distance;
@@ -285,7 +352,7 @@ public partial class PlayerInventory : NetworkBehaviour
 
         foreach (var collider in colliders)
         {
-            var shelf = collider.GetComponent<ShelfState>();
+            var shelf = collider.GetComponentInParent<ShelfState>();
             if (shelf != null)
             {
                 float distance = Vector3.Distance(position, shelf.transform.position);
@@ -307,7 +374,7 @@ public partial class PlayerInventory : NetworkBehaviour
 
         foreach (var collider in colliders)
         {
-            var networkedShelf = collider.GetComponent<NetworkedShelf>();
+            var networkedShelf = collider.GetComponentInParent<NetworkedShelf>();
             if (networkedShelf != null && IsPositionInCone(networkedShelf.transform.position))
             {
                 return networkedShelf;
@@ -468,7 +535,7 @@ public partial class PlayerInventory : NetworkBehaviour
 
         foreach (var collider in colliders)
         {
-            var shelf = collider.GetComponent<ShelfState>();
+            var shelf = collider.GetComponentInParent<ShelfState>();
             if (shelf == null) continue;
 
             // ✅ ÖNEMLİ: IsPlayerInRange kontrolü (detectionRange fallback ile hizalanmış)
@@ -478,7 +545,9 @@ public partial class PlayerInventory : NetworkBehaviour
                 continue;
             }
 
-            float distance = Vector3.Distance(playerTransform.position, shelf.transform.position);
+            // Pivota değil en yakın fiziksel yüzeye göre sırala - client tarafındaki
+            // FindNearestShelfForTransform ile aynı kural (InteractionReach).
+            float distance = InteractionReach.GetHorizontalDistanceToSurface(shelf.gameObject, playerTransform.position);
             if (distance < closestDistance)
             {
                 closestDistance = distance;

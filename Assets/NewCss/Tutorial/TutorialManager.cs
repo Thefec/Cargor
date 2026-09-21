@@ -181,6 +181,11 @@ public class TutorialManager : NetworkBehaviour
     private bool _shelfPlacementCompleted;
     private bool _truckDeliveryCompleted;
     private bool _pressKeyDetected;
+    private bool _boxSealed;
+    // ResetConditionFlags'te SIFIRLANMAZ: bant alinir alinmaz (TakeTape->SealBox gecisinden once,
+    // ~0.1s poll penceresinde) yapilan bantlama olayi kacmasin, yoksa SealBox adimi kalici takilir.
+    // Bantlama fiziksel olarak ancak PackItem sonrasi mumkun (Table.IsAwaitingSeal), erken set olamaz.
+    private bool _sealEventSeen;
     private NetworkedShelf.BoxType _lastTakenBoxType;
     private BoxInfo.BoxType _lastDeliveredBoxType;
 
@@ -629,6 +634,7 @@ public class TutorialManager : NetworkBehaviour
         _shelfPlacementCompleted = false;
         _truckDeliveryCompleted = false;
         _pressKeyDetected = false;
+        _boxSealed = false;
 
         // Step'in kendi delivery sayacını da sıfırla
         if (_currentStep != null)
@@ -734,6 +740,7 @@ public class TutorialManager : NetworkBehaviour
             TutorialConditionType.WaitForTime => CheckWaitTimeCondition(),
             TutorialConditionType.PressKey => _pressKeyDetected,
             TutorialConditionType.InteractWithCustomer => tutorialCustomer != null && tutorialCustomer.HasInteracted,
+            TutorialConditionType.SealBox => _boxSealed || _sealEventSeen,
             // CompleteMinigame ve Custom: kapsam dışı, çekirdek-döngü tutorial'ında
             // kullanılmıyor (bkz plans/tutorial-rewrite.md). Enum'dan silinmedi,
             // ileride minigame/özel adım eklenirse hazır kalsın diye.
@@ -981,6 +988,19 @@ public class TutorialManager : NetworkBehaviour
     }
 
     /// <summary>
+    /// Açık+dolu kutu bantlanıp kapatıldığında çağrılır (Table.PerformSealing başarı yolu)
+    /// </summary>
+    public void OnBoxSealed()
+    {
+        _sealEventSeen = true;
+        if (_currentStep == null) return;
+        if (_currentStep.conditionType != TutorialConditionType.SealBox) return;
+
+        LogDebug("📦 Box sealed with tape - marking step for completion");
+        _boxSealed = true;
+    }
+
+    /// <summary>
     /// Rafa item konulduğunda çağrılır
     /// </summary>
     public void OnItemPlacedOnShelf()
@@ -1120,6 +1140,7 @@ public class TutorialManager : NetworkBehaviour
         _currentStepIndex = 0;
         _currentStep = null;
         _isTransitioning = false;
+        _sealEventSeen = false;
 
         StartCoroutine(StartTutorialSequenceCoroutine());
     }

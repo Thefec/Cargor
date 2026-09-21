@@ -1455,12 +1455,19 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092673
-    m_Localized: "Odnesi kutiju na stol za pakiranje, pritisni [{0}] \u2014 predmet
-      \u0107e se automatski zapakirati."
+    m_Localized: "Odnesi kutiju na stol za pakiranje i pritisni [{0}] \u2014 predmet ide unutra, ali kutija ostaje otvorena dok je ne zatvori\u0161 trakom."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263129
+    m_Localized: "Pritisni [{0}] kod stanice s trakom da uzme\u0161 rolu ljepljive trake."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263130
+    m_Localized: "Dok dr\u017Ei\u0161 traku, pritisni [{0}] kod stola za pakiranje da zatvori\u0161 otvorenu kutiju."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092674
-    m_Localized: "Ponovno pritisni [{0}] kod stola da preuzme\u0161 zapakiranu kutiju."
+    m_Localized: "Ponovno pritisni [{0}] kod stola da preuzme\u0161 zalijepljenu kutiju."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092675

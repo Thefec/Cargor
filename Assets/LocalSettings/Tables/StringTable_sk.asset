@@ -1477,13 +1477,19 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092673
-    m_Localized: "Odnes krabicu na baliaci st\xF4l, stla\u010D [{0}] \u2014 predmet
-      sa automaticky zabal\xED."
+    m_Localized: "Odnes krabicu na baliaci st\xF4l a stla\u010D [{0}] \u2014 predmet sa vlo\u017E\xED dovn\xFAtra, ale krabica zostane otvoren\xE1, k\xFDm ju nezalep\xED\u0161 p\xE1skou."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263129
+    m_Localized: "Stla\u010D [{0}] pri stanici s p\xE1skou, aby si vzal rolku lepiacej p\xE1sky."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263130
+    m_Localized: "S p\xE1skou v ruke stla\u010D [{0}] pri baliacom stole, aby si zalepil otvoren\xFA krabicu."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092674
-    m_Localized: "Znova stla\u010D [{0}] pri stole, aby si vyzdvihol zabalen\xFA
-      krabicu."
+    m_Localized: "Znova stla\u010D [{0}] pri stole, aby si vyzdvihol zalepen\xFA krabicu."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092675

@@ -1481,12 +1481,19 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092673
-    m_Localized: "Breng de doos naar de inpaktafel, druk op [{0}] \u2014 het product
-      wordt automatisch ingepakt."
+    m_Localized: "Breng de doos naar de inpaktafel en druk op [{0}] \u2014 het product gaat in de doos, maar die blijft open tot je hem met tape verzegelt."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263129
+    m_Localized: "Druk op [{0}] bij het tapestation om een rol tape te pakken."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263130
+    m_Localized: "Druk met de tape in je hand op [{0}] bij de inpaktafel om de open doos te verzegelen."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092674
-    m_Localized: Druk opnieuw op [{0}] bij de tafel om de ingepakte doos op te pakken.
+    m_Localized: "Druk opnieuw op [{0}] bij de tafel om de verzegelde doos op te pakken."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092675

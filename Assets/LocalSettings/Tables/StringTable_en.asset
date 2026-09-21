@@ -1279,7 +1279,12 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 137293859411079170
-    m_Localized: "With the warehouse phone you can call the next customer yourself. Walk up to it and hold the button: the customer arrives right away and you gain reputation.\n\nBut a call isn't free \u2014 the clock skips ahead. The phone doesn't pay money directly; you earn money by serving the customer it brings with a correct delivery. Use it when you're idle and no customer is waiting."
+    m_Localized: "With the warehouse phone you can call the next customer yourself.
+      Walk up to it and hold the button: the customer arrives right away and you
+      gain reputation.\n\nBut a call isn't free \u2014 the clock skips ahead. The
+      phone doesn't pay money directly; you earn money by serving the customer it
+      brings with a correct delivery. Use it when you're idle and no customer is
+      waiting."
     m_Metadata:
       m_Items: []
   - m_Id: 137293859415273472
@@ -1315,7 +1320,12 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 137293859419467776
-    m_Localized: "Running Cargor isn't free. On certain days a rent payment comes due \u2014 we call that a \"rent day.\"\n\n- If you have enough money to cover the rent, it's paid and you carry on.\n\n- If you can't pay on the due date, you get one second chance: most of your cash is taken, but the business doesn't close.\n\n<b>Money </b>comes from correct deliveries and completed quests. Wrong deliveries, dropped boxes, and unfinished quests take money away."
+    m_Localized: "Running Cargor isn't free. On certain days a rent payment comes
+      due \u2014 we call that a \"rent day.\"\n\n- If you have enough money to cover
+      the rent, it's paid and you carry on.\n\n- If you can't pay on the due date,
+      you get one second chance: most of your cash is taken, but the business doesn't
+      close.\n\n<b>Money </b>comes from correct deliveries and completed quests.
+      Wrong deliveries, dropped boxes, and unfinished quests take money away."
     m_Metadata:
       m_Items: []
   - m_Id: 137293859419467777
@@ -1375,7 +1385,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 137293859436244994
-    m_Localized: "<b> Tip:  </b>The phone burns time \u2014 call when nobody is in the queue, not while a customer is waiting."
+    m_Localized: "<b> Tip:  </b>The phone burns time \u2014 call when nobody is in
+      the queue, not while a customer is waiting."
     m_Metadata:
       m_Items: []
   - m_Id: 137293859444633600
@@ -1466,12 +1477,19 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092673
-    m_Localized: "Bring the box to the packing table and press [{0}] \u2014 the item
-      will be packed automatically."
+    m_Localized: "Bring the box to the packing table and press [{0}] \u2014 the item goes into the box, but it stays open until you seal it with tape."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263129
+    m_Localized: "Press [{0}] at the tape station to grab a roll of tape."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263130
+    m_Localized: "With the tape in hand, press [{0}] at the packing table to seal the open box."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092674
-    m_Localized: Press [{0}] again at the table to pick up the packed box.
+    m_Localized: "Press [{0}] again at the table to pick up the sealed box."
     m_Metadata:
       m_Items: []
   - m_Id: 143536416856092675
