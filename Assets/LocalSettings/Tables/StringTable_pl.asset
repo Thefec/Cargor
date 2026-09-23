@@ -1522,6 +1522,122 @@ MonoBehaviour:
     m_Localized: "Samouczek uko\u0144czony!"
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263131
+    m_Localized: "Brak po\u0142\u0105czenia ze Steam!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263132
+    m_Localized: "Nie uda\u0142o si\u0119 utworzy\u0107 lobby!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263133
+    m_Localized: "Nie uda\u0142o si\u0119 do\u0142\u0105czy\u0107 do lobby!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263134
+    m_Localized: "B\u0142\u0105d po\u0142\u0105czenia!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263135
+    m_Localized: "B\u0142\u0105d sieci!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263136
+    m_Localized: "Nie uda\u0142o si\u0119 uruchomi\u0107 hosta!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263137
+    m_Localized: "B\u0142\u0105d hosta!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263138
+    m_Localized: "Po\u0142\u0105czenie nieudane!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263139
+    m_Localized: "Nieprawid\u0142owe lobby!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263140
+    m_Localized: "B\u0142\u0105d lobby!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263141
+    m_Localized: "Wyst\u0105pi\u0142 nieoczekiwany b\u0142\u0105d!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263142
+    m_Localized: "Wpisz kod lobby!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263143
+    m_Localized: "Nieprawid\u0142owy kod lobby!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263144
+    m_Localized: "Brak prawid\u0142owego lobby!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263145
+    m_Localized: "Nie uda\u0142o si\u0119 zweryfikowa\u0107 lobby!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263146
+    m_Localized: "Najpierw musisz utworzy\u0107 lobby!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263147
+    m_Localized: "Nie uda\u0142o si\u0119 otworzy\u0107 menu zaprosze\u0144 Steam!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263148
+    m_Localized: "Tylko host mo\u017Ce rozpocz\u0105\u0107 gr\u0119!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263149
+    m_Localized: "Sie\u0107 nie jest gotowa!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263150
+    m_Localized: "Nie uda\u0142o si\u0119 wczyta\u0107 sceny!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263151
+    m_Localized: "Lobby nie istnieje!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263152
+    m_Localized: "Nie masz uprawnie\u0144 do do\u0142\u0105czenia do tego lobby!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263153
+    m_Localized: "Lobby jest pe\u0142ne!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263154
+    m_Localized: "Masz bana w tym lobby!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263155
+    m_Localized: "Twoje konto jest ograniczone!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263156
+    m_Localized: "Klan jest wy\u0142\u0105czony!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263157
+    m_Localized: "Masz bana spo\u0142eczno\u015Bci!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263158
+    m_Localized: "Do\u0142\u0105czenie nieudane: {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263159
+    m_Localized: "Gra ju\u017C si\u0119 rozpocz\u0119\u0142a."
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

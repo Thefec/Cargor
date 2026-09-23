@@ -135,7 +135,7 @@ public class LateJoinGuard : MonoBehaviour
                                   NetworkManager.Singleton.ConnectedClientsIds.Count < MAX_PLAYERS;
 
             resp.Approved = roomAvailable;
-            resp.Reason = roomAvailable ? string.Empty : "Lobi dolu.";
+            resp.Reason = roomAvailable ? string.Empty : "ErrLobbyFull";
             resp.CreatePlayerObject = roomAvailable;
             resp.Pending = false;
             return;
@@ -145,7 +145,7 @@ public class LateJoinGuard : MonoBehaviour
         bool isOriginalMember = steamId != 0 && _allowedSteamIds.Contains(steamId);
 
         resp.Approved = isOriginalMember;
-        resp.Reason = isOriginalMember ? string.Empty : "Oyun zaten başladı.";
+        resp.Reason = isOriginalMember ? string.Empty : "ErrGameAlreadyStarted";
         resp.CreatePlayerObject = isOriginalMember;
         resp.Pending = false;
 

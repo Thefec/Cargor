@@ -1510,6 +1510,122 @@ MonoBehaviour:
     m_Localized: "Tutorial tamamland\u0131!"
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263131
+    m_Localized: "Steam ba\u011Flant\u0131s\u0131 yok!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263132
+    m_Localized: "Lobi olu\u015Fturulamad\u0131!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263133
+    m_Localized: "Lobiye kat\u0131l\u0131namad\u0131!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263134
+    m_Localized: "Ba\u011Flant\u0131 hatas\u0131!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263135
+    m_Localized: "A\u011F hatas\u0131!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263136
+    m_Localized: "Host ba\u015Flat\u0131lamad\u0131!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263137
+    m_Localized: "Host hatas\u0131!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263138
+    m_Localized: "Ba\u011Flant\u0131 ba\u015Far\u0131s\u0131z!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263139
+    m_Localized: "Ge\xE7ersiz lobi!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263140
+    m_Localized: "Lobi hatas\u0131!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263141
+    m_Localized: "Beklenmeyen hata olu\u015Ftu!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263142
+    m_Localized: "L\xFCtfen bir lobi kodu girin!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263143
+    m_Localized: "Ge\xE7ersiz lobi kodu!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263144
+    m_Localized: "Ge\xE7erli bir lobi yok!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263145
+    m_Localized: "Lobi do\u011Frulanamad\u0131!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263146
+    m_Localized: "\xD6nce bir lobi olu\u015Fturmal\u0131s\u0131n\u0131z!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263147
+    m_Localized: "Steam davet men\xFCs\xFC a\xE7\u0131lamad\u0131!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263148
+    m_Localized: "Sadece host oyunu ba\u015Flatabilir!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263149
+    m_Localized: "A\u011F haz\u0131r de\u011Fil!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263150
+    m_Localized: "Sahne y\xFCklenemedi!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263151
+    m_Localized: "Lobi mevcut de\u011Fil!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263152
+    m_Localized: "Lobiye girme yetkiniz yok!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263153
+    m_Localized: "Lobi dolu!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263154
+    m_Localized: "Bu lobiden banland\u0131n\u0131z!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263155
+    m_Localized: "Hesab\u0131n\u0131z s\u0131n\u0131rl\u0131!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263156
+    m_Localized: "Klan devre d\u0131\u015F\u0131!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263157
+    m_Localized: "Topluluk yasa\u011F\u0131n\u0131z var!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263158
+    m_Localized: "Kat\u0131l\u0131m ba\u015Far\u0131s\u0131z: {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263159
+    m_Localized: "Oyun zaten ba\u015Flad\u0131."
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

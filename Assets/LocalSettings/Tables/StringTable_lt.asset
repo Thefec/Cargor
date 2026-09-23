@@ -1518,6 +1518,122 @@ MonoBehaviour:
     m_Localized: Tutorialas baigtas!
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263131
+    m_Localized: "N\u0117ra ry\u0161io su Steam!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263132
+    m_Localized: "Nepavyko sukurti vestibiulio!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263133
+    m_Localized: "Nepavyko prisijungti prie vestibiulio!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263134
+    m_Localized: "Ry\u0161io klaida!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263135
+    m_Localized: "Tinklo klaida!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263136
+    m_Localized: "Nepavyko paleisti \u0161eimininko!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263137
+    m_Localized: "\u0160eimininko klaida!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263138
+    m_Localized: "Prisijungti nepavyko!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263139
+    m_Localized: "Netinkamas vestibiulis!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263140
+    m_Localized: "Vestibiulio klaida!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263141
+    m_Localized: "\u012Evyko netik\u0117ta klaida!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263142
+    m_Localized: "\u012Eveskite vestibiulio kod\u0105!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263143
+    m_Localized: "Netinkamas vestibiulio kodas!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263144
+    m_Localized: "N\u0117ra tinkamo vestibiulio!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263145
+    m_Localized: "Nepavyko patikrinti vestibiulio!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263146
+    m_Localized: "Pirmiausia turite sukurti vestibiul\u012F!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263147
+    m_Localized: "Nepavyko atidaryti Steam kvietim\u0173 meniu!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263148
+    m_Localized: "Tik \u017Eaidimo \u0161eimininkas gali prad\u0117ti \u017Eaidim\u0105!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263149
+    m_Localized: "Tinklas neparuo\u0161tas!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263150
+    m_Localized: "Nepavyko \u012Fkelti scenos!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263151
+    m_Localized: "Vestibiulis neegzistuoja!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263152
+    m_Localized: "Jums neleid\u017Eiama prisijungti prie \u0161io vestibiulio!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263153
+    m_Localized: "Vestibiulis pilnas!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263154
+    m_Localized: "Jums u\u017Edrausta jungtis prie \u0161io vestibiulio!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263155
+    m_Localized: "J\u016Bs\u0173 paskyra apribota!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263156
+    m_Localized: "Klanas i\u0161jungtas!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263157
+    m_Localized: "Jums taikomas bendruomen\u0117s draudimas!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263158
+    m_Localized: "Prisijungti nepavyko: {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263159
+    m_Localized: "\u017Daidimas jau prasid\u0117jo."
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

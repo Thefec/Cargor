@@ -1512,6 +1512,122 @@ MonoBehaviour:
     m_Localized: "Tutoriel termin\xE9 !"
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263131
+    m_Localized: "Pas de connexion \xE0 Steam !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263132
+    m_Localized: "Impossible de cr\xE9er le salon !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263133
+    m_Localized: "Impossible de rejoindre le salon !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263134
+    m_Localized: "Erreur de connexion !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263135
+    m_Localized: "Erreur r\xE9seau !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263136
+    m_Localized: "Impossible de d\xE9marrer l'h\xF4te !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263137
+    m_Localized: "Erreur de l'h\xF4te !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263138
+    m_Localized: "\xC9chec de la connexion !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263139
+    m_Localized: "Salon invalide !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263140
+    m_Localized: "Erreur du salon !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263141
+    m_Localized: "Une erreur inattendue s'est produite !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263142
+    m_Localized: "Veuillez saisir un code de salon !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263143
+    m_Localized: "Code de salon invalide !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263144
+    m_Localized: "Aucun salon valide !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263145
+    m_Localized: "Impossible de v\xE9rifier le salon !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263146
+    m_Localized: "Vous devez d'abord cr\xE9er un salon !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263147
+    m_Localized: "Impossible d'ouvrir le menu d'invitation Steam !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263148
+    m_Localized: "Seul l'h\xF4te peut lancer la partie !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263149
+    m_Localized: "Le r\xE9seau n'est pas pr\xEAt !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263150
+    m_Localized: "Impossible de charger la sc\xE8ne !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263151
+    m_Localized: "Ce salon n'existe pas !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263152
+    m_Localized: "Vous n'\xEAtes pas autoris\xE9 \xE0 rejoindre ce salon !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263153
+    m_Localized: "Le salon est plein !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263154
+    m_Localized: "Vous \xEAtes banni de ce salon !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263155
+    m_Localized: "Votre compte est limit\xE9 !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263156
+    m_Localized: "Le clan est d\xE9sactiv\xE9 !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263157
+    m_Localized: "Vous \xEAtes banni de la communaut\xE9 !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263158
+    m_Localized: "\xC9chec de la connexion : {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263159
+    m_Localized: "La partie a d\xE9j\xE0 commenc\xE9."
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

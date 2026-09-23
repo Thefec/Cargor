@@ -1496,6 +1496,122 @@ MonoBehaviour:
     m_Localized: "Tutorial conclu\xEDdo!"
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263131
+    m_Localized: "Sem conex\xE3o com a Steam!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263132
+    m_Localized: "N\xE3o foi poss\xEDvel criar a sala!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263133
+    m_Localized: "N\xE3o foi poss\xEDvel entrar na sala!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263134
+    m_Localized: "Erro de conex\xE3o!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263135
+    m_Localized: "Erro de rede!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263136
+    m_Localized: "N\xE3o foi poss\xEDvel iniciar o anfitri\xE3o!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263137
+    m_Localized: "Erro do anfitri\xE3o!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263138
+    m_Localized: "Falha na conex\xE3o!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263139
+    m_Localized: "Sala inv\xE1lida!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263140
+    m_Localized: "Erro na sala!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263141
+    m_Localized: "Ocorreu um erro inesperado!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263142
+    m_Localized: "Insira um c\xF3digo de sala!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263143
+    m_Localized: "C\xF3digo de sala inv\xE1lido!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263144
+    m_Localized: "Nenhuma sala v\xE1lida!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263145
+    m_Localized: "N\xE3o foi poss\xEDvel verificar a sala!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263146
+    m_Localized: "Primeiro voc\xEA precisa criar uma sala!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263147
+    m_Localized: "N\xE3o foi poss\xEDvel abrir o menu de convites da Steam!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263148
+    m_Localized: "S\xF3 o anfitri\xE3o pode iniciar o jogo!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263149
+    m_Localized: "A rede n\xE3o est\xE1 pronta!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263150
+    m_Localized: "N\xE3o foi poss\xEDvel carregar a cena!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263151
+    m_Localized: "A sala n\xE3o existe!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263152
+    m_Localized: "Voc\xEA n\xE3o tem permiss\xE3o para entrar nesta sala!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263153
+    m_Localized: "A sala est\xE1 cheia!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263154
+    m_Localized: "Voc\xEA foi banido desta sala!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263155
+    m_Localized: "Sua conta \xE9 limitada!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263156
+    m_Localized: "O cl\xE3 est\xE1 desativado!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263157
+    m_Localized: "Voc\xEA tem um banimento da comunidade!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263158
+    m_Localized: "Falha ao entrar: {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263159
+    m_Localized: "O jogo j\xE1 come\xE7ou."
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

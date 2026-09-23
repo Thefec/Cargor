@@ -1367,6 +1367,122 @@ MonoBehaviour:
     m_Key: TutorialCompleted
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263131
+    m_Key: ErrSteamNotConnected
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263132
+    m_Key: ErrLobbyCreateFailed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263133
+    m_Key: ErrLobbyJoinFailed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263134
+    m_Key: ErrConnectionError
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263135
+    m_Key: ErrNetworkError
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263136
+    m_Key: ErrHostStartFailed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263137
+    m_Key: ErrHostError
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263138
+    m_Key: ErrConnectionFailed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263139
+    m_Key: ErrInvalidLobby
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263140
+    m_Key: ErrLobbyError
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263141
+    m_Key: ErrUnexpected
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263142
+    m_Key: ErrEnterLobbyCode
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263143
+    m_Key: ErrInvalidLobbyCode
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263144
+    m_Key: ErrNoValidLobby
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263145
+    m_Key: ErrLobbyVerifyFailed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263146
+    m_Key: ErrCreateLobbyFirst
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263147
+    m_Key: ErrInviteOverlayFailed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263148
+    m_Key: ErrOnlyHostCanStart
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263149
+    m_Key: ErrNetworkNotReady
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263150
+    m_Key: ErrSceneLoadFailed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263151
+    m_Key: ErrLobbyNotExist
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263152
+    m_Key: ErrLobbyNotAllowed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263153
+    m_Key: ErrLobbyFull
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263154
+    m_Key: ErrLobbyBanned
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263155
+    m_Key: ErrAccountLimited
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263156
+    m_Key: ErrClanDisabled
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263157
+    m_Key: ErrCommunityBanned
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263158
+    m_Key: ErrJoinFailedFormat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263159
+    m_Key: ErrGameAlreadyStarted
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

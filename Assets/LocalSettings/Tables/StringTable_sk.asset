@@ -1517,6 +1517,122 @@ MonoBehaviour:
     m_Localized: "Tutori\xE1l dokon\u010Den\xFD!"
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263131
+    m_Localized: "\u017Diadne pripojenie k Steamu!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263132
+    m_Localized: "Lobby sa nepodarilo vytvori\u0165!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263133
+    m_Localized: "Pripojenie k lobby zlyhalo!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263134
+    m_Localized: "Chyba pripojenia!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263135
+    m_Localized: "Chyba siete!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263136
+    m_Localized: "Hostite\u013Ea sa nepodarilo spusti\u0165!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263137
+    m_Localized: "Chyba hostite\u013Ea!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263138
+    m_Localized: "Pripojenie zlyhalo!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263139
+    m_Localized: "Neplatn\xE9 lobby!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263140
+    m_Localized: "Chyba lobby!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263141
+    m_Localized: "Vyskytla sa neo\u010Dak\xE1van\xE1 chyba!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263142
+    m_Localized: "Zadajte k\xF3d lobby!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263143
+    m_Localized: "Neplatn\xFD k\xF3d lobby!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263144
+    m_Localized: "\u017Diadne platn\xE9 lobby!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263145
+    m_Localized: "Lobby sa nepodarilo overi\u0165!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263146
+    m_Localized: "Najprv mus\xEDte vytvori\u0165 lobby!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263147
+    m_Localized: "Ponuku pozv\xE1nok Steamu sa nepodarilo otvori\u0165!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263148
+    m_Localized: "Hru m\xF4\u017Ee spusti\u0165 iba hostite\u013E!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263149
+    m_Localized: "Sie\u0165 nie je pripraven\xE1!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263150
+    m_Localized: "Sc\xE9nu sa nepodarilo na\u010D\xEDta\u0165!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263151
+    m_Localized: "Lobby neexistuje!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263152
+    m_Localized: "Do tohto lobby nem\xE1te pr\xEDstup!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263153
+    m_Localized: "Lobby je pln\xE9!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263154
+    m_Localized: "V tomto lobby m\xE1te z\xE1kaz!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263155
+    m_Localized: "V\xE1\u0161 \xFA\u010Det je obmedzen\xFD!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263156
+    m_Localized: "Klan je deaktivovan\xFD!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263157
+    m_Localized: "M\xE1te z\xE1kaz v komunite!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263158
+    m_Localized: "Pripojenie zlyhalo: {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263159
+    m_Localized: "Hra u\u017E za\u010Dala."
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

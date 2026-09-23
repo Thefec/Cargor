@@ -308,7 +308,7 @@ public class SteamManager : MonoBehaviour
     {
         if (!SteamClient.IsValid)
         {
-            ShowErrorMessage("Steam bağlantısı yok!");
+            ShowErrorMessage(GetLocalizedString("ErrSteamNotConnected"));
         }
     }
 
@@ -450,7 +450,7 @@ public class SteamManager : MonoBehaviour
     {
         if (result != Result.OK)
         {
-            ShowErrorMessage("Lobi oluşturulamadı!");
+            ShowErrorMessage(GetLocalizedString("ErrLobbyCreateFailed"));
             _isLobbyJoinValid = false;
             return;
         }
@@ -520,7 +520,7 @@ public class SteamManager : MonoBehaviour
 
             if (joinResult != RoomEnter.Success)
             {
-                ShowErrorMessage("Lobiye katılınamadı!");
+                ShowErrorMessage(GetLocalizedString("ErrLobbyJoinFailed"));
                 _isLobbyJoinValid = false;
             }
             else
@@ -531,7 +531,7 @@ public class SteamManager : MonoBehaviour
         catch (Exception ex)
         {
             LogError($"Lobby join error: {ex.Message}");
-            ShowErrorMessage("Bağlantı hatası!");
+            ShowErrorMessage(GetLocalizedString("ErrConnectionError"));
             _isLobbyJoinValid = false;
         }
     }
@@ -668,7 +668,7 @@ public class SteamManager : MonoBehaviour
             var transport = GetFacepunchTransport();
             if (transport == null)
             {
-                ShowErrorMessage("Network hatası!");
+                ShowErrorMessage(GetLocalizedString("ErrNetworkError"));
                 InvalidateLobby();
                 return;
             }
@@ -700,14 +700,14 @@ public class SteamManager : MonoBehaviour
             }
             else
             {
-                ShowErrorMessage("Host başlatılamadı!");
+                ShowErrorMessage(GetLocalizedString("ErrHostStartFailed"));
                 InvalidateLobby();
             }
         }
         catch (Exception ex)
         {
             LogError($"Host start error: {ex.Message}");
-            ShowErrorMessage("Host hatası!");
+            ShowErrorMessage(GetLocalizedString("ErrHostError"));
             InvalidateLobby();
         }
     }
@@ -722,7 +722,7 @@ public class SteamManager : MonoBehaviour
         var transport = GetFacepunchTransport();
         if (transport == null)
         {
-            ShowErrorMessage("Network hatası!");
+            ShowErrorMessage(GetLocalizedString("ErrNetworkError"));
             InvalidateLobby();
             return false;
         }
@@ -746,7 +746,7 @@ public class SteamManager : MonoBehaviour
 
         if (!NetworkManager.Singleton.StartClient())
         {
-            ShowErrorMessage("Bağlantı başarısız!");
+            ShowErrorMessage(GetLocalizedString("ErrConnectionFailed"));
             InvalidateLobby();
             return false;
         }
@@ -817,7 +817,9 @@ public class SteamManager : MonoBehaviour
         yield return null; // NGO disconnect/Shutdown akışının tamamlanmasını bekle (re-entrant Shutdown'dan kaçın)
         if (this == null || !Application.isPlaying) yield break;
 
-        ShowErrorMessage(reason);
+        // Sunucu (LateJoinGuard) ret sebebini loc anahtarı olarak yollar; anahtar değilse
+        // (NGO'nun kendi metni) GetLocalizedString olduğu gibi döndürür.
+        ShowErrorMessage(GetLocalizedString(string.IsNullOrEmpty(reason) ? "ErrConnectionFailed" : reason));
         LeaveLobby();
     }
 
@@ -843,7 +845,7 @@ public class SteamManager : MonoBehaviour
             var members = lobby.Members.ToArray();
             if (members.Length == 0)
             {
-                ShowErrorMessage("Geçersiz lobi!");
+                ShowErrorMessage(GetLocalizedString("ErrInvalidLobby"));
                 InvalidateLobby();
                 return false;
             }
@@ -852,7 +854,7 @@ public class SteamManager : MonoBehaviour
         catch (Exception ex)
         {
             LogError($"Lobby validation error: {ex.Message}");
-            ShowErrorMessage("Lobi hatası!");
+            ShowErrorMessage(GetLocalizedString("ErrLobbyError"));
             InvalidateLobby();
             return false;
         }
@@ -897,7 +899,7 @@ public class SteamManager : MonoBehaviour
 
             if (!lobby.HasValue)
             {
-                ShowErrorMessage("Lobi oluşturulamadı!");
+                ShowErrorMessage(GetLocalizedString("ErrLobbyCreateFailed"));
                 _isLobbyJoinValid = false;
                 SetLoadingScreenActive(false);
                 return;
@@ -919,7 +921,7 @@ public class SteamManager : MonoBehaviour
         catch (Exception ex)
         {
             LogError($"Host lobby error: {ex.Message}");
-            ShowErrorMessage("Lobi hatası!");
+            ShowErrorMessage(GetLocalizedString("ErrLobbyError"));
             _isLobbyJoinValid = false;
             SetLoadingScreenActive(false);
         }
@@ -964,7 +966,7 @@ public class SteamManager : MonoBehaviour
         catch (Exception ex)
         {
             LogError($"Join lobby error: {ex.Message}");
-            ShowErrorMessage("Beklenmeyen hata oluştu!");
+            ShowErrorMessage(GetLocalizedString("ErrUnexpected"));
             _isLobbyJoinValid = false;
             SetLoadingScreenActive(false);
         }
@@ -983,13 +985,13 @@ public class SteamManager : MonoBehaviour
 
         if (string.IsNullOrEmpty(lobbyCode))
         {
-            ShowErrorMessage("Lütfen bir Lobi kodu girin!");
+            ShowErrorMessage(GetLocalizedString("ErrEnterLobbyCode"));
             return;
         }
 
         if (!LobbyCodeConverter.TryDecode(lobbyCode.Trim().ToUpper(), out ulong lobbyId))
         {
-            ShowErrorMessage("Geçersiz Lobi kodu!");
+            ShowErrorMessage(GetLocalizedString("ErrInvalidLobbyCode"));
             return;
         }
 
@@ -1018,7 +1020,7 @@ public class SteamManager : MonoBehaviour
         catch (Exception ex)
         {
             LogError($"Join lobby error: {ex.Message}");
-            ShowErrorMessage("Beklenmeyen hata oluştu!");
+            ShowErrorMessage(GetLocalizedString("ErrUnexpected"));
             _isLobbyJoinValid = false;
             SetLoadingScreenActive(false);
         }
@@ -1063,7 +1065,7 @@ public class SteamManager : MonoBehaviour
     {
         if (!IsLobbyValid)
         {
-            ShowErrorMessage("Geçerli bir lobi yok!");
+            ShowErrorMessage(GetLocalizedString("ErrNoValidLobby"));
             return;
         }
 
@@ -1169,13 +1171,13 @@ public class SteamManager : MonoBehaviour
 
         if (string.IsNullOrEmpty(LobbyIDInputField?.text))
         {
-            ShowErrorMessage("Lütfen bir Lobi kodu girin!");
+            ShowErrorMessage(GetLocalizedString("ErrEnterLobbyCode"));
             return false;
         }
 
         if (!LobbyCodeConverter.TryDecode(LobbyIDInputField.text.Trim().ToUpper(), out lobbyId))
         {
-            ShowErrorMessage("Geçersiz Lobi kodu!");
+            ShowErrorMessage(GetLocalizedString("ErrInvalidLobbyCode"));
             return false;
         }
 
@@ -1219,7 +1221,7 @@ public class SteamManager : MonoBehaviour
             }
             else
             {
-                ShowErrorMessage("Geçersiz lobi!");
+                ShowErrorMessage(GetLocalizedString("ErrInvalidLobby"));
                 _isLobbyJoinValid = false;
                 lobby.Leave();
             }
@@ -1227,7 +1229,7 @@ public class SteamManager : MonoBehaviour
         catch (Exception ex)
         {
             LogError($"Join validation error: {ex.Message}");
-            ShowErrorMessage("Lobi doğrulanamadı!");
+            ShowErrorMessage(GetLocalizedString("ErrLobbyVerifyFailed"));
             _isLobbyJoinValid = false;
             lobby.Leave();
         }
@@ -1239,18 +1241,20 @@ public class SteamManager : MonoBehaviour
 
         string errorMessage = joinResult switch
         {
-            RoomEnter.DoesntExist => "Lobi mevcut değil! ",
-            RoomEnter.NotAllowed => "Lobiye girme yetkiniz yok!",
-            RoomEnter.Full => "Lobi dolu!",
-            RoomEnter.Error => "Bağlantı hatası!",
-            RoomEnter.Banned => "Bu lobiden banlandınız!",
-            RoomEnter.Limited => "Hesabınız sınırlı!",
-            RoomEnter.ClanDisabled => "Klan devre dışı!",
-            RoomEnter.CommunityBan => "Topluluk yasağınız var!",
-            _ => $"Katılım başarısız: {joinResult}"
+            RoomEnter.DoesntExist => "ErrLobbyNotExist",
+            RoomEnter.NotAllowed => "ErrLobbyNotAllowed",
+            RoomEnter.Full => "ErrLobbyFull",
+            RoomEnter.Error => "ErrConnectionError",
+            RoomEnter.Banned => "ErrLobbyBanned",
+            RoomEnter.Limited => "ErrAccountLimited",
+            RoomEnter.ClanDisabled => "ErrClanDisabled",
+            RoomEnter.CommunityBan => "ErrCommunityBanned",
+            _ => null
         };
 
-        ShowErrorMessage(errorMessage);
+        ShowErrorMessage(errorMessage != null
+            ? GetLocalizedString(errorMessage)
+            : FormatLocalized("ErrJoinFailedFormat", joinResult));
     }
 
     #endregion
@@ -1433,7 +1437,7 @@ public class SteamManager : MonoBehaviour
 
         if (!IsLobbyValid)
         {
-            ShowErrorMessage("Önce bir lobi oluşturmalısınız!");
+            ShowErrorMessage(GetLocalizedString("ErrCreateLobbyFirst"));
             return;
         }
 
@@ -1456,7 +1460,7 @@ public class SteamManager : MonoBehaviour
             catch (Exception fallbackEx)
             {
                 LogError($"Steam friends overlay fallback error: {fallbackEx.Message}");
-                ShowErrorMessage("Steam davet menüsü açılamadı!");
+                ShowErrorMessage(GetLocalizedString("ErrInviteOverlayFailed"));
             }
         }
     }
@@ -1566,19 +1570,19 @@ public class SteamManager : MonoBehaviour
     {
         if (!IsLobbyValid)
         {
-            ShowErrorMessage("Geçerli bir lobi yok!");
+            ShowErrorMessage(GetLocalizedString("ErrNoValidLobby"));
             return false;
         }
 
         if (!NetworkManager.Singleton.IsHost)
         {
-            ShowErrorMessage("Sadece host oyunu başlatabilir!");
+            ShowErrorMessage(GetLocalizedString("ErrOnlyHostCanStart"));
             return false;
         }
 
         if (NetworkManager.Singleton.SceneManager == null)
         {
-            ShowErrorMessage("Network hazır değil!");
+            ShowErrorMessage(GetLocalizedString("ErrNetworkNotReady"));
             return false;
         }
 
@@ -1637,7 +1641,7 @@ public class SteamManager : MonoBehaviour
 
     private void HandleSceneLoadFailure()
     {
-        ShowErrorMessage("Sahne yüklenemedi!");
+        ShowErrorMessage(GetLocalizedString("ErrSceneLoadFailed"));
         SetLoadingScreenActive(false);
         _isLoadingScene = false;
 
@@ -1982,13 +1986,29 @@ public class SteamManager : MonoBehaviour
     /// <summary>
     /// Gets a localized string from the StringTable
     /// </summary>
+    private static string FormatLocalized(string key, object arg)
+    {
+        string format = GetLocalizedString(key);
+        try
+        {
+            return string.Format(format, arg);
+        }
+        catch (FormatException)
+        {
+            return $"{format} {arg}";
+        }
+    }
+
     private static string GetLocalizedString(string key)
     {
         try
         {
             if (!LocalizationSettings.InitializationOperation.IsDone)
             {
-                return key;
+                // Açılışta (örn. ValidateSteamConnection) henüz yüklenmemiş olabilir; ham anahtar
+                // göstermek yerine senkron yükle — yalnız hata anında çalışan nadir yol.
+                string sync = LocalizationSettings.StringDatabase.GetLocalizedString(LOC_TABLE, key);
+                return string.IsNullOrEmpty(sync) ? key : sync;
             }
 
             var stringTable = LocalizationSettings.StringDatabase.GetTable(LOC_TABLE);

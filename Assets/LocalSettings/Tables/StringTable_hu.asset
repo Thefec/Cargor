@@ -1514,6 +1514,122 @@ MonoBehaviour:
     m_Localized: Tutorial befejezve!
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263131
+    m_Localized: "Nincs Steam-kapcsolat!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263132
+    m_Localized: "Nem siker\xFClt l\xE9trehozni a v\xE1r\xF3termet!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263133
+    m_Localized: "Nem siker\xFClt csatlakozni a v\xE1r\xF3teremhez!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263134
+    m_Localized: "Kapcsol\xF3d\xE1si hiba!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263135
+    m_Localized: "H\xE1l\xF3zati hiba!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263136
+    m_Localized: "Nem siker\xFClt elind\xEDtani a szob\xE1t!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263137
+    m_Localized: "Hiba a szoba gazd\xE1j\xE1n\xE1l!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263138
+    m_Localized: "Sikertelen kapcsol\xF3d\xE1s!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263139
+    m_Localized: "\xC9rv\xE9nytelen v\xE1r\xF3terem!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263140
+    m_Localized: "V\xE1r\xF3terem-hiba!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263141
+    m_Localized: "V\xE1ratlan hiba t\xF6rt\xE9nt!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263142
+    m_Localized: "Adj meg egy v\xE1r\xF3terem-k\xF3dot!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263143
+    m_Localized: "\xC9rv\xE9nytelen v\xE1r\xF3terem-k\xF3d!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263144
+    m_Localized: "Nincs \xE9rv\xE9nyes v\xE1r\xF3terem!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263145
+    m_Localized: "Nem siker\xFClt ellen\u0151rizni a v\xE1r\xF3termet!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263146
+    m_Localized: "El\u0151bb l\xE9tre kell hoznod egy v\xE1r\xF3termet!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263147
+    m_Localized: "Nem siker\xFClt megnyitni a Steam megh\xEDv\xF3 men\xFCt!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263148
+    m_Localized: "Csak a szoba gazd\xE1ja ind\xEDthatja a j\xE1t\xE9kot!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263149
+    m_Localized: "A h\xE1l\xF3zat nem \xE1ll k\xE9szen!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263150
+    m_Localized: "Nem siker\xFClt bet\xF6lteni a jelenetet!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263151
+    m_Localized: "A v\xE1r\xF3terem nem l\xE9tezik!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263152
+    m_Localized: "Nincs jogosults\xE1god bel\xE9pni ebbe a v\xE1r\xF3terembe!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263153
+    m_Localized: "A v\xE1r\xF3terem megtelt!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263154
+    m_Localized: "Ki vagy tiltva ebb\u0151l a v\xE1r\xF3teremb\u0151l!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263155
+    m_Localized: "A fi\xF3kod korl\xE1tozott!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263156
+    m_Localized: "A kl\xE1n le van tiltva!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263157
+    m_Localized: "K\xF6z\xF6ss\xE9gi tilt\xE1s alatt \xE1llsz!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263158
+    m_Localized: "Sikertelen csatlakoz\xE1s: {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263159
+    m_Localized: "A j\xE1t\xE9k m\xE1r elkezd\u0151d\xF6tt."
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
