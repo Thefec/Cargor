@@ -1026,7 +1026,10 @@ namespace NewCss
 
             foreach (var customer in _customerQueue)
             {
-                if (customer == null || !customer.IsWaitingForService) continue;
+                if (customer == null || IsOccupyingStation(customer)) continue;
+                // Öndeki müşteri henüz yerine varmadıysa arkadakiler sıra atlayamaz; eskiden
+                // `continue` ile atlanıyordu ve kapıya yakın arka slot masayı kapıyordu.
+                if (!customer.IsWaitingForService) break;
 
                 int freeIndex = FindFreeStationIndex();
                 if (freeIndex == -1) break; // hiç boş istasyon kalmadı
@@ -1046,6 +1049,15 @@ namespace NewCss
                 }
             }
             return -1;
+        }
+
+        private bool IsOccupyingStation(CustomerAI customer)
+        {
+            for (int i = 0; i < _stationOccupants.Length; i++)
+            {
+                if (_stationOccupants[i] == customer) return true;
+            }
+            return false;
         }
 
         /// <summary>

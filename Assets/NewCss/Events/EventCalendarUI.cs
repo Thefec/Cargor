@@ -792,11 +792,9 @@ namespace NewCss
 
         private void HandleNewDay()
         {
-            if (DayCycleManager.Instance != null)
-            {
-                startDay = DayCycleManager.Instance.currentDay;
-            }
-
+            // startDay ARTIK burada güncellenmez: takvim sanatı sabit (dayBackgrounds[i] = daima
+            // "Gün i+1" görseli, bkz. PopulateCalendarCells/HighlightCurrentDay). startDay'i her
+            // gün currentDay'e eşitlemek index 0'ı sürekli "bugün" gibi yeşil gösteriyordu.
             UpdateCalendarUI();
         }
 
@@ -836,7 +834,7 @@ namespace NewCss
 
             for (int i = 0; i < cellCount; i++)
             {
-                WriteEventText(i, startDay + i);
+                WriteEventText(i, i + 1);
             }
         }
 
@@ -870,7 +868,7 @@ namespace NewCss
             
             for (int i = 0; i < dayBackgrounds.Length && i < CALENDAR_CELL_COUNT; i++)
             {
-                int day = startDay + i;
+                int day = i + 1;
                 if (dayBackgrounds[i] != null)
                 {
                     dayBackgrounds[i].color = (day == currentDay) ? currentDayColor : normalDayColor;

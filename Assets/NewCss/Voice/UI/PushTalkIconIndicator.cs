@@ -25,12 +25,23 @@ public sealed class PushTalkIconIndicator : MonoBehaviour
     [Header("Kendi ikonunu buraya sürükle (boş bırakılırsa aynı objedeki Image kullanılır)")]
     [SerializeField] private Image icon;
 
+    [Header("Nabız animasyonu (konuşurken)")]
+    [SerializeField] private float pulseFrequency = 5f; // Sin çarpanı — göze agresif gelmeyecek hız
+    [SerializeField] private float pulseAmplitude = 0.12f; // base scale'in ±%12'si
+    [SerializeField] private float scaleReturnSpeed = 8f; // konuşma bitince base'e dönüş Lerp hızı
+    [SerializeField] private float saturationLerpSpeed = 10f; // _Saturation 0↔1 geçiş hızı
+
     private Material _material;
+    private RectTransform _iconRect;
+    private Vector3 _baseScale;
+    private float _currentSaturation;
     private bool? _lastTransmitting;
 
     private void Awake()
     {
         if (icon == null) icon = GetComponent<Image>();
+        _iconRect = icon.rectTransform;
+        _baseScale = _iconRect.localScale;
 
         var shader = Shader.Find(SaturationShaderName);
         if (shader == null)
@@ -60,12 +71,30 @@ public sealed class PushTalkIconIndicator : MonoBehaviour
              runtime.Capture.State == RadioVoiceCapture.CaptureState.Tail);
 
         ApplyTransmitting(transmitting);
+
+        if (transmitting)
+        {
+            float pulse = 1f + Mathf.Sin(Time.time * pulseFrequency) * pulseAmplitude;
+            _iconRect.localScale = _baseScale * pulse;
+        }
+        else if (_iconRect.localScale != _baseScale)
+        {
+            _iconRect.localScale = Vector3.Lerp(_iconRect.localScale, _baseScale, Time.deltaTime * scaleReturnSpeed);
+        }
+
+        if (_material != null)
+        {
+            float target = transmitting ? 1f : 0f;
+            if (!Mathf.Approximately(_currentSaturation, target))
+            {
+                _currentSaturation = Mathf.MoveTowards(_currentSaturation, target, Time.deltaTime * saturationLerpSpeed);
+                _material.SetFloat(SaturationPropertyId, _currentSaturation);
+            }
+        }
     }
 
     private void ApplyTransmitting(bool transmitting)
     {
-        if (_lastTransmitting == transmitting) return; // her frame gereksiz SetFloat'tan kaçın
-        _lastTransmitting = transmitting;
-        if (_material != null) _material.SetFloat(SaturationPropertyId, transmitting ? 1f : 0f);
+        _lastTransmitting = transmitting; // durum takibi (gelecekte olay-bazlı tetikleyiciler için)
     }
 }

@@ -83,6 +83,7 @@ namespace NewCss
         private List<string> _playersInBreakRoom = new List<string>();
         private bool _rosterSubscribed;
         private Coroutine _rosterSubscribeRoutine;
+        private Coroutine _rosterFallbackRetryRoutine;
 
         #endregion
 
@@ -109,11 +110,14 @@ namespace NewCss
 
         private void OnEnable()
         {
+            // Aboneliği ÖNCE kur: roster o anda henüz dolmamışsa (round-trip tamamlanmadan)
+            // UpdateNextDayUI() aşağıda ShowLocalPlayer() fallback'ine düşebilir; abonelik
+            // önce kurulduğunda roster dolar dolmaz OnRosterChanged ile kesin tekrar tetiklenir.
+            TrySubscribeToRosterChanged();
+
             UpdateNextDayUI();
             SetupCursor();
             LocalizationSettings.SelectedLocaleChanged += HandleLocaleChanged;
-
-            TrySubscribeToRosterChanged();
         }
 
         private void OnDisable()
@@ -131,6 +135,12 @@ namespace NewCss
                 GameStateManager.Instance.OnRosterChanged -= UpdateNextDayUI;
             }
             _rosterSubscribed = false;
+
+            if (_rosterFallbackRetryRoutine != null)
+            {
+                StopCoroutine(_rosterFallbackRetryRoutine);
+                _rosterFallbackRetryRoutine = null;
+            }
 
             // UI kapandığında hareketi aç
             if (_wasActive)
@@ -342,10 +352,52 @@ namespace NewCss
             if (rosterNames == null || rosterNames.Count == 0)
             {
                 ShowLocalPlayer();
+
+                // OnRosterChanged aboneliği normalde roster dolduğunda bu metodu tekrar
+                // çağırır, ama abonelik zamanlaması (Instance henüz null / OnEnable'ın henüz
+                // koşmamış olması) garanti değil. Bu retry, roster dolana kadar kısa aralıklarla
+                // tekrar dener - böylece fallback'te tek-oyuncu-ismi kalıcı takılmaz.
+                if (_rosterFallbackRetryRoutine == null && isActiveAndEnabled)
+                {
+                    _rosterFallbackRetryRoutine = StartCoroutine(RetryUntilRosterReady());
+                }
+
                 return;
             }
 
+            if (_rosterFallbackRetryRoutine != null)
+            {
+                StopCoroutine(_rosterFallbackRetryRoutine);
+                _rosterFallbackRetryRoutine = null;
+            }
+
             ShowRosterPlayers(rosterNames);
+        }
+
+        /// <summary>
+        /// ShowLocalPlayer() fallback'ine düşüldüğünde roster dolana kadar kısa aralıklarla
+        /// tekrar dener; OnRosterChanged event'i her koşulda güvenilir tetiklenmese bile
+        /// UI'ın kalıcı olarak tek-oyuncu fallback'inde takılı kalmamasını garanti eder.
+        /// </summary>
+        private System.Collections.IEnumerator RetryUntilRosterReady()
+        {
+            var wait = new WaitForSeconds(0.25f);
+            const int maxAttempts = 40; // ~10 saniye
+
+            for (int attempt = 0; attempt < maxAttempts; attempt++)
+            {
+                yield return wait;
+
+                var rosterNames = GameStateManager.Instance?.GetRosterPlayerNames();
+                if (rosterNames != null && rosterNames.Count > 0)
+                {
+                    _rosterFallbackRetryRoutine = null;
+                    UpdateNextDayUI();
+                    yield break;
+                }
+            }
+
+            _rosterFallbackRetryRoutine = null;
         }
 
         private void ShowRosterPlayers(List<string> rosterNames)

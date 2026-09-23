@@ -26,6 +26,31 @@ namespace NewCss
                 if (playerMovement == null)
                     Debug.LogError("PlayerMovement script not found!");
             }
+
+            // Owner-gating yoktu -> her spawn edilen karakterin kendi tam-ekran
+            // Screen-Space-Overlay Canvas'ı non-owner client'larda da aktif kalıyordu
+            // (host stamina bar'ının azalmadığı gözlemlendi). Aynı desen
+            // NetworkStaminaBarUI.cs:68-80'de zaten uygulanmış; sahibi olmayan bir
+            // instance'ın stamina bar'ı hiç görünmemeli.
+            if (playerMovement != null && !playerMovement.IsOwner)
+            {
+                var canvas = GetComponent<Canvas>();
+                if (canvas == null)
+                {
+                    canvas = GetComponentInChildren<Canvas>(true);
+                }
+                if (canvas == null)
+                {
+                    // Gerçek prefab hiyerarşisinde (Character.prefab) Screen-Space-Overlay
+                    // Canvas, StaminaBar/BarFrame üzerinde değil PARENT'te duruyor.
+                    canvas = GetComponentInParent<Canvas>(true);
+                }
+
+                if (canvas != null)
+                {
+                    canvas.enabled = false;
+                }
+            }
         }
 
         void Update()
