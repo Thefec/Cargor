@@ -2,7 +2,7 @@
 name: economist
 description: Oyun ekonomisi uzmanı. Fiyatlandırma, para dengesi, prestij sistemi, bekleme/spawn süreleri, progression eğrileri ve monetizasyon matematiği. Ekonomik bir değer belirlenmesi veya denge analizi gerektiğinde proaktif kullan.
 tools: Read, Grep, Glob, Bash, Write
-model: sonnet
+model: opus
 memory: project
 ---
 
