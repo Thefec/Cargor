@@ -1,0 +1,10 @@
+{
+ "A_live": "live",
+ "G050": "combo:{\"rentGuard\":0.5}",
+ "G075": "combo:{\"rentGuard\":0.75}",
+ "G100": "combo:{\"rentGuard\":1.0}",
+ "G125": "combo:{\"rentGuard\":1.25}",
+ "D+G100": "combo:{\"rentGuard\":1.0,\"price\":{\"extra_hangar\":[300,100],\"gambler_case\":[500,0],\"high_volatility\":[450,0],\"all_in\":[450,0],\"leveraged_rent\":[400,0]}}",
+ "C+G100": "combo:{\"rentGuard\":1.0,\"pmult\":[1.0,1.8,2.5,3.0]}",
+ "E+G100": "combo:{\"rentGuard\":1.0,\"daySlope\":0.05}"
+}

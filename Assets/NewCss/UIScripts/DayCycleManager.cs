@@ -99,8 +99,29 @@ namespace NewCss
         /// Sıradaki (henüz ödenmemiş) kira önizlemesi — server-yazar, herkes okur.
         /// DayHudUI gibi client tarafı UI'lar CalculateRent()'i doğrudan çağıramaz
         /// (GetPlayerCount roster'a bağlı, client'ta yanlış sonuç verir).
+        /// BİLİNÇLİ OLARAK IsTimeUp'ta DONAR (bkz. Update() throttle bloğu) — yalnız HUD'un
+        /// "Bugün kira!" kozmetik gösterimi için, DEĞİŞTİRİLMEDİ (qa bulgusu 2026-09-24: Ö-A
+        /// kilidi/etiketi bu NV'yi KULLANMAMALI, bkz. _networkReserveRent).
         /// </summary>
         private readonly NetworkVariable<int> _networkNextRent = new(0);
+
+        /// <summary>
+        /// Ö-A kilidi/"Kira fonu" etiketi için (qa fix 2026-09-24, bkz. plans/ekonomi-oa-ob-oc.md):
+        /// _networkNextRent'in aksine HİÇ DONMAZ — her throttle turunda (IsTimeUp guard'ı
+        /// OLMADAN) ve kira kesildikten hemen sonra (_rentPaymentCount++ sonrası,
+        /// TryProcessMoneyCheck) yenilenir. Break-room bekleme penceresinde (kira az önce
+        /// kesildi ama NextDay() henüz çağrılmadı) bile GÜNCEL kalır — bug: eski tasarımda
+        /// UpgradePanel bu amaç için _networkNextRent'i okuyordu ve o pencerede bayat (küçük)
+        /// tutarı gösteriyordu.
+        /// </summary>
+        private readonly NetworkVariable<int> _networkReserveRent = new(0);
+
+        /// <summary>
+        /// Ö-A kilidi/etiketi için sıradaki (henüz ödenmemiş) kira döneminin gün numarası.
+        /// _rentPaymentCount'tan hesaplanır (server-only doğru), NV üzerinden herkese yayınlanır.
+        /// Son kira (gün MAX_DAYS) ödendiyse 0 (kilit anlamsız — bkz. HasUpcomingRent).
+        /// </summary>
+        private readonly NetworkVariable<int> _networkReserveRentDay = new(0);
 
         #endregion
 
@@ -254,6 +275,40 @@ namespace NewCss
         public bool IsRentDay => RentIntervalDays > 0 && currentDay % RentIntervalDays == 0;
 
         /// <summary>
+        /// qa fix (2026-09-24, bkz. _networkReserveRentDay yorumu): eski sürüm currentDay'den
+        /// hesaplıyordu — break-room bekleme penceresinde (kira az önce kesildi, NextDay() henüz
+        /// çağrılmadı, currentDay hâlâ ESKİ günde) BAYAT (bir dönem geride) gün döndürüyordu.
+        /// Artık server _rentPaymentCount'tan hesaplanan, NV üzerinden yayınlanan güncel değeri
+        /// okur — tüm client'larda doğru. Son kira (gün MAX_DAYS) ödendiyse 0 (kilit anlamsız).
+        /// UpgradePanel "Kira fonu: X (gün N)" satırında kullanır.
+        /// </summary>
+        public int NextRentDay => _networkReserveRentDay.Value;
+
+        /// <summary>
+        /// Ö-A kilidi/etiketi için DONMAYAN kira tutarı — bkz. _networkReserveRent yorumu.
+        /// UpgradePanel client-side iyimser kontrol (ValidatePurchase/OnReroll) ve "Kira fonu"
+        /// etiketi burayı okur. NextRentAmount'tan FARKLI: o HUD için bilinçli donuyor, bu
+        /// donmuyor. 0 = henüz yayınlanmadı VEYA son kira zaten ödendi (kilit anlamsız).
+        /// </summary>
+        public int ReserveRentAmount => _networkReserveRent.Value;
+
+        /// <summary>
+        /// Ö-A kilidinin SERVER-AUTHORITATIVE kontrolü için (UpgradePanel.WouldViolateRentReserve,
+        /// yalnız PurchaseUpgradeServerRpc/RerollServerRpc içinden — ikisi de zaten yalnız
+        /// server'da çalışır). _rentPaymentCount NETWORKED DEĞİL (yalnız server'da doğru değer
+        /// taşır) — bu yüzden ReserveRentAmount/_networkReserveRent NV'sine DEĞİL, doğrudan
+        /// CalculateRent(false)'a bakar: throttle/donma yok, her çağrıda güncel. Client'ta
+        /// (IsServer false) çağırmak YANLIŞ sonuç verir — client kodu ReserveRentAmount'ı okumalı.
+        /// </summary>
+        public int CurrentReserveRent => HasUpcomingRent ? CalculateRent(false) : 0;
+
+        /// <summary>
+        /// Son kira (gün MAX_DAYS) zaten ödendiyse false — o noktadan sonra "sıradaki kira"
+        /// kavramı anlamsız (oyun gün MAX_DAYS'te bitiyor), kilit/etiket 0/gizli olmalı.
+        /// </summary>
+        private bool HasUpcomingRent => RentIntervalDays > 0 && (_rentPaymentCount * RentIntervalDays) < MAX_DAYS;
+
+        /// <summary>
         /// Günün ne kadarının geçtiği, 0..1 arası (UI pasta bar için).
         /// </summary>
         public float DayProgress01 => CurrentDayDuration <= 0f ? 0f : Mathf.Clamp01(_networkElapsedTime.Value / CurrentDayDuration);
@@ -325,6 +380,15 @@ namespace NewCss
                 {
                     RefreshNextRentPreview();
                 }
+
+                // qa fix (2026-09-24): Ö-A kilidi/etiketi İÇİN yukarıdakinin aksine IsTimeUp
+                // guard'ı YOK — HUD'un bilinçli donma davranışına DOKUNULMADI (yukarıdaki blok
+                // aynı kaldı), bu SADECE reserve-lock/"Kira fonu" etiketinin ayrı, donmayan
+                // kaynağını (_networkReserveRent/_networkReserveRentDay) günceller.
+                if (IsSpawned && IsServer && !_gameOverStopProcessing)
+                {
+                    RefreshReserveRentPreview();
+                }
             }
 
             if (!IsSpawned || !IsServer || _networkIsDayOver.Value || _gameOverStopProcessing)
@@ -363,6 +427,7 @@ namespace NewCss
                 // Late-join / ilk spawn'da kira önizlemesi Update() ilk throttle turunu
                 // beklemeden doğru değerle yayınlansın (yeni bağlanan client 0 görmesin).
                 RefreshNextRentPreview();
+                RefreshReserveRentPreview();
             }
 
             Debug.Log($"{LOG_PREFIX} Network spawn completed");
@@ -639,8 +704,9 @@ namespace NewCss
 
         /// <summary>
         /// Kira ödeme kontrolü — her 4 günde bir tetiklenir.
-        /// İlk kirada grace period: para yetmezse eldekinin %80'i alınır.
-        /// 2+ kirada para yetmezse Game Over.
+        /// İlk kirada grace period: para yetmezse eldekinin %80'i alınır — ancak
+        /// economySettings.graceDisabled true ise (leveraged_rent/all_in perki) bu dal atlanır.
+        /// 2+ kirada (veya grace iptal edilmişse) Acil Fren varsa o, yoksa Game Over.
         /// </summary>
         private bool TryProcessMoneyCheck()
         {
@@ -671,9 +737,13 @@ namespace NewCss
                 _rentPaymentCount++;
                 Debug.Log($"{LOG_PREFIX} Rent paid in full: {rentAmount}");
             }
-            else if (!_graceUsed)
+            else if (!_graceUsed && !(economySettings != null && economySettings.graceDisabled))
             {
-                // İlk kira affı — eldeki paranın %80'i alınır, ödenmiş sayılır
+                // İlk kira affı — eldeki paranın %80'i alınır, ödenmiş sayılır.
+                // Ö-C fix (2026-09-24): leveraged_rent/all_in perki graceDisabled=true yazar —
+                // o perklerin bedeli grace'in TAMAMEN İPTALİ olduğu için (bkz. PerkEffect.
+                // ApplyLeveragedRent/ApplyAllIn yorumu) bu dal hiç çalıştırılmaz; kasa yetmezse
+                // doğrudan Acil Fren'e (varsa) ya da iflasa düşer.
                 float gracePct   = economySettings != null ? economySettings.gracePaymentPercent : 0.8f;
                 int graceAmount = Mathf.RoundToInt(currentMoney * gracePct);
                 MoneySystem.Instance.SpendMoney(graceAmount);
@@ -706,6 +776,12 @@ namespace NewCss
                 GameStateManager.Instance?.TriggerLose();
                 return false;
             }
+
+            // qa fix (2026-09-24): kira kesildi (üç başarı dalından biri, _rentPaymentCount
+            // artmış) — Ö-A kilidi/etiketi HEMEN bir sonraki döneme atlasın, throttle turunu
+            // beklemesin (break-room bekleme penceresinde bayat gösterime karşı, bkz.
+            // _networkReserveRent yorumu).
+            RefreshReserveRentPreview();
 
             _moneyCheckCompleted = true;
             return true;
@@ -766,6 +842,29 @@ namespace NewCss
             if (r != _networkNextRent.Value)
             {
                 _networkNextRent.Value = r;
+            }
+        }
+
+        /// <summary>
+        /// qa fix (2026-09-24): Ö-A kilidi/"Kira fonu" etiketi için _networkReserveRent/
+        /// _networkReserveRentDay'i yeniler. RefreshNextRentPreview'dan FARKLI olarak:
+        /// (1) Update() throttle'ında IsTimeUp guard'ı OLMADAN çağrılır (HUD'un bilinçli donma
+        /// davranışı burada İSTENMİYOR), (2) TryProcessMoneyCheck'te _rentPaymentCount++
+        /// olduğu anda da çağrılır (kira kesilir kesilmez etiket bir SONRAKİ döneme atlasın).
+        /// Son kira zaten ödendiyse (HasUpcomingRent false) ikisi de 0 — kilit/etiket devre dışı.
+        /// </summary>
+        private void RefreshReserveRentPreview()
+        {
+            int day = HasUpcomingRent ? (_rentPaymentCount + 1) * RentIntervalDays : 0;
+            int amount = HasUpcomingRent ? CalculateRent(false) : 0;
+
+            if (day != _networkReserveRentDay.Value)
+            {
+                _networkReserveRentDay.Value = day;
+            }
+            if (amount != _networkReserveRent.Value)
+            {
+                _networkReserveRent.Value = amount;
             }
         }
 
@@ -897,6 +996,7 @@ namespace NewCss
             // sırasında) preview'i dondurmuştu; yeni gün + güncel _rentPaymentCount ile bir kez
             // burada tazeliyoruz. NextDay() zaten yalnız IsServer'da çalışır (yukarıdaki erken çıkış).
             RefreshNextRentPreview();
+            RefreshReserveRentPreview();
 
             // Event'leri tetikle
             OnNewDay?.Invoke();

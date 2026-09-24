@@ -393,6 +393,7 @@ public static class EconomyInvariantCheck
         // Bu alanlar PerkEffect tarafından RUNTIME'DA doğrudan yazılıyor ve hiçbir yerde
         // geri alınmıyor. Taban değerden sapmışsa asset kalıcı olarak bozulmuş demektir.
         r.ExpectPristine("gracePaymentPercent", eco.gracePaymentPercent, 0.8f, "leveraged_rent / all_in");
+        r.ExpectPristine("graceDisabled", eco.graceDisabled ? 1f : 0f, 0f, "leveraged_rent / all_in (Ö-C fix, 2026-09-24)");
         r.ExpectPristine("rentScaledMultiplier", eco.rentScaledMultiplier, 1f, "leveraged_rent");
         r.ExpectPristine("rewardVolatility", eco.rewardVolatility, 0f, "high_volatility");
         r.ExpectPristine("rewardVolatilityMean", eco.rewardVolatilityMean, 1f, "high_volatility");

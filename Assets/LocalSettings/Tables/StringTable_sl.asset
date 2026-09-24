@@ -1620,6 +1620,14 @@ MonoBehaviour:
     m_Localized: "Danes najemnina!"
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263162
+    m_Localized: "Rezerva za najemnino: {0} (Dan {1})"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263163
+    m_Localized: "Rezerva za najemnino"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

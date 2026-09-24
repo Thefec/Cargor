@@ -1641,6 +1641,14 @@ MonoBehaviour:
     m_Localized: "\u0160odien \u012Bre!"
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263162
+    m_Localized: "\u012Ares rezerve: {0} ({1}. diena)"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263163
+    m_Localized: "\u012Ares rezerve"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

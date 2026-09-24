@@ -1491,6 +1491,14 @@ MonoBehaviour:
     m_Key: RentDueToday
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263162
+    m_Key: RentReserveLabel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263163
+    m_Key: RentReserveLocked
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

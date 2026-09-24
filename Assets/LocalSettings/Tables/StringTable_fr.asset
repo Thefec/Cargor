@@ -1636,6 +1636,14 @@ MonoBehaviour:
     m_Localized: "Loyer aujourd'hui !"
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263162
+    m_Localized: "R\xE9serve de loyer : {0} (Jour {1})"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263163
+    m_Localized: "R\xE9serve de loyer"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

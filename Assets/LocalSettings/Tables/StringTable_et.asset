@@ -1614,6 +1614,14 @@ MonoBehaviour:
     m_Localized: "T\xE4na \xFC\xFCr!"
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263162
+    m_Localized: "\xDC\xFCrireserv: {0} (P\xE4ev {1})"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263163
+    m_Localized: "\xDC\xFCrireserv"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

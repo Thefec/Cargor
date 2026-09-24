@@ -1,0 +1,127 @@
+{
+ "fh_live": {
+  "pe": {},
+  "cards": [
+   "fast_hangar"
+  ]
+ },
+ "fh_s1_r0": {
+  "pe": {
+   "fast_hangar_mult": 1.0,
+   "fast_hangar_respawn_mult": 0.0
+  },
+  "cards": [
+   "fast_hangar"
+  ]
+ },
+ "fh_s1_r0_x05": {
+  "pe": {
+   "fast_hangar_mult": 1.0,
+   "fast_hangar_respawn_mult": 0.0,
+   "fast_hangar_exit_mult": 0.5
+  },
+  "cards": [
+   "fast_hangar"
+  ]
+ },
+ "fh_s09_r0_x05": {
+  "pe": {
+   "fast_hangar_mult": 0.9,
+   "fast_hangar_respawn_mult": 0.0,
+   "fast_hangar_exit_mult": 0.5
+  },
+  "cards": [
+   "fast_hangar"
+  ]
+ },
+ "fh_s1_r05": {
+  "pe": {
+   "fast_hangar_mult": 1.0,
+   "fast_hangar_respawn_mult": 0.5
+  },
+  "cards": [
+   "fast_hangar"
+  ]
+ },
+ "ot_live": {
+  "pe": {},
+  "cards": [
+   "overtime"
+  ]
+ },
+ "ot_g30": {
+  "pe": {
+   "overtime_grace_add": 30
+  },
+  "cards": [
+   "overtime"
+  ]
+ },
+ "ot_g60": {
+  "pe": {
+   "overtime_grace_add": 60
+  },
+  "cards": [
+   "overtime"
+  ]
+ },
+ "ot_g90": {
+  "pe": {
+   "overtime_grace_add": 90
+  },
+  "cards": [
+   "overtime"
+  ]
+ },
+ "ot_q1": {
+  "pe": {
+   "overtime_quota_bonus": [
+    1,
+    1,
+    1,
+    1
+   ]
+  },
+  "cards": [
+   "overtime"
+  ]
+ },
+ "pm_live": {
+  "pe": {},
+  "cards": [
+   "prestige_master"
+  ]
+ },
+ "pm_025": {
+  "pe": {
+   "prestige_master_served_step": 0.25
+  },
+  "cards": [
+   "prestige_master"
+  ]
+ },
+ "pm_04": {
+  "pe": {
+   "prestige_master_served_step": 0.4
+  },
+  "cards": [
+   "prestige_master"
+  ]
+ },
+ "pm_06": {
+  "pe": {
+   "prestige_master_served_step": 0.6
+  },
+  "cards": [
+   "prestige_master"
+  ]
+ },
+ "pm_inst8": {
+  "pe": {
+   "prestige_master_instant": 8
+  },
+  "cards": [
+   "prestige_master"
+  ]
+ }
+}

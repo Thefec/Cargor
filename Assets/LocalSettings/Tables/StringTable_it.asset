@@ -1654,6 +1654,14 @@ MonoBehaviour:
     m_Localized: "Affitto oggi!"
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263162
+    m_Localized: "Fondo affitto: {0} (Giorno {1})"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263163
+    m_Localized: "Fondo affitto"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

@@ -210,12 +210,22 @@ namespace NewCss
         private const string LOC_KEY_MAX = "UpgradeMax";
         private const string LOC_KEY_BUY = "UpgradeBuy";
 
+        // Ö-A (kira fonu kilidi UI, 2026-09-24) — müdür notu: tablolara 17 dil eklendi.
+        // "RentReserveLabel" = "Kira fonu: {0} (Gün {1})" ({0}=tutar, para birimi YOK — HUD
+        // kasa/kira satırıyla tutarlı; {1}=sıradaki kira günü). "RentReserveLocked" = kilitli
+        // karttaki kısa buton metni ("Kira fonu"). Anahtar tabloda yoksa GetLocalizedOrFallback
+        // İngilizce sabite düşer.
+        private const string LOC_KEY_RENT_RESERVE_LABEL = "RentReserveLabel";
+        private const string LOC_KEY_RENT_RESERVE_LOCKED = "RentReserveLocked";
+        private const string FALLBACK_RENT_RESERVE_LABEL = "Rent reserve: {0} (Day {1})";
+        private const string FALLBACK_RENT_RESERVE_LOCKED = "Rent reserve";
+
         // Roguelite draft dışlama grupları — aynı gruptan aynı 3-kart teklifte en fazla 1 kart çıkar.
         // Kullanıcı kararı: gambler_case ve all_in birlikte asla teklif edilmez (günlük teklif + reroll).
         private static readonly string[][] EXCLUSIVE_EFFECT_GROUPS =
         {
             new[] { "gambler_case", "all_in" },
-            // leveraged_rent ve all_in ikisi de grace period'u siliyor (gracePaymentPercent = 0) -
+            // leveraged_rent ve all_in ikisi de grace period'u siliyor (graceDisabled = true) -
             // plan economy-rebuild-2026-07-30-faz4-final.md §B.7'de istenen dışlama (PerkEffect.cs:164-166 yorumu).
             new[] { "leveraged_rent", "all_in" },
         };
@@ -255,6 +265,9 @@ namespace NewCss
 
         [SerializeField, Tooltip("Reroll maliyet metni")]
         private TMP_Text rerollCostText;
+
+        [SerializeField, Tooltip("Ö-A: 'Kira fonu: X (gün N)' satırı. Opsiyonel — atanmamışsa (henüz sahneye eklenmediyse) sessizce atlanır, kilit mantığı yine de çalışır. Sahneye eklenecekse: müdür/graphics-ui panelde mevcut bir TMP objesine bağlasın.")]
+        private TMP_Text rentReserveText;
 
         [SerializeField, Tooltip("Çıkış (kapat) butonu — OfficeTerminal.ClosePanel'i çağırır")]
         private Button exitButton;
@@ -623,7 +636,7 @@ namespace NewCss
             public bool HasTruck = true;
             public bool HasPlayerMovement = true;
 
-            // GameEconomySettings (8 alan) — PerkEffect.cs: ApplyCheapRent, ApplyPrestigeMaster,
+            // GameEconomySettings (9 alan) — PerkEffect.cs: ApplyCheapRent, ApplyPrestigeMaster,
             // ApplyPhoneLine, ApplyLeveragedRent, ApplyAllIn, ApplyHighVolatility.
             // PhoneTimeSkipPerkMultiplier: economist round10 U4 (2026-08-30) ile ApplyPhoneLine'ın
             // YENİ yazdığı alan — perk-mutates-persistent-assets dersi: yeni bir Apply* yazarı
@@ -637,6 +650,9 @@ namespace NewCss
             public float GracePaymentPercent;
             public float RewardVolatility;
             public float RewardVolatilityMean;
+            // Ö-C fix (2026-09-24) — ApplyLeveragedRent/ApplyAllIn artık bunu yazıyor (perk
+            // mutates-persistent-assets dersi: yeni Apply* yazarı eklenince snapshot'ı da tazele).
+            public bool GraceDisabled;
 
             // Truck prefab (4 alan) — perk-revival SONRASI VESTİGİYEL (yukarıdaki sınıf notuna
             // bkz.): artık hiçbir PerkEffect yolu buraya yazmıyor, capture/restore no-op'a döndü.
@@ -681,6 +697,7 @@ namespace NewCss
                 snap.GracePaymentPercent = economySettings.gracePaymentPercent;
                 snap.RewardVolatility = economySettings.rewardVolatility;
                 snap.RewardVolatilityMean = economySettings.rewardVolatilityMean;
+                snap.GraceDisabled = economySettings.graceDisabled;
             }
             else
             {
@@ -733,6 +750,7 @@ namespace NewCss
                 economySettings.gracePaymentPercent = snap.GracePaymentPercent;
                 economySettings.rewardVolatility = snap.RewardVolatility;
                 economySettings.rewardVolatilityMean = snap.RewardVolatilityMean;
+                economySettings.graceDisabled = snap.GraceDisabled;
             }
 
             if (snap.HasTruck && Truck != null)
@@ -1486,6 +1504,8 @@ namespace NewCss
         {
             int cost = GetRerollCost(_rerollCountToday.Value);
             if (MoneySystem.Instance == null || MoneySystem.Instance.CurrentMoney < cost) return;
+            // Ö-A: kira fonu kilidi — reroll de kilide tabi (kart satın alımıyla simetrik).
+            if (WouldViolateRentReserve(cost)) return;
             RerollServerRpc();
         }
 
@@ -1500,6 +1520,9 @@ namespace NewCss
             // Gerçek server-authoritative panel-open state'i ayrı bir iş (OfficeTerminal↔UpgradePanel birleştirme).
             int cost = GetRerollCost(_rerollCountToday.Value);
             if (MoneySystem.Instance == null || MoneySystem.Instance.CurrentMoney < cost) return;
+
+            // Ö-A: kira fonu kilidi (server-authoritative asıl kontrol).
+            if (WouldViolateRentReserve(cost)) return;
 
             MoneySystem.Instance.SpendMoney(cost);
 
@@ -1529,6 +1552,9 @@ namespace NewCss
 
             int cost = GetRerollCost(_rerollCountToday.Value);
             bool canAfford = MoneySystem.Instance != null && MoneySystem.Instance.CurrentMoney >= cost;
+            // Ö-A: kira fonu kilidi — parası yeten ama alım sonrası kasayı sıradaki kiranın
+            // altına düşürecek reroll de pasifleşir.
+            bool reserveLocked = canAfford && WouldViolateRentReserve(cost);
 
             if (rerollCostText != null)
             {
@@ -1537,7 +1563,7 @@ namespace NewCss
 
             if (rerollButton != null)
             {
-                rerollButton.interactable = canAfford;
+                rerollButton.interactable = canAfford && !reserveLocked;
             }
         }
 
@@ -1553,6 +1579,89 @@ namespace NewCss
             int baseCost = RerollCurve.CostForReroll(rerollIndexThisDay);
             float pMultiplier = (DifficultyManager.Instance != null) ? DifficultyManager.Instance.UpgradeCostMultiplier : 1f;
             return Mathf.RoundToInt(baseCost * pMultiplier);
+        }
+
+        #endregion
+
+        #region Rent Reserve Lock (Ö-A)
+
+        /// <summary>
+        /// Ö-A (docs/economy/ekonomi-sifirdan-2026-09-23.md §4, economist 2026-09-24): kira fonu
+        /// kilidi. Kart alımı/reroll SONRASI kasa, sıradaki kiranın economySettings.
+        /// upgradeRentReserveFraction payının altına düşerse alım reddedilir. Acil Fren
+        /// (emergency_brake) muaf — tek kurtarıcı kart, kilitlenirse zayıf takım kurtulamıyor
+        /// (rapor §4: muafiyet olmadan zayıf 2P/3P kaybı %30-55'e çıkıyor).
+        /// qa fix (2026-09-24): eskiden DayCycleManager.NextRentAmount okunuyordu — o NV BİLİNÇLİ
+        /// OLARAK IsTimeUp'ta donuyor (HUD "Bugün kira!" kozmetik gösterimi için), yani break-room
+        /// bekleme penceresinde (kira az önce kesildi, NextDay() henüz çağrılmadı) BAYAT/küçük
+        /// tutarı gösteriyordu → kilit yanlışlıkla gevşiyordu. Artık: server-authoritative çağrıda
+        /// (bu metod IsServer==true iken, yani PurchaseUpgradeServerRpc/RerollServerRpc içinden
+        /// çağrıldığında) DayCycleManager.CurrentReserveRent DOĞRUDAN (throttle/donma yok, her
+        /// çağrıda güncel _rentPaymentCount'a göre) hesaplanır; client-side iyimser kontrolde
+        /// (ValidatePurchase/OnReroll/UI, IsServer==false) NV-backed ReserveRentAmount okunur
+        /// (client _rentPaymentCount'u bilmez, CalculateRent() doğrudan çağrılamaz).
+        /// </summary>
+        private bool WouldViolateRentReserve(int spendAmount, string effectId = null)
+        {
+            if (economySettings == null) return false;
+            if (string.Equals(effectId, "emergency_brake", StringComparison.OrdinalIgnoreCase)) return false;
+            if (DayCycleManager.Instance == null) return false;
+
+            int nextRent = IsServer
+                ? DayCycleManager.Instance.CurrentReserveRent
+                : DayCycleManager.Instance.ReserveRentAmount;
+            if (nextRent <= 0) return false;
+
+            float reserve = economySettings.upgradeRentReserveFraction * nextRent;
+            int currentMoney = MoneySystem.Instance != null ? MoneySystem.Instance.CurrentMoney : 0;
+            return (currentMoney - spendAmount) < reserve;
+        }
+
+        /// <summary>
+        /// Anahtar loc tablosunda yoksa (LocalizationHelper anahtarın kendisini geri döndürür)
+        /// sabit İngilizce fallback'e düşer. Müdür notu (2026-09-24): RentReserveLabel/
+        /// RentReserveLocked 17 dile eklendi, ama tablo derleme/senkron gecikmesine karşı güvenlik ağı.
+        /// </summary>
+        private static string GetLocalizedOrFallback(string key, string fallback, params object[] args)
+        {
+            string raw = LocalizationHelper.GetLocalizedString(key);
+            string template = raw == key ? fallback : raw;
+            if (args == null || args.Length == 0) return template;
+            try
+            {
+                return string.Format(template, args);
+            }
+            catch
+            {
+                return string.Format(fallback, args);
+            }
+        }
+
+        /// <summary>
+        /// "Kira fonu: X (gün N)" satırını günceller. rentReserveText atanmamışsa no-op (sahneye
+        /// henüz eklenmedi — kilit mantığı bundan bağımsız çalışır).
+        /// qa fix (2026-09-24): NextRentAmount (donuk HUD NV'si) YERİNE ReserveRentAmount
+        /// (donmayan, bkz. DayCycleManager._networkReserveRent yorumu) okunur. &lt;= 0 ise
+        /// (henüz yayınlanmadı VEYA son kira zaten ödendi — HasUpcomingRent false) satır boşaltılır;
+        /// sahnedeki örnek/placeholder metin ("Kira fonu: 1140 (Gün 12)" gibi) böylece ekranda kalmaz.
+        /// </summary>
+        private void RefreshRentReserveUI()
+        {
+            if (rentReserveText == null) return;
+
+            int nextRent = DayCycleManager.Instance != null ? DayCycleManager.Instance.ReserveRentAmount : 0;
+            if (nextRent <= 0)
+            {
+                rentReserveText.text = string.Empty;
+                return;
+            }
+
+            int nextRentDay = DayCycleManager.Instance != null ? DayCycleManager.Instance.NextRentDay : 0;
+            float reserveFraction = economySettings != null ? economySettings.upgradeRentReserveFraction : 1f;
+            int reserveAmount = Mathf.RoundToInt(reserveFraction * nextRent);
+
+            rentReserveText.text = GetLocalizedOrFallback(
+                LOC_KEY_RENT_RESERVE_LABEL, FALLBACK_RENT_RESERVE_LABEL, reserveAmount, nextRentDay);
         }
 
         #endregion
@@ -1580,7 +1689,10 @@ namespace NewCss
 
             finalCost = CalculateFinalCost(upgradeIndex, upgrade, currentVisualLevel);
 
-            return MoneySystem.Instance != null && MoneySystem.Instance.CurrentMoney >= finalCost;
+            if (MoneySystem.Instance == null || MoneySystem.Instance.CurrentMoney < finalCost) return false;
+            if (WouldViolateRentReserve(finalCost, upgrade.effectId)) return false;
+
+            return true;
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -1601,6 +1713,10 @@ namespace NewCss
             // Server kendi maliyetini yeniden hesaplar (client'tan gelen cost sadece UI amaçlı geçilir).
             int serverCost = CalculateFinalCost(upgradeIndex, upgrade, currentVisualLevel);
             if (MoneySystem.Instance == null || MoneySystem.Instance.CurrentMoney < serverCost) return;
+
+            // Ö-A: kira fonu kilidi (server-authoritative asıl kontrol; ValidatePurchase client'ta
+            // iyimser aynı kontrolü zaten yaptı). Acil Fren (emergency_brake) muaf.
+            if (WouldViolateRentReserve(serverCost, upgrade.effectId)) return;
 
             // Process purchase
             MoneySystem.Instance.SpendMoney(serverCost);
@@ -1852,6 +1968,8 @@ namespace NewCss
             {
                 UpdateEntryUI(entry);
             }
+            // Ö-A: "Kira fonu: X (gün N)" satırı — kart listesiyle aynı olaylarda tazelenir.
+            RefreshRentReserveUI();
         }
 
         private void UpdateEntryUI(EntryUI entry)
@@ -1942,16 +2060,23 @@ namespace NewCss
 
             // MoneySystem henüz hazır değilse butonu interactable bırak (iyimser yaklaşım)
             // Gerçek doğrulama OnBuy() → ValidatePurchase() → PurchaseUpgradeServerRpc() zincirinde yapılır
-            if (MoneySystem.Instance != null)
+            bool canAfford = MoneySystem.Instance == null || MoneySystem.Instance.CurrentMoney >= finalCost;
+
+            // Ö-A: kira fonu kilidi — parası yeten ama alım sonrası kasayı sıradaki kiranın altına
+            // düşürecek kartlar ayrı bir "kilitli" durumla gösterilir (normal para-yetersizliğinden
+            // farklı sebep metni). Acil Fren (emergency_brake) muaf — WouldViolateRentReserve içinde ele alınır.
+            bool reserveLocked = canAfford && WouldViolateRentReserve(finalCost, entry.Definition.effectId);
+
+            entry.BuyButton.interactable = canAfford && !reserveLocked;
+
+            if (reserveLocked)
             {
-                entry.BuyButton.interactable = MoneySystem.Instance.CurrentMoney >= finalCost;
+                SetButtonText(entry.BuyButton, GetLocalizedOrFallback(LOC_KEY_RENT_RESERVE_LOCKED, FALLBACK_RENT_RESERVE_LOCKED));
             }
             else
             {
-                entry.BuyButton.interactable = true;
+                SetButtonText(entry.BuyButton, LocalizationHelper.GetLocalizedString(LOC_KEY_BUY));
             }
-
-            SetButtonText(entry.BuyButton, LocalizationHelper.GetLocalizedString(LOC_KEY_BUY));
         }
 
         private void UpdateEntryUIForMaxLevel(EntryUI entry)

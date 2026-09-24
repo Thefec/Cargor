@@ -32,6 +32,12 @@ namespace NewCss
         [Tooltip("Kaldıraçlı Kira perki: scaledRent'e uygulanan çarpan. Perk yoksa 1f.")]
         public float rentScaledMultiplier = 1f;
 
+        [Tooltip("Ö-C fix (docs/economy/ekonomi-sifirdan-2026-09-23.md §4): leveraged_rent / all_in perki grace period'u TAMAMEN İPTAL eder. gracePaymentPercent (yukarıda) DEĞİŞMEZ — hâlâ normal (perksiz) grace hesaplamasında kullanılır. Bu bayrak true iken DayCycleManager.TryProcessMoneyCheck grace dalına hiç girmez (kasa yetmezse doğrudan Acil Fren'e veya iflasa düşer). Perk sistemi tarafından yazılır (PerkEffect.ApplyLeveragedRent/ApplyAllIn) ve UpgradePanel'in perk-asset-snapshot deseniyle oturum sonunda false'a geri alınır.")]
+        public bool graceDisabled = false;
+
+        [Tooltip("Ö-A (docs/economy/ekonomi-sifirdan-2026-09-23.md §4, economist 2026-09-24): kira fonu kilidi. Kart alımı/reroll SONRASI kasa, sıradaki kiranın (DayCycleManager.CurrentReserveRent server-side / ReserveRentAmount client-side — NextRentAmount DEĞİL, o HUD için bilinçli donuyor) bu oranının altına düşerse UpgradePanel alımı reddeder. 1.0 = kasa hiçbir zaman sıradaki kiranın altına düşürülemez. Acil Fren (emergency_brake) perki muaf.")]
+        public float upgradeRentReserveFraction = 1.0f;
+
         // ─────────────────────────────────────────────────────────────
         //  MÜŞTERİ KOTASI  (CustomerManager — PlateUp gün-numarası eğrisi)
         //  plans/plateup-musteri-telefon.md §A/§B, economist v2 2026-08-29

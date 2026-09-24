@@ -1,0 +1,17 @@
+{
+ "canli": {
+  "guard": false,
+  "graceZeroPctLive": true
+ },
+ "OA_OC": {},
+ "OA_OC_OB": {
+  "pe": {
+   "fast_hangar_mult": 0.9,
+   "fast_hangar_respawn_mult": 0.0,
+   "fast_hangar_exit_mult": 0.0,
+   "fast_hangar_anim_mult": 1.0,
+   "overtime_grace_add": 15,
+   "prestige_master_served_step": 0.35
+  }
+ }
+}

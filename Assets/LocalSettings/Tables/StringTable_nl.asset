@@ -1645,6 +1645,14 @@ MonoBehaviour:
     m_Localized: "Vandaag huur!"
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263162
+    m_Localized: "Huurreserve: {0} (Dag {1})"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263163
+    m_Localized: "Huurreserve"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

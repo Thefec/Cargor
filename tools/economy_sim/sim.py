@@ -32,6 +32,9 @@ DEFAULT_CONFIG = os.path.join(HERE, "config.json")
 RESULTS_DIR = os.path.join(HERE, "results")
 DOCS_DIR = os.path.normpath(os.path.join(HERE, "..", "..", "docs", "economy"))
 COLORS = ("R", "Y", "B")
+# 2026-09-24 Ö-B: Hızlı Hangar respawn/exit + Mesai kapanış payı sim.py'de YERLİ. Harici harness'ler
+# (ob_2026_09_24.py) bu bayrağa bakıp kendi takaslarını kapatır (çift uygulama olmasın).
+NATIVE_OB = True
 
 
 # ---------------------------------------------------------------------------
@@ -411,6 +414,13 @@ class Run:
         served_bonus = e["customerServedPrestigeBonus"] + pe["prestige_master_served_step"] * self.levels["prestige_master"]
         hangar_stay = e["hangarStayDurationByPlayerCount"][pidx(P)] * (pe["fast_hangar_mult"] if self.levels["fast_hangar"] else 1.0)
         exit_delay = e["exitDelay"] * m["exit"]
+        respawn_mult = 1.0
+        if self.levels["fast_hangar"]:
+            # Ö-B 2026-09-24 (canlı): Truck kalkış beklemesi = max(alt sınır, exitDelay × çarpan),
+            # TruckSpawner respawn gecikmesi × çarpan. Event çarpanı önce, perk sonra (oyundaki sıra).
+            exit_delay = max(pe.get("fast_hangar_exit_min", 0.0), exit_delay * pe.get("fast_hangar_exit_mult", 1.0))
+            respawn_mult = pe.get("fast_hangar_respawn_mult", 1.0)
+        day_end_grace = e["dayEndGraceSeconds"] + (pe.get("overtime_grace_add", 0.0) if self.levels["overtime"] else 0.0)
         n_hangars = e["hangarsAtStart"] + self.levels["extra_hangar"]
         # packing_station normalde 2. paketleme masasını açar. Öneri varyantı
         # (perkEffects.packing_station_grants_station=1) bunun yerine 2. SERVİS
@@ -612,7 +622,7 @@ class Run:
                 elif s == "exiting":
                     if t >= tr["until"]:
                         tr["state"] = "respawn"
-                        tr["until"] = t + rng.uniform(*e["respawnDelayRange"])
+                        tr["until"] = t + rng.uniform(*e["respawnDelayRange"]) * respawn_mult
                         # tırdaki rezerve kutular stoğa döner
                         for c in COLORS:
                             self.stock[c] += tr["reserved"].get(c, 0)
@@ -803,7 +813,7 @@ class Run:
 
             # erken bitiş
             if early_end_t is None and st["spawned"] >= quota and not queue and not any(c["state"] == "walking" for c in customers):
-                early_end_t = t + e["dayEndGraceSeconds"]
+                early_end_t = t + day_end_grace
             if early_end_t is not None and t >= early_end_t:
                 st["earlyEnd"] = True
                 el = T
@@ -830,8 +840,13 @@ class Run:
                 rent_paid = r
                 self.rent_cycle += 1
                 gate = "paid"
-            elif self.grace_left > 0 and not (self.levels["leveraged_rent"] or self.levels["all_in"]):
-                took = int(round(self.money * e["gracePaymentPercent"]))
+            elif self.grace_left > 0 and (e.get("graceZeroPctLive", False)
+                                          or not (self.levels["leveraged_rent"] or self.levels["all_in"])):
+                # graceZeroPctLive (2026-09-23, varsayılan False = eski davranış): canlı kodda
+                # all_in/leveraged_rent grace'i SİLMİYOR, gracePaymentPercent=0 yazıyor →
+                # DayCycleManager.TryProcessMoneyCheck grace dalı %0 alıp kirayı ödenmiş sayıyor.
+                gp = 0.0 if (self.levels["leveraged_rent"] or self.levels["all_in"]) else e["gracePaymentPercent"]
+                took = int(round(self.money * gp))
                 self.money -= took
                 rent_paid = took
                 self.grace_left -= 1
@@ -868,12 +883,20 @@ class Run:
             self.discount_card = self.rng.choice(offer)
             self.bulk_pending = False
 
+        # Ö-A (canlı 2026-09-24): alım sonrası kasa >= upgradeRentReserveFraction × sıradaki kira
+        # olmalı; rentReserveExempt (Acil Fren) muaf. Zorlanmış alımlar dahil.
+        guard_frac = e.get("upgradeRentReserveFraction", 0.0)
+        exempt = set(e.get("rentReserveExempt") or [])
+        guard_res = int(guard_frac * self.rent()) if guard_frac > 0 else 0
+
         def try_buy(uid, reserve):
             nonlocal spent
             lv = self.visual_level(uid)
             if lv >= self.ups[uid]["maxLevel"] or self.blocked_by_group(uid):
                 return False
             cost = self.cost_of(uid, lv, event_cost_mult)
+            if uid not in exempt:
+                reserve = max(reserve, guard_res)
             if self.money - cost < reserve:
                 return False
             self.money -= cost
@@ -896,6 +919,14 @@ class Run:
         next_rent = self.rent()
         reserve = int(self.strat["reserveFrac"] * next_rent)
         mode = self.strat["mode"]
+        # Kilitten muaf kartlar (Acil Fren) teklifte varsa ve strateji onu istiyorsa ÖNCE, stratejinin
+        # kendi rezerviyle alınır (sifirdan_2026_09_23 guardExempt ön-geçişinin sim.py karşılığı).
+        if guard_frac > 0:
+            prio_list = self.strat.get("priority")
+            for uid in [u for u in offer if u in exempt]:
+                if prio_list is not None and uid not in prio_list:
+                    continue
+                try_buy(uid, reserve)
         if mode == "cheapest_first":
             for uid in sorted(offer, key=lambda u: self.cost_of(u, self.visual_level(u), event_cost_mult)):
                 try_buy(uid, reserve)
@@ -914,7 +945,7 @@ class Run:
                 # teklifte öncelikli kart yoksa ve para bolsa reroll
                 if not any(u in top for u in offer):
                     rc = int(round(e["rerollCosts"][min(rerolls, len(e["rerollCosts"]) - 1)] * e["upgradeCostMultiplierByPlayerCount"][pidx(self.P)]))
-                    if self.money - rc >= reserve + next_rent * 0.5:
+                    if self.money - rc >= max(reserve, guard_res) + next_rent * 0.5:
                         self.money -= rc
                         self.total_spent_reroll += rc
                         st["rerollSpent"] += rc

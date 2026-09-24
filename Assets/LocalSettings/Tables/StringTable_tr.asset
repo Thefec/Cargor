@@ -1634,6 +1634,14 @@ MonoBehaviour:
     m_Localized: "Bug\xFCn kira!"
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263162
+    m_Localized: "Kira fonu: {0} (G\xFCn {1})"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263163
+    m_Localized: "Kira fonu"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

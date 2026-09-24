@@ -63,6 +63,14 @@ namespace NewCss
         [SerializeField, Tooltip("Yeni kamyon spawn gecikmesi aralığı")]
         public Vector2 respawnDelayRange = new Vector2(3f, 5f);
 
+        // Ö-B (Hızlı Hangar perki, docs/economy/ob-kart-duzeltmeleri-2026-09-24.md §2): respawn
+        // gecikmesine uygulanan çarpan. PerkEffect.ApplyFastHangarToTruck tarafından mutlak/
+        // idempotent yazılır (level 0 → 1, level&gt;0 → 0 = tır kalkınca yenisi hemen gelir).
+        // TruckSpawner sahne singleton'ı (Instance) — sahne yeniden yüklemesiyle kendiliğinden
+        // resetlenir, perk-asset-snapshot'a eklenmesi GEREKMEZ (bkz. UpgradePanel
+        // PerkAssetSnapshot sınıf notu: yalnız SO/prefab alanları kapsamda, sahne objeleri değil).
+        [HideInInspector] public float respawnDelayMultiplier = 1f;
+
         [SerializeField, Tooltip("Hangar içi mesafe eşiği")]
         public float hangarThreshold = 5f;
 
@@ -444,7 +452,7 @@ namespace NewCss
 
         private IEnumerator SpawnTruckAfterDelayCoroutine(int hangarIndex)
         {
-            float delay = Random.Range(respawnDelayRange.x, respawnDelayRange.y);
+            float delay = Random.Range(respawnDelayRange.x, respawnDelayRange.y) * respawnDelayMultiplier;
             yield return new WaitForSeconds(delay);
 
             if (IsWithinWorkingHours && hangarIndex < hangarSpawnPoints.Count)

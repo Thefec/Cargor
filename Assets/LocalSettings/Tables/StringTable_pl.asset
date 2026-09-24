@@ -1646,6 +1646,14 @@ MonoBehaviour:
     m_Localized: "Dzi\u015B czynsz!"
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263162
+    m_Localized: "Rezerwa na czynsz: {0} (Dzie\u0144 {1})"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263163
+    m_Localized: "Rezerwa na czynsz"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

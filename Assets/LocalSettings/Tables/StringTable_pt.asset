@@ -1620,6 +1620,14 @@ MonoBehaviour:
     m_Localized: "Aluguel vence hoje!"
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263162
+    m_Localized: "Reserva do aluguel: {0} (Dia {1})"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263163
+    m_Localized: "Reserva do aluguel"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

@@ -19,6 +19,15 @@ namespace NewCss
         private const string EXIT_ANIM_STATE = "Exit";
         private const string EXIT_ANIM_BOOL = "DoExit";
 
+        // Ö-B düzeltme (müdür, 2026-09-24): Hızlı Hangar perki sahipken efektif çıkış beklemesi
+        // (exitDelay × perkExitDelayMultiplier) 0'a inebilir — economist ölçümüyle (dt=0.2) 0.4sn
+        // taban ekonomik olarak zararlıydı (3P orta +2 → −55 TL), o yüzden KALDIRILDI. Bekleme
+        // gerçekten 0'a yakın olduğunda kalkış uyarı sesi (exitDelayClip) Play() → neredeyse aynı
+        // anda Stop() edilip duyulmaz hale gelmesin diye SADECE sesin kesilmesi bu kadar
+        // ertelenir — StartExitAnimation'ın ekonomik olarak önemli kısmı (animasyon/hangar
+        // serbest bırakma) HİÇ beklemeden hemen çalışır, tır kalkış zamanlaması etkilenmez.
+        private const float EXIT_DELAY_SOUND_MIN_AUDIBLE_SECONDS = 1f;
+
         #endregion
 
         #region Serialized Fields - Request Settings
@@ -100,6 +109,18 @@ namespace NewCss
         [Header("=== EXIT ANIMATION SETTINGS ===")]
         [SerializeField, Tooltip("Çıkış gecikmesi")]
         public float exitDelay = 5f;
+
+        // Ö-B (Hızlı Hangar perki, docs/economy/ob-kart-duzeltmeleri-2026-09-24.md §2):
+        // exitDelay'e DOĞRUDAN YAZILMAZ — EventEffectManager bu alanı event sırasında
+        // snapshot/restore ediyor (bkz. EventEffectManager.cs SaveCurrentValuesAndApplyMultipliers/
+        // RemoveAllEventEffects), perk yazsaydı event bitince sessizce silinirdi. Bunun yerine ayrı
+        // bir çarpan: ExitSequenceCoroutine bekleme süresini exitDelay × perkExitDelayMultiplier
+        // olarak hesaplar. PerkEffect.ApplyFastHangarToTruck tarafından CANLI tır instance'ına
+        // mutlak/idempotent yazılır (level 0 → 1, level&gt;0 → 0). Per-instance runtime alan —
+        // her yeni tır spawn'ında prefab default'undan (1f) başlar, perk-asset-snapshot'a
+        // eklenmesi GEREKMEZ (Truck-prefab 4 alan notundaki vestigiyel gruptan farklı: o grup
+        // artık hiç yazılmıyor, bu alan CANLI instance'a yazılıyor ama instance kalıcı asset değil).
+        [HideInInspector] public float perkExitDelayMultiplier = 1f;
 
         #endregion
 
@@ -871,18 +892,45 @@ namespace NewCss
 
             PlayExitDelaySoundClientRpc();
 
-            yield return new WaitForSeconds(exitDelay);
+            // Ö-B düzeltme (müdür, 2026-09-24): efektif beklemede ALT SINIR YOK — bkz.
+            // EXIT_DELAY_SOUND_MIN_AUDIBLE_SECONDS üstündeki yorum. perkExitDelayMultiplier
+            // yoksa (1f) exitDelay AYNEN kullanılır (authored/event-scaled değer neyse); perk
+            // aktifse (0f) tır anında kalkabilir.
+            float effectiveExitDelay = exitDelay * perkExitDelayMultiplier;
 
-            StartExitAnimation();
+            yield return new WaitForSeconds(effectiveExitDelay);
+
+            // Kalkış uyarı sesi bekleme süresinden bağımsız en az EXIT_DELAY_SOUND_MIN_AUDIBLE_
+            // SECONDS kadar duyulabilsin — bkz. StartExitAnimation üstündeki yorum. Normal
+            // (perksiz) akışta exitDelay zaten bu eşiğin üstünde olduğu için sonuç <= 0 çıkar ve
+            // davranış DEĞİŞMEZ (Stop hemen çağrılır, eskisiyle birebir aynı zamanlama).
+            float remainingSoundTime = EXIT_DELAY_SOUND_MIN_AUDIBLE_SECONDS - effectiveExitDelay;
+            StartExitAnimation(remainingSoundTime);
         }
 
-        private void StartExitAnimation()
+        /// <summary>
+        /// Ö-B düzeltme (müdür, 2026-09-24): <paramref name="delayBeforeStoppingExitSound"/> &gt; 0
+        /// ise (yalnız sıfıra yakın bekleme/perk yolunda) kalkış uyarı sesinin kesilmesi bu kadar
+        /// ertelenir ki ses duyulabilsin — bu erteleme SADECE StopExitDelaySoundClientRpc'yi
+        /// etkiler, animasyon/hangar serbest bırakma (ekonomik olarak önemli kısım, tır kalkış
+        /// zamanlaması) hiç beklemeden hemen çalışır. Normal akışta (exitDelay yeterince uzun)
+        /// parametre &lt;= 0 gelir, Stop HEMEN çağrılır — eski davranışla birebir aynı.
+        /// </summary>
+        private void StartExitAnimation(float delayBeforeStoppingExitSound = 0f)
         {
             if (!IsServer) return;
 
             LogDebug("Starting exit animation");
 
-            StopExitDelaySoundClientRpc();
+            if (delayBeforeStoppingExitSound > 0f)
+            {
+                StartCoroutine(StopExitDelaySoundAfterDelayCoroutine(delayBeforeStoppingExitSound));
+            }
+            else
+            {
+                StopExitDelaySoundClientRpc();
+            }
+
             PlayExitAnimationSoundClientRpc();
 
             _isPlayingExitAnimation.Value = true;
@@ -896,6 +944,17 @@ namespace NewCss
             {
                 CompleteTruckExit();
             }
+        }
+
+        /// <summary>
+        /// Ö-B düzeltme (müdür, 2026-09-24): kalkış uyarı sesini StartExitAnimation'ın geri
+        /// kalanını (ekonomik olarak önemli kısım) BLOKLAMADAN, ayrı bir coroutine üzerinden
+        /// geciktirerek keser — yalnız sıfıra yakın bekleme/perk yolunda kullanılır.
+        /// </summary>
+        private IEnumerator StopExitDelaySoundAfterDelayCoroutine(float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            StopExitDelaySoundClientRpc();
         }
 
         private IEnumerator WaitForExitAnimationCoroutine()

@@ -98,6 +98,17 @@ namespace NewCss
         [HideInInspector]
         public float eventCustomerMultiplier = 1f;
 
+        /// <summary>
+        /// Ö-B (Mesai Saati perki, docs/economy/ob-kart-duzeltmeleri-2026-09-24.md §2): kota bitip
+        /// gün erken sarılmadan önceki kapanış payına (dayEndGraceSeconds, GameEconomySettings —
+        /// KALICI ASSET, buraya YAZILMAZ) eklenen ek saniye. PerkEffect.ApplyOvertime tarafından
+        /// mutlak/idempotent yazılır (level 0 → 0, level&gt;0 → 15). CustomerManager sahne objesi
+        /// olduğu için (bkz. UpgradePanel PerkAssetSnapshot sınıf notu) sahne yeniden yüklemesiyle
+        /// kendiliğinden resetlenir — perk-asset-snapshot'a eklenmesi GEREKMEZ.
+        /// </summary>
+        [HideInInspector]
+        public float overtimeGraceBonusSeconds = 0f;
+
         #endregion
 
 
@@ -906,9 +917,12 @@ namespace NewCss
             if (HasUnspawnedCustomers) return;
 
             _dayCompletionGraceStarted = true;
-            _dayCompletionGraceRemaining = GetEconomySettings() != null
+            float baseGrace = GetEconomySettings() != null
                 ? GetEconomySettings().dayEndGraceSeconds
                 : 30f;
+            // Ö-B (Mesai Saati perki): overtimeGraceBonusSeconds perk yoksa 0, GameEconomySettings
+            // (kalıcı asset) DEĞİŞMİYOR.
+            _dayCompletionGraceRemaining = baseGrace + overtimeGraceBonusSeconds;
 
             LogDebug($"All customers served/exited — day will fast-forward to end after {_dayCompletionGraceRemaining}s grace period.");
         }

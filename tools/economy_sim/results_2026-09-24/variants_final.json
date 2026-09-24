@@ -1,0 +1,38 @@
+{
+ "live": {
+  "pe": {},
+  "cards": [
+   "fast_hangar",
+   "overtime",
+   "prestige_master",
+   "null_fast_hangar",
+   "null_overtime",
+   "null_prestige_master",
+   "extra_hangar",
+   "gambler_case"
+  ]
+ },
+ "prop_pm035": {
+  "pe": {
+   "fast_hangar_mult": 0.9,
+   "fast_hangar_respawn_mult": 0.0,
+   "fast_hangar_exit_mult": 0.0,
+   "fast_hangar_anim_mult": 1.0,
+   "overtime_grace_add": 15,
+   "prestige_master_served_step": 0.35
+  },
+  "cards": [
+   "fast_hangar",
+   "overtime",
+   "prestige_master"
+  ]
+ },
+ "prop_pm04": {
+  "pe": {
+   "prestige_master_served_step": 0.4
+  },
+  "cards": [
+   "prestige_master"
+  ]
+ }
+}

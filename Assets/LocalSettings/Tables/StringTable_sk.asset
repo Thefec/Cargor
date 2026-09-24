@@ -1641,6 +1641,14 @@ MonoBehaviour:
     m_Localized: "Dnes n\xE1jomn\xE9!"
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263162
+    m_Localized: "Rezerva na n\xE1jom: {0} (De\u0148 {1})"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263163
+    m_Localized: "Rezerva na n\xE1jom"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

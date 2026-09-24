@@ -1,0 +1,7 @@
+{
+ "A_live": "live",
+ "G100": "combo:{\"rentGuard\":1.0}",
+ "K1": "combo:{\"cardPMult\":{\"ids\":[\"extra_hangar\",\"gambler_case\",\"high_volatility\",\"all_in\",\"leveraged_rent\"],\"pmult\":[1.0,2.0,2.9,3.5]}}",
+ "G100+K1": "combo:{\"rentGuard\":1.0,\"cardPMult\":{\"ids\":[\"extra_hangar\",\"gambler_case\",\"high_volatility\",\"all_in\",\"leveraged_rent\"],\"pmult\":[1.0,2.0,2.9,3.5]}}",
+ "G100+K2": "combo:{\"rentGuard\":1.0,\"cardPMult\":{\"ids\":[\"extra_hangar\",\"gambler_case\",\"high_volatility\",\"all_in\",\"leveraged_rent\"],\"pmult\":[1.0,2.3,3.3,4.0]}}"
+}

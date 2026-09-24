@@ -1,0 +1,10 @@
+{
+ "A_live": "live",
+ "B_pmult_eski": "pmult:[1.0,2.0,2.95,3.7]",
+ "C_pmult_orta": "pmult:[1.0,1.8,2.5,3.0]",
+ "D_hedefli": "price:{\"extra_hangar\":[300,100],\"gambler_case\":[500,0],\"high_volatility\":[450,0],\"all_in\":[450,0],\"leveraged_rent\":[400,0]}",
+ "E_gun005": "combo:{\"daySlope\":0.05}",
+ "F_D+E": "combo:{\"daySlope\":0.05,\"price\":{\"extra_hangar\":[300,100],\"gambler_case\":[500,0],\"high_volatility\":[450,0],\"all_in\":[450,0],\"leveraged_rent\":[400,0]}}",
+ "G_kiraKilidi": "combo:{\"rentGuard\":1.0}",
+ "H_F+G": "combo:{\"rentGuard\":1.0,\"daySlope\":0.05,\"price\":{\"extra_hangar\":[300,100],\"gambler_case\":[500,0],\"high_volatility\":[450,0],\"all_in\":[450,0],\"leveraged_rent\":[400,0]}}"
+}

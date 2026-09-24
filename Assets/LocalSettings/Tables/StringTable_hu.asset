@@ -1638,6 +1638,14 @@ MonoBehaviour:
     m_Localized: "Ma b\xE9rleti d\xEDj!"
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263162
+    m_Localized: "B\xE9rleti tartal\xE9k: {0} ({1}. nap)"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263163
+    m_Localized: "B\xE9rleti tartal\xE9k"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

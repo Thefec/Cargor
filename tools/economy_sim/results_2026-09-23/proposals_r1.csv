@@ -1,0 +1,289 @@
+variant,cell,loss%,final_mean,final_p10,day1_money,day1_income,income_total,rent_total,upg_total,cards,deaths
+A_live,P1_zayif_hic,19.7,218,49,516,20,1288,1350,0,0,"{'bankrupt@16': 48, 'bankrupt@12': 11}"
+A_live,P1_zayif_acgozlu,100.0,220,116,219,23,829,122,838,12.0,"{'bankrupt@12': 291, 'bankrupt@16': 9}"
+A_live,P1_zayif_mantikli,91.7,314,223,219,23,971,318,681,8.9,"{'bankrupt@12': 204, 'bankrupt@16': 71}"
+A_live,P1_orta_hic,0.0,1131,679,532,34,2268,1556,0,0,{}
+A_live,P1_orta_acgozlu,54.3,272,82,235,38,2385,584,1930,19.7,"{'bankrupt@12': 123, 'bankrupt@16': 40}"
+A_live,P1_orta_mantikli,14.3,289,63,235,38,2679,1073,1715,17.7,"{'bankrupt@16': 15, 'bankrupt@12': 28}"
+A_live,P1_iyi_hic,0.0,2474,1852,552,53,3413,1557,0,0,{}
+A_live,P1_iyi_acgozlu,8.7,1687,332,244,46,4686,931,2705,23.4,"{'bankrupt@12': 25, 'bankrupt@16': 1}"
+A_live,P1_iyi_mantikli,0.7,1504,466,244,46,4831,1292,2662,23.1,{'bankrupt@12': 2}
+A_live,P2_zayif_hic,21.3,465,121,626,33,3150,2928,0,0,"{'bankrupt@16': 20, 'bankrupt@12': 42, 'bankrupt@8': 2}"
+A_live,P2_zayif_acgozlu,100.0,537,367,385,32,2208,313,1723,14.0,"{'bankrupt@12': 296, 'bankrupt@16': 4}"
+A_live,P2_zayif_mantikli,92.0,629,374,529,32,1801,731,841,7.4,"{'bankrupt@12': 67, 'bankrupt@8': 189, 'bankrupt@16': 20}"
+A_live,P2_orta_hic,0.0,3392,2617,686,95,6370,3489,0,0,{}
+A_live,P2_orta_acgozlu,15.7,2781,676,441,89,8400,1742,4274,23.3,{'bankrupt@12': 47}
+A_live,P2_orta_mantikli,5.7,2247,740,585,89,8661,2814,3989,22.0,"{'bankrupt@12': 5, 'bankrupt@8': 12}"
+A_live,P2_iyi_hic,0.0,6671,5631,746,150,9304,3489,0,0,{}
+A_live,P2_iyi_acgozlu,0.0,8905,6634,499,143,15083,2532,4425,23.8,{}
+A_live,P2_iyi_mantikli,0.0,8294,6069,643,143,14872,2925,4422,23.8,{}
+A_live,P3_zayif_hic,45.3,901,199,796,86,4683,4157,0,0,"{'bankrupt@16': 31, 'bankrupt@12': 98, 'bankrupt@8': 7}"
+A_live,P3_zayif_acgozlu,100.0,886,616,477,83,3434,487,2511,14.8,"{'bankrupt@12': 298, 'bankrupt@16': 2}"
+A_live,P3_zayif_mantikli,95.3,1087,795,796,86,2645,1011,1077,6.9,"{'bankrupt@12': 65, 'bankrupt@8': 216, 'bankrupt@16': 5}"
+A_live,P3_orta_hic,0.0,4475,3459,862,150,9982,6120,0,0,{}
+A_live,P3_orta_acgozlu,13.0,5677,1393,541,145,13801,2930,5666,23.5,{'bankrupt@12': 39}
+A_live,P3_orta_mantikli,7.0,3425,1384,862,150,12890,4802,5160,21.8,"{'bankrupt@12': 8, 'bankrupt@8': 13}"
+A_live,P3_iyi_hic,0.0,7747,6381,926,210,12860,6120,0,0,{}
+A_live,P3_iyi_acgozlu,0.0,12304,9468,610,209,21257,4151,5723,23.7,{}
+A_live,P3_iyi_mantikli,0.0,10717,7862,926,210,20744,5095,5844,23.9,{}
+A_live,P4_zayif_hic,61.0,1420,339,937,83,5713,4818,0,0,"{'bankrupt@12': 136, 'bankrupt@16': 16, 'bankrupt@8': 31}"
+A_live,P4_zayif_acgozlu,99.3,1341,912,566,87,4993,725,3499,16.0,{'bankrupt@12': 298}
+A_live,P4_zayif_mantikli,96.3,1493,1178,937,83,3238,1423,1001,5.8,"{'bankrupt@8': 248, 'bankrupt@12': 39, 'bankrupt@16': 2}"
+A_live,P4_orta_hic,0.0,4575,3126,1095,243,12533,8742,0,0,{}
+A_live,P4_orta_acgozlu,16.7,7150,1558,712,235,17225,3960,6741,23.5,{'bankrupt@12': 50}
+A_live,P4_orta_mantikli,9.3,4097,1666,1095,243,15885,6670,5780,20.9,"{'bankrupt@8': 17, 'bankrupt@12': 11}"
+A_live,P4_iyi_hic,0.0,8558,6937,1091,230,16136,8750,0,0,{}
+A_live,P4_iyi_acgozlu,0.0,14506,10790,704,219,25857,5631,6818,23.8,{}
+A_live,P4_iyi_mantikli,0.0,11682,8352,1091,230,24886,7301,7001,23.9,{}
+B_pmult_eski,P1_zayif_hic,19.7,218,49,516,20,1288,1350,0,0,"{'bankrupt@16': 48, 'bankrupt@12': 11}"
+B_pmult_eski,P1_zayif_acgozlu,100.0,220,116,219,23,829,122,838,12.0,"{'bankrupt@12': 291, 'bankrupt@16': 9}"
+B_pmult_eski,P1_zayif_mantikli,91.7,314,223,219,23,971,318,681,8.9,"{'bankrupt@12': 204, 'bankrupt@16': 71}"
+B_pmult_eski,P1_orta_hic,0.0,1131,679,532,34,2268,1556,0,0,{}
+B_pmult_eski,P1_orta_acgozlu,54.3,272,82,235,38,2385,584,1930,19.7,"{'bankrupt@12': 123, 'bankrupt@16': 40}"
+B_pmult_eski,P1_orta_mantikli,14.3,289,63,235,38,2679,1073,1715,17.7,"{'bankrupt@16': 15, 'bankrupt@12': 28}"
+B_pmult_eski,P1_iyi_hic,0.0,2474,1852,552,53,3413,1557,0,0,{}
+B_pmult_eski,P1_iyi_acgozlu,8.7,1687,332,244,46,4686,931,2705,23.4,"{'bankrupt@12': 25, 'bankrupt@16': 1}"
+B_pmult_eski,P1_iyi_mantikli,0.7,1504,466,244,46,4831,1292,2662,23.1,{'bankrupt@12': 2}
+B_pmult_eski,P2_zayif_hic,21.3,465,121,626,33,3150,2928,0,0,"{'bankrupt@16': 20, 'bankrupt@12': 42, 'bankrupt@8': 2}"
+B_pmult_eski,P2_zayif_acgozlu,100.0,541,374,325,32,2095,293,1621,11.9,"{'bankrupt@12': 298, 'bankrupt@16': 2}"
+B_pmult_eski,P2_zayif_mantikli,96.0,647,458,505,32,1649,695,718,5.8,"{'bankrupt@8': 195, 'bankrupt@12': 74, 'bankrupt@16': 19}"
+B_pmult_eski,P2_orta_hic,0.0,3392,2617,686,95,6370,3489,0,0,{}
+B_pmult_eski,P2_orta_acgozlu,19.7,1374,465,381,89,7589,1827,4832,22.0,"{'bankrupt@12': 54, 'bankrupt@16': 5}"
+B_pmult_eski,P2_orta_mantikli,15.3,1277,500,561,89,7397,2606,3945,19.0,"{'bankrupt@12': 14, 'bankrupt@8': 32}"
+B_pmult_eski,P2_iyi_hic,0.0,6671,5631,746,150,9304,3489,0,0,{}
+B_pmult_eski,P2_iyi_acgozlu,0.3,7151,4661,440,143,14290,2429,5505,23.8,{'bankrupt@12': 1}
+B_pmult_eski,P2_iyi_mantikli,0.0,6232,4060,620,143,13978,2958,5569,23.8,{}
+B_pmult_eski,P3_zayif_hic,45.3,901,199,796,86,4683,4157,0,0,"{'bankrupt@16': 31, 'bankrupt@12': 98, 'bankrupt@8': 7}"
+B_pmult_eski,P3_zayif_acgozlu,100.0,908,632,615,83,3397,496,2466,11.9,"{'bankrupt@12': 266, 'bankrupt@8': 33, 'bankrupt@16': 1}"
+B_pmult_eski,P3_zayif_mantikli,98.7,1099,829,796,86,2427,1049,833,4.9,"{'bankrupt@8': 234, 'bankrupt@12': 50, 'bankrupt@16': 12}"
+B_pmult_eski,P3_orta_hic,0.0,4475,3459,862,150,9982,6120,0,0,{}
+B_pmult_eski,P3_orta_acgozlu,38.3,1987,713,679,145,10462,2361,6691,21.1,"{'bankrupt@12': 111, 'bankrupt@16': 1, 'bankrupt@8': 3}"
+B_pmult_eski,P3_orta_mantikli,19.3,1893,838,862,150,10968,4419,5227,17.6,"{'bankrupt@8': 40, 'bankrupt@12': 18}"
+B_pmult_eski,P3_iyi_hic,0.0,7747,6381,926,210,12860,6120,0,0,{}
+B_pmult_eski,P3_iyi_acgozlu,1.0,8077,4453,748,209,19126,3757,8221,23.8,{'bankrupt@12': 3}
+B_pmult_eski,P3_iyi_mantikli,0.3,6497,4061,926,210,18870,5326,7987,23.4,{'bankrupt@8': 1}
+B_pmult_eski,P4_zayif_hic,61.0,1420,339,937,83,5713,4818,0,0,"{'bankrupt@12': 136, 'bankrupt@16': 16, 'bankrupt@8': 31}"
+B_pmult_eski,P4_zayif_acgozlu,100.0,1274,895,719,87,4581,699,3213,12.3,"{'bankrupt@12': 276, 'bankrupt@8': 23, 'bankrupt@16': 1}"
+B_pmult_eski,P4_zayif_mantikli,100.0,1513,1179,937,83,2774,1201,775,4.3,"{'bankrupt@8': 275, 'bankrupt@12': 24, 'bankrupt@16': 1}"
+B_pmult_eski,P4_orta_hic,0.0,4575,3126,1095,243,12533,8742,0,0,{}
+B_pmult_eski,P4_orta_acgozlu,64.0,1932,888,865,235,10970,2369,7454,19.7,"{'bankrupt@12': 184, 'bankrupt@16': 7, 'bankrupt@8': 1}"
+B_pmult_eski,P4_orta_mantikli,29.7,1912,607,1095,243,12473,5671,5638,15.8,"{'bankrupt@8': 52, 'bankrupt@12': 35, 'bankrupt@16': 2}"
+B_pmult_eski,P4_iyi_hic,0.0,8558,6937,1091,230,16136,8750,0,0,{}
+B_pmult_eski,P4_iyi_acgozlu,5.0,8794,4468,857,219,22673,4826,10156,23.7,{'bankrupt@12': 15}
+B_pmult_eski,P4_iyi_mantikli,0.7,6385,3820,1091,230,22393,7631,9494,22.8,{'bankrupt@8': 2}
+C_pmult_orta,P1_zayif_hic,19.7,218,49,516,20,1288,1350,0,0,"{'bankrupt@16': 48, 'bankrupt@12': 11}"
+C_pmult_orta,P1_zayif_acgozlu,100.0,220,116,219,23,829,122,838,12.0,"{'bankrupt@12': 291, 'bankrupt@16': 9}"
+C_pmult_orta,P1_zayif_mantikli,91.7,314,223,219,23,971,318,681,8.9,"{'bankrupt@12': 204, 'bankrupt@16': 71}"
+C_pmult_orta,P1_orta_hic,0.0,1131,679,532,34,2268,1556,0,0,{}
+C_pmult_orta,P1_orta_acgozlu,54.3,272,82,235,38,2385,584,1930,19.7,"{'bankrupt@12': 123, 'bankrupt@16': 40}"
+C_pmult_orta,P1_orta_mantikli,14.3,289,63,235,38,2679,1073,1715,17.7,"{'bankrupt@16': 15, 'bankrupt@12': 28}"
+C_pmult_orta,P1_iyi_hic,0.0,2474,1852,552,53,3413,1557,0,0,{}
+C_pmult_orta,P1_iyi_acgozlu,8.7,1687,332,244,46,4686,931,2705,23.4,"{'bankrupt@12': 25, 'bankrupt@16': 1}"
+C_pmult_orta,P1_iyi_mantikli,0.7,1504,466,244,46,4831,1292,2662,23.1,{'bankrupt@12': 2}
+C_pmult_orta,P2_zayif_hic,21.3,465,121,626,33,3150,2928,0,0,"{'bankrupt@16': 20, 'bankrupt@12': 42, 'bankrupt@8': 2}"
+C_pmult_orta,P2_zayif_acgozlu,100.0,547,381,355,32,2161,291,1687,12.8,"{'bankrupt@12': 298, 'bankrupt@16': 2}"
+C_pmult_orta,P2_zayif_mantikli,93.0,620,425,517,32,1657,716,737,6.2,"{'bankrupt@8': 203, 'bankrupt@12': 65, 'bankrupt@16': 11}"
+C_pmult_orta,P2_orta_hic,0.0,3392,2617,686,95,6370,3489,0,0,{}
+C_pmult_orta,P2_orta_acgozlu,14.7,2044,542,411,89,8114,1845,4651,22.9,{'bankrupt@12': 44}
+C_pmult_orta,P2_orta_mantikli,7.0,1700,666,573,89,8148,2772,4097,20.9,"{'bankrupt@12': 6, 'bankrupt@8': 15}"
+C_pmult_orta,P2_iyi_hic,0.0,6671,5631,746,150,9304,3489,0,0,{}
+C_pmult_orta,P2_iyi_acgozlu,0.3,7913,5479,470,143,14581,2511,4953,23.8,{'bankrupt@12': 1}
+C_pmult_orta,P2_iyi_mantikli,0.0,7188,5075,631,143,14359,2949,5000,23.8,{}
+C_pmult_orta,P3_zayif_hic,45.3,901,199,796,86,4683,4157,0,0,"{'bankrupt@16': 31, 'bankrupt@12': 98, 'bankrupt@8': 7}"
+C_pmult_orta,P3_zayif_acgozlu,100.0,885,635,417,83,3461,474,2553,13.4,"{'bankrupt@12': 299, 'bankrupt@16': 1}"
+C_pmult_orta,P3_zayif_mantikli,97.0,1074,809,796,86,2459,1033,896,5.6,"{'bankrupt@12': 49, 'bankrupt@8': 235, 'bankrupt@16': 7}"
+C_pmult_orta,P3_orta_hic,0.0,4475,3459,862,150,9982,6120,0,0,{}
+C_pmult_orta,P3_orta_acgozlu,23.0,3506,1062,481,145,12109,2669,6464,22.7,{'bankrupt@12': 69}
+C_pmult_orta,P3_orta_mantikli,8.0,2580,1079,862,150,12285,4834,5391,20.2,"{'bankrupt@12': 8, 'bankrupt@8': 16}"
+C_pmult_orta,P3_iyi_hic,0.0,7747,6381,926,210,12860,6120,0,0,{}
+C_pmult_orta,P3_iyi_acgozlu,0.3,10727,7835,550,209,20527,3858,6850,23.8,{'bankrupt@12': 1}
+C_pmult_orta,P3_iyi_mantikli,0.3,8610,5777,926,210,19826,5192,6935,23.8,{'bankrupt@8': 1}
+C_pmult_orta,P4_zayif_hic,61.0,1420,339,937,83,5713,4818,0,0,"{'bankrupt@12': 136, 'bankrupt@16': 16, 'bankrupt@8': 31}"
+C_pmult_orta,P4_zayif_acgozlu,100.0,1308,935,491,87,4813,697,3409,14.2,"{'bankrupt@12': 299, 'bankrupt@16': 1}"
+C_pmult_orta,P4_zayif_mantikli,97.7,1478,1098,937,83,2975,1269,926,5.1,"{'bankrupt@8': 265, 'bankrupt@12': 27, 'bankrupt@16': 1}"
+C_pmult_orta,P4_orta_hic,0.0,4575,3126,1095,243,12533,8742,0,0,{}
+C_pmult_orta,P4_orta_acgozlu,39.3,4329,1345,637,235,14199,3062,7518,22.4,"{'bankrupt@12': 117, 'bankrupt@16': 1}"
+C_pmult_orta,P4_orta_mantikli,20.3,3003,1183,1095,243,14169,5943,5942,18.8,"{'bankrupt@8': 38, 'bankrupt@12': 22, 'bankrupt@16': 1}"
+C_pmult_orta,P4_iyi_hic,0.0,8558,6937,1091,230,16136,8750,0,0,{}
+C_pmult_orta,P4_iyi_acgozlu,0.7,12649,9558,629,219,24893,5125,8204,23.8,{'bankrupt@12': 2}
+C_pmult_orta,P4_iyi_mantikli,0.7,9326,6213,1091,230,23871,7392,8253,23.6,{'bankrupt@8': 2}
+D_hedefli,P1_zayif_hic,19.7,218,49,516,20,1288,1350,0,0,"{'bankrupt@16': 48, 'bankrupt@12': 11}"
+D_hedefli,P1_zayif_acgozlu,99.7,224,115,219,23,827,124,831,12.0,"{'bankrupt@12': 291, 'bankrupt@16': 8}"
+D_hedefli,P1_zayif_mantikli,89.3,307,171,219,23,966,333,667,8.9,"{'bankrupt@12': 202, 'bankrupt@16': 66}"
+D_hedefli,P1_orta_hic,0.0,1131,679,532,34,2268,1556,0,0,{}
+D_hedefli,P1_orta_acgozlu,45.7,257,64,235,38,2368,676,1849,19.0,"{'bankrupt@12': 103, 'bankrupt@16': 34}"
+D_hedefli,P1_orta_mantikli,16.7,261,40,235,38,2496,1048,1599,16.8,"{'bankrupt@16': 23, 'bankrupt@12': 27}"
+D_hedefli,P1_iyi_hic,0.0,2474,1852,552,53,3413,1557,0,0,{}
+D_hedefli,P1_iyi_acgozlu,7.3,980,243,244,46,4422,1054,3026,23.0,"{'bankrupt@12': 17, 'bankrupt@16': 5}"
+D_hedefli,P1_iyi_mantikli,0.3,946,299,244,46,4505,1340,2851,22.2,{'bankrupt@12': 1}
+D_hedefli,P2_zayif_hic,21.3,465,121,626,33,3150,2928,0,0,"{'bankrupt@16': 20, 'bankrupt@12': 42, 'bankrupt@8': 2}"
+D_hedefli,P2_zayif_acgozlu,99.7,546,366,385,32,2188,330,1681,13.7,"{'bankrupt@12': 292, 'bankrupt@16': 7}"
+D_hedefli,P2_zayif_mantikli,91.7,628,370,529,32,1798,748,822,7.4,"{'bankrupt@12': 74, 'bankrupt@8': 182, 'bankrupt@16': 19}"
+D_hedefli,P2_orta_hic,0.0,3392,2617,686,95,6370,3489,0,0,{}
+D_hedefli,P2_orta_acgozlu,13.0,1727,502,441,89,7995,1981,4726,22.9,"{'bankrupt@12': 36, 'bankrupt@16': 3}"
+D_hedefli,P2_orta_mantikli,2.7,1435,524,585,89,8091,2950,4121,21.0,"{'bankrupt@12': 2, 'bankrupt@8': 6}"
+D_hedefli,P2_iyi_hic,0.0,6671,5631,746,150,9304,3489,0,0,{}
+D_hedefli,P2_iyi_acgozlu,0.0,7419,5311,499,143,14388,2608,5161,23.8,{}
+D_hedefli,P2_iyi_mantikli,0.3,6962,4712,643,143,14230,2962,5089,23.7,{'bankrupt@8': 1}
+D_hedefli,P3_zayif_hic,45.3,901,199,796,86,4683,4157,0,0,"{'bankrupt@16': 31, 'bankrupt@12': 98, 'bankrupt@8': 7}"
+D_hedefli,P3_zayif_acgozlu,100.0,918,627,477,83,3409,498,2447,14.5,"{'bankrupt@12': 297, 'bankrupt@16': 3}"
+D_hedefli,P3_zayif_mantikli,94.0,1102,788,796,86,2807,1135,1092,7.2,"{'bankrupt@12': 75, 'bankrupt@8': 197, 'bankrupt@16': 10}"
+D_hedefli,P3_orta_hic,0.0,4475,3459,862,150,9982,6120,0,0,{}
+D_hedefli,P3_orta_acgozlu,15.7,3800,1136,541,145,12804,3046,6454,23.2,"{'bankrupt@12': 46, 'bankrupt@16': 1}"
+D_hedefli,P3_orta_mantikli,5.3,2519,1149,862,150,12355,4954,5409,20.9,"{'bankrupt@8': 8, 'bankrupt@12': 8}"
+D_hedefli,P3_iyi_hic,0.0,7747,6381,926,210,12860,6120,0,0,{}
+D_hedefli,P3_iyi_acgozlu,0.0,10475,8038,610,209,20447,4271,6643,23.7,{}
+D_hedefli,P3_iyi_mantikli,0.0,8708,6158,926,210,19751,5225,6740,23.8,{}
+D_hedefli,P4_zayif_hic,61.0,1420,339,937,83,5713,4818,0,0,"{'bankrupt@12': 136, 'bankrupt@16': 16, 'bankrupt@8': 31}"
+D_hedefli,P4_zayif_acgozlu,99.3,1356,960,566,87,4877,764,3334,15.5,"{'bankrupt@12': 294, 'bankrupt@16': 4}"
+D_hedefli,P4_zayif_mantikli,95.3,1473,1134,937,83,3240,1485,963,5.9,"{'bankrupt@8': 241, 'bankrupt@12': 44, 'bankrupt@16': 1}"
+D_hedefli,P4_orta_hic,0.0,4575,3126,1095,243,12533,8742,0,0,{}
+D_hedefli,P4_orta_acgozlu,33.0,4593,1293,712,235,14798,3456,7453,22.8,"{'bankrupt@12': 98, 'bankrupt@16': 1}"
+D_hedefli,P4_orta_mantikli,9.7,3053,1258,1095,243,14960,6491,6115,20.2,"{'bankrupt@8': 14, 'bankrupt@12': 15}"
+D_hedefli,P4_iyi_hic,0.0,8558,6937,1091,230,16136,8750,0,0,{}
+D_hedefli,P4_iyi_acgozlu,0.0,12398,9090,704,219,24828,5635,7896,23.7,{}
+D_hedefli,P4_iyi_mantikli,0.0,9116,5834,1091,230,23526,7516,8014,23.6,{}
+E_gun005,P1_zayif_hic,19.7,218,49,516,20,1288,1350,0,0,"{'bankrupt@16': 48, 'bankrupt@12': 11}"
+E_gun005,P1_zayif_acgozlu,100.0,244,135,219,23,825,127,804,10.6,"{'bankrupt@12': 287, 'bankrupt@16': 13}"
+E_gun005,P1_zayif_mantikli,91.3,333,234,219,23,1010,347,662,7.9,"{'bankrupt@12': 179, 'bankrupt@16': 95}"
+E_gun005,P1_orta_hic,0.0,1131,679,532,34,2268,1556,0,0,{}
+E_gun005,P1_orta_acgozlu,63.7,267,92,235,38,2153,541,1759,16.7,"{'bankrupt@12': 134, 'bankrupt@16': 57}"
+E_gun005,P1_orta_mantikli,17.0,222,45,235,38,2476,1066,1601,14.7,"{'bankrupt@16': 27, 'bankrupt@12': 24}"
+E_gun005,P1_iyi_hic,0.0,2474,1852,552,53,3413,1557,0,0,{}
+E_gun005,P1_iyi_acgozlu,10.7,534,169,244,46,4200,1022,3288,22.0,"{'bankrupt@12': 26, 'bankrupt@16': 6}"
+E_gun005,P1_iyi_mantikli,2.0,592,190,244,46,4376,1333,3083,20.7,"{'bankrupt@16': 1, 'bankrupt@12': 5}"
+E_gun005,P2_zayif_hic,21.3,465,121,626,33,3150,2928,0,0,"{'bankrupt@16': 20, 'bankrupt@12': 42, 'bankrupt@8': 2}"
+E_gun005,P2_zayif_acgozlu,99.0,570,372,385,32,2235,340,1691,12.2,"{'bankrupt@12': 287, 'bankrupt@16': 10}"
+E_gun005,P2_zayif_mantikli,92.0,635,362,529,32,1844,808,802,6.5,"{'bankrupt@12': 65, 'bankrupt@8': 181, 'bankrupt@16': 30}"
+E_gun005,P2_orta_hic,0.0,3392,2617,686,95,6370,3489,0,0,{}
+E_gun005,P2_orta_acgozlu,21.0,965,262,441,89,7538,1910,5121,21.6,"{'bankrupt@16': 12, 'bankrupt@12': 51}"
+E_gun005,P2_orta_mantikli,5.7,875,336,585,89,7804,2896,4456,19.1,"{'bankrupt@12': 5, 'bankrupt@8': 11, 'bankrupt@16': 1}"
+E_gun005,P2_iyi_hic,0.0,6671,5631,746,150,9304,3489,0,0,{}
+E_gun005,P2_iyi_acgozlu,0.7,6054,3631,499,143,13838,2501,6084,23.7,{'bankrupt@12': 2}
+E_gun005,P2_iyi_mantikli,0.3,5525,3476,643,143,13957,2984,6226,23.7,{'bankrupt@8': 1}
+E_gun005,P3_zayif_hic,45.3,901,199,796,86,4683,4157,0,0,"{'bankrupt@16': 31, 'bankrupt@12': 98, 'bankrupt@8': 7}"
+E_gun005,P3_zayif_acgozlu,100.0,946,697,477,83,3487,503,2491,12.9,"{'bankrupt@12': 297, 'bankrupt@16': 3}"
+E_gun005,P3_zayif_mantikli,97.7,1082,824,796,86,2425,992,902,5.5,"{'bankrupt@8': 238, 'bankrupt@12': 50, 'bankrupt@16': 5}"
+E_gun005,P3_orta_hic,0.0,4475,3459,862,150,9982,6120,0,0,{}
+E_gun005,P3_orta_acgozlu,29.7,2145,782,541,145,11358,2647,7110,22.0,{'bankrupt@12': 89}
+E_gun005,P3_orta_mantikli,13.0,1575,544,862,150,11506,4706,5763,18.5,"{'bankrupt@8': 19, 'bankrupt@12': 19, 'bankrupt@16': 1}"
+E_gun005,P3_iyi_hic,0.0,7747,6381,926,210,12860,6120,0,0,{}
+E_gun005,P3_iyi_acgozlu,1.7,8820,5865,610,209,19816,4022,7916,23.7,{'bankrupt@12': 5}
+E_gun005,P3_iyi_mantikli,0.3,6721,3931,926,210,19453,5283,8365,23.6,{'bankrupt@8': 1}
+E_gun005,P4_zayif_hic,61.0,1420,339,937,83,5713,4818,0,0,"{'bankrupt@12': 136, 'bankrupt@16': 16, 'bankrupt@8': 31}"
+E_gun005,P4_zayif_acgozlu,100.0,1323,938,566,87,4811,697,3376,13.7,"{'bankrupt@12': 299, 'bankrupt@16': 1}"
+E_gun005,P4_zayif_mantikli,98.3,1489,1132,937,83,2952,1279,888,5.0,"{'bankrupt@8': 269, 'bankrupt@12': 22, 'bankrupt@16': 4}"
+E_gun005,P4_orta_hic,0.0,4575,3126,1095,243,12533,8742,0,0,{}
+E_gun005,P4_orta_acgozlu,53.3,2809,1201,712,235,12729,2706,7963,21.6,"{'bankrupt@12': 151, 'bankrupt@16': 9}"
+E_gun005,P4_orta_mantikli,19.7,1954,646,1095,243,13979,6104,6642,18.0,"{'bankrupt@8': 32, 'bankrupt@12': 24, 'bankrupt@16': 3}"
+E_gun005,P4_iyi_hic,0.0,8558,6937,1091,230,16136,8750,0,0,{}
+E_gun005,P4_iyi_acgozlu,1.7,10742,6512,704,219,24239,5243,9359,23.7,{'bankrupt@12': 5}
+E_gun005,P4_iyi_mantikli,0.0,6751,3418,1091,230,23220,7674,9916,23.4,{}
+F_D+E,P1_zayif_hic,19.7,218,49,516,20,1288,1350,0,0,"{'bankrupt@16': 48, 'bankrupt@12': 11}"
+F_D+E,P1_zayif_acgozlu,100.0,243,135,219,23,825,129,804,10.6,"{'bankrupt@12': 286, 'bankrupt@16': 14}"
+F_D+E,P1_zayif_mantikli,88.3,324,198,219,23,1002,359,653,7.9,"{'bankrupt@12': 182, 'bankrupt@16': 83}"
+F_D+E,P1_orta_hic,0.0,1131,679,532,34,2268,1556,0,0,{}
+F_D+E,P1_orta_acgozlu,59.7,277,93,235,38,2121,587,1674,16.3,"{'bankrupt@12': 125, 'bankrupt@16': 54}"
+F_D+E,P1_orta_mantikli,17.3,237,50,235,38,2373,1070,1486,14.2,"{'bankrupt@12': 29, 'bankrupt@16': 23}"
+F_D+E,P1_iyi_hic,0.0,2474,1852,552,53,3413,1557,0,0,{}
+F_D+E,P1_iyi_acgozlu,8.3,432,143,244,46,4006,1091,3124,20.9,"{'bankrupt@16': 7, 'bankrupt@12': 18}"
+F_D+E,P1_iyi_mantikli,2.3,500,144,244,46,4016,1355,2803,19.3,"{'bankrupt@12': 5, 'bankrupt@16': 2}"
+F_D+E,P2_zayif_hic,21.3,465,121,626,33,3150,2928,0,0,"{'bankrupt@16': 20, 'bankrupt@12': 42, 'bankrupt@8': 2}"
+F_D+E,P2_zayif_acgozlu,98.7,572,383,385,32,2213,340,1666,12.1,"{'bankrupt@12': 288, 'bankrupt@16': 8}"
+F_D+E,P2_zayif_mantikli,90.3,626,337,529,32,1835,829,781,6.5,"{'bankrupt@12': 67, 'bankrupt@8': 180, 'bankrupt@16': 24}"
+F_D+E,P2_orta_hic,0.0,3392,2617,686,95,6370,3489,0,0,{}
+F_D+E,P2_orta_acgozlu,17.7,729,241,441,89,7252,2177,4827,20.5,"{'bankrupt@16': 19, 'bankrupt@12': 34}"
+F_D+E,P2_orta_mantikli,4.3,797,293,585,89,7270,2933,4008,17.7,"{'bankrupt@12': 6, 'bankrupt@8': 6, 'bankrupt@16': 1}"
+F_D+E,P2_iyi_hic,0.0,6671,5631,746,150,9304,3489,0,0,{}
+F_D+E,P2_iyi_acgozlu,0.0,4271,1562,499,143,13237,2683,7099,23.5,{}
+F_D+E,P2_iyi_mantikli,0.3,3549,1452,643,143,13124,3117,7257,23.2,{'bankrupt@8': 1}
+F_D+E,P3_zayif_hic,45.3,901,199,796,86,4683,4157,0,0,"{'bankrupt@16': 31, 'bankrupt@12': 98, 'bankrupt@8': 7}"
+F_D+E,P3_zayif_acgozlu,100.0,938,684,477,83,3444,492,2471,12.8,"{'bankrupt@12': 299, 'bankrupt@16': 1}"
+F_D+E,P3_zayif_mantikli,96.7,1103,808,796,86,2532,1053,920,5.8,"{'bankrupt@8': 227, 'bankrupt@12': 55, 'bankrupt@16': 8}"
+F_D+E,P3_orta_hic,0.0,4475,3459,862,150,9982,6120,0,0,{}
+F_D+E,P3_orta_acgozlu,25.0,1284,373,541,145,10980,3182,7090,20.9,"{'bankrupt@12': 66, 'bankrupt@16': 9}"
+F_D+E,P3_orta_mantikli,10.0,1356,453,862,150,11065,4835,5444,17.6,"{'bankrupt@8': 15, 'bankrupt@12': 14, 'bankrupt@16': 1}"
+F_D+E,P3_iyi_hic,0.0,7747,6381,926,210,12860,6120,0,0,{}
+F_D+E,P3_iyi_acgozlu,1.7,5834,1996,610,209,18592,4410,9305,23.4,{'bankrupt@12': 5}
+F_D+E,P3_iyi_mantikli,0.0,4154,1874,926,210,18151,5538,9392,22.9,{}
+F_D+E,P4_zayif_hic,61.0,1420,339,937,83,5713,4818,0,0,"{'bankrupt@12': 136, 'bankrupt@16': 16, 'bankrupt@8': 31}"
+F_D+E,P4_zayif_acgozlu,99.7,1335,938,566,87,4798,750,3301,13.6,"{'bankrupt@12': 295, 'bankrupt@16': 4}"
+F_D+E,P4_zayif_mantikli,98.0,1512,1154,937,83,3008,1314,883,5.1,"{'bankrupt@8': 261, 'bankrupt@12': 28, 'bankrupt@16': 5}"
+F_D+E,P4_orta_hic,0.0,4575,3126,1095,243,12533,8742,0,0,{}
+F_D+E,P4_orta_acgozlu,40.7,1722,525,712,235,12927,3613,8349,20.9,"{'bankrupt@12': 104, 'bankrupt@16': 18}"
+F_D+E,P4_orta_mantikli,15.3,1464,465,1095,243,13351,6330,6300,17.2,"{'bankrupt@8': 21, 'bankrupt@12': 22, 'bankrupt@16': 3}"
+F_D+E,P4_iyi_hic,0.0,8558,6937,1091,230,16136,8750,0,0,{}
+F_D+E,P4_iyi_acgozlu,6.3,6712,1887,704,219,21946,5331,11041,23.4,{'bankrupt@12': 19}
+F_D+E,P4_iyi_mantikli,0.0,4414,2288,1091,230,21834,7899,10657,22.3,{}
+G_kiraKilidi,P1_zayif_hic,19.7,218,49,516,20,1288,1350,0,0,"{'bankrupt@16': 48, 'bankrupt@12': 11}"
+G_kiraKilidi,P1_zayif_acgozlu,7.7,195,40,369,23,1330,1069,356,5.9,"{'bankrupt@16': 17, 'bankrupt@12': 6}"
+G_kiraKilidi,P1_zayif_mantikli,70.7,237,60,309,23,989,757,331,4.4,"{'bankrupt@8': 27, 'bankrupt@12': 139, 'bankrupt@16': 46}"
+G_kiraKilidi,P1_orta_hic,0.0,1131,679,532,34,2268,1556,0,0,{}
+G_kiraKilidi,P1_orta_acgozlu,0.0,326,133,385,38,2568,1498,1156,13.7,{}
+G_kiraKilidi,P1_orta_mantikli,3.0,288,109,325,38,2496,1474,1136,13.3,"{'bankrupt@8': 2, 'bankrupt@12': 7}"
+G_kiraKilidi,P1_iyi_hic,0.0,2474,1852,552,53,3413,1557,0,0,{}
+G_kiraKilidi,P1_iyi_acgozlu,0.0,1094,434,394,46,4309,1435,2404,21.6,{}
+G_kiraKilidi,P1_iyi_mantikli,0.0,1324,526,335,46,4575,1450,2443,21.7,{}
+G_kiraKilidi,P2_zayif_hic,21.3,465,121,626,33,3150,2928,0,0,"{'bankrupt@16': 20, 'bankrupt@12': 42, 'bankrupt@8': 2}"
+G_kiraKilidi,P2_zayif_acgozlu,32.0,449,140,626,33,3126,2641,292,3.7,"{'bankrupt@12': 71, 'bankrupt@16': 21, 'bankrupt@8': 4}"
+G_kiraKilidi,P2_zayif_mantikli,34.3,438,110,626,33,3086,2581,329,3.7,"{'bankrupt@16': 23, 'bankrupt@12': 74, 'bankrupt@8': 6}"
+G_kiraKilidi,P2_orta_hic,0.0,3392,2617,686,95,6370,3489,0,0,{}
+G_kiraKilidi,P2_orta_acgozlu,0.0,1622,802,686,95,7548,3271,3132,19.1,{}
+G_kiraKilidi,P2_orta_mantikli,0.0,2049,1098,686,95,8138,3306,3215,19.2,{}
+G_kiraKilidi,P2_iyi_hic,0.0,6671,5631,746,150,9304,3489,0,0,{}
+G_kiraKilidi,P2_iyi_acgozlu,0.0,7433,5391,746,150,14051,2980,4425,23.8,{}
+G_kiraKilidi,P2_iyi_mantikli,0.0,7492,5500,746,150,14186,3021,4440,23.8,{}
+G_kiraKilidi,P3_zayif_hic,45.3,901,199,796,86,4683,4157,0,0,"{'bankrupt@16': 31, 'bankrupt@12': 98, 'bankrupt@8': 7}"
+G_kiraKilidi,P3_zayif_acgozlu,55.0,939,254,796,86,4451,3700,191,1.6,"{'bankrupt@12': 135, 'bankrupt@16': 19, 'bankrupt@8': 11}"
+G_kiraKilidi,P3_zayif_mantikli,55.3,931,267,796,86,4438,3690,213,1.6,"{'bankrupt@12': 131, 'bankrupt@16': 21, 'bankrupt@8': 14}"
+G_kiraKilidi,P3_orta_hic,0.0,4475,3459,862,150,9982,6120,0,0,{}
+G_kiraKilidi,P3_orta_acgozlu,0.0,2450,1322,862,150,11319,5840,3606,17.2,{}
+G_kiraKilidi,P3_orta_mantikli,0.3,3181,1588,862,150,12407,5787,3958,18.0,{'bankrupt@12': 1}
+G_kiraKilidi,P3_iyi_hic,0.0,7747,6381,926,210,12860,6120,0,0,{}
+G_kiraKilidi,P3_iyi_acgozlu,0.0,9013,5872,926,210,19177,5339,5753,23.7,{}
+G_kiraKilidi,P3_iyi_mantikli,0.0,9571,6943,926,210,19786,5354,5780,23.7,{}
+G_kiraKilidi,P4_zayif_hic,61.0,1420,339,937,83,5713,4818,0,0,"{'bankrupt@12': 136, 'bankrupt@16': 16, 'bankrupt@8': 31}"
+G_kiraKilidi,P4_zayif_acgozlu,61.7,1410,404,937,83,5767,4757,134,0.8,"{'bankrupt@12': 137, 'bankrupt@16': 16, 'bankrupt@8': 32}"
+G_kiraKilidi,P4_zayif_mantikli,63.0,1386,314,937,83,5652,4659,144,0.7,"{'bankrupt@12': 143, 'bankrupt@16': 13, 'bankrupt@8': 33}"
+G_kiraKilidi,P4_orta_hic,0.0,4575,3126,1095,243,12533,8742,0,0,{}
+G_kiraKilidi,P4_orta_acgozlu,0.3,2582,1462,1095,243,13684,8514,3350,14.0,{'bankrupt@12': 1}
+G_kiraKilidi,P4_orta_mantikli,0.3,3196,1602,1095,243,14486,8460,3556,14.4,{'bankrupt@12': 1}
+G_kiraKilidi,P4_iyi_hic,0.0,8558,6937,1091,230,16136,8750,0,0,{}
+G_kiraKilidi,P4_iyi_acgozlu,0.0,8476,4836,1091,230,21613,7933,6332,22.5,{}
+G_kiraKilidi,P4_iyi_mantikli,0.0,9751,7001,1091,230,23130,7913,6582,22.9,{}
+H_F+G,P1_zayif_hic,19.7,218,49,516,20,1288,1350,0,0,"{'bankrupt@16': 48, 'bankrupt@12': 11}"
+H_F+G,P1_zayif_acgozlu,9.0,206,33,369,23,1313,1064,333,5.4,"{'bankrupt@16': 20, 'bankrupt@12': 7}"
+H_F+G,P1_zayif_mantikli,71.0,245,74,309,23,988,762,319,4.1,"{'bankrupt@8': 27, 'bankrupt@12': 139, 'bankrupt@16': 47}"
+H_F+G,P1_orta_hic,0.0,1131,679,532,34,2268,1556,0,0,{}
+H_F+G,P1_orta_acgozlu,0.0,348,147,385,38,2481,1509,1037,11.0,{}
+H_F+G,P1_orta_mantikli,3.3,291,102,325,38,2364,1477,992,10.6,"{'bankrupt@8': 3, 'bankrupt@12': 6, 'bankrupt@16': 1}"
+H_F+G,P1_iyi_hic,0.0,2474,1852,552,53,3413,1557,0,0,{}
+H_F+G,P1_iyi_acgozlu,0.0,625,316,394,46,3769,1490,2284,17.2,{}
+H_F+G,P1_iyi_mantikli,0.3,626,300,335,46,3908,1503,2418,17.4,{'bankrupt@8': 1}
+H_F+G,P2_zayif_hic,21.3,465,121,626,33,3150,2928,0,0,"{'bankrupt@16': 20, 'bankrupt@12': 42, 'bankrupt@8': 2}"
+H_F+G,P2_zayif_acgozlu,34.3,456,121,626,33,3088,2610,273,3.1,"{'bankrupt@16': 24, 'bankrupt@8': 5, 'bankrupt@12': 74}"
+H_F+G,P2_zayif_mantikli,37.0,472,147,626,33,3014,2526,273,3.0,"{'bankrupt@12': 79, 'bankrupt@16': 23, 'bankrupt@8': 9}"
+H_F+G,P2_orta_hic,0.0,3392,2617,686,95,6370,3489,0,0,{}
+H_F+G,P2_orta_acgozlu,0.0,1087,662,686,95,6897,3392,2911,15.0,{}
+H_F+G,P2_orta_mantikli,0.0,1009,511,686,95,6976,3380,3078,14.6,{}
+H_F+G,P2_iyi_hic,0.0,6671,5631,746,150,9304,3489,0,0,{}
+H_F+G,P2_iyi_acgozlu,0.0,2805,1523,746,150,12062,3157,6920,22.8,{}
+H_F+G,P2_iyi_mantikli,0.0,3211,1627,746,150,12740,3222,7112,22.8,{}
+H_F+G,P3_zayif_hic,45.3,901,199,796,86,4683,4157,0,0,"{'bankrupt@16': 31, 'bankrupt@12': 98, 'bankrupt@8': 7}"
+H_F+G,P3_zayif_acgozlu,54.7,943,241,796,86,4451,3719,171,1.3,"{'bankrupt@12': 136, 'bankrupt@16': 19, 'bankrupt@8': 9}"
+H_F+G,P3_zayif_mantikli,57.3,962,242,796,86,4342,3604,180,1.3,"{'bankrupt@12': 143, 'bankrupt@16': 17, 'bankrupt@8': 12}"
+H_F+G,P3_orta_hic,0.0,4475,3459,862,150,9982,6120,0,0,{}
+H_F+G,P3_orta_acgozlu,0.0,1660,983,862,150,10656,5975,3623,13.8,{}
+H_F+G,P3_orta_mantikli,0.3,1606,899,862,150,10798,5951,3831,13.4,{'bankrupt@12': 1}
+H_F+G,P3_iyi_hic,0.0,7747,6381,926,210,12860,6120,0,0,{}
+H_F+G,P3_iyi_acgozlu,0.0,3472,1994,926,210,16062,5691,7892,21.2,{}
+H_F+G,P3_iyi_mantikli,0.0,3861,2169,926,210,17166,5771,8486,21.3,{}
+H_F+G,P4_zayif_hic,61.0,1420,339,937,83,5713,4818,0,0,"{'bankrupt@12': 136, 'bankrupt@16': 16, 'bankrupt@8': 31}"
+H_F+G,P4_zayif_acgozlu,62.3,1446,414,937,83,5757,4741,103,0.5,"{'bankrupt@12': 137, 'bankrupt@16': 18, 'bankrupt@8': 32}"
+H_F+G,P4_zayif_mantikli,62.3,1407,332,937,83,5697,4704,116,0.5,"{'bankrupt@12': 140, 'bankrupt@16': 14, 'bankrupt@8': 33}"
+H_F+G,P4_orta_hic,0.0,4575,3126,1095,243,12533,8742,0,0,{}
+H_F+G,P4_orta_acgozlu,0.3,1905,1145,1095,243,13206,8608,3456,11.1,{'bankrupt@12': 1}
+H_F+G,P4_orta_mantikli,0.3,1690,881,1095,243,13260,8609,3727,10.7,{'bankrupt@12': 1}
+H_F+G,P4_iyi_hic,0.0,8558,6937,1091,230,16136,8750,0,0,{}
+H_F+G,P4_iyi_acgozlu,0.0,3350,1927,1091,230,18416,8141,8098,19.2,{}
+H_F+G,P4_iyi_mantikli,0.0,3949,2017,1091,230,19516,8160,8571,19.1,{}

@@ -1622,6 +1622,14 @@ MonoBehaviour:
     m_Localized: "\xA1Hoy se paga el alquiler!"
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263162
+    m_Localized: "Fondo de alquiler: {0} (D\xEDa {1})"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263163
+    m_Localized: "Fondo de alquiler"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

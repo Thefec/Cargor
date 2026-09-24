@@ -205,28 +205,59 @@ namespace NewCss
             truck.bonusPerTier = 5f + 0.5f * level;
         }
 
-        // Prestij Ustası: customerServedPrestigeBonus 0.4 → 0.52 → 0.64 (her seviye +0.12). FAZ4: taban ×2
+        // Prestij Ustası: customerServedPrestigeBonus 0.4 → 0.75 → 1.10 (her seviye +0.35). FAZ4: taban ×2
         // olunca perkin göreli gücü düşmesin diye etki de ×2 (bkz. plans/economy-rebuild-2026-07-30-faz4-final.md §B.3).
+        // Ö-B fix (2026-09-24, docs/economy/ob-kart-duzeltmeleri-2026-09-24.md §2): eski adım
+        // 0.12f zayıftı — prestijin tek ekonomik karşılığı ödül kademesi (⌊prestij/8⌋×5 TL/kutu),
+        // 2 seviye 16 güne kadar ancak +4..+20 prestij (0.5-2.5 kademe) getiriyor, fiyatı (370-937
+        // TL) karşılamıyordu. Yeni adım 0.35f (sim'de en az bir P'de net pozitif hedefine uydu;
+        // adım 0.4-0.6 denendi, 2P iyi'de Kumarbaz/Ek Hangar'ı geçiyordu — reddedildi).
         private static void ApplyPrestigeMaster(int level, PerkContext ctx)
         {
             if (ctx.Economy == null) return;
-            ctx.Economy.customerServedPrestigeBonus = 0.4f + 0.12f * level;
+            ctx.Economy.customerServedPrestigeBonus = 0.4f + 0.35f * level;
         }
 
-        // Hızlı Hangar (relic): hangarStayDuration taban(Economy P-bazlı GetHangarStayDuration) × 0.75.
+        // Hızlı Hangar (relic): hangarStayDuration taban(Economy P-bazlı GetHangarStayDuration) × 0.9.
         // Taban oyuncu sayısına göre (1P=120..4P=30); perk P-uygun tabana uygulanır ki sapma
-        // P'ye göre sabit %25 kalsın.
+        // P'ye göre sabit oranda kalsın.
         //
         // YÖN DEĞİŞİKLİĞİ (ekonomi denetimi 2026-09-18, docs/economy/05-oneriler.md Ö3): eski
         // çarpan 1.30f idi, yani bekleme süresini UZATIYORDU. Uzun bekleme tırın dolma şansını
         // artırıyor ama günlük tır devrini düşürüyor; ölçümde bu perk oyunun TEK negatif kartıydı
         // (2P orta: -5.3 TL/gün, kartı alan oyuncu para verip zarar ediyordu). Süreyi kısaltmak
         // kartı adına ve sahne açıklamasına ("hangar daha hızlı döner") da uygun hale getirir.
+        //
+        // Ö-B fix (2026-09-24, docs/economy/ob-kart-duzeltmeleri-2026-09-24.md §1/§2): sim ↔ oyun
+        // kök-neden analizi gösterdi ki gelir tırın hangarda durduğu saniyeyle sınırlı — eski
+        // 0.75× çarpanla kalış payı öyle kısalıyordu ki tır çoğu zaman yarı dolu kalkıyordu (3P
+        // orta −255, 4P orta −671 TL saf efekt). Üç değişiklik BİRLİKTE: (1) çarpan 0.75→0.9
+        // (kalış payını geri açar), (2) respawn gecikmesi sıfırlanır (TruckSpawner.
+        // respawnDelayMultiplier), (3) çıkış animasyonu beklemesi kısalır (Truck.
+        // perkExitDelayMultiplier) — ölü süreyi (respawn 3-5sn + exitDelay 2sn) azaltarak kalış
+        // payının oranını yükseltir. Yalnız çarpanı düşürmek (respawn/exit'e dokunmadan) tek
+        // başına yetmiyordu (sweep_fh_check.csv: 2P/3P orta hâlâ negatif) — exitDelay 0 şarttı.
+        // qa fix (2026-09-24): idempotent — level<=0 artık erken ÇIKMIYOR, mutlak/ters değerlere
+        // döner (ApplyOvertime'daki `level > 0 ? X : Y` deseniyle aynı). Bugünkü çağrı grafiğinde
+        // bu fonksiyon level<=0 ile hiç tetiklenmiyor (ApplyLivePerksToTruck/ApplyPerkToAllLiveTrucks
+        // ikisi de `level<=0` filtresinden geçirip çağırmıyor, relic'ler geri alınamıyor) — ama
+        // sınıfın tepesindeki idempotent kural TÜM Apply* metodları için geçerli (perk-mutates-
+        // persistent-assets hafıza sınıfı: bu varsayım ileride bozulursa perkExitDelayMultiplier/
+        // respawnDelayMultiplier sessizce 0'da kalıp tır sonsuza dek "perkli" davranmasın).
         private static void ApplyFastHangarToTruck(int level, Truck truck, PerkContext ctx)
         {
-            if (ctx.Economy == null || level <= 0) return;
-            int pc = DifficultyManager.Instance != null ? DifficultyManager.Instance.PlayerCount : 1;
-            truck.hangarStayDuration = ctx.Economy.GetHangarStayDuration(pc) * 0.75f;
+            truck.perkExitDelayMultiplier = level > 0 ? 0f : 1f;
+
+            if (TruckSpawner.Instance != null)
+            {
+                TruckSpawner.Instance.respawnDelayMultiplier = level > 0 ? 0f : 1f;
+            }
+
+            if (ctx.Economy != null && level > 0)
+            {
+                int pc = DifficultyManager.Instance != null ? DifficultyManager.Instance.PlayerCount : 1;
+                truck.hangarStayDuration = ctx.Economy.GetHangarStayDuration(pc) * 0.9f;
+            }
         }
 
         // Enerjik Ekip (relic): staminaRegenRate 1 → 2.5 (mevcut mekaniğe bağlanış, ekonomik değer
@@ -321,15 +352,19 @@ namespace NewCss
 
         // DOKUNUŞ-1: Kaldıraçlı Kira (relic). rentScaledMultiplier scaledRent'e uygulanır
         // (GameEconomySettings.CalculateRent). FAZ4 §B.7 upgrade turu — tercih edilen etki
-        // değişikliği uygulandı: bedel artık prestij cezası ×2 DEĞİL, gracePaymentPercent=0
-        // (grace period iptali, all_in ile aynı mekanik — ikisi EXCLUSIVE_EFFECT_GROUPS'ta
-        // aynı grupta). Kira indirimi 0.8 → 0.75 (kira %25 düşer). Eski
-        // customerLostPrestigePenalty = -0.8f satırı (FAZ4 §B.3 fallback) bu satırla kalkar.
+        // değişikliği uygulandı: bedel artık prestij cezası ×2 DEĞİL, grace period iptali
+        // (all_in ile aynı mekanik — ikisi EXCLUSIVE_EFFECT_GROUPS'ta aynı grupta). Kira indirimi
+        // 0.8 → 0.75 (kira %25 düşer). Eski customerLostPrestigePenalty = -0.8f satırı (FAZ4 §B.3
+        // fallback) bu satırla kalkar.
+        // Ö-C fix (2026-09-24, docs/economy/ekonomi-sifirdan-2026-09-23.md §4): eskiden
+        // gracePaymentPercent = 0f yazılıyordu — bu, DayCycleManager.TryProcessMoneyCheck'in grace
+        // dalına GİRMESİNE izin verip %0'ını alıp kirayı "ödenmiş" sayıyordu, yani perkin bedeli
+        // fiilen bedava kira oluyordu (bug). Doğrusu: grace dalına hiç girilmemesi — bayrakla.
         private static void ApplyLeveragedRent(int level, PerkContext ctx)
         {
             if (ctx.Economy == null || level <= 0) return;
             ctx.Economy.rentScaledMultiplier = 0.75f;
-            ctx.Economy.gracePaymentPercent = 0f;
+            ctx.Economy.graceDisabled = true;
         }
 
         // DOKUNUŞ-2: Yüksek Volatilite (relic). Per-delivery ±%35 RNG, ort. +%15 — Truck.
@@ -341,13 +376,15 @@ namespace NewCss
             ctx.Economy.rewardVolatilityMean = 1.15f;
         }
 
-        // Kelle Koltukta (relic): gelir +%25, grace period iptal (gracePaymentPercent=0).
+        // Kelle Koltukta (relic): gelir +%25, grace period iptal (graceDisabled=true — Ö-C fix,
+        // bkz. ApplyLeveragedRent üstündeki yorum: eskiden gracePaymentPercent=0 yazıyordu, bu da
+        // grace dalına girip %0 alarak kirayı bedava "ödenmiş" sayıyordu).
         // perk-revival: SPLIT — Economy (kalıcı SO, tek instance, güvenle burada kalır) parçası
         // burada; Truck ödül parçası ApplyAllInRewardToTruck'a taşındı (canlı instance gerekir).
         private static void ApplyAllIn(int level, PerkContext ctx)
         {
             if (ctx.Economy == null || level <= 0) return;
-            ctx.Economy.gracePaymentPercent = 0f;
+            ctx.Economy.graceDisabled = true;
         }
 
         // Kelle Koltukta — ödül parçası: rewardPerBox +%25, CANLI tıra (ApplyToTruck üzerinden).
@@ -370,15 +407,23 @@ namespace NewCss
             ctx.DayCycle.insuranceAvailable = true;
         }
 
-        // Mesai Saati (relic, NOT bölümü — soyut büyüklük, economist onayı gerekmez):
-        // günün gerçek süresini hafifçe uzatır. Taban × 1.125 (~+%12.5, 200 → 225sn) gameplay
-        // tercihi; sapma sayılmaz çünkü fiyat (300 TL, T1) sabit ve büyüklük ekonomik bir değer
-        // değil. Çarpımsal + idempotent: DayCycleManager.SetOvertimeMultiplier level 0'da 1f'e
+        // Mesai Saati: günün gerçek süresini hafifçe uzatır. Taban × 1.125 (~+%12.5, 200 → 225sn),
+        // DEĞİŞMEDİ. Çarpımsal + idempotent: DayCycleManager.SetOvertimeMultiplier level 0'da 1f'e
         // döner, bu yüzden HandleUpgradeLevelsChanged tekrar tetiklense bile süre sürüklenmez.
+        // Ö-B fix (2026-09-24, docs/economy/ob-kart-duzeltmeleri-2026-09-24.md §2 — artık economist
+        // spec'i, eski "soyut büyüklük, economist onayı gerekmez" notu GEÇERSİZ): saf efekt sim'de
+        // ≈0 çıkıyordu çünkü orta/iyi takım kotayı günün %77-100'ünde erken bitirip uzamış saate
+        // hiç ulaşmıyordu. Düzeltme: kota bitince günü sarma payına (CustomerManager.
+        // overtimeGraceBonusSeconds, +15 sn) da ek yapıyor — artık gerçekten "gün uzuyor".
         private static void ApplyOvertime(int level, PerkContext ctx)
         {
             if (ctx.DayCycle == null) return;
             ctx.DayCycle.SetOvertimeMultiplier(level > 0 ? 1.125f : 1f);
+
+            if (ctx.CustomerManager != null)
+            {
+                ctx.CustomerManager.overtimeGraceBonusSeconds = level > 0 ? 15f : 0f;
+            }
         }
 
         // DOKUNUŞ-4: Toplu Alım (relic). Bir sonraki draft teklifindeki rastgele 1 karta -%50

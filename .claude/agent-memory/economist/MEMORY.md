@@ -1,10 +1,12 @@
 # Economist Agent Memory Index
 
 ## ⭐ EN GÜNCEL TABAN (buradan başla — Round 10+11 KODA İŞLENDİ `bb98ad1`; Ö1+Ö2+Ö3 KODA İŞLENDİ `3424460`, main'de)
+- [⭐⭐⭐⭐⭐Ö-B kart düzeltmeleri 2026-09-24](ob_kart_duzeltmeleri_2026-09-24.md) — HızlıHangar zararlı (hangar-sn), Mesai ÖLÜ (erken bitiş), PU zayıf; spec + null-ikiz yöntemi
+- [⭐⭐⭐⭐⭐Sıfırdan hesap: upgrade ucuz mu? 2026-09-23](sifirdan_upgrade_ucuz_mu_2026-09-23.md) — nominal ucuz ama zam REDDEDİLDİ; kira-fonu kilidi 1.0 (Acil Fren muaf) tuzağı çözer; all_in grace BEDAVA bug'ı
 - [⭐⭐⭐⭐⭐build-hazırlık denetimi: zayıf-beceri kart alma tuzağı 2026-09-19](zayif_tier_upgrade_trap_2026-09-19.md) — Ö1-3 SONRASI DA değişmedi; zayıf+açgözlü/mantıklı %89-100 kayıp vs zayıf+hiç %19-68; Ö1-10 hiçbirinde raporlanmamış, sonraki tur adayı
 - [Ö4-Ö10 açık öneri listesi durumu 2026-09-19](oneriler_o4_o10_status_2026-09-19.md) — build-hazırlık denetiminde tek tek doğrulandı, hepsi hâlâ UYGULANMADI, ciddiyet etiketli
 - [⭐⭐⭐⭐⭐Telefon koşulsuz +20 TL KALDIRILDI 2026-09-18](phone_unconditional_money_removed_2026-09-18.md) — callMoneyReward 20→0 (cs+asset+sim), Slow/strict P1/P2 %100 spam optimumu kırıldı→%0/%20
-- [⭐⭐⭐⭐⭐DifficultyManager sabir/stamina kablolamasi CANLI + prefab-vs-cs sapma fix'i 2026-09-18](difficulty_patience_wiring_2026-09-18.md) — gercek deger PREFAB'ta yasiyordu (8/14/2, cs 35/55/5 degil); karar 15/20/2, 1P=canliyla ayni
+- [⭐⭐⭐⭐⭐DifficultyManager sabir/stamina kablolamasi CANLI + prefab-vs-cs sapma fix'i 2026-09-18](difficulty_patience_wiring_2026-09-18.md) — ⚠️2026-09-23 prefab artık 15/20/2 (8/14/2 bayat); karar 15/20/2, 1P=canliyla ayni
 - [⭐⭐⭐⭐sim.js SIFIR RNG + "unloseable" ekonomi bulgusu 2026-09-18](a1_determinism_audit_2026-09-18.md) — runFullSim %100 deterministik (Math.random YOK); +-90%/gün gürültüde bile winRate>=%98.3; iflas SADECE gün12/16 kira kapısında; day-5 finalCash'i ZAYIF öngörüyor (r=0.27-0.48)
 - [⭐⭐⭐GDD §13/§16 doğrulama 2026-09-13](gdd_section13_16_verified_current_2026-09-13.md) — SIFIR sapma; upgrade sayısı gerçekte 25 (26 değil); 2 hafta boşlukta kod-GDD hiç ayrışmadı
 - [⭐⭐Round 12: GDD uygulama-sonrası senkron 2026-08-30](economy_full_balance_round12_gdd_resync_2026-08-30.md) — GDD 14 bölümde ~30 düzeltme + §16.1 best-of-K EKLENDİ; canlı değer↔dosya:satır tablosu; 2 yeni açık
