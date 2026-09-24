@@ -175,6 +175,10 @@ namespace NewCss
 
             SubscribeToNetworkEvents();
 
+            // Late-join client: NGO ilk senkronda (ReadField) OnValueChanged tetiklemez →
+            // cache'i elle eşitle, yoksa Scaled* değerleri (stamina, upgrade fiyatı) 1P kalır.
+            _cachedPlayerCount = _networkPlayerCount.Value;
+
             if (IsServer)
             {
                 InitializePlayerCount();
@@ -295,10 +299,14 @@ namespace NewCss
                 ? NetworkManager.Singleton.ConnectedClientsList.Count
                 : MIN_PLAYERS;
 
-            _networkPlayerCount.Value = Mathf.Clamp(authoritativeCount, MIN_PLAYERS, MAX_PLAYERS);
+            // Koşu-kilitli oyuncu sayısı (plans/oyuncu-sayisi-kilidi.md §A, kullanıcı kararı 2026-09-24):
+            // sayı koşu içinde ASLA azalmaz — disconnect eski (daha yüksek) değeri düşürmesin, sadece
+            // sonradan bağlanan/geç yüklenen bir client sayıyı yükseltebilsin.
+            int clampedCount = Mathf.Clamp(authoritativeCount, MIN_PLAYERS, MAX_PLAYERS);
+            _networkPlayerCount.Value = Mathf.Max(_networkPlayerCount.Value, clampedCount);
             _cachedPlayerCount = _networkPlayerCount.Value;
 
-            LogDebug($"Client connection changed (clientId={clientId}); recomputed player count via ConnectedClientsList: {_networkPlayerCount.Value}");
+            LogDebug($"Client connection changed (clientId={clientId}); recomputed player count via ConnectedClientsList: {authoritativeCount} -> locked value {_networkPlayerCount.Value}");
             ApplyDifficultySettings();
         }
 
@@ -309,7 +317,12 @@ namespace NewCss
         private void InitializePlayerCount()
         {
             int playerCount = GetLobbyPlayerCount();
-            _networkPlayerCount.Value = Mathf.Clamp(playerCount, MIN_PLAYERS, MAX_PLAYERS);
+            // Koşu-kilitli oyuncu sayısı (bkz. HandlePlayerConnectionChanged): max(mevcut, yeni).
+            // Pratikte bu metod her koşuda yalnız bir kez (ilk OnNetworkSpawn'da) çalışır, o an
+            // _networkPlayerCount hâlâ tazeden kurulmuş varsayılan (1) değerindedir; max() burada
+            // yalnızca simetri/gelecekteki RefreshPlayerCount çağrıları için güvence.
+            int clampedCount = Mathf.Clamp(playerCount, MIN_PLAYERS, MAX_PLAYERS);
+            _networkPlayerCount.Value = Mathf.Max(_networkPlayerCount.Value, clampedCount);
             _cachedPlayerCount = _networkPlayerCount.Value;
 
             LogDebug($"Initialized with {_networkPlayerCount.Value} players");
@@ -507,23 +520,27 @@ namespace NewCss
             var moneySystem = MoneySystem.Instance;
             if (moneySystem != null)
             {
+                // plans/oyuncu-sayisi-kilidi.md §C (2026-09-24): HasGameEverStarted koruması ölü
+                // (SteamManager.cs'in tek yazarı DontDestroyOnLoad değil, harita yüklenince event
+                // hiç gelmiyor) — ona güvenme. Yeni kural: para yalnızca "dokunulmamışsa" (mevcut
+                // bakiye hâlâ ESKİ başlangıç değerindeyse — oyuncu henüz harcama/kazanç yapmamış)
+                // VE hâlâ 1. gündeysek (veya DayCycleManager henüz yoksa, ör. lobi) başlangıca
+                // çekilir. A ile artık disconnect zaten bu metodu tetiklemiyor (sayı düşmüyor);
+                // bu ikinci güvence, sayı YÜKSELİRKEN (sonradan bağlanan/geç yüklenen client) daha
+                // önce kazanılmış parayı silmemek için var.
+                int oldStart = moneySystem.startingMoney;
                 moneySystem.startingMoney = ScaledStartingMoney;
 
-                // Guard: only force-set the player's current money when the game
-                // hasn't actually started yet (lobby / initial setup / player-count
-                // changes before gameplay begins). Once GameStateManager reports the
-                // game has started, calling SetMoney() here would wipe out the
-                // player's earned money mid-run, so we only update the
-                // startingMoney field above and leave current money untouched.
-                bool gameAlreadyStarted = GameStateManager.Instance != null && GameStateManager.Instance.HasGameEverStarted;
-                if (!gameAlreadyStarted)
+                bool untouched = moneySystem.CurrentMoney == oldStart;
+                bool stillDayOne = DayCycleManager.Instance == null || DayCycleManager.Instance.currentDay == 1;
+                if (untouched && stillDayOne)
                 {
                     moneySystem.SetMoney(ScaledStartingMoney);
                     LogDebug($"Starting money set to: {ScaledStartingMoney}");
                 }
                 else
                 {
-                    LogDebug($"Game already started - skipped SetMoney, updated startingMoney field to: {ScaledStartingMoney}");
+                    LogDebug($"Money already touched or run in progress (untouched={untouched}, stillDayOne={stillDayOne}) - skipped SetMoney, updated startingMoney field to: {ScaledStartingMoney}");
                 }
             }
         }
@@ -577,6 +594,8 @@ namespace NewCss
 
         /// <summary>
         /// Oyuncu sayısını manuel olarak ayarlar (test için)
+        /// UYARI: koşu kilidini (Mathf.Max, sayı düşmez) BYPASS eder — yalnız editör debug
+        /// ContextMenu'lerinden çağrılmalı, üretim koduna bağlama (çık-gir istismarını geri açar).
         /// </summary>
         public void SetPlayerCount(int count)
         {

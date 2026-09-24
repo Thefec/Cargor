@@ -614,9 +614,9 @@ public class SteamManager : MonoBehaviour
                 StartCoroutine(HideLoadingScreenCoroutine());
 
                 // hasGameEverStarted'ı burada (sahne tam yüklendikten SONRA) işaretle.
-                // Daha erken set edilirse DifficultyManager.ApplyMoneySettings bunu
-                // "oyun zaten başladı" sanıp SetMoney'i atlayabilir ve başlangıç
-                // parası hiç uygulanmaz. LoadEventCompleted, TÜM client'lar sahneyi
+                // NOT (2026-09-24): SteamManager DontDestroyOnLoad DEĞİL, harita yüklenince yok
+                // olduğu için bu case pratikte ulaşılmayabilir; DifficultyManager.ApplyMoneySettings
+                // artık bu bayrağa bağlı değil. LoadEventCompleted, TÜM client'lar sahneyi
                 // yükleyip NetworkObject'ler spawn olduktan sonra tetiklenir — bu yüzden
                 // bilerek LoadComplete (server'ın kendi lokal yüklemesi, çok daha erken
                 // ve DifficultyManager'ın ilk para atamasıyla yarışabilir) ile fallthrough
@@ -683,8 +683,7 @@ public class SteamManager : MonoBehaviour
 
             // GameStateManager DontDestroyOnLoad olduğundan hasGameEverStarted eski
             // oturumdan sızabilir (aynı process'te menüye dönüp yeni oyun başlatma) —
-            // run-scoped sıfırla ki ApplyMoneySettings/IsFirstGameLoad yeni oturumu
-            // doğru okusun.
+            // run-scoped sıfırla ki IsFirstGameLoad yeni oturumu doğru okusun.
             NewCss.GameStateManager.Instance?.ResetGameStartedFlag();
 
             NetworkManager.Singleton.NetworkConfig.ConnectionData =

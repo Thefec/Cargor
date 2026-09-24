@@ -771,14 +771,21 @@ namespace NewCss
 
         /// <summary>
         /// Kira hesabı için oyuncu sayısını döndürür.
-        /// Tek doğruluk kaynağı server-authoritative roster'dır (GameStateManager._playerRoster,
-        /// Break Room / Win-Lose ekranlarının da okuduğu kaynak). ConnectedClientsList anlık
-        /// bağlantı listesidir ve kira tick'inden hemen önce disconnect olan bir oyuncu yüzünden
-        /// roster ile tutarsız düşebilir (bkz. N7); bu yüzden yalnızca roster erişilemezse/boşsa
-        /// fallback olarak kullanılır.
+        /// plans/oyuncu-sayisi-kilidi.md §B (2026-09-24): tek doğruluk kaynağı artık
+        /// DifficultyManager.PlayerCount (koşu-kilitli, disconnect'te düşmez — bkz.
+        /// DifficultyManager.HandlePlayerConnectionChanged). Roster ve ConnectedClientsList sayısı
+        /// çık-gir/disconnect ile düşebildiği için kira artık onlara bakmıyor; yalnızca
+        /// DifficultyManager hiç yoksa (ör. test sahnesi) eski roster/ConnectedClients fallback'i
+        /// devreye girer. Break Room / Win-Lose isim listesi roster'ı kullanmaya devam eder — bu
+        /// metod yalnız kira hesabı içindir.
         /// </summary>
         private int GetPlayerCount()
         {
+            if (DifficultyManager.Instance != null)
+            {
+                return DifficultyManager.Instance.PlayerCount;
+            }
+
             if (GameStateManager.Instance != null && GameStateManager.Instance.RosterPlayerCount > 0)
             {
                 return GameStateManager.Instance.RosterPlayerCount;

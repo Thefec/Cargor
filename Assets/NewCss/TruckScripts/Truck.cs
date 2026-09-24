@@ -164,6 +164,15 @@ namespace NewCss
         private readonly NetworkVariable<bool> _isPlayingEnterAnimation = new(false);
         private readonly NetworkVariable<float> _networkRemainingTime = new(120f);
 
+        /// <summary>
+        /// plans/oyuncu-sayisi-kilidi.md §D (2026-09-24): hangarIndex artık NetworkVariable —
+        /// eski düz `public int hangarIndex` alanı client'a hiç replike olmuyordu (bkz.
+        /// [[unity-netcode-plain-field-not-replicated]]), bu yüzden client'ta garageDoor hiç
+        /// çözülemiyor, kapı üstü "x/y" yazısı boş kalıyordu.
+        /// </summary>
+        private readonly NetworkVariable<int> _hangarIndex = new(-1,
+            NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
         #endregion
 
         #region Private Fields
@@ -172,8 +181,17 @@ namespace NewCss
         private bool _timerStarted;
         private Coroutine _timerCoroutine;
 
-        [HideInInspector]
-        public int hangarIndex;
+        /// <summary>
+        /// Server: TruckSpawner.SpawnTruckAtHangar tarafından Spawn() ÖNCESİ yazılır (satır ~493) —
+        /// değer NV spawn payload'ıyla gider. Client: burada doğrudan yazma yok, yalnız okuma;
+        /// gerçek değeri OnNetworkSpawn'da (mevcut değer) ve OnValueChanged'de görür (bkz.
+        /// ResolveGarageDoorFromIndex).
+        /// </summary>
+        public int hangarIndex
+        {
+            get => _hangarIndex.Value;
+            set => _hangarIndex.Value = value;
+        }
 
         #endregion
 
@@ -267,6 +285,10 @@ namespace NewCss
             SetupTriggerCollider();
             AutoFindAudioSources();
 
+            // §D: client'ta garageDoor'u index'ten çöz — spawn payload'ıyla gelen mevcut değeri
+            // burada yakala (OnValueChanged yalnız SONRAKİ değişiklikleri yakalar, ilk senkronu değil).
+            ResolveGarageDoorFromIndex(_hangarIndex.Value);
+
             // G10 fix: event başladıktan sonra spawn olan truck da aktif event çarpanlarını alsın.
             // OnActiveEventChanged her peer'de yerel çalıştığından bu da her peer'de çağrılmalı.
             EventEffectManager.Instance?.ApplyEventEffectToNewObject(gameObject);
@@ -308,6 +330,7 @@ namespace NewCss
             _isPlayingExitAnimation.OnValueChanged += HandleExitAnimationChanged;
             _isPlayingEnterAnimation.OnValueChanged += HandleEnterAnimationChanged;
             _networkRemainingTime.OnValueChanged += HandleRemainingTimeChanged;
+            _hangarIndex.OnValueChanged += HandleHangarIndexChanged;
         }
 
         private void UnsubscribeFromNetworkEvents()
@@ -319,6 +342,7 @@ namespace NewCss
             _isPlayingExitAnimation.OnValueChanged -= HandleExitAnimationChanged;
             _isPlayingEnterAnimation.OnValueChanged -= HandleEnterAnimationChanged;
             _networkRemainingTime.OnValueChanged -= HandleRemainingTimeChanged;
+            _hangarIndex.OnValueChanged -= HandleHangarIndexChanged;
         }
 
         #endregion
@@ -328,6 +352,36 @@ namespace NewCss
         private void HandleDeliveredCountChanged(int previousValue, int newValue)
         {
             UpdateUIText();
+        }
+
+        /// <summary>
+        /// plans/oyuncu-sayisi-kilidi.md §D: index server'da Spawn() öncesi yazıldığı için normalde
+        /// client bu değeri "değişiklik" olarak değil, ilk sync anında zaten dolu görür (bu yüzden
+        /// asıl çözüm OnNetworkSpawn'daki ResolveGarageDoorFromIndex çağrısı) — bu handler yalnız
+        /// savunma amaçlı (ör. ileride index spawn SONRASI yazılırsa da çalışsın).
+        /// </summary>
+        private void HandleHangarIndexChanged(int previousValue, int newValue)
+        {
+            ResolveGarageDoorFromIndex(newValue);
+            UpdateUIText();
+        }
+
+        /// <summary>
+        /// Client'ta garageDoor düz alanı server'dan hiç replike olmaz (plain field). Bunun yerine
+        /// TruckSpawner.hangarSpawnPoints listesinden (her peer'de aynı sahne verisiyle, deterministik
+        /// sırayla dolu) index üzerinden çözülür. Server'da garageDoor zaten TruckSpawner tarafından
+        /// doğrudan atanmış olduğu için burada no-op olur.
+        /// </summary>
+        private void ResolveGarageDoorFromIndex(int index)
+        {
+            if (garageDoor != null) return;
+            if (index < 0) return;
+
+            var spawner = TruckSpawner.Instance;
+            if (spawner == null || spawner.hangarSpawnPoints == null) return;
+            if (index >= spawner.hangarSpawnPoints.Count) return;
+
+            garageDoor = spawner.hangarSpawnPoints[index].garageDoorController;
         }
 
         private void HandleRequiredCargoChanged(int previousValue, int newValue)

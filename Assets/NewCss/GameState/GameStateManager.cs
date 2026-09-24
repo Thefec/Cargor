@@ -300,9 +300,10 @@ namespace NewCss
 
         /// <summary>
         /// Oyunun (harita/gameplay) gerçekten başladığını server-authoritative olarak işaretler.
-        /// Çağıran taraf (SteamManager), oyun sahnesi tam yüklendikten SONRA çağırmalı —
-        /// erken çağrılırsa DifficultyManager.ApplyMoneySettings başlangıç parasını
-        /// atlayabilir (bkz. DifficultyManager.ApplyMoneySettings). Idempotent.
+        /// Çağıran taraf (SteamManager), oyun sahnesi tam yüklendikten SONRA çağırmalı. Idempotent.
+        /// NOT (2026-09-24): DifficultyManager.ApplyMoneySettings artık bu bayrağa BAKMIYOR —
+        /// SteamManager harita yüklenince yok olduğu için bayrak pratikte hiç true olmuyordu ve
+        /// oyuncu ayrılınca kasa başlangıç parasına sıfırlanıyordu. Kalan tek tüketici IsFirstGameLoad.
         /// </summary>
         public void MarkGameStarted()
         {
