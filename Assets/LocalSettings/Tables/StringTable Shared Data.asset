@@ -1483,6 +1483,14 @@ MonoBehaviour:
     m_Key: ErrGameAlreadyStarted
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263160
+    m_Key: DayLabel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263161
+    m_Key: RentDueToday
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

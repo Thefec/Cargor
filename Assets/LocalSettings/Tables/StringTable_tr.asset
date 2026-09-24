@@ -1626,6 +1626,14 @@ MonoBehaviour:
     m_Localized: "Oyun zaten ba\u015Flad\u0131."
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263160
+    m_Localized: "G\xFCn {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263161
+    m_Localized: "Bug\xFCn kira!"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

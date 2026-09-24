@@ -1633,6 +1633,14 @@ MonoBehaviour:
     m_Localized: "Sp\u0113le jau ir s\u0101kusies."
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263160
+    m_Localized: "{0}. diena"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263161
+    m_Localized: "\u0160odien \u012Bre!"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

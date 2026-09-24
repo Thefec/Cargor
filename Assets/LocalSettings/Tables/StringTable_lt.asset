@@ -1634,6 +1634,14 @@ MonoBehaviour:
     m_Localized: "\u017Daidimas jau prasid\u0117jo."
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263160
+    m_Localized: "Diena {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263161
+    m_Localized: "\u0160iandien nuoma!"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

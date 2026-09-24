@@ -1632,6 +1632,14 @@ MonoBehaviour:
     m_Localized: "The game has already started."
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263160
+    m_Localized: "Day {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263161
+    m_Localized: "Rent due today!"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

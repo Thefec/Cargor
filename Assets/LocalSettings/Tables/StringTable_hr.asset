@@ -1610,6 +1610,14 @@ MonoBehaviour:
     m_Localized: "Igra je ve\u0107 po\u010Dela."
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263160
+    m_Localized: "Dan {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263161
+    m_Localized: "Danas najam!"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

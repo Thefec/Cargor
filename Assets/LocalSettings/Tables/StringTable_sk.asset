@@ -1633,6 +1633,14 @@ MonoBehaviour:
     m_Localized: "Hra u\u017E za\u010Dala."
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263160
+    m_Localized: "De\u0148 {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263161
+    m_Localized: "Dnes n\xE1jomn\xE9!"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

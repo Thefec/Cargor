@@ -95,6 +95,13 @@ namespace NewCss
         private readonly NetworkVariable<bool> _networkIsDayOver = new(false);
         private readonly NetworkVariable<bool> _networkIsBreakRoomReady = new(false);
 
+        /// <summary>
+        /// Sıradaki (henüz ödenmemiş) kira önizlemesi — server-yazar, herkes okur.
+        /// DayHudUI gibi client tarafı UI'lar CalculateRent()'i doğrudan çağıramaz
+        /// (GetPlayerCount roster'a bağlı, client'ta yanlış sonuç verir).
+        /// </summary>
+        private readonly NetworkVariable<int> _networkNextRent = new(0);
+
         #endregion
 
         #region Private Fields
@@ -225,6 +232,32 @@ namespace NewCss
             }
         }
 
+        /// <summary>
+        /// Sıradaki (henüz ödenmemiş) kira önizlemesi. Server periyodik olarak yazar,
+        /// herkes NetworkVariable üzerinden okur (bkz. RefreshNextRentPreview).
+        /// </summary>
+        public int NextRentAmount => _networkNextRent.Value;
+
+        /// <summary>
+        /// Kira döngüsü uzunluğu (gün) — economySettings.rentIntervalDays, fallback 4.
+        /// </summary>
+        public int RentIntervalDays => rentIntervalDays;
+
+        /// <summary>
+        /// Mevcut kira döngüsünde kaçıncı gündeyiz (1..RentIntervalDays).
+        /// </summary>
+        public int DayInRentCycle => RentIntervalDays <= 0 ? 1 : ((currentDay - 1) % RentIntervalDays) + 1;
+
+        /// <summary>
+        /// Bugün kira günü mü? (currentDay % RentIntervalDays == 0)
+        /// </summary>
+        public bool IsRentDay => RentIntervalDays > 0 && currentDay % RentIntervalDays == 0;
+
+        /// <summary>
+        /// Günün ne kadarının geçtiği, 0..1 arası (UI pasta bar için).
+        /// </summary>
+        public float DayProgress01 => CurrentDayDuration <= 0f ? 0f : Mathf.Clamp01(_networkElapsedTime.Value / CurrentDayDuration);
+
         #endregion
 
         #region Unity Lifecycle
@@ -280,6 +313,18 @@ namespace NewCss
             {
                 UpdateUI();
                 _lastUIUpdateTime = Time.time;
+
+                // IsTimeUp true olduğu andan itibaren ProcessDayEnd() → TryProcessMoneyCheck()
+                // o günün kirasını keser ve _rentPaymentCount++ yapar (bkz. ProcessDayEnd
+                // ":599 `if (_networkElapsedTime.Value < CurrentDayDuration)` erken-çıkışı,
+                // yani IsTimeUp==true olunca money-check'e girilir). Bu andan yeni gün
+                // başlayana (NextDay()) kadar preview'i DONDURUYORUZ; aksi halde HUD kira
+                // kesildikten hemen sonra _rentPaymentCount artmış olduğu için bir SONRAKİ
+                // döngünün (x1.20) tutarını "Bugün kira!" etiketiyle gösterir.
+                if (IsSpawned && IsServer && !_gameOverStopProcessing && !IsTimeUp)
+                {
+                    RefreshNextRentPreview();
+                }
             }
 
             if (!IsSpawned || !IsServer || _networkIsDayOver.Value || _gameOverStopProcessing)
@@ -309,6 +354,16 @@ namespace NewCss
 
             SubscribeToNetworkEvents();
             ResetDayCycle();
+
+            if (IsServer)
+            {
+                // ResetDayCycle() → ResetNetworkVariables()/ResetLocalState() _rentPaymentCount'u
+                // 0'a, günü 1'e sıfırlıyor; önizleme hesaplamasını BUNDAN SONRA yapmalıyız, yoksa
+                // sıfırlanmadan önceki (önceki oturumdan sızmış) sayaçla yanlış tutar yayınlanır.
+                // Late-join / ilk spawn'da kira önizlemesi Update() ilk throttle turunu
+                // beklemeden doğru değerle yayınlansın (yeni bağlanan client 0 görmesin).
+                RefreshNextRentPreview();
+            }
 
             Debug.Log($"{LOG_PREFIX} Network spawn completed");
         }
@@ -659,7 +714,9 @@ namespace NewCss
         /// <summary>
         /// Kira hesaplama: TemelKira × rentGrowthMultiplier^dönem × rentScaledMultiplier
         /// </summary>
-        private int CalculateRent()
+        /// <param name="log">true ise sonucu Debug.Log'a basar. HUD önizlemesi gibi yüksek
+        /// frekansta (throttle'lı da olsa) çağrılan yerler log=false vermeli — konsol spam'i olmasın.</param>
+        private int CalculateRent(bool log = true)
         {
             int playerCount = GetPlayerCount();
 
@@ -674,14 +731,20 @@ namespace NewCss
                 // Senkron: asset {290,650,1140,1630} / g=1.20 ile hizalı (bkz.
                 // .claude/agent-memory/economist/economy_full_balance_round10_2026-08-30.md) —
                 // asset yüklenemezse sessizce eski ekonomiye düşmesin.
-                Debug.LogWarning($"{LOG_PREFIX} economySettings atanmamış! Fallback değerler kullanılıyor.");
+                if (log)
+                {
+                    Debug.LogWarning($"{LOG_PREFIX} economySettings atanmamış! Fallback değerler kullanılıyor.");
+                }
                 int baseRent    = playerCount == 1 ? 290 : playerCount == 2 ? 650 : playerCount == 3 ? 1140 : 1630;
                 float scaled    = baseRent * Mathf.Pow(1.20f, _rentPaymentCount);
                 finalRent       = scaled;
             }
 
             int result = Mathf.RoundToInt(finalRent);
-            Debug.Log($"{LOG_PREFIX} Rent calc result: {result} (Players: {playerCount}, Cycle: {_rentPaymentCount})");
+            if (log)
+            {
+                Debug.Log($"{LOG_PREFIX} Rent calc result: {result} (Players: {playerCount}, Cycle: {_rentPaymentCount})");
+            }
             return result;
         }
 
@@ -691,6 +754,20 @@ namespace NewCss
         /// Server-authoritative değildir salt-okunur bir hesaplamadır; CalculateRent() ile aynı formülü kullanır.
         /// </summary>
         public int GetCurrentRentAmount() => CalculateRent();
+
+        /// <summary>
+        /// Server'da periyodik (throttle'lı) veya spawn anında çağrılır; _networkNextRent'i
+        /// yalnız değer değiştiğinde ağa yazar (gereksiz NetworkVariable trafiği yaratmasın).
+        /// HUD (DayHudUI) bu değeri NextRentAmount üzerinden client'ta okur.
+        /// </summary>
+        private void RefreshNextRentPreview()
+        {
+            int r = CalculateRent(false);
+            if (r != _networkNextRent.Value)
+            {
+                _networkNextRent.Value = r;
+            }
+        }
 
         /// <summary>
         /// Kira hesabı için oyuncu sayısını döndürür.
@@ -809,6 +886,11 @@ namespace NewCss
             _networkIsDayOver.Value = false;
             _networkIsBreakRoomReady.Value = false;
 
+            // Update()'teki throttle IsTimeUp==true olduğundan beri (önceki günün kira kesimi
+            // sırasında) preview'i dondurmuştu; yeni gün + güncel _rentPaymentCount ile bir kez
+            // burada tazeliyoruz. NextDay() zaten yalnız IsServer'da çalışır (yukarıdaki erken çıkış).
+            RefreshNextRentPreview();
+
             // Event'leri tetikle
             OnNewDay?.Invoke();
             TriggerNewDayEventClientRpc();
@@ -902,10 +984,30 @@ namespace NewCss
             return (hour, minute);
         }
 
+        private const string DAY_LABEL_KEY = "DayLabel";
+
         private string FormatTimeDisplay((int hour, int minute) timeInfo)
         {
             // Only display the day number as "Day N"
-            return $"Day {_networkCurrentDay.Value}";
+            int day = _networkCurrentDay.Value;
+
+            // GetLocalizedString anahtar bulunamazsa key'in kendisini ("DayLabel") döndürür —
+            // tablo satırı henüz eklenmemişse literal "DayLabel" ekrana sızmasın diye guard'lıyoruz.
+            string template = LocalizationHelper.GetLocalizedString(DAY_LABEL_KEY);
+            if (string.IsNullOrEmpty(template) || template == DAY_LABEL_KEY)
+            {
+                return $"Day {day}";
+            }
+
+            try
+            {
+                return string.Format(template, day);
+            }
+            catch (FormatException e)
+            {
+                Debug.LogWarning($"{LOG_PREFIX} DayLabel format error: {e.Message}");
+                return $"Day {day}";
+            }
         }
 
         private void SetDayEndScreenActive(bool active)
@@ -1047,6 +1149,9 @@ namespace NewCss
         private void HandleLocaleChanged(Locale newLocale)
         {
             Debug.Log($"{LOG_PREFIX} Locale changed to: {newLocale?.Identifier.Code ?? "null"}");
+            // UpdateDayTimeUI gün değişmediği sürece yazmayı atlar (cache); dil değişince
+            // gün aynı kalsa bile metin ("Gün 1"/"Day 1") yeniden yazılmalı.
+            _lastDisplayedDay = -1;
             UpdateUI();
         }
 

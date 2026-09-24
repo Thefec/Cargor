@@ -1614,6 +1614,14 @@ MonoBehaviour:
     m_Localized: "La partida ya ha comenzado."
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263160
+    m_Localized: "D\xEDa {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263161
+    m_Localized: "\xA1Hoy se paga el alquiler!"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

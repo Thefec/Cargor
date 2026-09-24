@@ -1630,6 +1630,14 @@ MonoBehaviour:
     m_Localized: "A j\xE1t\xE9k m\xE1r elkezd\u0151d\xF6tt."
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263160
+    m_Localized: "{0}. nap"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263161
+    m_Localized: "Ma b\xE9rleti d\xEDj!"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

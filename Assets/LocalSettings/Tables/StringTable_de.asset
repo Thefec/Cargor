@@ -1613,6 +1613,14 @@ MonoBehaviour:
     m_Localized: "Das Spiel hat bereits begonnen."
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263160
+    m_Localized: "Tag {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263161
+    m_Localized: "Heute Miete f\xE4llig!"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

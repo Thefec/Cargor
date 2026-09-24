@@ -1638,6 +1638,14 @@ MonoBehaviour:
     m_Localized: "Gra ju\u017C si\u0119 rozpocz\u0119\u0142a."
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263160
+    m_Localized: "Dzie\u0144 {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263161
+    m_Localized: "Dzi\u015B czynsz!"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

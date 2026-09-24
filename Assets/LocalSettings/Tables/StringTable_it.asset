@@ -1646,6 +1646,14 @@ MonoBehaviour:
     m_Localized: "La partita \xE8 gi\xE0 iniziata."
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263160
+    m_Localized: "Giorno {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263161
+    m_Localized: "Affitto oggi!"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
