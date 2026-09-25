@@ -1,6 +1,8 @@
 # Economist Agent Memory Index
 
 ## ⭐ EN GÜNCEL TABAN (buradan başla — Round 10+11 KODA İŞLENDİ `bb98ad1`; Ö1+Ö2+Ö3 KODA İŞLENDİ `3424460`, main'de)
+- [⭐⭐⭐⭐⭐Her-gün event + 6 kart tasarımı 2026-09-25](event-kart-tasarim-2026-09-25.md) — 22 event/bant kuralı, Bahşiş/Taksit/Serinlik/SabahV/SıraN/HavaR; zayıf kayıp %25→%19; onay BEKLİYOR
+- [⭐⭐⭐⭐Kart teklifi gün-tohumlu 2026-09-25](draft-offer-day-seeded-2026-09-25.md) — her koşu aynı teklif (UpgradePanel:1343); mc40k Acil Fren farkının çoğu artefakt
 - [⭐⭐⭐⭐⭐Ö-B kart düzeltmeleri 2026-09-24](ob_kart_duzeltmeleri_2026-09-24.md) — HızlıHangar zararlı (hangar-sn), Mesai ÖLÜ (erken bitiş), PU zayıf; spec + null-ikiz yöntemi
 - [⭐⭐⭐⭐⭐Sıfırdan hesap: upgrade ucuz mu? 2026-09-23](sifirdan_upgrade_ucuz_mu_2026-09-23.md) — nominal ucuz ama zam REDDEDİLDİ; kira-fonu kilidi 1.0 (Acil Fren muaf) tuzağı çözer; all_in grace BEDAVA bug'ı
 - [⭐⭐⭐⭐⭐build-hazırlık denetimi: zayıf-beceri kart alma tuzağı 2026-09-19](zayif_tier_upgrade_trap_2026-09-19.md) — Ö1-3 SONRASI DA değişmedi; zayıf+açgözlü/mantıklı %89-100 kayıp vs zayıf+hiç %19-68; Ö1-10 hiçbirinde raporlanmamış, sonraki tur adayı
@@ -70,3 +72,5 @@
 - [Q8: buff stack politikası](q8_buff_stacking_policy.md) — şu an sıfır etki; temp buff'a ileride MAX_STACK=2
 - [FAZ2 kota-verim kalibrasyonu](quota_throughput_calibration.md) — ⚠️QuotaManager SİLİNDİ, konu kapandı
 - [sim.js tek-model invariantı](sim-js-single-model-invariant.md) — 2026-08-31: ölü `SRC`(v3.1) + `PLATEUP` modelleri ve blok 0-17/21 SİLİNDİ, tek gerçek `SRC4`/`runFullSim`; çıktı bit-birebir aynı doğrulandı. Yeni turda ölü model diriltme.
+- [Sim-canlı senkron tuzakları](sim-sync-gotchas.md) — event takvimi 1 gün kayık (freeDays=4 canlı), event etkileri üst sınır, Acil Fren kirayı affeder
+- [MC 40k bulguları 2026-09-24](mc40k-2026-09-24-findings.md) — kayıp yalnız zayıf profilde, ±%20 süreye aşırı duyarlı, Acil Fren belirleyici, her-gün-event nötr

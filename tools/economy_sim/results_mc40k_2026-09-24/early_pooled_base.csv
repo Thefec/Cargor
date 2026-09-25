@@ -1,0 +1,17 @@
+variant,group,day,n_alive,lost_after,auc_ratio_loss
+base,ALL,3,2880000,250947,0.8079
+base,ALL,5,2880000,250947,0.8339
+base,ALL,8,2853286,224233,0.794
+base,ALL,12,2688001,58948,0.878
+base,zayif,3,960000,250895,0.5918
+base,zayif,5,960000,250895,0.5853
+base,zayif,8,933295,224190,0.5418
+base,zayif,12,768037,58932,0.659
+base,orta,3,960000,52,0.606
+base,orta,5,960000,52,0.8208
+base,orta,8,959991,43,0.6727
+base,orta,12,959964,16,0.7097
+base,iyi,3,960000,0,nan
+base,iyi,5,960000,0,nan
+base,iyi,8,960000,0,nan
+base,iyi,12,960000,0,nan

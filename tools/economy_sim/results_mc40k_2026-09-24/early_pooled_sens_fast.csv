@@ -1,0 +1,17 @@
+variant,group,day,n_alive,lost_after,auc_ratio_loss
+sens_fast,ALL,3,360000,6459,0.8181
+sens_fast,ALL,5,360000,6459,0.8556
+sens_fast,ALL,8,359189,5648,0.8107
+sens_fast,ALL,12,354373,832,0.8534
+sens_fast,zayif,3,120000,6458,0.6579
+sens_fast,zayif,5,120000,6458,0.6711
+sens_fast,zayif,8,119189,5647,0.597
+sens_fast,zayif,12,114374,832,0.6396
+sens_fast,orta,3,120000,1,0.1515
+sens_fast,orta,5,120000,1,0.3768
+sens_fast,orta,8,120000,1,0.8976
+sens_fast,orta,12,119999,0,nan
+sens_fast,iyi,3,120000,0,nan
+sens_fast,iyi,5,120000,0,nan
+sens_fast,iyi,8,120000,0,nan
+sens_fast,iyi,12,120000,0,nan

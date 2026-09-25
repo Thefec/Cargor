@@ -1,0 +1,15 @@
+{
+ "variant": "livecal",
+ "runs_per_cell": 10000,
+ "cells": 36,
+ "total_runs": 360000,
+ "seconds": 507.4,
+ "seed": 20260918,
+ "seed_rule": "seed + i*7919 (tüm hücrelerde ortak = CRN)",
+ "events": "on",
+ "strategies": [
+  "hic",
+  "acgozlu",
+  "mantikli"
+ ]
+}

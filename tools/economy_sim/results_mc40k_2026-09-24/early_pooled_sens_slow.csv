@@ -1,0 +1,17 @@
+variant,group,day,n_alive,lost_after,auc_ratio_loss
+sens_slow,ALL,3,360000,69750,0.8248
+sens_slow,ALL,5,360000,69750,0.8374
+sens_slow,ALL,8,346632,56382,0.7255
+sens_slow,ALL,12,310943,20693,0.8716
+sens_slow,zayif,3,120000,69520,0.6105
+sens_slow,zayif,5,120000,69520,0.5331
+sens_slow,zayif,8,106639,56159,0.4864
+sens_slow,zayif,12,71137,20657,0.7192
+sens_slow,orta,3,120000,230,0.7092
+sens_slow,orta,5,120000,230,0.7355
+sens_slow,orta,8,119993,223,0.6944
+sens_slow,orta,12,119806,36,0.7178
+sens_slow,iyi,3,120000,0,nan
+sens_slow,iyi,5,120000,0,nan
+sens_slow,iyi,8,120000,0,nan
+sens_slow,iyi,12,120000,0,nan

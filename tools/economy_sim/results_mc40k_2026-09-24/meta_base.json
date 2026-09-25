@@ -1,0 +1,15 @@
+{
+ "variant": "base",
+ "runs_per_cell": 40000,
+ "cells": 72,
+ "total_runs": 2880000,
+ "seconds": 5996.4,
+ "seed": 20260918,
+ "seed_rule": "seed + i*7919 (tüm hücrelerde ortak = CRN)",
+ "events": "both",
+ "strategies": [
+  "hic",
+  "acgozlu",
+  "mantikli"
+ ]
+}

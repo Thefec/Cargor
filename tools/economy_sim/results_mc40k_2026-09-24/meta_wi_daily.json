@@ -1,0 +1,15 @@
+{
+ "variant": "wi_daily",
+ "runs_per_cell": 20000,
+ "cells": 36,
+ "total_runs": 720000,
+ "seconds": 1639.8,
+ "seed": 20260918,
+ "seed_rule": "seed + i*7919 (tüm hücrelerde ortak = CRN)",
+ "events": "on",
+ "strategies": [
+  "hic",
+  "acgozlu",
+  "mantikli"
+ ]
+}
