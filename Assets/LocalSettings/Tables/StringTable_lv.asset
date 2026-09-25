@@ -331,7 +331,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000032
-    m_Localized: "Klientu iera\u0161an\u0101s \u0101trums palielin\u0101s par 30%."
+    m_Localized: "Klienti ierodas par 35% bie\u017E\u0101k, paciet\u012Bba samazin\u0101s par 15%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000033
@@ -339,7 +339,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000034
-    m_Localized: "Klientu paciet\u012Bba samazin\u0101s par 30%."
+    m_Localized: "Klientu paciet\u012Bba samazin\u0101s par 40%, ierodas par 10% vair\u0101k klientu."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000035
@@ -347,7 +347,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000036
-    m_Localized: "Kravas auto pamet vietu par 50% l\u0113n\u0101k."
+    m_Localized: "Kravas auto aizbrauk\u0161ana ilgst divreiz ilg\u0101k, un tie dod par 10% maz\u0101k par kasti."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000037
@@ -355,7 +355,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000038
-    m_Localized: "Kop\u0113jais kust\u012Bbas \u0101trums samazin\u0101s par 20%."
+    m_Localized: "Kust\u012Bbas \u0101trums samazin\u0101s par 15%, bet sprinta \u0101trums par 20%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000039
@@ -363,8 +363,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000040
-    m_Localized: "Iztur\u012Bba atjaunojas par 40% l\u0113n\u0101k, un sprinta \u0101trums
-      samazin\u0101s par 30%."
+    m_Localized: "Kust\u012Bba par 10% l\u0113n\u0101ka, sprints par 30% l\u0113n\u0101ks; iztur\u012Bba atjaunojas par 40% l\u0113n\u0101k."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000041
@@ -372,8 +371,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000042
-    m_Localized: "Visas k\u013C\u016Bdain\u0101s darb\u012Bbas tiek sod\u012Btas
-      dubult\u0101."
+    m_Localized: "Visas k\u013C\u016Bdain\u0101s darb\u012Bbas tiek sod\u012Btas divk\u0101r\u0161i."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000043
@@ -381,7 +379,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000044
-    m_Localized: "Par 20% vair\u0101k klientu, bet par 30% maz\u0101k pe\u013C\u0146as."
+    m_Localized: "Par 20% vair\u0101k klientu, bet par 30% maz\u0101k ie\u0146\u0113mumu."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000045
@@ -389,7 +387,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000046
-    m_Localized: "Re\u0123istrat\u016Bras t\u0101lrunis zvana par 50% bie\u017E\u0101k."
+    m_Localized: "Re\u0123istrat\u016Bras t\u0101lru\u0146a zvani neaiz\u0146em laiku."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000047
@@ -405,7 +403,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000050
-    m_Localized: "Klientu paciet\u012Bba palielin\u0101s par 30%."
+    m_Localized: "Klientu paciet\u012Bba pieaug par 50%, visi sodi tiek samazin\u0101ti uz pusi."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000051
@@ -413,7 +411,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000052
-    m_Localized: "Kravas auto pamet vietu par 30% \u0101tr\u0101k."
+    m_Localized: "Kravas auto aizbrauc par 50% \u0101tr\u0101k, dod par 10% vair\u0101k par kasti un ang\u0101r\u0101 uzturas par 20% ilg\u0101k."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000053
@@ -421,10 +419,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000054
-    m_Localized: "Katra pareizi pieg\u0101d\u0101t\u0101 kaste dod papildu 30%. T\u0101
-      ar\u012B atnes par 20% vair\u0101k klientu, par 20% \u0101tr\u0101ku kravas
-      auto izbrauk\u0161anu un par 20% \u0101tr\u0101ku kust\u012Bbu, ta\u010Du iztur\u012Bba
-      atjaunojas par 20% l\u0113n\u0101k."
+    m_Localized: "Dienas kr\u0101sas kastes dod par 60% vair\u0101k."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000055
@@ -432,7 +427,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000056
-    m_Localized: "Uzlabojumu izmaksas samazin\u0101s par 20%."
+    m_Localized: "Uzlabojumu cena samazin\u0101s par 30%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000057
@@ -448,7 +443,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000060
-    m_Localized: "10% iesp\u0113ja, ka kaste ir perfekta un dod par 10% vair\u0101k."
+    m_Localized: "\u0160odien visi klienti pieprasa 2 preces."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000061
@@ -464,7 +459,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000064
-    m_Localized: "Dienas s\u0101kum\u0101 tiek ieg\u016Bts nejau\u0161s bonuss."
+    m_Localized: "Dienas s\u0101kum\u0101 tu sa\u0146em nejau\u0161u naudas pr\u0113miju."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000065
@@ -1647,6 +1642,114 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 144849164114263163
     m_Localized: "\u012Ares rezerve"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263164
+    m_Localized: "VIENKR\u0100SAS DIENA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263165
+    m_Localized: "Visas kravas auto un klienti \u0161odien v\u0113las tikai dienas kr\u0101su."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263166
+    m_Localized: "UZDEVUMU DIENA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263167
+    m_Localized: "Izpild\u012Bto uzdevumu atl\u012Bdz\u012Bba (nauda + presti\u017Es) tr\u012Bsk\u0101r\u0161ojas."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263168
+    m_Localized: "STEIDZAM\u012ABAS PR\u0112MIJA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263169
+    m_Localized: "Kastes, kas pieg\u0101d\u0101tas kravas auto ang\u0101ra laika pirmaj\u0101 pus\u0113, dod par 40% vair\u0101k."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263170
+    m_Localized: "NEPACIET\u012AGI \u0160OFERI"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263171
+    m_Localized: "Kravas auto ang\u0101r\u0101 uzturas par 40% \u012Bs\u0101ku laiku."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263172
+    m_Localized: "ATGRIEZUMU VILNIS"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263173
+    m_Localized: "Klientu, kas v\u0113las atgriezt preci, skaits gandr\u012Bz dubultojas."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263174
+    m_Localized: "PIEG\u0100D\u0100T\u0100JU STREIKS"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263175
+    m_Localized: "Ierodas par 30% maz\u0101k klientu, un ie\u0146\u0113mumi samazin\u0101s par 10%."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263176
+    m_Localized: "JAUKTA S\u016AT\u012AJUMS"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263177
+    m_Localized: "Kravas auto \u0161odien var piepras\u012Bt jauktas kr\u0101sas."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263178
+    m_Localized: "Nomaksa"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263179
+    m_Localized: "Viena papildu iemaksa, ja nevari samaks\u0101t \u012Bri. Iemaksas pa\u0146em 70% no kases 80% viet\u0101."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263180
+    m_Localized: "Dzeramnaudas burka"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263181
+    m_Localized: "Katrs apkalpotais klients atst\u0101j dzeramnaudu 10% (2. l\u012Bmen\u012B 20%) apm\u0113r\u0101 no kastes atl\u012Bdz\u012Bbas."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263182
+    m_Localized: "Rindas numurs"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263183
+    m_Localized: "Klienta paciet\u012Bba s\u0101k izs\u012Bkt tikai pie letes, nevis rind\u0101."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263184
+    m_Localized: "R\u012Bta mai\u0146a"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263185
+    m_Localized: "Katra diena s\u0101kas ar 1 gatavu kasti (2. l\u012Bmen\u012B 2) uz br\u012Bva galda."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263186
+    m_Localized: "V\u0113sa v\u0113sma"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263187
+    m_Localized: "Negat\u012Bvo notikumu ietekme samazin\u0101s par 75%."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263188
+    m_Localized: "Laika prognoze"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263189
+    m_Localized: "Reizi \u012Bres period\u0101 tu vari r\u012Btdienas negat\u012Bvo notikumu nomain\u012Bt pret pozit\u012Bvu."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263190
+    m_Localized: "LAIKA PROGNOZE"
     m_Metadata:
       m_Items: []
   references:

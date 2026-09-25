@@ -1066,6 +1066,18 @@ namespace NewCss
 
         #region Boxing Helpers
 
+        /// <summary>
+        /// Sabah Vardiyası perki (morning_shift, gameplay-B 2026-09-25 — UpgradePanel.
+        /// SpawnMorningShiftBoxes): boş bir masaya normal paketleme akışını atlayarak doğrudan
+        /// hazır (paketlenmiş) kutu spawn eder. Server-only; masa doluysa sessizce false döner.
+        /// </summary>
+        public bool TrySpawnReadyBoxServer(BoxInfo.BoxType boxType)
+        {
+            if (!IsServer || !CanPlaceItem) return false;
+            StartCoroutine(SpawnBoxedProductCoroutine(boxType));
+            return true;
+        }
+
         private void DespawnCurrentTableItem()
         {
             var state = _tableState.Value;

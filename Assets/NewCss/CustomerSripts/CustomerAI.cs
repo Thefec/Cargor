@@ -906,7 +906,11 @@ namespace NewCss
             {
                 SetState(CustomerState.WaitingInQueue);
 
-                if (!_waitTimeStarted)
+                // Sıra Numaratörü perki (ticket_queue, gameplay-B 2026-09-25): aktifken sabır
+                // sayacı kuyrukta beklerken İŞLEMEZ — yalnız servis istasyonuna atanınca
+                // (AssignServiceStation) başlar. Kartsız (default) eski davranış: burada başlar.
+                bool ticketQueueActive = economySettings != null && economySettings.ticketQueueActive;
+                if (!ticketQueueActive && !_waitTimeStarted)
                 {
                     StartWaitTime();
                 }
@@ -1054,6 +1058,13 @@ namespace NewCss
             if (!IsServer || table == null) return;
 
             dropOffTable = table;
+
+            // Sıra Numaratörü perki: kuyrukta ertelenen sabır sayacı burada (istasyon atamasında) başlar.
+            if (economySettings != null && economySettings.ticketQueueActive && !_waitTimeStarted)
+            {
+                StartWaitTime();
+            }
+
             BeginService();
         }
 
@@ -1396,6 +1407,16 @@ namespace NewCss
             {
                 float bonus = economySettings != null ? economySettings.customerServedPrestigeBonus : 0.2f;
                 PrestigeManager.Instance.ModifyPrestige(bonus);
+            }
+
+            // Bahşiş perki (tip_jar, gameplay-B 2026-09-25): servis edilen her müşteride
+            // GetRewardPerBox(playerCount)'ın tipJarPercent'i kadar ek para. Kartsız tipJarPercent=0
+            // → no-op. PerkEffect.ApplyTipJar yazar.
+            if (economySettings != null && economySettings.tipJarPercent > 0f && MoneySystem.Instance != null)
+            {
+                int playerCount = DifficultyManager.Instance != null ? DifficultyManager.Instance.PlayerCount : 1;
+                int tipAmount = Mathf.RoundToInt(economySettings.GetRewardPerBox(playerCount) * economySettings.tipJarPercent);
+                if (tipAmount > 0) MoneySystem.Instance.AddMoney(tipAmount);
             }
 
             // KALDIRILDI: Customer served quest tracking artık yok

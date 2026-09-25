@@ -646,7 +646,7 @@ namespace NewCss
                 _networkRemainingRedCount.Value = remainingRed;
                 _networkRemainingYellowCount.Value = remainingYellow;
                 _networkRemainingBlueCount.Value = remainingBlue;
-                ProcessSuccessfulDelivery();
+                ProcessSuccessfulDelivery(boxType);
                 return true;
             }
 
@@ -711,11 +711,11 @@ namespace NewCss
 
         #region Delivery Processing
 
-        private void ProcessSuccessfulDelivery()
+        private void ProcessSuccessfulDelivery(BoxInfo.BoxType deliveredBoxType)
         {
             _deliveredCount.Value++;
 
-            int totalReward = CalculateRewardWithPrestige();
+            int totalReward = CalculateRewardWithPrestige(deliveredBoxType);
             MoneySystem.Instance?.AddMoney(totalReward);
 
             // Faz B (plans/ses-tasarimi.md §3.2) — bağlantı noktası HAZIR, klip henüz seçilmedi
@@ -778,11 +778,25 @@ namespace NewCss
 
         #region Reward Calculation
 
-        private int CalculateRewardWithPrestige()
+        private int CalculateRewardWithPrestige(BoxInfo.BoxType deliveredBoxType)
         {
             int baseReward = rewardPerBox;
             int prestigeBonus = CalculatePrestigeBonus();
             int totalReward = baseReward + prestigeBonus;
+
+            // §B "K" kancaları (2026-09-25): GOLDEN BOX DAY (yalnız günün rengiyle eşleşen kutu) ve
+            // RUSH BONUS (hangar süresinin ilk yarısında teslim) — ikisi de aktif değilse no-op (×1f).
+            if (EventEffectManager.Instance != null)
+            {
+                totalReward = Mathf.RoundToInt(totalReward * EventEffectManager.Instance.GetGoldenBoxColorRewardMultiplier(deliveredBoxType));
+
+                float remainingFraction = hangarStayDuration > 0f ? RemainingTime / hangarStayDuration : 0f;
+                if (remainingFraction >= 0.5f)
+                {
+                    totalReward = Mathf.RoundToInt(totalReward * EventEffectManager.Instance.GetRushBonusMultiplier());
+                }
+            }
+
             totalReward = ApplyRewardVolatility(totalReward);
 
             LogDebug($"Base: {baseReward}, Prestige Bonus: {prestigeBonus}, Total: {totalReward}");

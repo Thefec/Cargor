@@ -38,6 +38,9 @@ namespace NewCss
         [Tooltip("Ö-A (docs/economy/ekonomi-sifirdan-2026-09-23.md §4, economist 2026-09-24): kira fonu kilidi. Kart alımı/reroll SONRASI kasa, sıradaki kiranın (DayCycleManager.CurrentReserveRent server-side / ReserveRentAmount client-side — NextRentAmount DEĞİL, o HUD için bilinçli donuyor) bu oranının altına düşerse UpgradePanel alımı reddeder. 1.0 = kasa hiçbir zaman sıradaki kiranın altına düşürülemez. Acil Fren (emergency_brake) perki muaf.")]
         public float upgradeRentReserveFraction = 1.0f;
 
+        [Tooltip("Taksit perki (grace_plus, gameplay-B 2026-09-25, docs/economy/her-gun-event-ve-kart-tasarimi-2026-09-24.md §D): temel 1 grace hakkına ek kaç grace kullanımı verilir (maxLevel=1 → 0/1). DayCycleManager.TryProcessMoneyCheck grace dalına kaç kez girilebileceğini belirler (taban 1 + bu alan).")]
+        public int graceExtraUses = 0;
+
         // ─────────────────────────────────────────────────────────────
         //  MÜŞTERİ KOTASI  (CustomerManager — PlateUp gün-numarası eğrisi)
         //  plans/plateup-musteri-telefon.md §A/§B, economist v2 2026-08-29
@@ -163,6 +166,26 @@ namespace NewCss
 
         [Tooltip("Tıra yanlış renk kutu teslim edildiğinde uygulanan prestige cezası (negatif olmalı). Para cezası (penaltyPerBox) ayrıca uygulanır.")]
         public float wrongDeliveryPrestigePenalty = -0.16f;
+
+        // ─────────────────────────────────────────────────────────────
+        //  KART EFEKTLERİ (gameplay-B, 2026-09-25 — 6 kapalı kart yeniden tasarımı,
+        //  docs/economy/her-gun-event-ve-kart-tasarimi-2026-09-24.md §D). PerkEffect.cs tarafından
+        //  yazılır, UpgradePanel.PerkAssetSnapshot tarafından capture/restore edilir.
+        // ─────────────────────────────────────────────────────────────
+
+        [Header("=== KART EFEKTLERİ ===")]
+
+        [Tooltip("Bahşiş perki (tip_jar): servis edilen her müşteride GetRewardPerBox(playerCount)'ın bu oranı kadar ek para. L1=0.10, L2=0.20, kartsız 0. CustomerAI.HandleSuccessfulInteraction okur.")]
+        public float tipJarPercent = 0f;
+
+        [Tooltip("Sıra Numaratörü perki (ticket_queue): true iken müşterinin sabır sayacı kuyrukta değil, servis istasyonuna atanınca başlar. CustomerAI.StartWaitTime çağrı noktası okur.")]
+        public bool ticketQueueActive = false;
+
+        [Tooltip("Sabah Vardiyası perki (morning_shift): gün başında kaç adet hazır (paketlenmiş) kutu spawn edilir. L1=1, L2=2, kartsız 0. DayCycleManager.OnNewDay'e abone bir spawner okur.")]
+        public int morningShiftBoxCount = 0;
+
+        [Tooltip("Serinlik perki (cooler): negatif event sapmasının ne kadarı hafifler (0-1). L1=0.75, kartsız 0. ARAYÜZ ALANI — gameplay-B tarafından tanımlandı, gameplay-A'nın EventEffectManager'da 'neg' tipi event çarpanlarını kurarken dampened = 1 + (raw-1)*(1-negativeEventDampening) formülüyle OKUMASI gerekir (bkz. plans/her-gun-event-ve-kart-yenileme.md).")]
+        public float negativeEventDampening = 0f;
 
         // ─────────────────────────────────────────────────────────────
         //  ETKİNLİK (Event)

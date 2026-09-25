@@ -31,7 +31,8 @@ namespace NewCss
         private NetworkVariable<int> currentActiveEvent = new NetworkVariable<int>(-1,
             NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-        // List of active events
+        // List of active events. Yeni event'ler SONA eklenir — currentActiveEvent NetworkVariable<int>
+        // burada IndexOf(name) ile çözülen bir index taşır (bkz. OnNewDayHandler), mevcut sıra bozulmaz.
         private List<string> eventNames = new List<string>
         {
             "BUSY DAY",
@@ -49,7 +50,15 @@ namespace NewCss
             "MARKETING DAY",
             "SURPRISE AUDIT",
             "FESTIVAL DAY",
-            "CUSTOMER SUPPORT"
+            "CUSTOMER SUPPORT",
+            // ---- Yeni 7 (docs/economy/her-gun-event-ve-kart-tasarimi-2026-09-24.md §B + S5) ----
+            "MONOCHROME DAY",
+            "QUEST DAY",
+            "RUSH BONUS",
+            "IMPATIENT DRIVERS",
+            "RETURN WAVE",
+            "SUPPLY STRIKE",
+            "MIXED SHIPMENT"
         };
 
         // Store original values
@@ -78,6 +87,27 @@ namespace NewCss
             public bool isGoldenBoxDay;
             public bool isVIPServiceDay;
             public float upgradeCostMultiplier;
+
+            // ---- §B "K" kancaları (2026-09-25, her-gün-event-ve-kart-yenileme) ----
+            /// <summary>Tüm cezalar (yanlış teslim, kutu düşürme, müşteri kaçma) çarpanı.
+            /// GetPenaltyMultiplier() artık isim yerine bunu okur. Varsayılan 1f.</summary>
+            public float penaltyMultiplier;
+            /// <summary>Truck.hangarStayDuration çarpanı (EXPRESS CARGO ×1.2, IMPATIENT DRIVERS ×0.6).
+            /// Varsayılan 1f.</summary>
+            public float hangarStayDurationMultiplier;
+            /// <summary>Başarılı görev ödülünün (yalnızca Para + Prestij) çarpanı. QUEST DAY ×3. Varsayılan 1f.</summary>
+            public float questRewardMultiplier;
+            /// <summary>Tırın hangar süresinin ilk yarısında teslim edilen kutu ödülü çarpanı. RUSH BONUS ×1.4. Varsayılan 1f.</summary>
+            public float rushBonusMultiplier;
+            /// <summary>GOLDEN BOX DAY: yalnızca günün rengiyle eşleşen kutu teslimatında uygulanan ödül çarpanı. Varsayılan 1f.</summary>
+            public float goldenBoxColorRewardMultiplier;
+            /// <summary>İade (BoxRequest) moduna giriş oranı override'ı. RETURN WAVE=0.45f. -1f = override yok
+            /// (PostRentFeatureUnlocks.RETURN_MODE_CHANCE taban değeri kullanılır).</summary>
+            public float returnModeChanceOverride;
+            /// <summary>MONOCHROME DAY: tüm tır/müşteri renkleri günün rengine zorlanır.</summary>
+            public bool isMonochromeDay;
+            /// <summary>MIXED SHIPMENT: o gün için karışık renkli tır modu (normalde gün 13+) erken açılır.</summary>
+            public bool isMixedShipmentDay;
         }
 
         [System.Serializable]
@@ -85,6 +115,7 @@ namespace NewCss
         {
             public float rewardPerBox;
             public float exitDelay;
+            public float hangarStayDuration;
         }
 
         [System.Serializable]
@@ -109,10 +140,36 @@ namespace NewCss
             DayCycleManager.OnNewDay += OnNewDayHandler;
             currentActiveEvent.OnValueChanged += OnActiveEventChanged;
 
+            // Gün 1 fix (2026-09-25): DayCycleManager.OnNewDay yalnızca NextDay()'de tetikleniyor
+            // (DayCycleManager.cs:~1002) — koşu başında (gün 1) hiç çağrılmıyor, dolayısıyla gün 1'e
+            // atanmış bir event asla currentActiveEvent'e yazılmıyordu. Server burada koşu başında
+            // aktif etmeyi dener. currentActiveEvent NetworkVariable'ın kendi initial-sync'i late-join
+            // client'ları zaten kapsıyor — bu blok yalnızca server-authoritative ilk yazım için gerekli.
+            if (IsServer && currentActiveEvent.Value == -1)
+            {
+                StartCoroutine(ActivateDay1EventWhenCalendarReadyCoroutine());
+            }
+
             if (currentActiveEvent.Value != -1)
             {
                 ApplyEventEffectLocally(eventNames[currentActiveEvent.Value]);
             }
+        }
+
+        /// <summary>
+        /// EventCalendarUI ile EventEffectManager ayrı NetworkObject'ler olduğundan OnNetworkSpawn
+        /// sıraları garanti değildir — takvim henüz üretilmemişken GetEventForDay çağırmak gün 1'i
+        /// hep "event yok" sanabilirdi. Takvim hazır olana kadar (server, kendi OnNetworkSpawn'ında
+        /// senkron üretir) frame frame bekler, en fazla birkaç frame sürer.
+        /// </summary>
+        private System.Collections.IEnumerator ActivateDay1EventWhenCalendarReadyCoroutine()
+        {
+            while (eventCalendar == null || !eventCalendar.IsCalendarGenerated)
+            {
+                yield return null;
+            }
+
+            ActivateEventForCurrentDay();
         }
 
         public override void OnNetworkDespawn()
@@ -175,20 +232,21 @@ namespace NewCss
             {
                 rewardPerBoxMultiplier = 1f,
                 exitDelayMultiplier = 1f,
-                customerWaitTimeMultiplier = 1.3f,
+                customerWaitTimeMultiplier = 1.5f, // §B.3: 1.3 -> 1.5 (+50%)
                 playerMoveSpeedMultiplier = 1f,
                 playerSprintSpeedMultiplier = 1f,
                 staminaRegenRateMultiplier = 1f,
                 dailyCustomerMultiplier = 1f, // §B.10: gizli 0.7 cezası KALDIRILDI
                 isGoldenBoxDay = false,
                 isVIPServiceDay = false,
-                upgradeCostMultiplier = 1f
+                upgradeCostMultiplier = 1f,
+                penaltyMultiplier = 0.5f // §B.3: tüm cezalar yarıya iner
             };
 
             eventMultipliers["SLOW LOGISTICS"] = new EventMultipliers
             {
-                rewardPerBoxMultiplier = 0.92f,
-                exitDelayMultiplier = 1.5f,
+                rewardPerBoxMultiplier = 0.9f, // §B.15: 0.92 -> 0.9
+                exitDelayMultiplier = 2f, // §B.15: 1.5 -> 2 (kalkış 2 kat yavaş)
                 customerWaitTimeMultiplier = 1f,
                 playerMoveSpeedMultiplier = 1f,
                 playerSprintSpeedMultiplier = 1f,
@@ -201,8 +259,8 @@ namespace NewCss
 
             eventMultipliers["EXPRESS CARGO"] = new EventMultipliers
             {
-                rewardPerBoxMultiplier = 1.08f,
-                exitDelayMultiplier = 0.7f,
+                rewardPerBoxMultiplier = 1.10f, // §B.2: 1.08 -> 1.10
+                exitDelayMultiplier = 0.5f, // §B.2: 0.7 -> 0.5
                 customerWaitTimeMultiplier = 1f,
                 playerMoveSpeedMultiplier = 1f,
                 playerSprintSpeedMultiplier = 1f,
@@ -210,7 +268,8 @@ namespace NewCss
                 dailyCustomerMultiplier = 1f,
                 isGoldenBoxDay = false,
                 isVIPServiceDay = false,
-                upgradeCostMultiplier = 1f
+                upgradeCostMultiplier = 1f,
+                hangarStayDurationMultiplier = 1.2f // §B.2: hangarda %20 daha uzun kal
             };
 
             eventMultipliers["HEAVY BOXES"] = new EventMultipliers
@@ -227,18 +286,23 @@ namespace NewCss
                 upgradeCostMultiplier = 1f
             };
 
+            // §B.8 (yeniden tanımlandı): eski karışık çarpanlar (müşteri/kalkış/hareket/stamina) kalktı.
+            // Tek etkisi günün rengiyle eşleşen kutu teslimatında ×1.6 ödül (bkz. goldenBoxColorRewardMultiplier,
+            // Truck.CalculateRewardWithPrestige). isGoldenBoxDay artık gerçekten okunuyor (EventEffectManager.
+            // TryGetForcedDayColor / GetGoldenBoxColorRewardMultiplier), eskiden hiç okuyucusu yoktu.
             eventMultipliers["GOLDEN BOX DAY"] = new EventMultipliers
             {
-                rewardPerBoxMultiplier = 1.15f,
-                exitDelayMultiplier = 0.8f,
+                rewardPerBoxMultiplier = 1f,
+                exitDelayMultiplier = 1f,
                 customerWaitTimeMultiplier = 1f,
-                playerMoveSpeedMultiplier = 1.08f,
-                playerSprintSpeedMultiplier = 1.2f,
-                staminaRegenRateMultiplier = 0.8f,
-                dailyCustomerMultiplier = 1.15f, // 15% more customers
+                playerMoveSpeedMultiplier = 1f,
+                playerSprintSpeedMultiplier = 1f,
+                staminaRegenRateMultiplier = 1f,
+                dailyCustomerMultiplier = 1f,
                 isGoldenBoxDay = true,
                 isVIPServiceDay = false,
-                upgradeCostMultiplier = 1f
+                upgradeCostMultiplier = 1f,
+                goldenBoxColorRewardMultiplier = 1.6f
             };
 
             eventMultipliers["OPPORTUNITY DAY"] = new EventMultipliers
@@ -252,7 +316,7 @@ namespace NewCss
                 dailyCustomerMultiplier = 1f,
                 isGoldenBoxDay = false,
                 isVIPServiceDay = false,
-                upgradeCostMultiplier = 0.8f
+                upgradeCostMultiplier = 0.7f // §B.4: 0.8 -> 0.7
             };
 
             eventMultipliers["FATIGUE PROBLEM"] = new EventMultipliers
@@ -260,18 +324,22 @@ namespace NewCss
                 rewardPerBoxMultiplier = 1f,
                 exitDelayMultiplier = 1f,
                 customerWaitTimeMultiplier = 1f,
-                playerMoveSpeedMultiplier = 0.9f, // NEW
+                playerMoveSpeedMultiplier = 0.9f,
                 playerSprintSpeedMultiplier = 0.7f,
                 staminaRegenRateMultiplier = 0.6f,
-                dailyCustomerMultiplier = 0.85f, // 15% fewer customers
+                dailyCustomerMultiplier = 1f, // §B.14 düzeltme: gizli 0.85 müşteri cezası KALDIRILDI (açıklamayla uyuşmuyordu)
                 isGoldenBoxDay = false,
                 isVIPServiceDay = false,
                 upgradeCostMultiplier = 1f
             };
 
+            // §B.9 (yeniden tanımlandı): eski +%12 ödül bonusu (Delivery Bonus'un zayıf kopyasıydı) kalktı.
+            // Yeni etki: tüm müşteriler 2 kalem ister (gün 9 kilidi o gün için açılır — bkz.
+            // CustomerManager.ShouldAssignDualItemMode, PostRentFeatureUnlocks.IsDualItemUnlocked ||
+            // EventEffectManager.IsVIPServiceDay()). isVIPServiceDay zaten mevcuttu, artık gerçekten okunuyor.
             eventMultipliers["VIP SERVICE"] = new EventMultipliers
             {
-                rewardPerBoxMultiplier = 1.12f, // §B.10: RNG kaldırıldı, sabit +%12
+                rewardPerBoxMultiplier = 1f,
                 exitDelayMultiplier = 1f,
                 customerWaitTimeMultiplier = 1f,
                 playerMoveSpeedMultiplier = 1f,
@@ -311,7 +379,9 @@ namespace NewCss
                 upgradeCostMultiplier = 1f
             };
 
-            // SURPRISE AUDIT: çarpanlar nötr; çift-ceza GetPenaltyMultiplier() ile isim-tabanlı uygulanır.
+            // SURPRISE AUDIT: çarpanlar nötr; çift-ceza artık penaltyMultiplier struct alanından okunur
+            // (GetPenaltyMultiplier eskiden isim-tabanlı sabit karşılaştırma yapıyordu, §B.3 Sakin Gün'ün
+            // de bu alana ihtiyacı olduğu için genelleştirildi).
             eventMultipliers["SURPRISE AUDIT"] = new EventMultipliers
             {
                 rewardPerBoxMultiplier = 1f,
@@ -323,7 +393,8 @@ namespace NewCss
                 dailyCustomerMultiplier = 1f,
                 isGoldenBoxDay = false,
                 isVIPServiceDay = false,
-                upgradeCostMultiplier = 1f
+                upgradeCostMultiplier = 1f,
+                penaltyMultiplier = 2f
             };
 
             // FESTIVAL DAY: çarpanlar nötr; gün başı tek seferlik para bonusu OnNewDayHandler'da verilir.
@@ -358,12 +429,133 @@ namespace NewCss
                 isVIPServiceDay = false,
                 upgradeCostMultiplier = 1f
             };
+
+            // ---- Yeni 7 (§B + S5 Karışık Sevkiyat) ----
+
+            // MONOCHROME DAY: bugün tüm tır/müşteri renkleri günün rengine zorlanır (öğretici, kolay gün).
+            // Çarpanlar nötr — tek etki isMonochromeDay üzerinden TruckSpawner.GenerateRandomTruckData ve
+            // CustomerManager.PickCustomerColor'da okunuyor (bkz. TryGetForcedDayColor).
+            eventMultipliers["MONOCHROME DAY"] = new EventMultipliers
+            {
+                rewardPerBoxMultiplier = 1f,
+                exitDelayMultiplier = 1f,
+                customerWaitTimeMultiplier = 1f,
+                playerMoveSpeedMultiplier = 1f,
+                playerSprintSpeedMultiplier = 1f,
+                staminaRegenRateMultiplier = 1f,
+                dailyCustomerMultiplier = 1f,
+                isGoldenBoxDay = false,
+                isVIPServiceDay = false,
+                upgradeCostMultiplier = 1f,
+                isMonochromeDay = true
+            };
+
+            // QUEST DAY: başarılı görev ödülü (Para + Prestij) ×3. Diğer çarpanlar nötr.
+            eventMultipliers["QUEST DAY"] = new EventMultipliers
+            {
+                rewardPerBoxMultiplier = 1f,
+                exitDelayMultiplier = 1f,
+                customerWaitTimeMultiplier = 1f,
+                playerMoveSpeedMultiplier = 1f,
+                playerSprintSpeedMultiplier = 1f,
+                staminaRegenRateMultiplier = 1f,
+                dailyCustomerMultiplier = 1f,
+                isGoldenBoxDay = false,
+                isVIPServiceDay = false,
+                upgradeCostMultiplier = 1f,
+                questRewardMultiplier = 3f
+            };
+
+            // RUSH BONUS: tırın hangar süresinin ilk yarısında teslim edilen kutu ödülü ×1.4.
+            eventMultipliers["RUSH BONUS"] = new EventMultipliers
+            {
+                rewardPerBoxMultiplier = 1f,
+                exitDelayMultiplier = 1f,
+                customerWaitTimeMultiplier = 1f,
+                playerMoveSpeedMultiplier = 1f,
+                playerSprintSpeedMultiplier = 1f,
+                staminaRegenRateMultiplier = 1f,
+                dailyCustomerMultiplier = 1f,
+                isGoldenBoxDay = false,
+                isVIPServiceDay = false,
+                upgradeCostMultiplier = 1f,
+                rushBonusMultiplier = 1.4f
+            };
+
+            // IMPATIENT DRIVERS: hangar süresi ×0.6 (tırlar daha erken kalkar).
+            eventMultipliers["IMPATIENT DRIVERS"] = new EventMultipliers
+            {
+                rewardPerBoxMultiplier = 1f,
+                exitDelayMultiplier = 1f,
+                customerWaitTimeMultiplier = 1f,
+                playerMoveSpeedMultiplier = 1f,
+                playerSprintSpeedMultiplier = 1f,
+                staminaRegenRateMultiplier = 1f,
+                dailyCustomerMultiplier = 1f,
+                isGoldenBoxDay = false,
+                isVIPServiceDay = false,
+                upgradeCostMultiplier = 1f,
+                hangarStayDurationMultiplier = 0.6f
+            };
+
+            // RETURN WAVE: iade (BoxRequest) moduna giriş oranı %25 -> %45 (gün 5+, PostRentFeatureUnlocks
+            // ile aynı gün eşiği).
+            eventMultipliers["RETURN WAVE"] = new EventMultipliers
+            {
+                rewardPerBoxMultiplier = 1f,
+                exitDelayMultiplier = 1f,
+                customerWaitTimeMultiplier = 1f,
+                playerMoveSpeedMultiplier = 1f,
+                playerSprintSpeedMultiplier = 1f,
+                staminaRegenRateMultiplier = 1f,
+                dailyCustomerMultiplier = 1f,
+                isGoldenBoxDay = false,
+                isVIPServiceDay = false,
+                upgradeCostMultiplier = 1f,
+                returnModeChanceOverride = 0.45f
+            };
+
+            // SUPPLY STRIKE: müşteri ×0.7, ödül ×0.9. Sert negatif (final bant).
+            eventMultipliers["SUPPLY STRIKE"] = new EventMultipliers
+            {
+                rewardPerBoxMultiplier = 0.9f,
+                exitDelayMultiplier = 1f,
+                customerWaitTimeMultiplier = 1f,
+                playerMoveSpeedMultiplier = 1f,
+                playerSprintSpeedMultiplier = 1f,
+                staminaRegenRateMultiplier = 1f,
+                dailyCustomerMultiplier = 0.7f,
+                isGoldenBoxDay = false,
+                isVIPServiceDay = false,
+                upgradeCostMultiplier = 1f
+            };
+
+            // MIXED SHIPMENT (KULLANICI KARARI S5, gün 5-11): o gün için karışık renkli tır modu
+            // (normalde gün 13+, PostRentFeatureUnlocks.MIXED_TRUCK_UNLOCK_DAY) erken açılır.
+            // Çarpanlar nötr — tek etki isMixedShipmentDay üzerinden TruckSpawner.GenerateRandomTruckData'da okunuyor.
+            eventMultipliers["MIXED SHIPMENT"] = new EventMultipliers
+            {
+                rewardPerBoxMultiplier = 1f,
+                exitDelayMultiplier = 1f,
+                customerWaitTimeMultiplier = 1f,
+                playerMoveSpeedMultiplier = 1f,
+                playerSprintSpeedMultiplier = 1f,
+                staminaRegenRateMultiplier = 1f,
+                dailyCustomerMultiplier = 1f,
+                isGoldenBoxDay = false,
+                isVIPServiceDay = false,
+                upgradeCostMultiplier = 1f,
+                isMixedShipmentDay = true
+            };
         }
 
-        private void OnNewDayHandler()
+        /// <summary>
+        /// currentDay için takvimdeki event'i (varsa) çözüp currentActiveEvent'e yazar. Server-only
+        /// çağrılmalı. OnNewDayHandler (gün 2+) ve ActivateDay1EventWhenCalendarReadyCoroutine (gün 1)
+        /// tarafından paylaşılır — iki ayrı yol AYNI seçim mantığını kullanır.
+        /// </summary>
+        private void ActivateEventForCurrentDay()
         {
-            if (!IsServer) return;
-
             int currentDay = DayCycleManager.Instance != null ? DayCycleManager.Instance.currentDay : 1;
             var todaysEvent = eventCalendar.GetEventForDay(currentDay);
 
@@ -376,6 +568,15 @@ namespace NewCss
             {
                 currentActiveEvent.Value = -1;
             }
+        }
+
+        private void OnNewDayHandler()
+        {
+            if (!IsServer) return;
+
+            ActivateEventForCurrentDay();
+
+            int currentDay = DayCycleManager.Instance != null ? DayCycleManager.Instance.currentDay : 1;
 
             // FESTIVAL DAY: gün başı tek seferlik rastgele para bonusu (server-only).
             // currentDay guard'ı host'taki OnNewDay çift-tetiklemesine karşı idempotency sağlar
@@ -455,7 +656,14 @@ namespace NewCss
         public float GetPenaltyMultiplier()
         {
             if (currentActiveEvent.Value == -1) return 1f;
-            return eventNames[currentActiveEvent.Value] == "SURPRISE AUDIT" ? 2f : 1f;
+            string name = eventNames[currentActiveEvent.Value];
+            if (!eventMultipliers.TryGetValue(name, out EventMultipliers m)) return 1f;
+            // 0f = alan hiç set edilmemiş (yeni struct alanları için varsayılan) -> nötr 1f.
+            float raw = m.penaltyMultiplier > 0f ? m.penaltyMultiplier : 1f;
+
+            // SERİNLİK (cooler, §D): her çağrıda taze okunur — satın alma anından itibaren hemen etkili.
+            float d = GetNegativeEventDampening(name);
+            return d > 0f ? Dampen(raw, d) : raw;
         }
 
         private PlayerMovement GetOwnedPlayer()
@@ -477,8 +685,68 @@ namespace NewCss
                 return;
             }
 
-            EventMultipliers multipliers = eventMultipliers[eventName];
+            EventMultipliers multipliers = GetDampenedMultipliers(eventMultipliers[eventName], eventName);
             SaveCurrentValuesAndApplyMultipliers(multipliers, eventName);
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        //  SERİNLİK (cooler, §D, 2026-09-25, gameplay-B kartı): negatif event'lerin sapmasını
+        //  ekonomi SO'sundaki negativeEventDampening (0 = kartsız no-op, 0.75 = L1) kadar hafifletir.
+        //  Formül GameEconomySettings.negativeEventDampening tooltip'iyle birebir aynı:
+        //  dampened = 1 + (raw-1)*(1-d). Yalnızca EventType.Negative event'lerde uygulanır — Neutral
+        //  (Busy Day, Mixed Shipment) ve Positive event'ler hiç hafiflemez (tasarım kararı).
+        //
+        //  Zamanlama kararı (kart gün ortasında alınırsa): PerkEffect.Apply("cooler", ...) bu dosyaya
+        //  DOKUNMUYOR (gameplay-B UpgradePanel/PerkEffect tarafı, EventEffectManager'a bildirim
+        //  vermiyor) — bu yüzden TAM canlı rebase (o an sahadaki tüm tır/müşteri/oyuncunun mevcut
+        //  event çarpanını anında yeniden hesaplaması) bu dosyaların dışına (UpgradePanel'e dokunmak)
+        //  taşardı. Bunun yerine mevcut "fresh-read" desenine uyuldu:
+        //    - GetPenaltyMultiplier / GetReturnModeChanceOverride HER kullanımda taze okunuyor
+        //      (ceza anında, müşteri spawn anında) → satın alma ANINDAN İTİBAREN hemen etkili.
+        //    - Truck/customer/player'a BİR KEZ yazılan alanlar (rewardPerBox, exitDelay,
+        //      hangarStayDuration, customerWaitTime, playerMoveSpeed/sprintSpeed/staminaRegenRate,
+        //      customerManager.eventCustomerMultiplier) yalnız YENİ event aktivasyonunda (ertesi gün)
+        //      veya event'ten SONRA spawn olan yeni tır/müşteride (ApplyEventEffectToNewObject)
+        //      dampened değeri alır — o anda SAHADA olan tır/müşteri/oyuncu ertesi güne kadar eski
+        //      (dampensiz) değerde kalır. Rebase için UpgradePanel'in bildirimi gerekir (out of scope).
+        // ─────────────────────────────────────────────────────────────
+
+        private static float Dampen(float raw, float d) => 1f + (raw - 1f) * (1f - d);
+
+        /// <summary>0f = dampening yok (kart yok VEYA event Negative değil). Aksi halde economySettings.negativeEventDampening.</summary>
+        private float GetNegativeEventDampening(string eventName)
+        {
+            if (_economySettings == null) return 0f;
+            float d = _economySettings.negativeEventDampening;
+            if (d <= 0f) return 0f;
+            if (eventCalendar == null) return 0f;
+            return eventCalendar.GetEventTypeByName(eventName) == EventCalendarUI.EventType.Negative ? d : 0f;
+        }
+
+        /// <summary>
+        /// Sentinel alanları (penaltyMultiplier/hangarStayDurationMultiplier, 0f="set edilmemiş")
+        /// önce nötre (1f) çözülür, SONRA (negatif event ise) hafifletilir — çağıran taraf artık
+        /// 0f-sentinel ayrımını kendi yapmak zorunda değil.
+        /// </summary>
+        private EventMultipliers GetDampenedMultipliers(EventMultipliers raw, string eventName)
+        {
+            EventMultipliers m = raw;
+            m.penaltyMultiplier = m.penaltyMultiplier > 0f ? m.penaltyMultiplier : 1f;
+            m.hangarStayDurationMultiplier = m.hangarStayDurationMultiplier > 0f ? m.hangarStayDurationMultiplier : 1f;
+
+            float d = GetNegativeEventDampening(eventName);
+            if (d <= 0f) return m;
+
+            m.rewardPerBoxMultiplier = Dampen(m.rewardPerBoxMultiplier, d);
+            m.exitDelayMultiplier = Dampen(m.exitDelayMultiplier, d);
+            m.customerWaitTimeMultiplier = Dampen(m.customerWaitTimeMultiplier, d);
+            m.playerMoveSpeedMultiplier = Dampen(m.playerMoveSpeedMultiplier, d);
+            m.playerSprintSpeedMultiplier = Dampen(m.playerSprintSpeedMultiplier, d);
+            m.staminaRegenRateMultiplier = Dampen(m.staminaRegenRateMultiplier, d);
+            m.dailyCustomerMultiplier = Dampen(m.dailyCustomerMultiplier, d);
+            m.penaltyMultiplier = Dampen(m.penaltyMultiplier, d);
+            m.hangarStayDurationMultiplier = Dampen(m.hangarStayDurationMultiplier, d);
+            return m;
         }
 
         private void SaveCurrentValuesAndApplyMultipliers(EventMultipliers multipliers, string eventName)
@@ -509,18 +777,21 @@ namespace NewCss
             }
 
             // Apply truck changes
+            float hangarMult = multipliers.hangarStayDurationMultiplier > 0f ? multipliers.hangarStayDurationMultiplier : 1f;
             Truck[] trucks = FindObjectsOfType<Truck>();
             foreach (var truck in trucks)
             {
                 EventTruckValues currentValues = new EventTruckValues
                 {
                     rewardPerBox = truck.rewardPerBox,
-                    exitDelay = truck.exitDelay
+                    exitDelay = truck.exitDelay,
+                    hangarStayDuration = truck.hangarStayDuration
                 };
                 eventStartTruckValues[truck] = currentValues;
 
                 truck.rewardPerBox = (int)(currentValues.rewardPerBox * multipliers.rewardPerBoxMultiplier);
                 truck.exitDelay = currentValues.exitDelay * multipliers.exitDelayMultiplier;
+                truck.hangarStayDuration = currentValues.hangarStayDuration * hangarMult;
             }
 
             // Apply customer wait time changes
@@ -566,6 +837,7 @@ namespace NewCss
                 {
                     truck.rewardPerBox = (int)(savedValues.rewardPerBox);
                     truck.exitDelay = savedValues.exitDelay;
+                    truck.hangarStayDuration = savedValues.hangarStayDuration;
                 }
             }
 
@@ -593,19 +865,22 @@ namespace NewCss
             string currentEventName = eventNames[currentActiveEvent.Value];
             if (!eventMultipliers.ContainsKey(currentEventName)) return;
 
-            EventMultipliers multipliers = eventMultipliers[currentEventName];
+            EventMultipliers multipliers = GetDampenedMultipliers(eventMultipliers[currentEventName], currentEventName);
 
             if (newObject.TryGetComponent<Truck>(out Truck truck))
             {
                 EventTruckValues currentValues = new EventTruckValues
                 {
                     rewardPerBox = truck.rewardPerBox,
-                    exitDelay = truck.exitDelay
+                    exitDelay = truck.exitDelay,
+                    hangarStayDuration = truck.hangarStayDuration
                 };
                 eventStartTruckValues[truck] = currentValues;
 
+                float hangarMult = multipliers.hangarStayDurationMultiplier > 0f ? multipliers.hangarStayDurationMultiplier : 1f;
                 truck.rewardPerBox = (int)(currentValues.rewardPerBox * multipliers.rewardPerBoxMultiplier);
                 truck.exitDelay = currentValues.exitDelay * multipliers.exitDelayMultiplier;
+                truck.hangarStayDuration = currentValues.hangarStayDuration * hangarMult;
             }
 
             if (newObject.TryGetComponent<CustomerAI>(out CustomerAI customer))
@@ -665,7 +940,7 @@ namespace NewCss
             // (muhtemelen zaten authored) değerden kurulur; yalnızca rewardPerBox dokunuluyor.
             EventTruckValues baseline = eventStartTruckValues.TryGetValue(truck, out EventTruckValues existing)
                 ? existing
-                : new EventTruckValues { exitDelay = truck.exitDelay };
+                : new EventTruckValues { exitDelay = truck.exitDelay, hangarStayDuration = truck.hangarStayDuration };
 
             baseline.rewardPerBox = newBaseRewardPerBox;
             eventStartTruckValues[truck] = baseline;
@@ -723,6 +998,99 @@ namespace NewCss
         {
             if (currentActiveEvent.Value == -1) return "None";
             return eventNames[currentActiveEvent.Value];
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        //  §B "K" kancaları (2026-09-25) — yeni/yeniden tanımlı event'lerin okuyucuları.
+        //  Hepsi 0f/false varsayılanını nötr sayar (eventMultipliers'ta yalnızca ilgili event alanı
+        //  explicit set eder, diğer 22 event için alan hiç dokunulmamış (0f) olarak kalır).
+        // ─────────────────────────────────────────────────────────────
+
+        /// <summary>QUEST DAY: başarılı görev ödülü (Para+Prestij) çarpanı. Aktif değilse 1f.</summary>
+        public float GetQuestRewardMultiplier()
+        {
+            if (currentActiveEvent.Value == -1) return 1f;
+            string name = eventNames[currentActiveEvent.Value];
+            if (!eventMultipliers.TryGetValue(name, out EventMultipliers m)) return 1f;
+            return m.questRewardMultiplier > 0f ? m.questRewardMultiplier : 1f;
+        }
+
+        /// <summary>RUSH BONUS: tırın hangar süresinin ilk yarısında teslim edilen kutu ödülü çarpanı. Aktif değilse 1f.</summary>
+        public float GetRushBonusMultiplier()
+        {
+            if (currentActiveEvent.Value == -1) return 1f;
+            string name = eventNames[currentActiveEvent.Value];
+            if (!eventMultipliers.TryGetValue(name, out EventMultipliers m)) return 1f;
+            return m.rushBonusMultiplier > 0f ? m.rushBonusMultiplier : 1f;
+        }
+
+        /// <summary>
+        /// GOLDEN BOX DAY: yalnızca teslim edilen kutu, takvimin o gün için ürettiği renkle
+        /// eşleşiyorsa ödül çarpanı (1.6f); eşleşmiyorsa veya GOLDEN BOX DAY aktif değilse 1f.
+        /// </summary>
+        public float GetGoldenBoxColorRewardMultiplier(BoxInfo.BoxType deliveredBoxType)
+        {
+            if (!IsGoldenBoxDay()) return 1f;
+            if (eventCalendar == null || DayCycleManager.Instance == null) return 1f;
+
+            BoxInfo.BoxType? dayColor = eventCalendar.GetColorForDay(DayCycleManager.Instance.currentDay);
+            if (!dayColor.HasValue || dayColor.Value != deliveredBoxType) return 1f;
+
+            string name = eventNames[currentActiveEvent.Value];
+            if (!eventMultipliers.TryGetValue(name, out EventMultipliers m)) return 1f;
+            return m.goldenBoxColorRewardMultiplier > 0f ? m.goldenBoxColorRewardMultiplier : 1f;
+        }
+
+        /// <summary>
+        /// MONOCHROME DAY: aktifse takvimin o gün için ürettiği zorunlu rengi döndürür (true).
+        /// TruckSpawner.GenerateRandomTruckData ve CustomerManager.PickCustomerColor bunu bag/favor
+        /// mantığından ÖNCE kontrol eder.
+        /// </summary>
+        public bool TryGetForcedDayColor(out BoxInfo.BoxType color)
+        {
+            color = default;
+            if (currentActiveEvent.Value == -1) return false;
+
+            string name = eventNames[currentActiveEvent.Value];
+            if (!eventMultipliers.TryGetValue(name, out EventMultipliers m) || !m.isMonochromeDay) return false;
+            if (eventCalendar == null || DayCycleManager.Instance == null) return false;
+
+            BoxInfo.BoxType? dayColor = eventCalendar.GetColorForDay(DayCycleManager.Instance.currentDay);
+            if (!dayColor.HasValue) return false;
+
+            color = dayColor.Value;
+            return true;
+        }
+
+        /// <summary>
+        /// RETURN WAVE: iade (BoxRequest) moduna giriş oranı override'ı (0.45f). Aktif değilse -1f
+        /// (== "override yok", çağıran taraf PostRentFeatureUnlocks.RETURN_MODE_CHANCE tabanını kullanmalı).
+        /// </summary>
+        public float GetReturnModeChanceOverride()
+        {
+            if (currentActiveEvent.Value == -1) return -1f;
+            string name = eventNames[currentActiveEvent.Value];
+            if (!eventMultipliers.TryGetValue(name, out EventMultipliers m)) return -1f;
+            if (m.returnModeChanceOverride <= 0f) return -1f;
+
+            float raw = m.returnModeChanceOverride;
+
+            // SERİNLİK (cooler, §D): override alanları 1f-merkezli değil — taban PostRentFeatureUnlocks.
+            // RETURN_MODE_CHANCE (0.25) merkezli lineer interpolasyon: 0.25+(raw-0.25)*(1-d).
+            // Her çağrıda taze okunur (müşteri spawn anında) — satın alma anından itibaren hemen etkili.
+            float d = GetNegativeEventDampening(name);
+            if (d <= 0f) return raw;
+
+            float baseline = PostRentFeatureUnlocks.RETURN_MODE_CHANCE;
+            return baseline + (raw - baseline) * (1f - d);
+        }
+
+        /// <summary>MIXED SHIPMENT: gün 13 (PostRentFeatureUnlocks.MIXED_TRUCK_UNLOCK_DAY) öncesi de karışık tır modunu o gün için açar.</summary>
+        public bool IsMixedShipmentDay()
+        {
+            if (currentActiveEvent.Value == -1) return false;
+            string name = eventNames[currentActiveEvent.Value];
+            return eventMultipliers.TryGetValue(name, out EventMultipliers m) && m.isMixedShipmentDay;
         }
 
     }

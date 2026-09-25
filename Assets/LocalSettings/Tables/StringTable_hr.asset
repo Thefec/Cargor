@@ -333,7 +333,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000032
-    m_Localized: Stopa pojavljivanja kupaca raste za 30%.
+    m_Localized: "Kupci dolaze 35% \u010De\u0161\u0107e, strpljenje pada za 15%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000033
@@ -341,7 +341,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000034
-    m_Localized: Strpljenje kupaca smanjuje se za 30%.
+    m_Localized: "Strpljenje kupaca pada za 40%, dolazi 10% vi\u0161e kupaca."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000035
@@ -349,7 +349,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000036
-    m_Localized: "Kamioni napu\u0161taju mjesto 50% sporije."
+    m_Localized: "Kamionima polazak traje dvostruko dulje i donose 10% manje po kutiji."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000037
@@ -357,7 +357,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000038
-    m_Localized: Ukupna brzina kretanja opada za 20%.
+    m_Localized: "Brzina kretanja pada za 15%, a sprinta za 20%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000039
@@ -365,8 +365,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000040
-    m_Localized: "Izdr\u017Eljivost se obnavlja 40% sporije, a brzina sprinta opada
-      za 30%."
+    m_Localized: "Kretanje 10% sporije, sprint 30% sporiji; izdr\u017Eljivost se obnavlja 40% sporije."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000041
@@ -390,7 +389,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000046
-    m_Localized: "Telefon na recepciji zvoni 50% \u010De\u0161\u0107e."
+    m_Localized: "Pozivi s telefona na recepciji ne oduzimaju vrijeme."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000047
@@ -406,7 +405,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000050
-    m_Localized: Strpljenje kupaca raste za 30%.
+    m_Localized: "Strpljenje kupaca raste za 50%, sve kazne su prepolovljene."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000051
@@ -414,7 +413,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000052
-    m_Localized: "Kamioni napu\u0161taju mjesto 30% br\u017Ee."
+    m_Localized: "Kamioni polaze 50% br\u017Ee, donose 10% vi\u0161e po kutiji i ostaju u hangaru 20% dulje."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000053
@@ -422,9 +421,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000054
-    m_Localized: "Svaka ispravno dostavljena kutija donosi dodatnih 30%. Tako\u0111er
-      donosi 20% vi\u0161e kupaca, 20% br\u017Ee izlaske kamiona i 20% br\u017Ee
-      kretanje, ali izdr\u017Eljivost se obnavlja 20% sporije."
+    m_Localized: "Kutije u boji dana donose 60% vi\u0161e."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000055
@@ -432,7 +429,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000056
-    m_Localized: "Tro\u0161kovi nadogradnje smanjuju se za 20%."
+    m_Localized: "Cijena nadogradnji pada za 30%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000057
@@ -448,7 +445,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000060
-    m_Localized: "10% \u0161anse da je kutija savr\u0161ena i donosi 10% vi\u0161e."
+    m_Localized: "Svi kupci danas tra\u017Ee 2 artikla."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000061
@@ -456,7 +453,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000062
-    m_Localized: Dolazi 20% manje kupaca.
+    m_Localized: "Dolazi 20% manje kupaca."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000063
@@ -464,7 +461,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000064
-    m_Localized: "Nasumi\u010Dan bonus dobiva se na po\u010Detku dana."
+    m_Localized: "Na po\u010Detku dana dobivate nasumi\u010Dni nov\u010Dani bonus."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000065
@@ -1624,6 +1621,114 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 144849164114263163
     m_Localized: "Pri\u010Duva za najam"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263164
+    m_Localized: "JEDNOBOJNI DAN"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263165
+    m_Localized: "Svi kamioni i kupci danas \u017Eele samo boju dana."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263166
+    m_Localized: "DAN ZADATAKA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263167
+    m_Localized: "Nagrade za dovr\u0161ene zadatke (novac + presti\u017E) utrostru\u010Duju se."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263168
+    m_Localized: "BONUS ZA BRZINU"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263169
+    m_Localized: "Kutije dostavljene u prvoj polovici vremena kamiona u hangaru donose 40% vi\u0161e."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263170
+    m_Localized: "NESTRPLJIVI VOZA\u010CI"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263171
+    m_Localized: "Kamioni ostaju u hangaru 40% kra\u0107e."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263172
+    m_Localized: "VAL POVRATA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263173
+    m_Localized: "Broj kupaca koji tra\u017Ee povrat gotovo se udvostru\u010Duje."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263174
+    m_Localized: "\u0160TRAJK DOBAVLJA\u010CA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263175
+    m_Localized: "Dolazi 30% manje kupaca, a zarada pada za 10%."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263176
+    m_Localized: "MIJE\u0160ANA PO\u0160ILJKA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263177
+    m_Localized: "Kamioni danas mogu tra\u017Eiti mije\u0161ane boje."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263178
+    m_Localized: "Obroci"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263179
+    m_Localized: "Jedan dodatni obrok kad ne mo\u017Ee\u0161 platiti najam. Obroci uzimaju 70% blagajne umjesto 80%."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263180
+    m_Localized: "Napojnica"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263181
+    m_Localized: "Svaki uslu\u017Eeni kupac ostavi napojnicu od 10% (20% na 2. razini) nagrade za kutiju."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263182
+    m_Localized: "Redni broj"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263183
+    m_Localized: "Strpljenje kupca po\u010Dinje te\u0107i tek na pultu, ne u redu."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263184
+    m_Localized: "Jutarnja smjena"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263185
+    m_Localized: "Svaki dan po\u010Dinje s 1 spremnom kutijom (2 na 2. razini) na slobodnom stolu."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263186
+    m_Localized: "Svje\u017Ei povjetarac"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263187
+    m_Localized: "U\u010Dinci negativnih doga\u0111aja slabiji su za 75%."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263188
+    m_Localized: "Vremenska prognoza"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263189
+    m_Localized: "Jednom po razdoblju najma mo\u017Ee\u0161 sutra\u0161nji negativni doga\u0111aj zamijeniti pozitivnim."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263190
+    m_Localized: "VREMENSKA PROGNOZA"
     m_Metadata:
       m_Items: []
   references:

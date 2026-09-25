@@ -316,7 +316,9 @@ namespace NewCss
                                 EventEffectManager.Instance.IsEventActive(CUSTOMER_SUPPORT_EVENT);
             if (eventActive)
             {
-                minutes *= 0.5f;
+                // §B.5 (2026-09-25): "arama zaman atlatmıyor" — eski ×0.5 (yarı zaman maliyeti) yerine
+                // ×0 (hiç zaman maliyeti yok).
+                minutes *= 0f;
             }
 
             return minutes;

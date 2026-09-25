@@ -1086,19 +1086,25 @@ namespace NewCss.Quest
         {
             float amount = reward.amount * multiplier;
 
+            // QUEST DAY (§B.7, 2026-09-25): başarılı görevin Para + Prestij ödülü ×3. Sadece ÖDÜL
+            // yolunda (isPenalty=false) — ceza'ya dokunmaz. Stat buff'lar (MoveSpeed vb.) kasıtlı
+            // olarak dışarıda: tasarım "ödülü (TL + prestij) ×3" diyor, genel buff'ları değil.
+            float questMult = !isPenalty && EventEffectManager.Instance != null
+                ? EventEffectManager.Instance.GetQuestRewardMultiplier() : 1f;
+
             switch (reward.rewardType)
             {
                 case RewardType.Money:
                     if (MoneySystem.Instance != null)
                     {
-                        MoneySystem.Instance.ModifyMoney((int)amount);
+                        MoneySystem.Instance.ModifyMoney((int)(amount * questMult));
                     }
                     break;
 
                 case RewardType.Prestige:
                     if (PrestigeManager.Instance != null)
                     {
-                        PrestigeManager.Instance.ModifyPrestige(amount);
+                        PrestigeManager.Instance.ModifyPrestige(amount * questMult);
                     }
                     break;
 

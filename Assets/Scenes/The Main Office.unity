@@ -24419,6 +24419,7 @@ RectTransform:
   - {fileID: 767915445}
   - {fileID: 1991587315}
   - {fileID: 2095300596}
+  - {fileID: 900100202}
   m_Father: {fileID: 1671926902}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -27288,22 +27289,22 @@ MonoBehaviour:
     - {fileID: 729050603}
     - {fileID: 457085722}
     garageDoorControllers: []
-  - displayName: "Geni\u015F Kuyruk"
-    displayNameLocKey: 
-    contentText: Adds +1 customer queues
-    contentTextLocKey: 
+  - displayName: "S\u0131ra Numarat\xF6r\xFC"
+    displayNameLocKey: CardTicketQueueName
+    contentText: "M\xFC\u015Fterinin sabr\u0131 kuyrukta de\u011Fil, servise al\u0131n\u0131nca i\u015Flemeye ba\u015Flar."
+    contentTextLocKey: CardTicketQueueDesc
     starterValue: 3
     StaminaValue: 1
     TruckValue: 50
     WaitTime: 5
-    maxLevel: 3
-    baseCost: 250
-    costStep: 100
+    maxLevel: 1
+    baseCost: 70
+    costStep: 0
     kind: 0
     tier: 0
-    effectId: 
+    effectId: ticket_queue
     requiresQuestSystem: 0
-    disabledInDraft: 1
+    disabledInDraft: 0
     icon: {fileID: 21300000, guid: 19470d6027bfb964f82ef42396e3b6cf, type: 3}
     levelObjects:
     - {fileID: 75128577}
@@ -27311,44 +27312,44 @@ MonoBehaviour:
     - {fileID: 1296967369}
     - {fileID: 1170917375}
     garageDoorControllers: []
-  - displayName: "Sa\u011Flam Kasa"
-    displayNameLocKey: 
-    contentText: The money earned increases by 10
-    contentTextLocKey: 
+  - displayName: Taksit
+    displayNameLocKey: CardGracePlusName
+    contentText: "Kiray\u0131 \xF6deyemedi\u011Finde +1 kolayl\u0131k hakk\u0131. Bu haktan kasan\u0131n %70'i al\u0131n\u0131r (normalde %80)."
+    contentTextLocKey: CardGracePlusDesc
     starterValue: 1
     StaminaValue: 1
     TruckValue: 15
     WaitTime: 10
-    maxLevel: 3
-    baseCost: 300
-    costStep: 100
+    maxLevel: 1
+    baseCost: 60
+    costStep: 0
     kind: 0
     tier: 0
-    effectId: 
+    effectId: grace_plus
     requiresQuestSystem: 0
-    disabledInDraft: 1
+    disabledInDraft: 0
     icon: {fileID: 21300000, guid: 24d24ca9bdce87c47b55b308cbcbbe6c, type: 3}
     levelObjects:
     - {fileID: 161118048}
     - {fileID: 2032713688}
     - {fileID: 147772113}
     garageDoorControllers: []
-  - displayName: "Din\xE7 Ekip"
-    displayNameLocKey: 
-    contentText: Stamina recharge rate increased by 0.5
-    contentTextLocKey: 
+  - displayName: "Sabah Vardiyas\u0131"
+    displayNameLocKey: CardMorningShiftName
+    contentText: "Her g\xFCn ba\u015F\u0131nda masalardan birine haz\u0131r 1 kutu (2. seviyede 2 kutu) gelir."
+    contentTextLocKey: CardMorningShiftDesc
     starterValue: 1
     StaminaValue: 1
     TruckValue: 10
     WaitTime: 5
-    maxLevel: 3
-    baseCost: 100
-    costStep: 75
+    maxLevel: 2
+    baseCost: 80
+    costStep: 80
     kind: 0
     tier: 0
-    effectId: 
+    effectId: morning_shift
     requiresQuestSystem: 0
-    disabledInDraft: 1
+    disabledInDraft: 0
     icon: {fileID: 21300000, guid: 77ee12c4878a63e48aa5b9c70637fc74, type: 3}
     levelObjects:
     - {fileID: 2078412785}
@@ -27380,43 +27381,43 @@ MonoBehaviour:
     - {fileID: 1926636314}
     - {fileID: 902320941}
     - {fileID: 21985265}
-  - displayName: Su Sebili
-    displayNameLocKey: 
-    contentText: Water Dispenser added.
-    contentTextLocKey: 
+  - displayName: Serinlik
+    displayNameLocKey: CardCoolerName
+    contentText: "Olumsuz olaylar\u0131n etkisi %75 hafifler."
+    contentTextLocKey: CardCoolerDesc
     starterValue: 1
     StaminaValue: 1
     TruckValue: 10
     WaitTime: 5
     maxLevel: 1
-    baseCost: 500
-    costStep: 200
+    baseCost: 40
+    costStep: 0
     kind: 0
     tier: 0
-    effectId: 
+    effectId: cooler
     requiresQuestSystem: 0
-    disabledInDraft: 1
+    disabledInDraft: 0
     icon: {fileID: 21300000, guid: e501b9ecbdf2a494cb4114527595a017, type: 3}
     levelObjects:
     - {fileID: 1150600358}
     - {fileID: 430473471}
     garageDoorControllers: []
-  - displayName: "G\xFCler Y\xFCz"
-    displayNameLocKey: 
-    contentText: Customer waiting time increases
-    contentTextLocKey: 
+  - displayName: "Bah\u015Fi\u015F"
+    displayNameLocKey: CardTipJarName
+    contentText: "Servis etti\u011Fin her m\xFC\u015Fteri kutu \xF6d\xFCl\xFCn\xFCn %10'u (2. seviyede %20'si) kadar bah\u015Fi\u015F b\u0131rak\u0131r."
+    contentTextLocKey: CardTipJarDesc
     starterValue: 1
     StaminaValue: 1
     TruckValue: 10
     WaitTime: 3
-    maxLevel: 3
-    baseCost: 300
-    costStep: 200
+    maxLevel: 2
+    baseCost: 80
+    costStep: 80
     kind: 0
     tier: 0
-    effectId: 
+    effectId: tip_jar
     requiresQuestSystem: 0
-    disabledInDraft: 1
+    disabledInDraft: 0
     icon: {fileID: 21300000, guid: d68fe1523ebe2fd4485aefd2003a211d, type: 3}
     levelObjects:
     - {fileID: 938998739}
@@ -27578,22 +27579,22 @@ MonoBehaviour:
     icon: {fileID: 21300000, guid: de84ab1bf7b73a24da700e4bfbe3bf92, type: 3}
     levelObjects: []
     garageDoorControllers: []
-  - displayName: Uzun Kuyruk
-    displayNameLocKey: 
-    contentText: "M\xFC\u015Fteri kuyru\u011Fu kapasitesi +2 artar."
-    contentTextLocKey: 
+  - displayName: Hava Raporu
+    displayNameLocKey: CardForecastName
+    contentText: "Her kira d\xF6neminde bir kez, yar\u0131n\u0131n olumsuz olay\u0131n\u0131 olumlu bir olayla de\u011Fi\u015Ftirebilirsin."
+    contentTextLocKey: CardForecastDesc
     starterValue: 0
     StaminaValue: 1
     TruckValue: 10
     WaitTime: 5
     maxLevel: 1
-    baseCost: 240
+    baseCost: 60
     costStep: 0
     kind: 1
     tier: 0
-    effectId: long_queue
+    effectId: forecast
     requiresQuestSystem: 0
-    disabledInDraft: 1
+    disabledInDraft: 0
     icon: {fileID: 21300000, guid: aaab73675ed6b78448ba0e40b25e0ebf, type: 3}
     levelObjects: []
     garageDoorControllers: []
@@ -87935,6 +87936,264 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1936047830}
   m_CullTransparentMesh: 1
+--- !u!1 &900100201
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 900100202}
+  - component: {fileID: 900100203}
+  - component: {fileID: 900100204}
+  - component: {fileID: 900100205}
+  m_Layer: 5
+  m_Name: ForecastButton
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &900100202
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 900100201}
+  m_LocalRotation: {x: -0, y: 1, z: -0, w: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 6.2333336}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 900100207}
+  m_Father: {fileID: 591848065}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: -410}
+  m_SizeDelta: {x: 360, y: 50}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &900100203
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 900100201}
+  m_CullTransparentMesh: 1
+--- !u!114 &900100204
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 900100201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.35, g: 0.55, b: 0.85, a: 0.9}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!114 &900100205
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 900100201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 900100204}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!1 &900100206
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 900100207}
+  - component: {fileID: 900100208}
+  - component: {fileID: 900100209}
+  m_Layer: 5
+  m_Name: Label
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &900100207
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 900100206}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 900100202}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &900100208
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 900100206}
+  m_CullTransparentMesh: 1
+--- !u!114 &900100209
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 900100206}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_text: HAVA RAPORU
+  m_isRightToLeft: 0
+  m_fontAsset: {fileID: 11400000, guid: 9b06d1fb27c356c4098c02fad67cc786, type: 2}
+  m_sharedMaterial: {fileID: -713182712946970239, guid: 9b06d1fb27c356c4098c02fad67cc786, type: 2}
+  m_fontSharedMaterials: []
+  m_fontMaterial: {fileID: 0}
+  m_fontMaterials: []
+  m_fontColor32:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+  m_enableVertexGradient: 0
+  m_colorMode: 3
+  m_fontColorGradient:
+    topLeft: {r: 1, g: 1, b: 1, a: 1}
+    topRight: {r: 1, g: 1, b: 1, a: 1}
+    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
+    bottomRight: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColorGradientPreset: {fileID: 0}
+  m_spriteAsset: {fileID: 0}
+  m_tintAllSprites: 0
+  m_StyleSheet: {fileID: 0}
+  m_TextStyleHashCode: -1183493901
+  m_overrideHtmlColors: 0
+  m_faceColor:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontSize: 28
+  m_fontSizeBase: 28
+  m_fontWeight: 400
+  m_enableAutoSizing: 1
+  m_fontSizeMin: 12
+  m_fontSizeMax: 28
+  m_fontStyle: 17
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
+  m_textAlignment: 65535
+  m_characterSpacing: 0
+  m_characterHorizontalScale: 1
+  m_wordSpacing: 0
+  m_lineSpacing: 0
+  m_lineSpacingMax: 0
+  m_paragraphSpacing: 0
+  m_charWidthMaxAdj: 0
+  m_TextWrappingMode: 1
+  m_wordWrappingRatios: 0.4
+  m_overflowMode: 0
+  m_linkedTextComponent: {fileID: 0}
+  parentLinkedComponent: {fileID: 0}
+  m_enableKerning: 0
+  m_ActiveFontFeatures: 6e72656b
+  m_enableExtraPadding: 0
+  checkPaddingRequired: 0
+  m_isRichText: 1
+  m_EmojiFallbackSupport: 1
+  m_parseCtrlCharacters: 1
+  m_isOrthographic: 1
+  m_isCullingEnabled: 0
+  m_horizontalMapping: 0
+  m_verticalMapping: 0
+  m_uvLineOffset: 0
+  m_geometrySortingOrder: 0
+  m_IsTextObjectScaleStatic: 0
+  m_VertexBufferAutoSizeReduction: 0
+  m_useMaxVisibleDescender: 1
+  m_pageToDisplay: 1
+  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_isUsingLegacyAnimationComponent: 0
+  m_isVolumetricText: 0
+  m_hasFontAssetChanged: 0
+  m_baseMaterial: {fileID: 0}
+  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!1001 &1943744852
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -88617,7 +88876,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   customerPrefab: {fileID: 5590917900889142653, guid: a3dcd8c4323848c489736a8eb5d0bda5, type: 3}
   spawnPoint: {fileID: 1958402828}
-  maxQueueSize: 2
+  maxQueueSize: 3
   patienceMultiplier: 1
   interactionTimeMultiplier: 1
   economySettings: {fileID: 0}
@@ -180672,6 +180931,8 @@ MonoBehaviour:
   normalDayColor: {r: 1, g: 1, b: 1, a: 1}
   calendarPanel: {fileID: 591848064}
   exitButton: {fileID: 1936047832}
+  forecastButton: {fileID: 900100205}
+  forecastButtonLabel: {fileID: 900100209}
   panelAnimator: {fileID: 591848068}
   closeAnimationClipName: DateExit
   openAnimationClipName: DateOpening

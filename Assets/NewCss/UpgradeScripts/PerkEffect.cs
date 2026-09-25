@@ -60,7 +60,7 @@ namespace NewCss
                 case "cheap_rent":        ApplyCheapRent(level, ctx); break;
                 case "prestige_master":   ApplyPrestigeMaster(level, ctx); break;
                 case "patient_customers": ApplyPatientCustomers(level, ctx); break;
-                case "long_queue":        ApplyLongQueue(level, ctx); break;
+                case "long_queue":        ApplyLongQueue(level, ctx); break; // gameplay-B (2026-09-25): artık sahnede hiçbir kart bu effectId'yi vermiyor (Uzun Kuyruk → Hava Raporu/forecast oldu) — case ULAŞILAMAZ ama zararsız, silinmedi.
                 case "leveraged_rent":    ApplyLeveragedRent(level, ctx); break;
                 case "high_volatility":   ApplyHighVolatility(level, ctx); break;
                 case "all_in":            ApplyAllIn(level, ctx); break;
@@ -68,6 +68,15 @@ namespace NewCss
                 case "phone_line":        ApplyPhoneLine(level, ctx); break;
                 case "overtime":          ApplyOvertime(level, ctx); break;
                 case "bulk_buy":          ApplyBulkBuy(level, ctx); break;
+                case "grace_plus":        ApplyGracePlus(level, ctx); break;
+                case "tip_jar":           ApplyTipJar(level, ctx); break;
+                case "ticket_queue":      ApplyTicketQueue(level, ctx); break;
+                case "morning_shift":     ApplyMorningShift(level, ctx); break;
+                case "cooler":            ApplyCooler(level, ctx); break;
+                case "forecast":
+                    // Hava Raporu: Economy SO alanı yok — sahiplik UpgradePanel.GetLevelByEffectId("forecast")
+                    // ile okunur (UpgradePanel.TryConsumeForecastCard). Burada no-op (uyarı basma).
+                    break;
                 case "prestige_broker":
                 case "fast_hangar":
                 case "gambler_case":
@@ -432,6 +441,55 @@ namespace NewCss
         {
             if (ctx.Panel == null || level <= 0) return;
             ctx.Panel.MarkNextDraftDiscount();
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        //  gameplay-B (2026-09-25): 6 kapalı kartın yeniden tasarımı —
+        //  docs/economy/her-gun-event-ve-kart-tasarimi-2026-09-24.md §D
+        // ─────────────────────────────────────────────────────────────
+
+        // Taksit (grace_plus, omurga, maxLevel=1): +1 kira taksiti (grace) hakkı VE tüm grace
+        // ödemelerinde kasanın %70'i alınır (taban %80, bkz. GameEconomySettings.gracePaymentPercent).
+        // İdempotent/ters çevrilebilir (ApplyOvertime deseni): level<=0 tabana döner.
+        // DayCycleManager.TryProcessMoneyCheck artık _graceUsedCount < (1 + graceExtraUses) kontrol eder.
+        private static void ApplyGracePlus(int level, PerkContext ctx)
+        {
+            if (ctx.Economy == null) return;
+            ctx.Economy.gracePaymentPercent = level > 0 ? 0.7f : 0.8f;
+            ctx.Economy.graceExtraUses = level > 0 ? 1 : 0;
+        }
+
+        // Bahşiş (tip_jar, omurga, maxLevel=2): servis edilen her müşteride GetRewardPerBox(P)'ın
+        // %10 (L1) / %20 (L2) kadar ek para. CustomerAI.HandleSuccessfulInteraction okur.
+        private static void ApplyTipJar(int level, PerkContext ctx)
+        {
+            if (ctx.Economy == null) return;
+            ctx.Economy.tipJarPercent = level >= 2 ? 0.20f : (level == 1 ? 0.10f : 0f);
+        }
+
+        // Sıra Numaratörü (ticket_queue, omurga, maxLevel=1): sabır sayacı kuyrukta değil,
+        // servis istasyonuna atanınca başlar. CustomerAI.ProcessMovingToQueue/AssignServiceStation okur.
+        private static void ApplyTicketQueue(int level, PerkContext ctx)
+        {
+            if (ctx.Economy == null) return;
+            ctx.Economy.ticketQueueActive = level > 0;
+        }
+
+        // Sabah Vardiyası (morning_shift, omurga, maxLevel=2): gün başında rafa L1=1/L2=2 hazır
+        // (paketlenmiş) kutu gelir. MorningShiftSpawner (DayCycleManager.OnNewDay'e abone) okur.
+        private static void ApplyMorningShift(int level, PerkContext ctx)
+        {
+            if (ctx.Economy == null) return;
+            ctx.Economy.morningShiftBoxCount = level >= 2 ? 2 : (level == 1 ? 1 : 0);
+        }
+
+        // Serinlik (cooler, omurga, maxLevel=1): negatif event sapması %75 hafifler.
+        // ARAYÜZ ALANI — gameplay-A'nın EventEffectManager'da okuması gerekir (bkz.
+        // GameEconomySettings.negativeEventDampening tooltip'i, formül orada).
+        private static void ApplyCooler(int level, PerkContext ctx)
+        {
+            if (ctx.Economy == null) return;
+            ctx.Economy.negativeEventDampening = level > 0 ? 0.75f : 0f;
         }
     }
 }

@@ -333,7 +333,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000032
-    m_Localized: De verschijningssnelheid van klanten stijgt met 30%.
+    m_Localized: "Klanten komen 35% vaker, het geduld daalt met 15%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000033
@@ -341,7 +341,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000034
-    m_Localized: Het geduld van klanten daalt met 30%.
+    m_Localized: "Het geduld van klanten daalt met 40%, er komen 10% meer klanten."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000035
@@ -349,7 +349,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000036
-    m_Localized: Vrachtwagens vertrekken 50% trager.
+    m_Localized: "Vrachtwagens doen er twee keer zo lang over om te vertrekken en leveren 10% minder per doos op."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000037
@@ -357,7 +357,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000038
-    m_Localized: De algehele bewegingssnelheid daalt met 20%.
+    m_Localized: "De bewegingssnelheid daalt met 15% en de sprintsnelheid met 20%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000039
@@ -365,8 +365,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000040
-    m_Localized: Uithoudingsvermogen herstelt 40% trager en sprintsnelheid daalt
-      met 30%.
+    m_Localized: "Beweging 10% trager, sprint 30% trager; uithoudingsvermogen herstelt 40% trager."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000041
@@ -374,7 +373,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000042
-    m_Localized: Alle foutieve handelingen worden dubbel bestraft.
+    m_Localized: "Alle foute handelingen worden dubbel bestraft."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000043
@@ -382,7 +381,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000044
-    m_Localized: 20% meer klanten, maar 30% minder inkomsten.
+    m_Localized: "20% meer klanten, maar 30% minder inkomsten."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000045
@@ -390,7 +389,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000046
-    m_Localized: De receptietelefoon gaat 50% vaker over.
+    m_Localized: "Gesprekken met de receptietelefoon kosten geen tijd."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000047
@@ -398,7 +397,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000048
-    m_Localized: Verdien 20% meer geld per levering.
+    m_Localized: "Verdien 20% meer geld per levering."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000049
@@ -406,7 +405,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000050
-    m_Localized: Het geduld van klanten stijgt met 30%.
+    m_Localized: "Het geduld van klanten stijgt met 50%, alle straffen worden gehalveerd."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000051
@@ -414,7 +413,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000052
-    m_Localized: Vrachtwagens vertrekken 30% sneller.
+    m_Localized: "Vrachtwagens vertrekken 50% sneller, leveren 10% meer per doos op en blijven 20% langer in de hangar."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000053
@@ -422,9 +421,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000054
-    m_Localized: Elke correct geleverde doos levert 30% extra op. Brengt ook 20%
-      meer klanten, 20% snellere vrachtwagenvertrekken en 20% snellere beweging,
-      maar uithoudingsvermogen herstelt 20% trager.
+    m_Localized: "Dozen in de kleur van de dag leveren 60% meer op."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000055
@@ -432,7 +429,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000056
-    m_Localized: Upgradekosten dalen met 20%.
+    m_Localized: "De kosten van upgrades dalen met 30%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000057
@@ -448,7 +445,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000060
-    m_Localized: 10% kans dat dozen perfect zijn en 10% meer opleveren.
+    m_Localized: "Alle klanten vragen vandaag 2 artikelen."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000061
@@ -456,7 +453,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000062
-    m_Localized: Er komen 20% minder klanten.
+    m_Localized: "Er komen 20% minder klanten."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000063
@@ -464,7 +461,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000064
-    m_Localized: Willekeurige bonus bij het begin van de dag.
+    m_Localized: "Aan het begin van de dag verdien je een willekeurige geldbonus."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000065
@@ -1651,6 +1648,114 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 144849164114263163
     m_Localized: "Huurreserve"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263164
+    m_Localized: "EENKLEURIGE DAG"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263165
+    m_Localized: "Alle vrachtwagens en klanten willen vandaag \xE9\xE9n kleur."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263166
+    m_Localized: "OPDRACHTENDAG"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263167
+    m_Localized: "Beloningen van voltooide opdrachten (geld + prestige) worden verdrievoudigd."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263168
+    m_Localized: "SPOEDBONUS"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263169
+    m_Localized: "Dozen die in de eerste helft van de hangartijd van een vrachtwagen worden geleverd, leveren 40% meer op."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263170
+    m_Localized: "ONGEDULDIGE CHAUFFEURS"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263171
+    m_Localized: "Vrachtwagens blijven 40% korter in de hangar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263172
+    m_Localized: "RETOURGOLF"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263173
+    m_Localized: "Het aantal klanten dat iets wil retourneren verdubbelt bijna."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263174
+    m_Localized: "LEVERINGSSTAKING"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263175
+    m_Localized: "Er komen 30% minder klanten en de inkomsten dalen met 10%."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263176
+    m_Localized: "GEMENGDE ZENDING"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263177
+    m_Localized: "Vrachtwagens kunnen vandaag gemengde kleuren vragen."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263178
+    m_Localized: "Afbetaling"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263179
+    m_Localized: "E\xE9n extra afbetaling als je de huur niet kunt betalen. Afbetalingen nemen 70% van je kas in plaats van 80%."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263180
+    m_Localized: "Fooienpot"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263181
+    m_Localized: "Elke geholpen klant geeft een fooi van 10% (20% op niveau 2) van de doosbeloning."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263182
+    m_Localized: "Volgnummer"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263183
+    m_Localized: "Het geduld van klanten loopt pas af aan de balie, niet in de rij."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263184
+    m_Localized: "Ochtenddienst"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263185
+    m_Localized: "Elke dag begint met 1 kant-en-klare doos (2 op niveau 2) op een vrije tafel."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263186
+    m_Localized: "Koele bries"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263187
+    m_Localized: "Effecten van negatieve gebeurtenissen worden met 75% verminderd."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263188
+    m_Localized: "Weerbericht"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263189
+    m_Localized: "E\xE9n keer per huurperiode kun je de negatieve gebeurtenis van morgen ruilen voor een positieve."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263190
+    m_Localized: "WEERBERICHT"
     m_Metadata:
       m_Items: []
   references:

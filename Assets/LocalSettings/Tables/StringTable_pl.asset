@@ -332,8 +332,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000032
-    m_Localized: "Cz\u0119stotliwo\u015B\u0107 pojawiania si\u0119 klient\xF3w wzrasta
-      o 30%."
+    m_Localized: "Klienci przychodz\u0105 o 35% cz\u0119\u015Bciej, cierpliwo\u015B\u0107 spada o 15%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000033
@@ -341,7 +340,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000034
-    m_Localized: "Cierpliwo\u015B\u0107 klient\xF3w spada o 30%."
+    m_Localized: "Cierpliwo\u015B\u0107 klient\xF3w spada o 40%, przychodzi o 10% wi\u0119cej klient\xF3w."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000035
@@ -349,7 +348,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000036
-    m_Localized: "Ci\u0119\u017Car\xF3wki opuszczaj\u0105 plac o 50% wolniej."
+    m_Localized: "Ci\u0119\u017Car\xF3wki odje\u017Cd\u017Caj\u0105 dwa razy d\u0142u\u017Cej i daj\u0105 o 10% mniej za paczk\u0119."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000037
@@ -357,7 +356,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000038
-    m_Localized: "Og\xF3lna pr\u0119dko\u015B\u0107 poruszania si\u0119 spada o 20%."
+    m_Localized: "Pr\u0119dko\u015B\u0107 ruchu spada o 15%, a sprintu o 20%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000039
@@ -365,8 +364,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000040
-    m_Localized: "Wytrzyma\u0142o\u015B\u0107 regeneruje si\u0119 o 40% wolniej,
-      a pr\u0119dko\u015B\u0107 sprintu spada o 30%."
+    m_Localized: "Ruch wolniejszy o 10%, sprint o 30%; wytrzyma\u0142o\u015B\u0107 regeneruje si\u0119 o 40% wolniej."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000041
@@ -374,7 +372,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000042
-    m_Localized: "Wszystkie b\u0142\u0119dne operacje karane s\u0105 podw\xF3jnie."
+    m_Localized: "Wszystkie b\u0142\u0119dne operacje s\u0105 karane podw\xF3jnie."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000043
@@ -382,7 +380,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000044
-    m_Localized: "20% wi\u0119cej klient\xF3w, ale 30% mniej zarobk\xF3w."
+    m_Localized: "O 20% wi\u0119cej klient\xF3w, ale o 30% mniejsze zarobki."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000045
@@ -390,7 +388,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000046
-    m_Localized: "Telefon w recepcji dzwoni o 50% cz\u0119\u015Bciej."
+    m_Localized: "Rozmowy z telefonu w recepcji nie zabieraj\u0105 czasu."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000047
@@ -406,7 +404,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000050
-    m_Localized: "Cierpliwo\u015B\u0107 klient\xF3w wzrasta o 30%."
+    m_Localized: "Cierpliwo\u015B\u0107 klient\xF3w ro\u015Bnie o 50%, wszystkie kary s\u0105 o po\u0142ow\u0119 mniejsze."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000051
@@ -414,7 +412,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000052
-    m_Localized: "Ci\u0119\u017Car\xF3wki opuszczaj\u0105 plac o 30% szybciej."
+    m_Localized: "Ci\u0119\u017Car\xF3wki odje\u017Cd\u017Caj\u0105 o 50% szybciej, daj\u0105 o 10% wi\u0119cej za paczk\u0119 i zostaj\u0105 w hangarze o 20% d\u0142u\u017Cej."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000053
@@ -422,10 +420,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000054
-    m_Localized: "Ka\u017Cda poprawnie dostarczona paczka daje dodatkowe 30%. Przynosi
-      te\u017C o 20% wi\u0119cej klient\xF3w, o 20% szybsze wyjazdy ci\u0119\u017Car\xF3wek
-      i o 20% szybszy ruch, ale wytrzyma\u0142o\u015B\u0107 regeneruje si\u0119 o
-      20% wolniej."
+    m_Localized: "Paczki w kolorze dnia daj\u0105 o 60% wi\u0119cej."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000055
@@ -433,7 +428,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000056
-    m_Localized: "Koszty ulepsze\u0144 spadaj\u0105 o 20%."
+    m_Localized: "Koszt ulepsze\u0144 spada o 30%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000057
@@ -450,7 +445,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000060
-    m_Localized: "10% szansy, \u017Ce paczka jest idealna i daje o 10% wi\u0119cej."
+    m_Localized: "Wszyscy klienci prosz\u0105 dzi\u015B o 2 przedmioty."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000061
@@ -466,7 +461,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000064
-    m_Localized: "Na pocz\u0105tku dnia przyznawany jest losowy bonus."
+    m_Localized: "Na pocz\u0105tku dnia zdobywasz losow\u0105 premi\u0119 pieni\u0119\u017Cn\u0105."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000065
@@ -1652,6 +1647,114 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 144849164114263163
     m_Localized: "Rezerwa na czynsz"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263164
+    m_Localized: "DZIE\u0143 JEDNEGO KOLORU"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263165
+    m_Localized: "Wszystkie ci\u0119\u017Car\xF3wki i klienci chc\u0105 dzi\u015B jednego koloru dnia."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263166
+    m_Localized: "DZIE\u0143 ZADA\u0143"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263167
+    m_Localized: "Nagrody za uko\u0144czone zadania (pieni\u0105dze + presti\u017C) s\u0105 potrojone."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263168
+    m_Localized: "PREMIA ZA PO\u015APIECH"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263169
+    m_Localized: "Paczki dostarczone w pierwszej po\u0142owie czasu ci\u0119\u017Car\xF3wki w hangarze daj\u0105 o 40% wi\u0119cej."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263170
+    m_Localized: "NIECIERPLIWI KIEROWCY"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263171
+    m_Localized: "Ci\u0119\u017Car\xF3wki zostaj\u0105 w hangarze o 40% kr\xF3cej."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263172
+    m_Localized: "FALA ZWROT\xD3W"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263173
+    m_Localized: "Liczba klient\xF3w chc\u0105cych zwrotu prawie si\u0119 podwaja."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263174
+    m_Localized: "STRAJK DOSTAWC\xD3W"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263175
+    m_Localized: "Przychodzi o 30% mniej klient\xF3w, a zarobki spadaj\u0105 o 10%."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263176
+    m_Localized: "MIESZANA WYSY\u0141KA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263177
+    m_Localized: "Ci\u0119\u017Car\xF3wki mog\u0105 dzi\u015B \u017C\u0105da\u0107 mieszanych kolor\xF3w."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263178
+    m_Localized: "Raty"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263179
+    m_Localized: "Jedna dodatkowa rata, gdy nie mo\u017Cesz zap\u0142aci\u0107 czynszu. Raty zabieraj\u0105 70% kasy zamiast 80%."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263180
+    m_Localized: "S\u0142oik na napiwki"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263181
+    m_Localized: "Ka\u017Cdy obs\u0142u\u017Cony klient zostawia napiwek w wysoko\u015Bci 10% (20% na 2. poziomie) nagrody za paczk\u0119."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263182
+    m_Localized: "Numerek kolejki"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263183
+    m_Localized: "Cierpliwo\u015B\u0107 klienta zaczyna si\u0119 liczy\u0107 dopiero przy ladzie, nie w kolejce."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263184
+    m_Localized: "Poranna zmiana"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263185
+    m_Localized: "Ka\u017Cdy dzie\u0144 zaczyna si\u0119 od 1 gotowej paczki (2 na 2. poziomie) na wolnym stole."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263186
+    m_Localized: "Ch\u0142odna bryza"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263187
+    m_Localized: "Efekty negatywnych wydarze\u0144 s\u0105 s\u0142absze o 75%."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263188
+    m_Localized: "Prognoza pogody"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263189
+    m_Localized: "Raz na okres czynszowy mo\u017Cesz zamieni\u0107 jutrzejsze negatywne wydarzenie na pozytywne."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263190
+    m_Localized: "PROGNOZA POGODY"
     m_Metadata:
       m_Items: []
   references:

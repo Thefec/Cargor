@@ -333,7 +333,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000032
-    m_Localized: Klientide ilmumise kiirus suureneb 30%.
+    m_Localized: "Kliendid tulevad 35% sagedamini, kannatlikkus v\xE4heneb 15%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000033
@@ -341,7 +341,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000034
-    m_Localized: "Klientide kannatlikkus v\xE4heneb 30%."
+    m_Localized: "Klientide kannatlikkus v\xE4heneb 40%, kliente tuleb 10% rohkem."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000035
@@ -349,7 +349,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000036
-    m_Localized: Veoautod lahkuvad kohalt 50% aeglasemalt.
+    m_Localized: "Veoautode lahkumine v\xF5tab kaks korda kauem ja nad annavad kasti kohta 10% v\xE4hem."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000037
@@ -357,7 +357,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000038
-    m_Localized: "\xDCldine liikumiskiirus v\xE4heneb 20%."
+    m_Localized: "Liikumiskiirus v\xE4heneb 15% ja sprindikiirus 20%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000039
@@ -365,8 +365,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000040
-    m_Localized: "Vastupidavus taastub 40% aeglasemalt ja sprindikiirus v\xE4heneb
-      30%."
+    m_Localized: "Liikumine 10% aeglasem, sprint 30% aeglasem; vastupidavus taastub 40% aeglasemalt."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000041
@@ -390,7 +389,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000046
-    m_Localized: "Vastuv\xF5tu telefon heliseb 50% sagedamini."
+    m_Localized: "Vastuv\xF5tu telefonik\xF5ned ei v\xF5ta aega."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000047
@@ -398,7 +397,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000048
-    m_Localized: Teeni 20% rohkem raha iga kohaletoimetamise eest.
+    m_Localized: "Teeni 20% rohkem raha iga kohaletoimetamise eest."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000049
@@ -406,7 +405,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000050
-    m_Localized: Klientide kannatlikkus suureneb 30%.
+    m_Localized: "Klientide kannatlikkus kasvab 50%, k\xF5ik trahvid v\xE4henevad poole v\xF5rra."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000051
@@ -414,7 +413,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000052
-    m_Localized: Veoautod lahkuvad kohalt 30% kiiremini.
+    m_Localized: "Veoautod lahkuvad 50% kiiremini, annavad kasti kohta 10% rohkem ja j\xE4\xE4vad angaari 20% kauemaks."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000053
@@ -422,9 +421,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000054
-    m_Localized: "Iga \xF5igesti kohale toimetatud kast annab lisaks 30%. Toob ka
-      20% rohkem kliente, 20% kiiremad veoautode v\xE4ljumised ja 20% kiirema liikumise,
-      kuid vastupidavus taastub 20% aeglasemalt."
+    m_Localized: "P\xE4eva v\xE4rvi kastid annavad 60% rohkem."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000055
@@ -432,7 +429,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000056
-    m_Localized: "Uuenduste hind v\xE4heneb 20%."
+    m_Localized: "T\xE4ienduste hind v\xE4heneb 30%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000057
@@ -448,7 +445,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000060
-    m_Localized: "10% v\xF5imalus, et kast on t\xE4iuslik ja annab 10% rohkem."
+    m_Localized: "K\xF5ik kliendid k\xFCsivad t\xE4na 2 eset."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000061
@@ -456,7 +453,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000062
-    m_Localized: "Saabub 20% v\xE4hem kliente."
+    m_Localized: "Kliente tuleb 20% v\xE4hem."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000063
@@ -464,7 +461,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000064
-    m_Localized: "P\xE4eva alguses saadakse juhuslik boonus."
+    m_Localized: "P\xE4eva alguses saad juhusliku rahaboonuse."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000065
@@ -1620,6 +1617,114 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 144849164114263163
     m_Localized: "\xDC\xFCrireserv"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263164
+    m_Localized: "\xDCHEV\xC4RVILINE P\xC4EV"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263165
+    m_Localized: "K\xF5ik veoautod ja kliendid tahavad t\xE4na ainult p\xE4eva v\xE4rvi."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263166
+    m_Localized: "\xDCLESANNETE P\xC4EV"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263167
+    m_Localized: "T\xE4idetud \xFClesannete tasud (raha + prestii\u017E) kolmekordistuvad."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263168
+    m_Localized: "KIIRUSEBOONUS"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263169
+    m_Localized: "Veoauto angaariaja esimesel poolel kohale toimetatud kastid annavad 40% rohkem."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263170
+    m_Localized: "KANNATAMATUD JUHID"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263171
+    m_Localized: "Veoautod j\xE4\xE4vad angaari 40% l\xFChemaks ajaks."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263172
+    m_Localized: "TAGASTUSTE LAINE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263173
+    m_Localized: "Tagastust soovivate klientide arv peaaegu kahekordistub."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263174
+    m_Localized: "TARNIJATE STREIK"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263175
+    m_Localized: "Kliente tuleb 30% v\xE4hem ja tulu langeb 10%."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263176
+    m_Localized: "SEGATUD SAADETIS"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263177
+    m_Localized: "Veoautod v\xF5ivad t\xE4na k\xFCsida segav\xE4rve."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263178
+    m_Localized: "J\xE4relmaks"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263179
+    m_Localized: "\xDCks lisamakse, kui sa ei suuda \xFC\xFCri maksta. Maksed v\xF5tavad 80% asemel 70% kassast."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263180
+    m_Localized: "Jootrahapurk"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263181
+    m_Localized: "Iga teenindatud klient j\xE4tab jootraha 10% (2. tasemel 20%) kasti tasust."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263182
+    m_Localized: "J\xE4rjekorranumber"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263183
+    m_Localized: "Kliendi kannatlikkus hakkab kahanema alles leti juures, mitte j\xE4rjekorras."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263184
+    m_Localized: "Hommikuvahetus"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263185
+    m_Localized: "Iga p\xE4ev algab 1 valmis kastiga (2. tasemel 2) vabal laual."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263186
+    m_Localized: "Jahe tuul"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263187
+    m_Localized: "Negatiivsete s\xFCndmuste m\xF5ju v\xE4heneb 75%."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263188
+    m_Localized: "Ilmateade"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263189
+    m_Localized: "Kord \xFC\xFCriperioodi jooksul saad homse negatiivse s\xFCndmuse vahetada positiivse vastu."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263190
+    m_Localized: "ILMATEADE"
     m_Metadata:
       m_Items: []
   references:

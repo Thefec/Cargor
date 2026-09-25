@@ -79,6 +79,8 @@ namespace NewCss
         // ── Backward-compat kısayollar (SO'dan okunur) ──────────────────
         private int   rentIntervalDays    => economySettings != null ? economySettings.rentIntervalDays    : 4;
         private float gracePaymentPercent => economySettings != null ? economySettings.gracePaymentPercent : 0.8f;
+        // Taksit perki (grace_plus): taban 1 grace hakkına economySettings.graceExtraUses eklenir.
+        private int   GraceUsesAllowed    => 1 + (economySettings != null ? economySettings.graceExtraUses : 0);
 
         // ── Acil Fren perki (emergency_brake) — server-authoritative, tek kullanımlık ──
         private const float EMERGENCY_BRAKE_PRESTIGE_PENALTY = -2f;
@@ -131,7 +133,10 @@ namespace NewCss
         private bool _lunchNotified;
         private bool _moneyCheckCompleted;
         private int _rentPaymentCount;   // Kaçıncı kira ödemesi
-        private bool _graceUsed;         // İlk kira affı kullanıldı mı
+        // Taksit perki (grace_plus, gameplay-B 2026-09-25): eskiden bool _graceUsed idi (tek grace
+        // hakkı). Taksit +1 grace kullanımı ekliyor — bkz. TryProcessMoneyCheck'teki
+        // GraceUsesAllowed (taban 1 + economySettings.graceExtraUses).
+        private int _graceUsedCount;     // Kaç kez grace kullanıldı
         private bool _gameOverStopProcessing; // Game-over sonrası Update() işleme döngüsünü durdurur (server-only)
 
         // ── Gün süresi: taban + katkı yeniden hesaplama (tek yazıcı, overtime perk fix) ──
@@ -525,7 +530,7 @@ namespace NewCss
 
             // Kira/sigorta state'i önceki oturumdan sızmasın (yeni oyun / menüye dönüş / replay).
             _rentPaymentCount = 0;
-            _graceUsed = false;
+            _graceUsedCount = 0;
             insuranceAvailable = false;
             _gameOverStopProcessing = false;
         }
@@ -737,9 +742,11 @@ namespace NewCss
                 _rentPaymentCount++;
                 Debug.Log($"{LOG_PREFIX} Rent paid in full: {rentAmount}");
             }
-            else if (!_graceUsed && !(economySettings != null && economySettings.graceDisabled))
+            else if (_graceUsedCount < GraceUsesAllowed && !(economySettings != null && economySettings.graceDisabled))
             {
-                // İlk kira affı — eldeki paranın %80'i alınır, ödenmiş sayılır.
+                // Kira affı (grace) — eldeki paranın gracePaymentPercent'i alınır, ödenmiş sayılır.
+                // Taban 1 kullanım; Taksit perki (grace_plus) +1 hak ekler (GraceUsesAllowed) VE
+                // gracePaymentPercent'i 0.8→0.7'ye düşürür (PerkEffect.ApplyGracePlus).
                 // Ö-C fix (2026-09-24): leveraged_rent/all_in perki graceDisabled=true yazar —
                 // o perklerin bedeli grace'in TAMAMEN İPTALİ olduğu için (bkz. PerkEffect.
                 // ApplyLeveragedRent/ApplyAllIn yorumu) bu dal hiç çalıştırılmaz; kasa yetmezse
@@ -747,9 +754,9 @@ namespace NewCss
                 float gracePct   = economySettings != null ? economySettings.gracePaymentPercent : 0.8f;
                 int graceAmount = Mathf.RoundToInt(currentMoney * gracePct);
                 MoneySystem.Instance.SpendMoney(graceAmount);
-                _graceUsed = true;
+                _graceUsedCount++;
                 _rentPaymentCount++;
-                Debug.Log($"{LOG_PREFIX} Grace period used. Took {graceAmount} ({gracePaymentPercent * 100}% of {currentMoney}). Needed: {rentAmount}");
+                Debug.Log($"{LOG_PREFIX} Grace period used ({_graceUsedCount}/{GraceUsesAllowed}). Took {graceAmount} ({gracePct * 100}% of {currentMoney}). Needed: {rentAmount}");
             }
             else if (insuranceAvailable)
             {

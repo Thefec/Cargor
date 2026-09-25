@@ -455,6 +455,13 @@ namespace NewCss
             float jitter = Random.Range(-baseInterval * spawnTimeRandomness, baseInterval * spawnTimeRandomness);
             float interval = Mathf.Max(1f, baseInterval + jitter);
 
+            // §A S-1 / §B.12 düzeltmesi (2026-09-25): eventCustomerMultiplier eskiden yalnızca günlük
+            // KOTAYI (CalculateTodaysCustomerCount) etkiliyordu, varış ARALIĞINI hiç bölmüyordu —
+            // BUSY/ANGRY/GOLDEN/MARKETING/SUPPLY STRIKE gibi event'lerin müşteri artışı/azalışı hedefin
+            // yalnızca %6-20'si kadar gerçekleşiyordu (kota tavana takılıyordu). Artışlar (>1) için
+            // aralık kısalır; azalışlar (<1) interval'i UZATMAZ (max(1,x) ile), kota clamp'i zaten yeterli.
+            interval /= Mathf.Max(1f, eventCustomerMultiplier);
+
             if (enableWaveSystem && waveSettings != null)
             {
                 float spawnRateMultiplier = waveSettings.GetSpawnRateMultiplier(GetCurrentTime());
@@ -1127,6 +1134,16 @@ namespace NewCss
         public bool ShouldAssignBoxRequestMode()
         {
             int currentDay = DayCycleManager.Instance != null ? DayCycleManager.Instance.currentDay : 0;
+
+            // RETURN WAVE (§B.21, 2026-09-25): iade oranı %25 -> %45. Gün eşiği (RETURN_UNLOCK_DAY)
+            // yine de uygulanır — event zaten yalnız gün 5+ takvime girebiliyor ama savunmacı.
+            float overrideChance = EventEffectManager.Instance != null
+                ? EventEffectManager.Instance.GetReturnModeChanceOverride() : -1f;
+            if (overrideChance >= 0f)
+            {
+                return currentDay >= PostRentFeatureUnlocks.RETURN_UNLOCK_DAY && Random.value < overrideChance;
+            }
+
             return PostRentFeatureUnlocks.ShouldEnterBoxRequestMode(currentDay, Random.value);
         }
 
@@ -1150,7 +1167,13 @@ namespace NewCss
         public bool ShouldAssignDualItemMode()
         {
             int currentDay = DayCycleManager.Instance != null ? DayCycleManager.Instance.currentDay : 0;
-            return PostRentFeatureUnlocks.IsDualItemUnlocked(currentDay);
+
+            // VIP SERVICE (§B.9 yeniden tanım, 2026-09-25, gün <=8): gün 9 kilidinden BAĞIMSIZ
+            // olarak o gün için dual-item'ı açar. IsVIPServiceDay() zaten mevcuttu ama hiçbir yerden
+            // okunmuyordu (bkz. tasarım denetimi §A).
+            bool vipDay = EventEffectManager.Instance != null && EventEffectManager.Instance.IsVIPServiceDay();
+
+            return PostRentFeatureUnlocks.IsDualItemUnlocked(currentDay) || vipDay;
         }
 
         #endregion
@@ -1191,20 +1214,33 @@ namespace NewCss
         /// </summary>
         private BoxInfo.BoxType PickCustomerColor(Dictionary<BoxInfo.BoxType, List<int>> colorIndexMap)
         {
-            BoxInfo.BoxType? favoredColor = GetFavoredHangarTruckColor();
-            bool canFavor = favoredColor.HasValue &&
-                colorIndexMap.TryGetValue(favoredColor.Value, out var favoredCandidates) &&
-                favoredCandidates.Count > 0;
+            BoxInfo.BoxType chosen;
 
-            // Ana kaynak: dengeli torba. Sadece bazen (FAVOR_CHANCE) mevcut tıra hafif meyil.
-            BoxInfo.BoxType chosen = (canFavor && Random.value < FAVOR_CHANCE)
-                ? favoredColor.Value
-                : DrawNextCustomerColorFromBag();
-
-            // Nihai renk cap'i: art arda sınırı aşacaksa farklı renge zorla.
-            if (chosen == _lastCustomerColor && _consecutiveColorCount >= MAX_CONSECUTIVE_SAME_COLOR)
+            // MONOCHROME DAY (§B.6, 2026-09-25): günün rengi zorunlu — torba/favor/art-arda-cap
+            // mantığının TAMAMI bypass edilir, bugün tek renk gösterilir.
+            if (EventEffectManager.Instance != null &&
+                EventEffectManager.Instance.TryGetForcedDayColor(out BoxInfo.BoxType forcedColor) &&
+                colorIndexMap.TryGetValue(forcedColor, out var forcedCandidates) && forcedCandidates.Count > 0)
             {
-                chosen = PickDifferentColor(chosen, colorIndexMap);
+                chosen = forcedColor;
+            }
+            else
+            {
+                BoxInfo.BoxType? favoredColor = GetFavoredHangarTruckColor();
+                bool canFavor = favoredColor.HasValue &&
+                    colorIndexMap.TryGetValue(favoredColor.Value, out var favoredCandidates) &&
+                    favoredCandidates.Count > 0;
+
+                // Ana kaynak: dengeli torba. Sadece bazen (FAVOR_CHANCE) mevcut tıra hafif meyil.
+                chosen = (canFavor && Random.value < FAVOR_CHANCE)
+                    ? favoredColor.Value
+                    : DrawNextCustomerColorFromBag();
+
+                // Nihai renk cap'i: art arda sınırı aşacaksa farklı renge zorla.
+                if (chosen == _lastCustomerColor && _consecutiveColorCount >= MAX_CONSECUTIVE_SAME_COLOR)
+                {
+                    chosen = PickDifferentColor(chosen, colorIndexMap);
+                }
             }
 
             // Streak takibi (nihai renk üzerinde).

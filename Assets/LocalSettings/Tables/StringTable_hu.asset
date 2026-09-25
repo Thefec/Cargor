@@ -331,7 +331,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000032
-    m_Localized: "A v\xE1s\xE1rl\xF3k megjelen\xE9si ar\xE1nya 30%-kal n\u0151."
+    m_Localized: "A v\xE1s\xE1rl\xF3k 35%-kal gyakrabban \xE9rkeznek, a t\xFCrelem 15%-kal cs\xF6kken."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000033
@@ -339,7 +339,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000034
-    m_Localized: "A v\xE1s\xE1rl\xF3k t\xFCrelme 30%-kal cs\xF6kken."
+    m_Localized: "A v\xE1s\xE1rl\xF3k t\xFCrelme 40%-kal cs\xF6kken, 10%-kal t\xF6bb v\xE1s\xE1rl\xF3 \xE9rkezik."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000035
@@ -347,7 +347,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000036
-    m_Localized: "A teheraut\xF3k 50%-kal lassabban hagyj\xE1k el a helysz\xEDnt."
+    m_Localized: "A teheraut\xF3k indul\xE1sa k\xE9tszer tov\xE1bb tart, \xE9s dobozonk\xE9nt 10%-kal kevesebbet hoznak."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000037
@@ -355,7 +355,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000038
-    m_Localized: "Az \xE1ltal\xE1nos mozg\xE1si sebess\xE9g 20%-kal cs\xF6kken."
+    m_Localized: "A mozg\xE1si sebess\xE9g 15%-kal, a sprint sebess\xE9ge 20%-kal cs\xF6kken."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000039
@@ -363,8 +363,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000040
-    m_Localized: "Az \xE1ll\xF3k\xE9pess\xE9g 40%-kal lassabban t\xF6lt\u0151dik,
-      a sprintsebess\xE9g pedig 30%-kal cs\xF6kken."
+    m_Localized: "A mozg\xE1s 10%-kal, a sprint 30%-kal lassabb; az \xE1ll\xF3k\xE9pess\xE9g 40%-kal lassabban t\xF6lt\u0151dik."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000041
@@ -388,7 +387,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000046
-    m_Localized: "A recepci\xF3s telefon 50%-kal gyakrabban cs\xF6r\xF6g."
+    m_Localized: "A recepci\xF3s telefonh\xEDv\xE1sok nem visznek el id\u0151t."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000047
@@ -404,7 +403,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000050
-    m_Localized: "A v\xE1s\xE1rl\xF3k t\xFCrelme 30%-kal n\u0151."
+    m_Localized: "A v\xE1s\xE1rl\xF3k t\xFCrelme 50%-kal n\u0151, minden b\xFCntet\xE9s a fel\xE9re cs\xF6kken."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000051
@@ -412,7 +411,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000052
-    m_Localized: "A teheraut\xF3k 30%-kal gyorsabban hagyj\xE1k el a helysz\xEDnt."
+    m_Localized: "A teheraut\xF3k 50%-kal gyorsabban indulnak, dobozonk\xE9nt 10%-kal t\xF6bbet hoznak, \xE9s 20%-kal tov\xE1bb maradnak a hang\xE1rban."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000053
@@ -420,10 +419,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000054
-    m_Localized: "Minden helyesen kisz\xE1ll\xEDtott doboz plusz 30%-ot \xE9r. Emellett
-      20%-kal t\xF6bb v\xE1s\xE1rl\xF3t, 20%-kal gyorsabb teheraut\xF3-indul\xE1st
-      \xE9s 20%-kal gyorsabb mozg\xE1st hoz, de az \xE1ll\xF3k\xE9pess\xE9g 20%-kal
-      lassabban t\xF6lt\u0151dik."
+    m_Localized: "A nap sz\xEDn\u0171 dobozai 60%-kal t\xF6bbet \xE9rnek."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000055
@@ -431,7 +427,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000056
-    m_Localized: "A fejleszt\xE9sek \xE1ra 20%-kal cs\xF6kken."
+    m_Localized: "A fejleszt\xE9sek \xE1ra 30%-kal cs\xF6kken."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000057
@@ -447,8 +443,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000060
-    m_Localized: "10% es\xE9ly, hogy a doboz t\xF6k\xE9letes \xE9s 10%-kal t\xF6bbet
-      \xE9r."
+    m_Localized: "Ma minden v\xE1s\xE1rl\xF3 2 term\xE9ket k\xE9r."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000061
@@ -464,7 +459,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000064
-    m_Localized: "A nap elej\xE9n v\xE9letlenszer\u0171 b\xF3nuszt kapsz."
+    m_Localized: "A nap elej\xE9n v\xE9letlenszer\u0171 p\xE9nzb\xF3nuszt kapsz."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000065
@@ -1644,6 +1639,114 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 144849164114263163
     m_Localized: "B\xE9rleti tartal\xE9k"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263164
+    m_Localized: "EGYSZ\xCDN\u0170 NAP"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263165
+    m_Localized: "Ma minden teheraut\xF3 \xE9s v\xE1s\xE1rl\xF3 a nap egyetlen sz\xEDn\xE9t k\xE9ri."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263166
+    m_Localized: "K\xDCLDET\xC9SNAP"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263167
+    m_Localized: "A teljes\xEDtett k\xFCldet\xE9sek jutalma (p\xE9nz + preszt\xEDzs) h\xE1romszoros\xE1ra n\u0151."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263168
+    m_Localized: "SIETS\xC9GI PR\xC9MIUM"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263169
+    m_Localized: "A teheraut\xF3 hang\xE1rban t\xF6lt\xF6tt idej\xE9nek els\u0151 fel\xE9ben leadott dobozok 40%-kal t\xF6bbet \xE9rnek."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263170
+    m_Localized: "T\xDCRELMETLEN SOF\u0150R\xD6K"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263171
+    m_Localized: "A teheraut\xF3k 40%-kal r\xF6videbb ideig maradnak a hang\xE1rban."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263172
+    m_Localized: "VISSZ\xC1RU-HULL\xC1M"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263173
+    m_Localized: "A vissz\xE1rut k\xE9r\u0151 v\xE1s\xE1rl\xF3k sz\xE1ma majdnem megdupl\xE1z\xF3dik."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263174
+    m_Localized: "BESZ\xC1LL\xCDT\xD3I SZTR\xC1JK"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263175
+    m_Localized: "30%-kal kevesebb v\xE1s\xE1rl\xF3 \xE9rkezik, a bev\xE9tel 10%-kal cs\xF6kken."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263176
+    m_Localized: "VEGYES SZ\xC1LL\xCDTM\xC1NY"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263177
+    m_Localized: "A teheraut\xF3k ma vegyes sz\xEDneket k\xE9rhetnek."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263178
+    m_Localized: "R\xE9szletfizet\xE9s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263179
+    m_Localized: "Egy extra r\xE9szlet, ha nem tudod kifizetni a b\xE9rleti d\xEDjat. A r\xE9szletek a kassza 70%-\xE1t viszik el 80% helyett."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263180
+    m_Localized: "Borraval\xF3s \xFCveg"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263181
+    m_Localized: "Minden kiszolg\xE1lt v\xE1s\xE1rl\xF3 a dobozjutalom 10%-\xE1nak (2. szinten 20%-\xE1nak) megfelel\u0151 borraval\xF3t hagy."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263182
+    m_Localized: "Sorsz\xE1m"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263183
+    m_Localized: "A v\xE1s\xE1rl\xF3 t\xFCrelme csak a pultn\xE1l kezd fogyni, a sorban nem."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263184
+    m_Localized: "Reggeli m\u0171szak"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263185
+    m_Localized: "Minden nap 1 k\xE9sz dobozzal (2. szinten 2-vel) indul egy szabad asztalon."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263186
+    m_Localized: "H\u0171v\xF6s szell\u0151"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263187
+    m_Localized: "A negat\xEDv esem\xE9nyek hat\xE1sa 75%-kal gyeng\xE9bb."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263188
+    m_Localized: "Id\u0151j\xE1r\xE1s-jelent\xE9s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263189
+    m_Localized: "B\xE9rleti id\u0151szakonk\xE9nt egyszer a holnapi negat\xEDv esem\xE9nyt pozit\xEDvra cser\xE9lheted."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263190
+    m_Localized: "ID\u0150J\xC1R\xC1S-JELENT\xC9S"
     m_Metadata:
       m_Items: []
   references:

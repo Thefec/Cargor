@@ -331,7 +331,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000032
-    m_Localized: "Klient\u0173 atvykimo greitis padid\u0117ja 30%."
+    m_Localized: "Klientai atvyksta 35% da\u017Eniau, kantryb\u0117 suma\u017E\u0117ja 15%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000033
@@ -339,7 +339,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000034
-    m_Localized: "Klient\u0173 kantryb\u0117 suma\u017E\u0117ja 30%."
+    m_Localized: "Klient\u0173 kantryb\u0117 suma\u017E\u0117ja 40%, atvyksta 10% daugiau klient\u0173."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000035
@@ -347,7 +347,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000036
-    m_Localized: "Sunkve\u017Eimiai palieka viet\u0105 50% l\u0117\u010Diau."
+    m_Localized: "Sunkve\u017Eimiai i\u0161vyksta dvigubai ilgiau ir u\u017E d\u0117\u017E\u0119 duoda 10% ma\u017Eiau."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000037
@@ -355,7 +355,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000038
-    m_Localized: "Bendras jud\u0117jimo greitis suma\u017E\u0117ja 20%."
+    m_Localized: "Jud\u0117jimo greitis suma\u017E\u0117ja 15%, o sprinto greitis 20%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000039
@@ -363,8 +363,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000040
-    m_Localized: "I\u0161tverm\u0117 atsistato 40% l\u0117\u010Diau, o sprinto greitis
-      suma\u017E\u0117ja 30%."
+    m_Localized: "Jud\u0117jimas 10% l\u0117tesnis, sprintas 30% l\u0117tesnis; i\u0161tverm\u0117 atsistato 40% l\u0117\u010Diau."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000041
@@ -388,7 +387,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000046
-    m_Localized: "Registrat\u016Bros telefonas skambina 50% da\u017Eniau."
+    m_Localized: "Registrat\u016Bros telefono skambu\u010Diai neatima laiko."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000047
@@ -404,7 +403,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000050
-    m_Localized: "Klient\u0173 kantryb\u0117 padid\u0117ja 30%."
+    m_Localized: "Klient\u0173 kantryb\u0117 padid\u0117ja 50%, visos baudos suma\u017E\u0117ja perpus."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000051
@@ -412,7 +411,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000052
-    m_Localized: "Sunkve\u017Eimiai palieka viet\u0105 30% grei\u010Diau."
+    m_Localized: "Sunkve\u017Eimiai i\u0161vyksta 50% grei\u010Diau, u\u017E d\u0117\u017E\u0119 duoda 10% daugiau ir angare b\u016Bna 20% ilgiau."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000053
@@ -420,10 +419,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000054
-    m_Localized: "Kiekviena teisingai pristatyta d\u0117\u017E\u0117 duoda papildomus
-      30%. Taip pat atne\u0161a 20% daugiau klient\u0173, 20% greitesn\u012F sunkve\u017Eimi\u0173
-      i\u0161vykim\u0105 ir 20% greitesn\u012F jud\u0117jim\u0105, bet i\u0161tverm\u0117
-      atsistato 20% l\u0117\u010Diau."
+    m_Localized: "Dienos spalvos d\u0117\u017E\u0117s duoda 60% daugiau."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000055
@@ -431,7 +427,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000056
-    m_Localized: "Patobulinim\u0173 kaina suma\u017E\u0117ja 20%."
+    m_Localized: "Patobulinim\u0173 kaina suma\u017E\u0117ja 30%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000057
@@ -448,8 +444,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000060
-    m_Localized: "10% tikimyb\u0117, kad d\u0117\u017E\u0117 yra tobula ir duoda
-      10% daugiau."
+    m_Localized: "\u0160iandien visi klientai pra\u0161o 2 preki\u0173."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000061
@@ -465,7 +460,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000064
-    m_Localized: "Dienos prad\u017Eioje gaunamas atsitiktinis premijos priedas."
+    m_Localized: "Dienos prad\u017Eioje gauni atsitiktin\u0119 pinigin\u0119 premij\u0105."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000065
@@ -1648,6 +1643,114 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 144849164114263163
     m_Localized: "Nuomos rezervas"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263164
+    m_Localized: "VIENOS SPALVOS DIENA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263165
+    m_Localized: "Visi sunkve\u017Eimiai ir klientai \u0161iandien nori tik dienos spalvos."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263166
+    m_Localized: "U\u017DDUO\u010CI\u0172 DIENA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263167
+    m_Localized: "\u012Evykdyt\u0173 u\u017Eduo\u010Di\u0173 atlygis (pinigai + presti\u017Eas) patrigub\u0117ja."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263168
+    m_Localized: "SKUBOS PRIEDAS"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263169
+    m_Localized: "D\u0117\u017E\u0117s, pristatytos per pirm\u0105j\u0105 sunkve\u017Eimio laiko angare pus\u0119, duoda 40% daugiau."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263170
+    m_Localized: "NEKANTR\u016AS VAIRUOTOJAI"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263171
+    m_Localized: "Sunkve\u017Eimiai angare b\u016Bna 40% trumpiau."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263172
+    m_Localized: "GR\u0104\u017DINIM\u0172 BANGA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263173
+    m_Localized: "Gr\u0105\u017Einimo pra\u0161an\u010Di\u0173 klient\u0173 beveik padvigub\u0117ja."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263174
+    m_Localized: "TIEK\u0116J\u0172 STREIKAS"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263175
+    m_Localized: "Atvyksta 30% ma\u017Eiau klient\u0173, o pajamos suma\u017E\u0117ja 10%."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263176
+    m_Localized: "MI\u0160RI SIUNTA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263177
+    m_Localized: "Sunkve\u017Eimiai \u0161iandien gali pra\u0161yti mi\u0161ri\u0173 spalv\u0173."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263178
+    m_Localized: "I\u0161simok\u0117tinai"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263179
+    m_Localized: "Viena papildoma \u012Fmoka, kai negali sumok\u0117ti nuomos. \u012Emokos paima 70% kasos vietoj 80%."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263180
+    m_Localized: "Arbatpinigi\u0173 stiklainis"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263181
+    m_Localized: "Kiekvienas aptarnautas klientas palieka 10% (2 lygyje 20%) d\u0117\u017E\u0117s atlygio dyd\u017Eio arbatpinigi\u0173."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263182
+    m_Localized: "Eil\u0117s numeris"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263183
+    m_Localized: "Kliento kantryb\u0117 pradeda sekti tik prie prekystalio, o ne eil\u0117je."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263184
+    m_Localized: "Rytin\u0117 pamaina"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263185
+    m_Localized: "Kiekviena diena prasideda 1 paruo\u0161ta d\u0117\u017Ee (2 lygyje 2) ant laisvo stalo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263186
+    m_Localized: "V\u0117sus v\u0117jelis"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263187
+    m_Localized: "Neigiam\u0173 \u012Fvyki\u0173 poveikis suma\u017E\u0117ja 75%."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263188
+    m_Localized: "Or\u0173 prognoz\u0117"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263189
+    m_Localized: "Kart\u0105 per nuomos laikotarp\u012F gali pakeisti rytojaus neigiam\u0105 \u012Fvyk\u012F teigiamu."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263190
+    m_Localized: "OR\u0172 PROGNOZ\u0116"
     m_Metadata:
       m_Items: []
   references:

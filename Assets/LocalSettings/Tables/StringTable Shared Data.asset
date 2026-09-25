@@ -1499,6 +1499,114 @@ MonoBehaviour:
     m_Key: RentReserveLocked
     m_Metadata:
       m_Items: []
+  - m_Id: 144849164114263164
+    m_Key: EventMonochromeDay
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263165
+    m_Key: EventMonochromeDayDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263166
+    m_Key: EventQuestDay
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263167
+    m_Key: EventQuestDayDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263168
+    m_Key: EventRushBonus
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263169
+    m_Key: EventRushBonusDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263170
+    m_Key: EventImpatientDrivers
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263171
+    m_Key: EventImpatientDriversDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263172
+    m_Key: EventReturnWave
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263173
+    m_Key: EventReturnWaveDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263174
+    m_Key: EventSupplyStrike
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263175
+    m_Key: EventSupplyStrikeDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263176
+    m_Key: EventMixedShipment
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263177
+    m_Key: EventMixedShipmentDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263178
+    m_Key: CardGracePlusName
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263179
+    m_Key: CardGracePlusDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263180
+    m_Key: CardTipJarName
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263181
+    m_Key: CardTipJarDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263182
+    m_Key: CardTicketQueueName
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263183
+    m_Key: CardTicketQueueDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263184
+    m_Key: CardMorningShiftName
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263185
+    m_Key: CardMorningShiftDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263186
+    m_Key: CardCoolerName
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263187
+    m_Key: CardCoolerDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263188
+    m_Key: CardForecastName
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263189
+    m_Key: CardForecastDesc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263190
+    m_Key: ForecastButtonLabel
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

@@ -331,8 +331,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000032
-    m_Localized: "Rychlost p\u0159\xEDchodu z\xE1kazn\xEDk\u016F se zvy\u0161uje
-      o 30 %."
+    m_Localized: "Z\xE1kazn\xEDci chod\xED o 35 % \u010Dast\u011Bji, trp\u011Blivost kles\xE1 o 15 %."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000033
@@ -340,7 +339,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000034
-    m_Localized: "Trp\u011Blivost z\xE1kazn\xEDk\u016F kles\xE1 o 30 %."
+    m_Localized: "Trp\u011Blivost z\xE1kazn\xEDk\u016F kles\xE1 o 40 %, p\u0159ijde o 10 % v\xEDce z\xE1kazn\xEDk\u016F."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000035
@@ -348,7 +347,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000036
-    m_Localized: "Kamiony opou\u0161t\u011Bj\xED m\xEDsto o 50 % pomaleji."
+    m_Localized: "Kamion\u016Fm trv\xE1 odjezd dvakr\xE1t d\xE9le a vyd\u011Blaj\xED o 10 % m\xE9n\u011B za krabici."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000037
@@ -356,7 +355,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000038
-    m_Localized: "Celkov\xE1 rychlost pohybu kles\xE1 o 20 %."
+    m_Localized: "Rychlost pohybu kles\xE1 o 15 % a sprintu o 20 %."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000039
@@ -364,8 +363,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000040
-    m_Localized: "Vytrvalost se obnovuje o 40 % pomaleji a rychlost sprintu kles\xE1
-      o 30 %."
+    m_Localized: "Pohyb o 10 % pomalej\u0161\xED, sprint o 30 %; v\xFDdr\u017E se obnovuje o 40 % pomaleji."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000041
@@ -373,7 +371,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000042
-    m_Localized: "V\u0161echny chybn\xE9 operace jsou penalizov\xE1ny dvojn\xE1sobn\u011B."
+    m_Localized: "V\u0161echny chybn\xE9 operace jsou trest\xE1ny dvojn\xE1sobn\u011B."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000043
@@ -381,8 +379,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000044
-    m_Localized: "O 20 % v\xEDce z\xE1kazn\xEDk\u016F, ale o 30 % ni\u017E\u0161\xED
-      zisk."
+    m_Localized: "O 20 % v\xEDce z\xE1kazn\xEDk\u016F, ale o 30 % ni\u017E\u0161\xED v\xFDd\u011Blky."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000045
@@ -390,7 +387,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000046
-    m_Localized: "Telefon na recepci zvon\xED o 50 % \u010Dast\u011Bji."
+    m_Localized: "Hovory z telefonu na recepci nestoj\xED \u017E\xE1dn\xFD \u010Das."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000047
@@ -406,7 +403,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000050
-    m_Localized: "Trp\u011Blivost z\xE1kazn\xEDk\u016F stoup\xE1 o 30 %."
+    m_Localized: "Trp\u011Blivost z\xE1kazn\xEDk\u016F roste o 50 %, v\u0161echny pokuty se sni\u017Euj\xED na polovinu."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000051
@@ -414,7 +411,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000052
-    m_Localized: "Kamiony opou\u0161t\u011Bj\xED m\xEDsto o 30 % rychleji."
+    m_Localized: "Kamiony odj\xED\u017Ed\u011Bj\xED o 50 % rychleji, vyd\u011Blaj\xED o 10 % v\xEDce za krabici a z\u016Fstanou v hang\xE1ru o 20 % d\xE9le."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000053
@@ -422,10 +419,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000054
-    m_Localized: "Ka\u017Ed\xE1 spr\xE1vn\u011B doru\u010Den\xE1 krabice p\u0159in\xE1\u0161\xED
-      o 30 % nav\xEDc. P\u0159in\xE1\u0161\xED tak\xE9 o 20 % v\xEDce z\xE1kazn\xEDk\u016F,
-      o 20 % rychlej\u0161\xED odjezdy kamion\u016F a o 20 % rychlej\u0161\xED pohyb,
-      ale vytrvalost se obnovuje o 20 % pomaleji."
+    m_Localized: "Krabice v barv\u011B dne vyd\u011Blaj\xED o 60 % v\xEDce."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000055
@@ -433,7 +427,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000056
-    m_Localized: "N\xE1klady na vylep\u0161en\xED klesaj\xED o 20 %."
+    m_Localized: "Cena vylep\u0161en\xED kles\xE1 o 30 %."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000057
@@ -449,8 +443,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000060
-    m_Localized: "10% \u0161ance, \u017Ee krabice je perfektn\xED a vyd\u011Bl\xE1
-      o 10 % v\xEDce."
+    m_Localized: "V\u0161ichni z\xE1kazn\xEDci dnes cht\u011Bj\xED 2 polo\u017Eky."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000061
@@ -458,7 +451,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000062
-    m_Localized: "P\u0159ich\xE1z\xED o 20 % m\xE9n\u011B z\xE1kazn\xEDk\u016F."
+    m_Localized: "P\u0159ijde o 20 % m\xE9n\u011B z\xE1kazn\xEDk\u016F."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000063
@@ -466,7 +459,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000064
-    m_Localized: "Na za\u010D\xE1tku dne je ud\u011Blen n\xE1hodn\xFD bonus."
+    m_Localized: "Na za\u010D\xE1tku dne z\xEDsk\xE1\u0161 n\xE1hodn\xFD pen\u011B\u017En\xED bonus."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000065
@@ -1644,6 +1637,114 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 144849164114263163
     m_Localized: "Rezerva na n\xE1jem"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263164
+    m_Localized: "JEDNOBAREVN\xDD DEN"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263165
+    m_Localized: "V\u0161echny kamiony a z\xE1kazn\xEDci dnes cht\u011Bj\xED jedinou barvu dne."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263166
+    m_Localized: "DEN \xDAKOL\u016E"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263167
+    m_Localized: "Odm\u011Bny za spln\u011Bn\xE9 \xFAkoly (pen\xEDze + presti\u017E) se ztrojn\xE1sob\xED."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263168
+    m_Localized: "BONUS ZA SP\u011ACH"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263169
+    m_Localized: "Krabice doru\u010Den\xE9 v prvn\xED polovin\u011B \u010Dasu kamionu v hang\xE1ru vyd\u011Blaj\xED o 40 % v\xEDce."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263170
+    m_Localized: "NETRP\u011ALIV\xCD \u0158IDI\u010CI"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263171
+    m_Localized: "Kamiony z\u016Fst\xE1vaj\xED v hang\xE1ru o 40 % krat\u0161\xED dobu."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263172
+    m_Localized: "VLNA VRATEK"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263173
+    m_Localized: "Po\u010Det z\xE1kazn\xEDk\u016F \u017E\xE1daj\xEDc\xEDch vr\xE1cen\xED se t\xE9m\u011B\u0159 zdvojn\xE1sob\xED."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263174
+    m_Localized: "ST\xC1VKA DODAVATEL\u016E"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263175
+    m_Localized: "P\u0159ijde o 30 % m\xE9n\u011B z\xE1kazn\xEDk\u016F a v\xFDd\u011Blky klesnou o 10 %."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263176
+    m_Localized: "SM\xCD\u0160EN\xC1 Z\xC1SILKA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263177
+    m_Localized: "Kamiony dnes mohou \u017E\xE1dat sm\xED\u0161en\xE9 barvy."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263178
+    m_Localized: "Spl\xE1tky"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263179
+    m_Localized: "Jedna spl\xE1tka nav\xEDc, kdy\u017E nem\u016F\u017Ee\u0161 zaplatit n\xE1jem. Spl\xE1tky vezmou 70 % pokladny m\xEDsto 80 %."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263180
+    m_Localized: "Spropitn\xE9"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263181
+    m_Localized: "Ka\u017Ed\xFD obslou\u017Een\xFD z\xE1kazn\xEDk nech\xE1 spropitn\xE9 ve v\xFD\u0161i 10 % (20 % na 2. \xFArovni) odm\u011Bny za krabici."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263182
+    m_Localized: "Po\u0159adov\xE9 \u010D\xEDslo"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263183
+    m_Localized: "Trp\u011Blivost z\xE1kazn\xEDka za\u010Dne ub\xFDvat a\u017E u pultu, ne ve front\u011B."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263184
+    m_Localized: "Rann\xED sm\u011Bna"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263185
+    m_Localized: "Ka\u017Ed\xFD den za\u010D\xEDn\xE1 1 p\u0159ipravenou krabic\xED (2 na 2. \xFArovni) na voln\xE9m stole."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263186
+    m_Localized: "Chladn\xFD v\xE1nek"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263187
+    m_Localized: "\xDA\u010Dinky negativn\xEDch ud\xE1lost\xED jsou o 75 % slab\u0161\xED."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263188
+    m_Localized: "P\u0159edpov\u011B\u010F po\u010Das\xED"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263189
+    m_Localized: "Jednou za n\xE1jemn\xED obdob\xED m\u016F\u017Ee\u0161 z\xEDt\u0159ej\u0161\xED negativn\xED ud\xE1lost vym\u011Bnit za pozitivn\xED."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263190
+    m_Localized: "P\u0158EDPOV\u011A\u010E PO\u010CAS\xCD"
     m_Metadata:
       m_Items: []
   references:

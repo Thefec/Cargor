@@ -20,12 +20,6 @@ namespace NewCss
         private const string LOG_PREFIX = "[EventCalendar]";
         private const string CHARACTER_TAG = "Character";
         private const int CALENDAR_CELL_COUNT = 16;
-        private const int EVENT_INTERVAL_MIN = 1; // Changed from 3 to 1
-        private const int EVENT_INTERVAL_MAX = 2; // Changed from 5 to 3, then to 2 (2026-08-25, economist sign-off)
-        private const int INITIAL_EVENT_FREE_DAYS = 3; // First 3 days have no events
-        private const int INITIAL_POSITIVE_EVENT_COUNT = 2;
-        private const int GUARANTEED_NEGATIVE_EVENT_INDEX = 2;
-        private const int MAX_PREGENERATED_DAYS = 100;
         private const float DEFAULT_OPEN_ANIMATION_DURATION = 0.5f;
         private const float DEFAULT_CLOSE_ANIMATION_DURATION = 0.3f;
 
@@ -44,6 +38,19 @@ namespace NewCss
             Neutral
         }
 
+        /// <summary>
+        /// Bant seçim havuzunu daraltmak için kullanılan şiddet etiketi (bkz.
+        /// docs/economy/her-gun-event-ve-kart-tasarimi-2026-09-24.md §C). Öğretici bant (gün 1-3)
+        /// yalnızca Light pozitifleri kullanır; kira sonrası bantlar negatif havuzu Light→Medium→Hard
+        /// olarak kademeli açar.
+        /// </summary>
+        public enum EventSeverity
+        {
+            Light,
+            Medium,
+            Hard
+        }
+
         #endregion
 
         #region Nested Classes
@@ -54,16 +61,25 @@ namespace NewCss
             public string name;
             public string nameLocKey;
             public EventType type;
+            public EventSeverity severity;
             public string description;
             public string descLocKey;
 
-            public GameEvent(string name, string nameLocKey, EventType type, string description, string descLocKey)
+            /// <summary>Bu event yalnızca [minDay, maxDay] (dahil, mutlak gün numarası) aralığında seçilebilir.</summary>
+            public int minDay;
+            public int maxDay;
+
+            public GameEvent(string name, string nameLocKey, EventType type, EventSeverity severity,
+                string description, string descLocKey, int minDay = 1, int maxDay = int.MaxValue)
             {
                 this.name = name;
                 this.nameLocKey = nameLocKey;
                 this.type = type;
+                this.severity = severity;
                 this.description = description;
                 this.descLocKey = descLocKey;
+                this.minDay = minDay;
+                this.maxDay = maxDay;
             }
 
             /// <summary>
@@ -115,6 +131,27 @@ namespace NewCss
         [SerializeField, Tooltip("Normal günlerin arka plan rengi")]
         public Color normalDayColor = Color.white;
 
+        [Header("=== EVENT TYPE TEXT COLORS (2026-09-25, graphics-ui Faz 2) ===")]
+        [SerializeField, Tooltip("Positive event adının rengi (bkz. WriteEventText).")]
+        public Color positiveEventTextColor = new Color(0.16f, 0.55f, 0.16f);
+
+        [SerializeField, Tooltip("Negative event adının rengi.")]
+        public Color negativeEventTextColor = new Color(0.75f, 0.15f, 0.15f);
+
+        [SerializeField, Tooltip("Neutral event adının rengi (pozitif/negatif ile karışmasın diye amber).")]
+        public Color neutralEventTextColor = new Color(0.85f, 0.6f, 0.05f);
+
+        [Header("=== DAY BOX COLOR MARKER (GOLDEN BOX DAY / MONOCHROME DAY, Faz 2) ===")]
+        [SerializeField, Tooltip("GetColorForDay() BoxInfo.BoxType.Red döndürünce hücrede gösterilen işaret rengi. " +
+                                 "NetworkWorldItem.cs/GetColorForBoxType ile aynı palet.")]
+        public Color redBoxDayColor = new Color(0.8f, 0.2f, 0.2f);
+
+        [SerializeField, Tooltip("GetColorForDay() BoxInfo.BoxType.Yellow döndürünce hücrede gösterilen işaret rengi.")]
+        public Color yellowBoxDayColor = new Color(0.9f, 0.8f, 0.2f);
+
+        [SerializeField, Tooltip("GetColorForDay() BoxInfo.BoxType.Blue döndürünce hücrede gösterilen işaret rengi.")]
+        public Color blueBoxDayColor = new Color(0.2f, 0.4f, 0.8f);
+
         #endregion
 
         #region Serialized Fields - Prefabs
@@ -132,6 +169,16 @@ namespace NewCss
 
         [SerializeField, Tooltip("Çıkış butonu")]
         public Button exitButton;
+
+        [Header("=== HAVA RAPORU (FORECAST) BUTONU — 2026-09-25, graphics-ui Faz 2 ===")]
+        [SerializeField, Tooltip("HAVA RAPORU butonu. Görünürlük/interactable koşulu (RefreshForecastButtonState): " +
+                                 "UpgradePanel.Instance.IsForecastCardOwned && IsForecastAvailableThisPeriod && " +
+                                 "IsTomorrowNegative. Atanmazsa buton hiç çalışmaz (opsiyonel, sessiz no-op).")]
+        public Button forecastButton;
+
+        [SerializeField, Tooltip("Forecast butonunun etiketi (opsiyonel). Atanırsa 'ForecastButtonLabel' " +
+                                 "loc key'i ile doldurulur — StringTable'a bu anahtar müdür tarafından eklenmeli.")]
+        public TMP_Text forecastButtonLabel;
 
         #endregion
 
@@ -159,28 +206,49 @@ namespace NewCss
 
         #region Private Fields - Events
 
+        // Katalog: docs/economy/her-gun-event-ve-kart-tasarimi-2026-09-24.md §B (22 event) +
+        // KULLANICI KARARI S5 (Karışık Sevkiyat, 23. event). Sıra korunur, yeni event'ler SONA
+        // eklenir (bkz. plans/her-gun-event-ve-kart-yenileme.md "İKİSİNİN DE SONUNA" kuralı) —
+        // EventEffectManager.eventNames ile aynı sırada olmalı.
         private readonly List<GameEvent> _allEvents = new()
         {
-            new GameEvent("BUSY DAY", "EventBusyDay", EventType.Negative, "CUSTOMER SPAWN RATE INCREASES BY 35%, PATIENCE DECREASES BY 15%.", "EventBusyDayDesc"),
-            new GameEvent("DELIVERY BONUS", "EventDeliveryBonus", EventType.Positive, "EARN 20% MORE MONEY PER DELIVERY.", "EventDeliveryBonusDesc"),
-            new GameEvent("ANGRY CUSTOMERS", "EventAngryCustomers", EventType.Negative, "CUSTOMER PATIENCE DECREASES BY 40%, 10% MORE CUSTOMERS ARRIVE.", "EventAngryCustomersDesc"),
-            new GameEvent("RELAXED DAY", "EventRelaxedDay", EventType.Positive, "CUSTOMER PATIENCE INCREASES BY 30%.", "EventRelaxedDayDesc"),
-            new GameEvent("SLOW LOGISTICS", "EventSlowLogistics", EventType.Negative, "TRUCKS LEAVE THE SCENE 50% SLOWER AND EARN 8% LESS PER BOX.", "EventSlowLogisticsDesc"),
-            new GameEvent("EXPRESS CARGO", "EventExpressCargo", EventType.Positive, "TRUCKS LEAVE THE SCENE 30% FASTER AND EARN 8% MORE PER BOX.", "EventExpressCargoDesc"),
-            new GameEvent("HEAVY BOXES", "EventHeavyBoxes", EventType.Negative, "OVERALL MOVEMENT SPEED SLOWS DOWN BY 15%.", "EventHeavyBoxesDesc"),
-            new GameEvent("GOLDEN BOX DAY", "EventGoldenBoxDay", EventType.Positive, "EACH CORRECT DELIVERED BOX EARNS EXTRA 15%. ALSO BRINGS 15% MORE CUSTOMERS, 20% FASTER TRUCK EXITS AND 8% FASTER MOVEMENT, BUT STAMINA REGENERATES 20% SLOWER.", "EventGoldenBoxDayDesc"),
-            new GameEvent("OPPORTUNITY DAY", "EventOpportunityDay", EventType.Positive, "UPGRADE COSTS DECREASE BY 20%.", "EventOpportunityDayDesc"),
-            new GameEvent("FATIGUE PROBLEM", "EventFatigueProblem", EventType.Negative, "STAMINA REGENERATES 40% SLOWER AND SPRINT SPEED DECREASES BY 30%.", "EventFatigueProblemDesc"),
-            new GameEvent("VIP SERVICE", "EventVipService", EventType.Positive, "ALL BOXES EARN 12% MORE.", "EventVipServiceDesc"),
-            new GameEvent("SURPRISE AUDIT", "EventSurpriseAudit", EventType.Negative, "ALL FAULTY OPERATIONS PENALIZE DOUBLE.", "EventSurpriseAuditDesc"),
-            new GameEvent("RAINY DAY", "EventRainyDay", EventType.Negative, "20% FEWER CUSTOMERS ARRIVE.", "EventRainyDayDesc"),
-            new GameEvent("MARKETING DAY", "EventMarketingDay", EventType.Negative, "20% MORE CUSTOMERS, BUT 30% LESS EARNINGS.", "EventMarketingDayDesc"),
-            new GameEvent("CUSTOMER SUPPORT", "EventCustomerSupport", EventType.Positive, "RECEPTION PHONE CALLS SKIP HALF AS MUCH TIME.", "EventCustomerSupportDesc"),
-            new GameEvent("FESTIVAL DAY", "EventFestivalDay", EventType.Positive, "RANDOM BONUS IS EARNED AT DAY START.", "EventFestivalDayDesc")
+            // ---- Mevcut 16 (değerleri/şiddeti §B ile güncellendi) ----
+            new GameEvent("BUSY DAY", "EventBusyDay", EventType.Neutral, EventSeverity.Medium, "CUSTOMER SPAWN RATE INCREASES BY 35%, PATIENCE DECREASES BY 15%.", "EventBusyDayDesc"),
+            new GameEvent("DELIVERY BONUS", "EventDeliveryBonus", EventType.Positive, EventSeverity.Light, "EARN 20% MORE MONEY PER DELIVERY.", "EventDeliveryBonusDesc"),
+            new GameEvent("ANGRY CUSTOMERS", "EventAngryCustomers", EventType.Negative, EventSeverity.Light, "CUSTOMER PATIENCE DECREASES BY 40%, 10% MORE CUSTOMERS ARRIVE.", "EventAngryCustomersDesc"),
+            new GameEvent("RELAXED DAY", "EventRelaxedDay", EventType.Positive, EventSeverity.Light, "CUSTOMER PATIENCE INCREASES BY 50%, ALL PENALTIES HALVED.", "EventRelaxedDayDesc"),
+            new GameEvent("SLOW LOGISTICS", "EventSlowLogistics", EventType.Negative, EventSeverity.Light, "TRUCKS TAKE TWICE AS LONG TO LEAVE AND EARN 10% LESS PER BOX.", "EventSlowLogisticsDesc"),
+            new GameEvent("EXPRESS CARGO", "EventExpressCargo", EventType.Positive, EventSeverity.Light, "TRUCKS LEAVE THE SCENE 50% FASTER, EARN 10% MORE PER BOX, AND STAY 20% LONGER IN THE HANGAR.", "EventExpressCargoDesc"),
+            new GameEvent("HEAVY BOXES", "EventHeavyBoxes", EventType.Negative, EventSeverity.Medium, "MOVEMENT SPEED DECREASES BY 15% AND SPRINT SPEED BY 20%.", "EventHeavyBoxesDesc"),
+            new GameEvent("GOLDEN BOX DAY", "EventGoldenBoxDay", EventType.Positive, EventSeverity.Light, "TODAY'S COLOR BOXES EARN 60% MORE.", "EventGoldenBoxDayDesc"),
+            new GameEvent("OPPORTUNITY DAY", "EventOpportunityDay", EventType.Positive, EventSeverity.Light, "UPGRADE COSTS DECREASE BY 30%.", "EventOpportunityDayDesc"),
+            new GameEvent("FATIGUE PROBLEM", "EventFatigueProblem", EventType.Negative, EventSeverity.Light, "MOVEMENT SPEED DECREASES BY 10%, SPRINT SPEED BY 30%; STAMINA REGENERATES 40% SLOWER.", "EventFatigueProblemDesc"),
+            new GameEvent("VIP SERVICE", "EventVipService", EventType.Positive, EventSeverity.Medium, "ALL CUSTOMERS REQUEST 2 ITEMS TODAY.", "EventVipServiceDesc", minDay: 1, maxDay: 8),
+            new GameEvent("SURPRISE AUDIT", "EventSurpriseAudit", EventType.Negative, EventSeverity.Medium, "ALL FAULTY OPERATIONS PENALIZE DOUBLE.", "EventSurpriseAuditDesc"),
+            new GameEvent("RAINY DAY", "EventRainyDay", EventType.Negative, EventSeverity.Medium, "20% FEWER CUSTOMERS ARRIVE.", "EventRainyDayDesc"),
+            new GameEvent("MARKETING DAY", "EventMarketingDay", EventType.Negative, EventSeverity.Hard, "20% MORE CUSTOMERS, BUT 30% LESS EARNINGS.", "EventMarketingDayDesc"),
+            new GameEvent("CUSTOMER SUPPORT", "EventCustomerSupport", EventType.Positive, EventSeverity.Light, "RECEPTION PHONE CALLS DON'T COST ANY TIME.", "EventCustomerSupportDesc"),
+            new GameEvent("FESTIVAL DAY", "EventFestivalDay", EventType.Positive, EventSeverity.Medium, "RANDOM BONUS IS EARNED AT DAY START.", "EventFestivalDayDesc", minDay: 5),
+
+            // ---- Yeni 7 (6 planlanan + Karışık Sevkiyat, KULLANICI KARARI S5) — SONA eklendi ----
+            new GameEvent("MONOCHROME DAY", "EventMonochromeDay", EventType.Positive, EventSeverity.Light, "ALL TRUCKS AND CUSTOMERS WANT TODAY'S SINGLE COLOR.", "EventMonochromeDayDesc"),
+            new GameEvent("QUEST DAY", "EventQuestDay", EventType.Positive, EventSeverity.Light, "COMPLETED QUEST REWARDS (MONEY + PRESTIGE) ARE TRIPLED.", "EventQuestDayDesc"),
+            new GameEvent("RUSH BONUS", "EventRushBonus", EventType.Positive, EventSeverity.Medium, "BOXES DELIVERED IN THE FIRST HALF OF A TRUCK'S HANGAR TIME EARN 40% MORE.", "EventRushBonusDesc"),
+            new GameEvent("IMPATIENT DRIVERS", "EventImpatientDrivers", EventType.Negative, EventSeverity.Medium, "TRUCKS STAY 40% LESS TIME IN THE HANGAR.", "EventImpatientDriversDesc"),
+            new GameEvent("RETURN WAVE", "EventReturnWave", EventType.Negative, EventSeverity.Hard, "CUSTOMERS REQUESTING A RETURN NEARLY DOUBLE.", "EventReturnWaveDesc", minDay: 5),
+            new GameEvent("SUPPLY STRIKE", "EventSupplyStrike", EventType.Negative, EventSeverity.Hard, "30% FEWER CUSTOMERS ARRIVE AND EARNINGS DROP 10%.", "EventSupplyStrikeDesc"),
+            new GameEvent("MIXED SHIPMENT", "EventMixedShipment", EventType.Neutral, EventSeverity.Medium, "TODAY'S TRUCKS CAN REQUEST MIXED COLORS.", "EventMixedShipmentDesc", minDay: 5, maxDay: 11),
         };
 
         private readonly List<int> _randomEventDays = new();
         private readonly Dictionary<int, GameEvent> _eventsByDay = new();
+
+        /// <summary>
+        /// GOLDEN BOX DAY / MONOCHROME DAY günleri için takvim üretimi sırasında AYNI seed'den
+        /// çekilen "günün rengi". §B "Netcode" notu: server ile client'lar aynı seed'den aynı rengi
+        /// üretir, ayrıca senkron gerekmez.
+        /// </summary>
+        private readonly Dictionary<int, BoxInfo.BoxType> _dayColorByDay = new();
 
         #endregion
 
@@ -210,11 +278,26 @@ namespace NewCss
         private bool _isAnimating;
         private PlayerMovement _currentPlayer;
 
+        /// <summary>eventTexts'in event-dışı orijinal rengi (bkz. CacheDefaultEventTextColors).</summary>
+        private Color[] _defaultEventTextColors;
+
         private readonly NetworkVariable<int> _calendarSeed = new NetworkVariable<int>(0,
             NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
         private readonly NetworkVariable<int> _calendarBaseDay = new NetworkVariable<int>(0,
             NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
         private bool _calendarGenerated;
+
+        // HAVA RAPORU (forecast, §D, 2026-09-25, gameplay-B kartı — UpgradePanel.OnForecastConsumedServer):
+        // gün-1 indeksli (index = day-1), CALENDAR_CELL_COUNT uzunlukta, -1 = override yok. Takvim
+        // üretimi seed'den DETERMİNİSTİK olduğu için (server/client aynı sonucu üretir) override'ı
+        // ayrı bir NetworkList'te tutmak gerekiyor — üretimi yeniden çalıştırmak override'ı kaybeder.
+        // NetworkList late-join client'a TAM state sync sağladığından host/client/geç-katılan
+        // otomatik tutarlı olur (ekstra ClientRpc gerekmez). UpgradePanel'deki NetworkList kuruluş
+        // deseniyle aynı: field initializer DEĞİL, Awake()'te construct edilir (bkz. InitializeAnimator vb.).
+        private NetworkList<int> _forecastOverrideEventIndex;
+        // Paralel liste: override edilen event GOLDEN BOX DAY/MONOCHROME DAY ise o günün rengi
+        // (BoxInfo.BoxType). -1 = renk yok/gerekmez.
+        private NetworkList<int> _forecastOverrideColorIndex;
 
         #endregion
 
@@ -255,8 +338,13 @@ namespace NewCss
         {
             InitializeAnimator();
             InitializeExitButton();
+            InitializeForecastButton();
             CacheAnimationDurations();
+            CacheDefaultEventTextColors();
             ValidateCellWiring();
+
+            _forecastOverrideEventIndex = new NetworkList<int>();
+            _forecastOverrideColorIndex = new NetworkList<int>();
         }
 
 #if UNITY_EDITOR
@@ -324,6 +412,7 @@ namespace NewCss
             UnsubscribeFromDayCycleEvents();
             UnsubscribeFromLocaleEvents();
             CleanupExitButton();
+            CleanupForecastButton();
             ClearSpawnedEventTexts();
         }
 
@@ -342,6 +431,16 @@ namespace NewCss
                 _calendarBaseDay.Value = startDay;
                 _calendarSeed.Value = UnityEngine.Random.Range(1, int.MaxValue);
                 EnsureCalendarGenerated();
+
+                // HAVA RAPORU: -1 (override yok) ile CALENDAR_CELL_COUNT eleman — server-only yazım,
+                // NetworkList late-join client'a otomatik tam-state sync sağlar.
+                for (int i = 0; i < CALENDAR_CELL_COUNT; i++)
+                {
+                    _forecastOverrideEventIndex.Add(-1);
+                    _forecastOverrideColorIndex.Add(-1);
+                }
+
+                UpgradePanel.OnForecastConsumedServer += HandleForecastConsumedServer;
             }
             else
             {
@@ -354,12 +453,25 @@ namespace NewCss
                     _calendarSeed.OnValueChanged += HandleCalendarSeedChanged;
                 }
             }
+
+            // Her peer (host dahil) takvim UI'ını override değiştiğinde tazeler.
+            _forecastOverrideEventIndex.OnListChanged += HandleForecastOverrideChanged;
         }
 
         public override void OnNetworkDespawn()
         {
             _calendarSeed.OnValueChanged -= HandleCalendarSeedChanged;
+            _forecastOverrideEventIndex.OnListChanged -= HandleForecastOverrideChanged;
+            if (IsServer)
+            {
+                UpgradePanel.OnForecastConsumedServer -= HandleForecastConsumedServer;
+            }
             base.OnNetworkDespawn();
+        }
+
+        private void HandleForecastOverrideChanged(NetworkListEvent<int> changeEvent)
+        {
+            UpdateCalendarUI();
         }
 
         private void HandleCalendarSeedChanged(int previousValue, int newValue)
@@ -411,6 +523,71 @@ namespace NewCss
             else
             {
                 LogWarning("Exit Button not assigned!");
+            }
+        }
+
+        /// <summary>
+        /// HAVA RAPORU butonu — opsiyonel (bkz. forecastButton tooltip). Atanmamışsa sessizce
+        /// no-op kalır, exitButton'daki gibi zorunlu bir uyarı BASILMAZ çünkü buton sahnede henüz
+        /// eklenmemiş olabilir (bkz. rapor).
+        /// </summary>
+        private void InitializeForecastButton()
+        {
+            if (forecastButton != null)
+            {
+                forecastButton.onClick.AddListener(HandleForecastButtonClicked);
+            }
+        }
+
+        private void CleanupForecastButton()
+        {
+            if (forecastButton != null)
+            {
+                forecastButton.onClick.RemoveListener(HandleForecastButtonClicked);
+            }
+        }
+
+        private void HandleForecastButtonClicked()
+        {
+            UpgradePanel.Instance?.RequestUseForecast();
+        }
+
+        /// <summary>
+        /// HAVA RAPORU butonunun görünürlük/interactable durumunu üç koşulun BİRLİKTE AND'iyle
+        /// belirler (bkz. forecastButton tooltip). UpdateCalendarUI'dan çağrılır — bu da gün
+        /// değişimi, forecast override NetworkList değişimi ve locale değişiminde zaten tetikleniyor.
+        /// </summary>
+        private void RefreshForecastButtonState()
+        {
+            if (forecastButton == null) return;
+
+            bool visible = UpgradePanel.Instance != null
+                           && UpgradePanel.Instance.IsForecastCardOwned
+                           && UpgradePanel.Instance.IsForecastAvailableThisPeriod
+                           && IsTomorrowNegative;
+
+            forecastButton.gameObject.SetActive(visible);
+            forecastButton.interactable = visible;
+
+            if (forecastButtonLabel != null)
+            {
+                forecastButtonLabel.text = LocalizationHelper.GetLocalizedString("ForecastButtonLabel");
+            }
+        }
+
+        /// <summary>
+        /// eventTexts'in sahnedeki ORİJİNAL (event-dışı) rengini bir kere yakalar. WriteEventText
+        /// bir event günü için rengi değiştirdiğinde, event'siz/kira günü dönüşünde buraya geri
+        /// dönülür — ClearSpawnedEventTexts yalnız .text'i boşaltır, .color'a dokunmaz.
+        /// </summary>
+        private void CacheDefaultEventTextColors()
+        {
+            if (eventTexts == null) return;
+
+            _defaultEventTextColors = new Color[eventTexts.Length];
+            for (int i = 0; i < eventTexts.Length; i++)
+            {
+                if (eventTexts[i] != null) _defaultEventTextColors[i] = eventTexts[i].color;
             }
         }
 
@@ -562,6 +739,7 @@ namespace NewCss
             }
 
             calendarPanel.SetActive(true);
+            RefreshForecastButtonState();
 
             if (panelAnimator != null)
             {
@@ -729,9 +907,43 @@ namespace NewCss
         #region Event Generation
 
         /// <summary>
-        /// Takvimi verilen seed'den deterministik olarak üretir. Server ile TÜM client'larda
-        /// aynı seed verildiğinde aynı sonucu üretmesi için System.Random kullanılır
-        /// (UnityEngine.Random global/instance state taşır, peer'ler arası senkron garanti edilemez).
+        /// Bant tanımı (§C): baseDay'e göre GÖRECELİ gün ofsetleri (0 = baseDay = gün 1) + slot
+        /// dizisi. 'P' = pozitif/takas havuzu, 'N' = negatif havuz, 'X' = %50/%50 yazı-tura.
+        /// posLightOnly = true ise pozitif havuz yalnız EventSeverity.Light'a daralır (öğretici bant).
+        /// negSeverities = null ise o bantta hiç negatif seçilmez (öğretici bant, N/X hiç yok).
+        /// </summary>
+        private readonly struct DayBand
+        {
+            public readonly int[] dayOffsets;
+            public readonly char[] slots;
+            public readonly bool posLightOnly;
+            public readonly EventSeverity[] negSeverities;
+
+            public DayBand(int[] dayOffsets, char[] slots, bool posLightOnly, EventSeverity[] negSeverities)
+            {
+                this.dayOffsets = dayOffsets;
+                this.slots = slots;
+                this.posLightOnly = posLightOnly;
+                this.negSeverities = negSeverities;
+            }
+        }
+
+        private static readonly DayBand[] DayBands =
+        {
+            // Öğretici: gün 1-3. Yalnız hafif pozitifler, negatif yok.
+            new DayBand(new[] { 0, 1, 2 }, new[] { 'P', 'P', 'P' }, true, null),
+            // Kira-1 sonrası: gün 5-7. Negatif havuz yalnız hafif.
+            new DayBand(new[] { 4, 5, 6 }, new[] { 'P', 'N', 'X' }, false, new[] { EventSeverity.Light }),
+            // Kira-2 sonrası: gün 9-11. Negatif havuz hafif+orta.
+            new DayBand(new[] { 8, 9, 10 }, new[] { 'P', 'N', 'X' }, false, new[] { EventSeverity.Light, EventSeverity.Medium }),
+            // Final: gün 13-15. Negatif havuz orta+sert.
+            new DayBand(new[] { 12, 13, 14 }, new[] { 'P', 'N', 'N' }, false, new[] { EventSeverity.Medium, EventSeverity.Hard }),
+        };
+
+        /// <summary>
+        /// Takvimi bant kuralına göre (§C) üretir: kira-dışı her gün (1-3, 5-7, 9-11, 13-15) tam 1
+        /// event, koşu içinde tekrar yok, seed'li ve deterministik (host/client aynı takvimi üretir —
+        /// System.Random kullanır, UnityEngine.Random KULLANILMAZ, peer'ler arası senkron gerekir).
         /// baseDay, üretim anında server'ın senkronladığı SABİT gündür — mutable `startDay` alanı
         /// KULLANILMAZ, çünkü late-join client'larda `startDay` katılım anının günü olabilir ve
         /// server'ın üretimde kullandığı base'den sapar (takvim divergence'ı).
@@ -740,50 +952,197 @@ namespace NewCss
         {
             _randomEventDays.Clear();
             _eventsByDay.Clear();
+            _dayColorByDay.Clear();
 
             System.Random rng = new System.Random(seed);
+            var usedEventNames = new HashSet<string>();
 
-            int maxDay = baseDay + MAX_PREGENERATED_DAYS;
-            int currentDay = baseDay + INITIAL_EVENT_FREE_DAYS; // Start from day 4 (first 3 days have no events)
-            int eventCount = 0;
-
-            var positiveEvents = _allEvents.FindAll(e => e.type == EventType.Positive);
-            var negativeEvents = _allEvents.FindAll(e => e.type == EventType.Negative);
-
-            while (currentDay < maxDay)
+            foreach (DayBand band in DayBands)
             {
-                // Random.Range with integers is exclusive of max, so +1 makes it inclusive
-                currentDay += rng.Next(EVENT_INTERVAL_MIN, EVENT_INTERVAL_MAX + 1);
+                char[] slots = (char[])band.slots.Clone();
+                ShuffleSlots(slots, rng);
 
-                if (_randomEventDays.Contains(currentDay)) continue;
+                for (int i = 0; i < band.dayOffsets.Length; i++)
+                {
+                    int day = baseDay + band.dayOffsets[i];
+                    char slot = slots[i];
 
-                // Kira günlerinde event atama (4, 8, 12, 16...)
-                if (IsRentDay(currentDay)) continue;
+                    // Kira günü asla event almaz (emniyet — bant tanımları zaten kira günlerine denk gelmez).
+                    if (IsRentDay(day)) continue;
 
-                _randomEventDays.Add(currentDay);
+                    bool wantPositive = slot == 'P' || (slot == 'X' && rng.Next(2) == 0);
 
-                GameEvent selectedEvent = SelectEventByCount(rng, eventCount, positiveEvents, negativeEvents);
-                _eventsByDay[currentDay] = selectedEvent;
+                    GameEvent selected = wantPositive
+                        ? PickFromPool(rng, isNegativePool: false, band.posLightOnly ? new[] { EventSeverity.Light } : null, day, usedEventNames)
+                        : PickFromPool(rng, isNegativePool: true, band.negSeverities, day, usedEventNames);
 
-                eventCount++;
+                    if (selected == null) continue; // havuz tükendi (beklenmez, 12 slot / 23 event) — o gün event'siz kalır
+
+                    usedEventNames.Add(selected.name);
+                    _randomEventDays.Add(day);
+                    _eventsByDay[day] = selected;
+
+                    if (selected.name == "GOLDEN BOX DAY" || selected.name == "MONOCHROME DAY")
+                    {
+                        _dayColorByDay[day] = (BoxInfo.BoxType)rng.Next(0, 3);
+                    }
+                }
             }
 
             _randomEventDays.Sort();
         }
 
-        private GameEvent SelectEventByCount(System.Random rng, int eventCount, List<GameEvent> positiveEvents, List<GameEvent> negativeEvents)
+        /// <summary>
+        /// Tip (pozitif/takas havuzu vs negatif havuz) korunarak, şiddet kısıtı + gün kısıtı +
+        /// kullanılmamışlık ile aday listesi daraltılır. Aday kalmazsa şiddet kısıtı gevşetilir
+        /// (§C emniyet kuralı, tip kısıtı korunur); o da boşsa gün kısıtı da gevşetilir (son çare).
+        /// </summary>
+        private GameEvent PickFromPool(System.Random rng, bool isNegativePool, EventSeverity[] allowedSeverities, int day, HashSet<string> usedEventNames)
         {
-            if (eventCount < INITIAL_POSITIVE_EVENT_COUNT)
+            List<GameEvent> candidates = FilterPool(isNegativePool, allowedSeverities, day, usedEventNames, ignoreDayRange: false);
+            if (candidates.Count == 0)
             {
-                return positiveEvents[rng.Next(0, positiveEvents.Count)];
+                candidates = FilterPool(isNegativePool, null, day, usedEventNames, ignoreDayRange: false);
+            }
+            if (candidates.Count == 0)
+            {
+                candidates = FilterPool(isNegativePool, null, day, usedEventNames, ignoreDayRange: true);
+            }
+            if (candidates.Count == 0) return null;
+
+            return candidates[rng.Next(0, candidates.Count)];
+        }
+
+        private List<GameEvent> FilterPool(bool isNegativePool, EventSeverity[] allowedSeverities, int day, HashSet<string> usedEventNames, bool ignoreDayRange)
+        {
+            var result = new List<GameEvent>();
+            foreach (GameEvent e in _allEvents)
+            {
+                bool typeMatches = isNegativePool ? e.type == EventType.Negative : e.type != EventType.Negative;
+                if (!typeMatches) continue;
+                if (usedEventNames.Contains(e.name)) continue;
+                if (!ignoreDayRange && (day < e.minDay || day > e.maxDay)) continue;
+                if (allowedSeverities != null && System.Array.IndexOf(allowedSeverities, e.severity) < 0) continue;
+
+                result.Add(e);
+            }
+            return result;
+        }
+
+        private static void ShuffleSlots(char[] slots, System.Random rng)
+        {
+            for (int i = slots.Length - 1; i > 0; i--)
+            {
+                int j = rng.Next(i + 1);
+                (slots[i], slots[j]) = (slots[j], slots[i]);
+            }
+        }
+
+        #endregion
+
+        #region Forecast (Hava Raporu — gameplay-B kartı arayüzü)
+
+        /// <summary>
+        /// UpgradePanel.OnForecastConsumedServer server-side tetiklenince çağrılır (bkz. UpgradePanel.cs
+        /// RequestUseForecast/UseForecastServerRpc — kart sahipliği/dönem kilidi ORADA kontrol edildi).
+        /// Yarının event'i (override dahil) Negative DEĞİLSE no-op (idempotent güvenlik — buton UI'da
+        /// yalnız yarın negatifken görünür ama çift-tık/gecikme senaryosuna karşı savunmacı).
+        /// Takvim seed'den deterministik üretildiği için override AYRI bir NetworkList'te tutulur —
+        /// _allEvents/_eventsByDay'i DEĞİŞTİRMEZ (yeniden üretim override'ı kaybetmesin diye).
+        /// </summary>
+        private void HandleForecastConsumedServer()
+        {
+            if (!IsServer) return;
+
+            int tomorrow = (DayCycleManager.Instance != null ? DayCycleManager.Instance.currentDay : startDay) + 1;
+            if (tomorrow < 1 || tomorrow > CALENDAR_CELL_COUNT) return;
+            if (IsRentDay(tomorrow)) return;
+
+            GameEvent currentTomorrowEvent = GetEventForDay(tomorrow);
+            if (currentTomorrowEvent == null || currentTomorrowEvent.type != EventType.Negative) return;
+
+            // Bu koşuda kullanılmış TÜM event adları (orijinal takvim + önceki forecast override'ları)
+            // — "koşuda henüz çekilmemiş" kuralı korunur.
+            var usedEventNames = new HashSet<string>();
+            foreach (GameEvent e in _eventsByDay.Values) usedEventNames.Add(e.name);
+            for (int i = 0; i < _forecastOverrideEventIndex.Count; i++)
+            {
+                int idx = _forecastOverrideEventIndex[i];
+                if (idx >= 0 && idx < _allEvents.Count) usedEventNames.Add(_allEvents[idx].name);
             }
 
-            if (eventCount == GUARANTEED_NEGATIVE_EVENT_INDEX)
-            {
-                return negativeEvents[rng.Next(0, negativeEvents.Count)];
-            }
+            bool lightOnly = GetPosLightOnlyForDay(tomorrow);
 
-            return _allEvents[rng.Next(0, _allEvents.Count)];
+            // Bu seçim koşu-tohumlu DETERMİNİZM gerektirmez (sonuç NetworkList ile replike edilir,
+            // her peer sonucu okur — kendi üretmez), UnityEngine.Random güvenle kullanılabilir.
+            System.Random rng = new System.Random(UnityEngine.Random.Range(1, int.MaxValue));
+            GameEvent replacement = PickFromPool(rng, isNegativePool: false,
+                lightOnly ? new[] { EventSeverity.Light } : null, tomorrow, usedEventNames);
+            if (replacement == null) return; // havuz tükendi (olağan dışı) — takvim değişmeden kalır
+
+            int replacementIndex = _allEvents.IndexOf(replacement);
+            if (replacementIndex < 0) return;
+
+            _forecastOverrideEventIndex[tomorrow - 1] = replacementIndex;
+
+            if (replacement.name == "GOLDEN BOX DAY" || replacement.name == "MONOCHROME DAY")
+            {
+                _forecastOverrideColorIndex[tomorrow - 1] = UnityEngine.Random.Range(0, 3);
+            }
+        }
+
+        /// <summary>Verilen günün bandı öğreticiyse (posLightOnly) true; bant bulunamazsa false (kısıtsız).</summary>
+        private bool GetPosLightOnlyForDay(int day)
+        {
+            foreach (DayBand band in DayBands)
+            {
+                foreach (int offset in band.dayOffsets)
+                {
+                    if (_calendarBaseDay.Value + offset == day) return band.posLightOnly;
+                }
+            }
+            return false;
+        }
+
+        private GameEvent GetForecastOverrideEvent(int day)
+        {
+            if (day < 1 || day > CALENDAR_CELL_COUNT) return null;
+            int i = day - 1;
+            if (i >= _forecastOverrideEventIndex.Count) return null;
+
+            int idx = _forecastOverrideEventIndex[i];
+            return (idx >= 0 && idx < _allEvents.Count) ? _allEvents[idx] : null;
+        }
+
+        private bool TryGetForecastOverrideColor(int day, out BoxInfo.BoxType color)
+        {
+            color = default;
+            if (day < 1 || day > CALENDAR_CELL_COUNT) return false;
+            int i = day - 1;
+            if (i >= _forecastOverrideColorIndex.Count) return false;
+
+            int c = _forecastOverrideColorIndex[i];
+            if (c < 0) return false;
+
+            color = (BoxInfo.BoxType)c;
+            return true;
+        }
+
+        /// <summary>
+        /// HAVA RAPORU buton görünürlüğü/tıklanabilirliği için: yarının event'i (override dahil)
+        /// Negative mi? Kart sahipliği/dönem hakkı BURADA bilinmiyor — UI tarafı
+        /// UpgradePanel.IsForecastCardOwned && IsForecastAvailableThisPeriod && IsTomorrowNegative
+        /// üçünü BİRLİKTE kontrol etmeli. SerializeField/buton sahnede henüz yok — graphics-ui/müdür
+        /// bağlayacak (bkz. rapor).
+        /// </summary>
+        public bool IsTomorrowNegative
+        {
+            get
+            {
+                int tomorrow = (DayCycleManager.Instance != null ? DayCycleManager.Instance.currentDay : startDay) + 1;
+                GameEvent evt = GetEventForDay(tomorrow);
+                return evt != null && evt.type == EventType.Negative;
+            }
         }
 
         #endregion
@@ -810,11 +1169,14 @@ namespace NewCss
             ClearSpawnedEventTexts();
             PopulateCalendarCells();
             HighlightCurrentDay();
+            RefreshForecastButtonState();
         }
 
         /// <summary>
         /// Tüm gün hücrelerinin event yazısını boşaltır. Obje YOK EDİLMEZ — TextMesh'ler
-        /// sahnenin kalıcı parçası, yalnız içerikleri temizlenir.
+        /// sahnenin kalıcı parçası, yalnız içerikleri temizlenir. Renk BURADA SIFIRLANMAZ —
+        /// WriteEventText event yoksa/kira günüyse rengi kendi orijinaline (_defaultEventTextColors)
+        /// döndürür, aksi halde önceki bir Positive/Negative/Neutral rengi kalıcı olarak yapışır kalırdı.
         /// </summary>
         private void ClearSpawnedEventTexts()
         {
@@ -847,16 +1209,62 @@ namespace NewCss
         {
             if (eventTexts[index] == null) return;
 
-            if (_randomEventDays.Contains(day) && _eventsByDay.TryGetValue(day, out GameEvent gameEvent))
+            // GetEventForDay HAVA RAPORU override'ını da kapsar (bkz. Forecast bölgesi) — takvim
+            // metni override sonrası yenilenen event'i gösterir.
+            GameEvent gameEvent = GetEventForDay(day);
+            if (gameEvent != null)
             {
-                eventTexts[index].text = gameEvent.GetLocalizedName();
+                eventTexts[index].color = GetEventTypeTextColor(gameEvent.type);
+                eventTexts[index].text = BuildDayColorMarker(day) + gameEvent.GetLocalizedName();
                 return;
             }
+
+            ResetEventTextColor(index);
 
             if (IsRentDay(day))
             {
                 eventTexts[index].text = LocalizationHelper.GetLocalizedString("RentDay");
             }
+        }
+
+        /// <summary>Positive/Negative/Neutral event tipine göre metin rengi (bkz. Faz 2 renk alanları).</summary>
+        private Color GetEventTypeTextColor(EventType type)
+        {
+            switch (type)
+            {
+                case EventType.Positive: return positiveEventTextColor;
+                case EventType.Negative: return negativeEventTextColor;
+                default: return neutralEventTextColor;
+            }
+        }
+
+        /// <summary>
+        /// GOLDEN BOX DAY / MONOCHROME DAY gibi günlerde GetColorForDay() bir BoxInfo.BoxType
+        /// döndürüyorsa, hücreye event adının ÖNÜNE rich-text renkli bir kare işareti ekler
+        /// (■). Yeni bir UI objesi gerektirmez — mevcut eventTexts TextMesh'i m_isRichText: 1
+        /// olduğu için <color=#RRGGBB> etiketini doğrudan render eder.
+        /// </summary>
+        private string BuildDayColorMarker(int day)
+        {
+            BoxInfo.BoxType? dayColor = GetColorForDay(day);
+            if (!dayColor.HasValue) return string.Empty;
+
+            Color markerColor = dayColor.Value switch
+            {
+                BoxInfo.BoxType.Red => redBoxDayColor,
+                BoxInfo.BoxType.Yellow => yellowBoxDayColor,
+                BoxInfo.BoxType.Blue => blueBoxDayColor,
+                _ => Color.white
+            };
+
+            return $"<color=#{ColorUtility.ToHtmlStringRGB(markerColor)}>■</color> ";
+        }
+
+        /// <summary>Event/kira etiketi olmayan bir hücrenin rengini sahnedeki orijinaline döndürür.</summary>
+        private void ResetEventTextColor(int index)
+        {
+            if (_defaultEventTextColors == null || index >= _defaultEventTextColors.Length) return;
+            eventTexts[index].color = _defaultEventTextColors[index];
         }
 
         /// <summary>
@@ -893,10 +1301,14 @@ namespace NewCss
         }
 
         /// <summary>
-        /// Belirli bir gün için event bilgisini döndürür
+        /// Belirli bir gün için event bilgisini döndürür. HAVA RAPORU (forecast) override'ı varsa
+        /// (bkz. _forecastOverrideEventIndex) takvimde üretilmiş orijinal event yerine ONU döndürür.
         /// </summary>
         public GameEvent GetEventForDay(int day)
         {
+            GameEvent overrideEvent = GetForecastOverrideEvent(day);
+            if (overrideEvent != null) return overrideEvent;
+
             return _eventsByDay.TryGetValue(day, out GameEvent gameEvent) ? gameEvent : null;
         }
 
@@ -905,7 +1317,7 @@ namespace NewCss
         /// </summary>
         public bool HasEventOnDay(int day)
         {
-            return _eventsByDay.ContainsKey(day);
+            return GetEventForDay(day) != null;
         }
 
         /// <summary>
@@ -915,6 +1327,38 @@ namespace NewCss
         {
             int today = DayCycleManager.Instance?.currentDay ?? startDay;
             return GetEventForDay(today);
+        }
+
+        /// <summary>
+        /// Takvim (server'da senkron üretim, client'ta seed replikasyonu sonrası) üretildi mi?
+        /// EventEffectManager'ın gün-1 event'ini koşu başında güvenle aktif edebilmesi için —
+        /// iki NetworkObject'in OnNetworkSpawn sırası garanti değildir, bkz. EventEffectManager.
+        /// </summary>
+        public bool IsCalendarGenerated => _calendarGenerated;
+
+        /// <summary>
+        /// GOLDEN BOX DAY / MONOCHROME DAY günü için takvim üretimindeki aynı seed'den çekilmiş
+        /// "günün rengi". O gün böyle bir event yoksa null. HAVA RAPORU override'ı GOLDEN BOX DAY/
+        /// MONOCHROME DAY'e denk gelirse o günün rengi de override listesinden okunur.
+        /// </summary>
+        public BoxInfo.BoxType? GetColorForDay(int day)
+        {
+            if (TryGetForecastOverrideColor(day, out BoxInfo.BoxType overrideColor)) return overrideColor;
+
+            return _dayColorByDay.TryGetValue(day, out BoxInfo.BoxType color) ? color : (BoxInfo.BoxType?)null;
+        }
+
+        /// <summary>
+        /// SERİNLİK (cooler, §D, 2026-09-25): EventEffectManager'ın bir event'i hafifletip
+        /// hafifletmeyeceğine (yalnız Negative) karar vermesi için katalogdan tip çözer. Bulunamazsa null.
+        /// </summary>
+        public EventType? GetEventTypeByName(string eventName)
+        {
+            foreach (GameEvent e in _allEvents)
+            {
+                if (e.name == eventName) return e.type;
+            }
+            return null;
         }
 
         #endregion

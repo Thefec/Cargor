@@ -186,10 +186,20 @@ namespace NewCss
             { "Görev Kademesi", UPGRADE_QUEST_TIER },
         };
 
-        /// <summary>Kod tarafında etkisi olan, sahnede MUTLAKA bulunması gereken omurgalar.</summary>
+        /// <summary>
+        /// Kod tarafında etkisi olan, sahnede MUTLAKA bulunması gereken omurgalar.
+        /// gameplay-B (2026-09-25, 6 kapalı kart yeniden tasarımı): UPGRADE_QUEUE/STAMINA/MONEY
+        /// buradan ÇIKARILDI — bu üç omurganın sahnedeki tek kaynağı ("Geniş Kuyruk"/"Dinç Ekip"/
+        /// "Sağlam Kasa") Sıra Numaratörü/Sabah Vardiyası/Taksit'e dönüştürüldü (yeni effectId'ler
+        /// ticket_queue/morning_shift/grace_plus — ResolveUpgradeKey artık bunları ÇÖZEMEZ, bilerek:
+        /// PerkEffect.Apply'a gitsinler). ApplyMoneyUpgrade zaten NO-OP'tu (bkz. InitializeMoneyBaseValue
+        /// yorumu); Stamina/Queue init'leri CustomerManager.maxQueueSize/PlayerMovement.staminaRegenRate
+        /// authored default'larıyla eşdi (Queue authored 2 idi, omurga starterValue 3 yazıyordu — bu
+        /// davranış scene'de CustomerManager.maxQueueSize=3 olarak KORUNDU, bkz. sahne diff'i).
+        /// </summary>
         private static readonly string[] RequiredBackboneKeys =
         {
-            UPGRADE_QUEUE, UPGRADE_STAMINA, UPGRADE_MONEY, UPGRADE_TRUCK, UPGRADE_QUEST_TIER
+            UPGRADE_TRUCK, UPGRADE_QUEST_TIER
         };
 
         // UI Element Names
@@ -228,6 +238,24 @@ namespace NewCss
             // leveraged_rent ve all_in ikisi de grace period'u siliyor (graceDisabled = true) -
             // plan economy-rebuild-2026-07-30-faz4-final.md §B.7'de istenen dışlama (PerkEffect.cs:164-166 yorumu).
             new[] { "leveraged_rent", "all_in" },
+            // S1 (2026-09-25, plans/her-gun-event-ve-kart-yenileme.md): Taksit (grace_plus) ve Acil
+            // Fren (emergency_brake) aynı teklifte asla birlikte çıkmaz, reroll dahil — ikisi de
+            // "kirayı ödeyemezsen ne olur" sorununa cevap, biri diğerini gereksizleştirir.
+            new[] { "grace_plus", "emergency_brake" },
+            // Tasarım §D: Kaldıraçlı Kira ve Kelle Koltukta grace'i siliyor (graceDisabled) → Taksit'i
+            // anlamsızlaştırır. Çift bazında dışlanır; aralarındaki mevcut ilişkiler değişmez.
+            new[] { "grace_plus", "leveraged_rent" },
+            new[] { "grace_plus", "all_in" },
+        };
+
+        // Ö-A kira fonu kilidinden muaf effectId'ler — tek kurtarıcı kartlar, kilitlenirse zayıf
+        // takım kurtulamaz (bkz. WouldViolateRentReserve). S1 (2026-09-25): Taksit eklendi — Acil
+        // Fren'in mekanik ikizi (ikisi de kilit yüzünden geç alınabiliyordu, ölçüm:
+        // .claude/agent-memory/economist/ notlarında "kilit izin verdiği ilk gün alındı").
+        private static readonly string[] RENT_RESERVE_LOCK_EXEMPT_EFFECT_IDS =
+        {
+            "emergency_brake",
+            "grace_plus",
         };
 
         #endregion
@@ -321,12 +349,20 @@ namespace NewCss
         private readonly NetworkVariable<int> _rerollCountToday = new(0);
         private readonly NetworkVariable<bool> _questSystemActive = new(false); // Görev Tier feature-flag
         private readonly NetworkVariable<int> _discountedUpgradeIndex = new(-1); // Toplu Alım (bulk_buy) — sonraki tekliftedki 1 kart -%50
+        // Hava Raporu perki (forecast) — hangi kira döneminde (bkz. CurrentRentPeriod) son kullanıldığı.
+        // -1 = hiç kullanılmadı. Server-writable; gameplay-A'nın EventCalendarUI'sı OnForecastConsumedServer'a
+        // abone olur (bkz. Forecast Hook bölgesi).
+        private readonly NetworkVariable<int> _forecastLastUsedRentPeriod = new(-1);
 
         #endregion
 
         #region Private Fields - Perk State
 
         private bool _pendingBulkBuyDiscount; // server-only: bir sonraki GenerateDailyOfferServer'da tüketilir
+
+        // S3 (2026-09-25): koşu başına bir kez OnNetworkSpawn'da üretilir (server-only), günlük
+        // teklif/reroll RNG'sine katılır — aynı günün İKİ AYRI koşuda aynı 3 kartı vermemesi için.
+        private int _runOfferSeed;
 
         #endregion
 
@@ -469,6 +505,12 @@ namespace NewCss
 
             if (IsServer)
             {
+                // S3 (2026-09-25, plans/her-gun-event-ve-kart-yenileme.md): eskiden teklif RNG'si
+                // yalnız güne göre tohumlanıyordu (deterministik) — aynı günde İKİ AYRI KOŞU aynı
+                // 3 kartı görüyordu. Koşu başına bir kez üretilen bu tohum server-only kalır (offer
+                // sonucu zaten _dailyOffer NetworkList'iyle client'a taşınıyor, host/client aynı
+                // teklifi ayrıca senkron seed'e ihtiyaç duymadan görür — server tek üretici).
+                _runOfferSeed = unchecked(Environment.TickCount ^ Guid.NewGuid().GetHashCode());
                 InitializeUpgradeLevels();
                 GenerateDailyOfferServer();
             }
@@ -653,6 +695,14 @@ namespace NewCss
             // Ö-C fix (2026-09-24) — ApplyLeveragedRent/ApplyAllIn artık bunu yazıyor (perk
             // mutates-persistent-assets dersi: yeni Apply* yazarı eklenince snapshot'ı da tazele).
             public bool GraceDisabled;
+            // gameplay-B (2026-09-25, 6 kapalı kart yeniden tasarımı) — PerkEffect.ApplyGracePlus/
+            // ApplyTipJar/ApplyTicketQueue/ApplyMorningShift/ApplyCooler yeni yazıyor (perk-mutates-
+            // persistent-assets dersi: yeni Apply* yazarı eklenince snapshot'ı da tazele).
+            public int GraceExtraUses;
+            public float TipJarPercent;
+            public bool TicketQueueActive;
+            public int MorningShiftBoxCount;
+            public float NegativeEventDampening;
 
             // Truck prefab (4 alan) — perk-revival SONRASI VESTİGİYEL (yukarıdaki sınıf notuna
             // bkz.): artık hiçbir PerkEffect yolu buraya yazmıyor, capture/restore no-op'a döndü.
@@ -698,6 +748,11 @@ namespace NewCss
                 snap.RewardVolatility = economySettings.rewardVolatility;
                 snap.RewardVolatilityMean = economySettings.rewardVolatilityMean;
                 snap.GraceDisabled = economySettings.graceDisabled;
+                snap.GraceExtraUses = economySettings.graceExtraUses;
+                snap.TipJarPercent = economySettings.tipJarPercent;
+                snap.TicketQueueActive = economySettings.ticketQueueActive;
+                snap.MorningShiftBoxCount = economySettings.morningShiftBoxCount;
+                snap.NegativeEventDampening = economySettings.negativeEventDampening;
             }
             else
             {
@@ -751,6 +806,11 @@ namespace NewCss
                 economySettings.rewardVolatility = snap.RewardVolatility;
                 economySettings.rewardVolatilityMean = snap.RewardVolatilityMean;
                 economySettings.graceDisabled = snap.GraceDisabled;
+                economySettings.graceExtraUses = snap.GraceExtraUses;
+                economySettings.tipJarPercent = snap.TipJarPercent;
+                economySettings.ticketQueueActive = snap.TicketQueueActive;
+                economySettings.morningShiftBoxCount = snap.MorningShiftBoxCount;
+                economySettings.negativeEventDampening = snap.NegativeEventDampening;
             }
 
             if (snap.HasTruck && Truck != null)
@@ -906,6 +966,47 @@ namespace NewCss
             {
                 ActivatePendingUpgradesServerRpc();
                 GenerateDailyOfferServer();
+                SpawnMorningShiftBoxes();
+            }
+        }
+
+        // Sabah Vardiyası perki (morning_shift, gameplay-B 2026-09-25) — gün başına toplam
+        // paketlenmiş kutu sayısı bu tavanın altındaysa boş paketleme masalarına rastgele renkte
+        // hazır kutu spawn eder. docs/economy/her-gun-event-ve-kart-tasarimi-2026-09-24.md §D:
+        // "Raftaki toplam <8 ise eklenir" — burada "raf" = Table.GetAllTables() (paketleme masaları,
+        // NetworkedShelf/ham madde rafı DEĞİL; oyunda ayrı bir "paketlenmiş kutu deposu" sistemi yok,
+        // en yakın eşdeğer paketleme masasının kendisi — bkz. Table.IsItemBoxed).
+        private const int MORNING_SHIFT_MAX_TOTAL_BOXED = 8;
+        private static readonly BoxInfo.BoxType[] MORNING_SHIFT_BOX_TYPES =
+        {
+            BoxInfo.BoxType.Red, BoxInfo.BoxType.Blue, BoxInfo.BoxType.Yellow
+        };
+
+        private void SpawnMorningShiftBoxes()
+        {
+            if (economySettings == null || economySettings.morningShiftBoxCount <= 0) return;
+
+            var tables = Table.GetAllTables();
+            if (tables.Count == 0) return;
+
+            int totalBoxed = 0;
+            var emptyTables = new List<Table>();
+            foreach (var t in tables)
+            {
+                if (t == null) continue;
+                if (t.IsItemBoxed) totalBoxed++;
+                else if (t.CanPlaceItem) emptyTables.Add(t);
+            }
+
+            int toSpawn = economySettings.morningShiftBoxCount;
+            for (int i = 0; i < toSpawn && totalBoxed < MORNING_SHIFT_MAX_TOTAL_BOXED && emptyTables.Count > 0; i++)
+            {
+                int tableIdx = UnityEngine.Random.Range(0, emptyTables.Count);
+                var table = emptyTables[tableIdx];
+                emptyTables.RemoveAt(tableIdx);
+
+                var boxType = MORNING_SHIFT_BOX_TYPES[UnityEngine.Random.Range(0, MORNING_SHIFT_BOX_TYPES.Length)];
+                if (table.TrySpawnReadyBoxServer(boxType)) totalBoxed++;
             }
         }
 
@@ -1340,7 +1441,7 @@ namespace NewCss
             int currentDay = DayCycleManager.Instance != null ? DayCycleManager.Instance.currentDay : 1;
             var eligibility = BuildEligibility(currentDay, out _);
 
-            var rng = new System.Random(unchecked(currentDay * 73856093));
+            var rng = new System.Random(unchecked(_runOfferSeed ^ (currentDay * 73856093)));
             var offer = DraftPool.SelectOffer(eligibility, DraftPool.OFFER_COUNT, rng, BuildExclusionGroups());
 
             _dailyOffer.Clear();
@@ -1530,7 +1631,7 @@ namespace NewCss
             var eligibility = BuildEligibility(currentDay, out _);
 
             // reroll sayacını seed'e kat → farklı sonuç
-            var rng = new System.Random(unchecked((currentDay * 73856093) ^ ((_rerollCountToday.Value + 1) * 19349663)));
+            var rng = new System.Random(unchecked(_runOfferSeed ^ (currentDay * 73856093) ^ ((_rerollCountToday.Value + 1) * 19349663)));
             var offer = DraftPool.SelectOffer(eligibility, DraftPool.OFFER_COUNT, rng, BuildExclusionGroups());
 
             _dailyOffer.Clear();
@@ -1583,14 +1684,72 @@ namespace NewCss
 
         #endregion
 
+        #region Forecast Hook (Hava Raporu — gameplay-A arayüzü)
+
+        /// <summary>
+        /// Hava Raporu perki (forecast, gameplay-B 2026-09-25): kart sahipliği. EventCalendarUI
+        /// buton görünürlüğü için okur.
+        /// </summary>
+        public bool IsForecastCardOwned => GetLevelByEffectId("forecast") > 0;
+
+        /// <summary>Sıfır tabanlı kira dönemi indeksi (gün 1-4 → 0, 5-8 → 1, ...).</summary>
+        private int CurrentRentPeriod
+        {
+            get
+            {
+                if (DayCycleManager.Instance == null) return 0;
+                int interval = DayCycleManager.Instance.RentIntervalDays;
+                if (interval <= 0) return 0;
+                return (DayCycleManager.Instance.currentDay - 1) / interval;
+            }
+        }
+
+        /// <summary>
+        /// Kart sahip VE bu kira döneminde henüz kullanılmadı. EventCalendarUI buton
+        /// interactable durumu için okur.
+        /// </summary>
+        public bool IsForecastAvailableThisPeriod =>
+            IsForecastCardOwned && _forecastLastUsedRentPeriod.Value != CurrentRentPeriod;
+
+        /// <summary>
+        /// GAMEPLAY-A ARAYÜZÜ: takvimdeki Hava Raporu butonu tıklanınca client bunu çağırır
+        /// (server'a ServerRpc ile taşır). Asıl "yarının negatif event'ini pozitif event'le
+        /// değiştir" mantığı BURADA YOK (EventCalendarUI/EventEffectManager dokunulmayan dosyalar) —
+        /// server-side tüketim tamamlanınca <see cref="OnForecastConsumedServer"/> tetiklenir,
+        /// gameplay-A ona abone olup takvim değişikliğini orada uygulamalı.
+        /// </summary>
+        public void RequestUseForecast()
+        {
+            if (!IsForecastAvailableThisPeriod) return;
+            UseForecastServerRpc();
+        }
+
+        /// <summary>
+        /// GAMEPLAY-A ARAYÜZÜ: server-side tüketim (rent-period kilidi) tamamlanınca tetiklenir —
+        /// yalnız server'da anlamlıdır (DayCycleManager.OnNewDay ile aynı desen).
+        /// </summary>
+        public static event Action OnForecastConsumedServer;
+
+        [ServerRpc(RequireOwnership = false)]
+        private void UseForecastServerRpc()
+        {
+            if (!IsForecastAvailableThisPeriod) return;
+            _forecastLastUsedRentPeriod.Value = CurrentRentPeriod;
+            OnForecastConsumedServer?.Invoke();
+        }
+
+        #endregion
+
         #region Rent Reserve Lock (Ö-A)
 
         /// <summary>
         /// Ö-A (docs/economy/ekonomi-sifirdan-2026-09-23.md §4, economist 2026-09-24): kira fonu
         /// kilidi. Kart alımı/reroll SONRASI kasa, sıradaki kiranın economySettings.
-        /// upgradeRentReserveFraction payının altına düşerse alım reddedilir. Acil Fren
-        /// (emergency_brake) muaf — tek kurtarıcı kart, kilitlenirse zayıf takım kurtulamıyor
-        /// (rapor §4: muafiyet olmadan zayıf 2P/3P kaybı %30-55'e çıkıyor).
+        /// upgradeRentReserveFraction payının altına düşerse alım reddedilir.
+        /// RENT_RESERVE_LOCK_EXEMPT_EFFECT_IDS listesindeki kartlar muaf (Acil Fren
+        /// [emergency_brake] — tek kurtarıcı kart, kilitlenirse zayıf takım kurtulamıyor, rapor §4:
+        /// muafiyet olmadan zayıf 2P/3P kaybı %30-55'e çıkıyor — ve Taksit [grace_plus], S1
+        /// 2026-09-25: aynı gerekçeyle, aynı zamanda emergency_brake ile dışlama grubunda).
         /// qa fix (2026-09-24): eskiden DayCycleManager.NextRentAmount okunuyordu — o NV BİLİNÇLİ
         /// OLARAK IsTimeUp'ta donuyor (HUD "Bugün kira!" kozmetik gösterimi için), yani break-room
         /// bekleme penceresinde (kira az önce kesildi, NextDay() henüz çağrılmadı) BAYAT/küçük
@@ -1604,7 +1763,13 @@ namespace NewCss
         private bool WouldViolateRentReserve(int spendAmount, string effectId = null)
         {
             if (economySettings == null) return false;
-            if (string.Equals(effectId, "emergency_brake", StringComparison.OrdinalIgnoreCase)) return false;
+            if (!string.IsNullOrEmpty(effectId))
+            {
+                foreach (var exemptId in RENT_RESERVE_LOCK_EXEMPT_EFFECT_IDS)
+                {
+                    if (string.Equals(effectId, exemptId, StringComparison.OrdinalIgnoreCase)) return false;
+                }
+            }
             if (DayCycleManager.Instance == null) return false;
 
             int nextRent = IsServer
@@ -2113,6 +2278,21 @@ namespace NewCss
         private int GetVisualLevel(int upgradeIndex)
         {
             return upgradeIndex < _visualUpgradeLevels.Count ? _visualUpgradeLevels[upgradeIndex] : 0;
+        }
+
+        /// <summary>
+        /// GAMEPLAY-A ARAYÜZÜ: effectId'ye göre satın alınmış (görsel) seviyeyi döner (bulunamazsa 0).
+        /// Serinlik (cooler) gibi Economy SO alanı olmayan/olan tüm kartların sahiplik sorgusu için.
+        /// </summary>
+        public int GetLevelByEffectId(string effectId)
+        {
+            if (string.IsNullOrEmpty(effectId)) return 0;
+            for (int i = 0; i < upgrades.Count; i++)
+            {
+                if (string.Equals(upgrades[i]?.effectId?.Trim(), effectId, StringComparison.OrdinalIgnoreCase))
+                    return GetVisualLevel(i);
+            }
+            return 0;
         }
 
         private int GetCurrentHour()

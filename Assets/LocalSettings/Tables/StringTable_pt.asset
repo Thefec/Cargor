@@ -333,7 +333,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000032
-    m_Localized: A taxa de surgimento de clientes aumenta em 30%.
+    m_Localized: "Os clientes chegam 35% mais vezes e a paci\xEAncia cai 15%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000033
@@ -341,7 +341,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000034
-    m_Localized: "A paci\xEAncia dos clientes diminui em 30%."
+    m_Localized: "A paci\xEAncia dos clientes cai 40% e chegam 10% mais clientes."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000035
@@ -349,7 +349,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000036
-    m_Localized: "Os caminh\xF5es saem da cena 50% mais devagar."
+    m_Localized: "Os caminh\xF5es demoram o dobro para sair e rendem 10% menos por caixa."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000037
@@ -357,7 +357,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000038
-    m_Localized: A velocidade geral de movimento diminui em 20%.
+    m_Localized: "A velocidade de movimento cai 15% e a de corrida 20%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000039
@@ -365,8 +365,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000040
-    m_Localized: "A resist\xEAncia se regenera 40% mais devagar e a velocidade de
-      corrida cai 30%."
+    m_Localized: "Movimento 10% mais lento, corrida 30% mais lenta; a stamina regenera 40% mais devagar."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000041
@@ -374,7 +373,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000042
-    m_Localized: "Todas as opera\xE7\xF5es incorretas penalizam em dobro."
+    m_Localized: "Todas as opera\xE7\xF5es erradas s\xE3o penalizadas em dobro."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000043
@@ -382,7 +381,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000044
-    m_Localized: 20% mais clientes, mas 30% menos ganhos.
+    m_Localized: "20% mais clientes, mas 30% menos ganhos."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000045
@@ -390,7 +389,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000046
-    m_Localized: "O telefone da recep\xE7\xE3o toca 50% mais vezes."
+    m_Localized: "As chamadas do telefone da recep\xE7\xE3o n\xE3o custam tempo."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000047
@@ -398,7 +397,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000048
-    m_Localized: Ganhe 20% mais dinheiro por entrega.
+    m_Localized: "Ganhe 20% mais dinheiro por entrega."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000049
@@ -406,7 +405,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000050
-    m_Localized: "A paci\xEAncia dos clientes aumenta em 30%."
+    m_Localized: "A paci\xEAncia dos clientes aumenta 50% e todas as penalidades caem pela metade."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000051
@@ -414,7 +413,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000052
-    m_Localized: "Os caminh\xF5es saem da cena 30% mais r\xE1pido."
+    m_Localized: "Os caminh\xF5es saem 50% mais r\xE1pido, rendem 10% mais por caixa e ficam 20% mais tempo no hangar."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000053
@@ -422,9 +421,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000054
-    m_Localized: "Cada caixa entregue corretamente rende 30% extra. Tamb\xE9m traz
-      20% mais clientes, sa\xEDdas de caminh\xE3o 20% mais r\xE1pidas e movimento
-      20% mais r\xE1pido, mas a resist\xEAncia se regenera 20% mais devagar."
+    m_Localized: "As caixas da cor do dia rendem 60% a mais."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000055
@@ -432,7 +429,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000056
-    m_Localized: O custo das melhorias diminui em 20%.
+    m_Localized: "O custo das melhorias cai 30%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000057
@@ -448,7 +445,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000060
-    m_Localized: 10% de chance de as caixas serem perfeitas e renderem 10% a mais.
+    m_Localized: "Hoje todos os clientes pedem 2 itens."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000061
@@ -456,7 +453,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000062
-    m_Localized: Chegam 20% menos clientes.
+    m_Localized: "Chegam 20% menos clientes."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000063
@@ -464,7 +461,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000064
-    m_Localized: "Um b\xF4nus aleat\xF3rio \xE9 ganho no in\xEDcio do dia."
+    m_Localized: "Um b\xF4nus aleat\xF3rio em dinheiro \xE9 ganho no in\xEDcio do dia."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000065
@@ -1626,6 +1623,114 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 144849164114263163
     m_Localized: "Reserva do aluguel"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263164
+    m_Localized: "DIA MONOCROM\xC1TICO"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263165
+    m_Localized: "Todos os caminh\xF5es e clientes querem a \xFAnica cor do dia."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263166
+    m_Localized: "DIA DE MISS\xD5ES"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263167
+    m_Localized: "As recompensas das miss\xF5es conclu\xEDdas (dinheiro + prest\xEDgio) s\xE3o triplicadas."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263168
+    m_Localized: "B\xD4NUS DE PRESSA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263169
+    m_Localized: "Caixas entregues na primeira metade do tempo de hangar de um caminh\xE3o rendem 40% a mais."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263170
+    m_Localized: "MOTORISTAS IMPACIENTES"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263171
+    m_Localized: "Os caminh\xF5es ficam 40% menos tempo no hangar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263172
+    m_Localized: "ONDA DE DEVOLU\xC7\xD5ES"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263173
+    m_Localized: "Os clientes que pedem devolu\xE7\xE3o quase dobram."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263174
+    m_Localized: "GREVE DE FORNECIMENTO"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263175
+    m_Localized: "Chegam 30% menos clientes e os ganhos caem 10%."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263176
+    m_Localized: "REMESSA MISTA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263177
+    m_Localized: "Hoje os caminh\xF5es podem pedir cores misturadas."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263178
+    m_Localized: "Parcelamento"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263179
+    m_Localized: "Uma parcela extra quando voc\xEA n\xE3o consegue pagar o aluguel. As parcelas levam 70% do caixa em vez de 80%."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263180
+    m_Localized: "Pote de gorjetas"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263181
+    m_Localized: "Cada cliente atendido deixa uma gorjeta de 10% (20% no n\xEDvel 2) da recompensa por caixa."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263182
+    m_Localized: "Senha de atendimento"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263183
+    m_Localized: "A paci\xEAncia do cliente s\xF3 come\xE7a a contar no balc\xE3o, n\xE3o na fila."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263184
+    m_Localized: "Turno da manh\xE3"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263185
+    m_Localized: "Cada dia come\xE7a com 1 caixa pronta (2 no n\xEDvel 2) numa mesa livre."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263186
+    m_Localized: "Brisa fresca"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263187
+    m_Localized: "Os efeitos dos eventos negativos s\xE3o reduzidos em 75%."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263188
+    m_Localized: "Previs\xE3o do tempo"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263189
+    m_Localized: "Uma vez por per\xEDodo de aluguel, voc\xEA pode trocar o evento negativo de amanh\xE3 por um positivo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263190
+    m_Localized: "PREVIS\xC3O DO TEMPO"
     m_Metadata:
       m_Items: []
   references:

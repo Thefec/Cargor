@@ -331,7 +331,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000032
-    m_Localized: Le taux d'apparition des clients augmente de 30 %.
+    m_Localized: "Les clients arrivent 35 % plus souvent, la patience baisse de 15 %."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000033
@@ -339,7 +339,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000034
-    m_Localized: La patience des clients diminue de 30 %.
+    m_Localized: "La patience des clients baisse de 40 %, 10 % de clients en plus arrivent."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000035
@@ -347,7 +347,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000036
-    m_Localized: Les camions quittent les lieux 50 % plus lentement.
+    m_Localized: "Les camions mettent deux fois plus de temps \xE0 partir et rapportent 10 % de moins par carton."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000037
@@ -355,7 +355,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000038
-    m_Localized: "La vitesse de d\xE9placement globale diminue de 20 %."
+    m_Localized: "La vitesse de d\xE9placement baisse de 15 % et celle du sprint de 20 %."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000039
@@ -363,8 +363,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000040
-    m_Localized: "L'endurance se r\xE9g\xE9n\xE8re 40 % plus lentement et la vitesse
-      de sprint diminue de 30 %."
+    m_Localized: "D\xE9placement 10 % plus lent, sprint 30 % plus lent ; l'endurance se r\xE9g\xE9n\xE8re 40 % plus lentement."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000041
@@ -372,7 +371,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000042
-    m_Localized: "Toutes les erreurs entra\xEEnent une p\xE9nalit\xE9 doubl\xE9e."
+    m_Localized: "Toutes les erreurs sont p\xE9nalis\xE9es deux fois plus."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000043
@@ -380,7 +379,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000044
-    m_Localized: 20 % de clients en plus, mais 30 % de revenus en moins.
+    m_Localized: "20 % de clients en plus, mais 30 % de gains en moins."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000045
@@ -388,7 +387,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000046
-    m_Localized: "Le t\xE9l\xE9phone de la r\xE9ception sonne 50 % plus souvent."
+    m_Localized: "Les appels du t\xE9l\xE9phone de la r\xE9ception ne co\xFBtent aucun temps."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000047
@@ -396,7 +395,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000048
-    m_Localized: Gagnez 20 % de plus par livraison.
+    m_Localized: "Gagnez 20 % de plus par livraison."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000049
@@ -404,7 +403,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000050
-    m_Localized: La patience des clients augmente de 30 %.
+    m_Localized: "La patience des clients augmente de 50 %, toutes les p\xE9nalit\xE9s sont r\xE9duites de moiti\xE9."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000051
@@ -412,7 +411,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000052
-    m_Localized: Les camions quittent les lieux 30 % plus vite.
+    m_Localized: "Les camions partent 50 % plus vite, rapportent 10 % de plus par carton et restent 20 % plus longtemps au hangar."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000053
@@ -420,10 +419,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000054
-    m_Localized: "Chaque carton correctement livr\xE9 rapporte 30 % de plus. Apporte
-      aussi 20 % de clients en plus, des d\xE9parts de camions 20 % plus rapides
-      et un d\xE9placement 20 % plus rapide, mais l'endurance se r\xE9g\xE9n\xE8re
-      20 % plus lentement."
+    m_Localized: "Les cartons de la couleur du jour rapportent 60 % de plus."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000055
@@ -431,7 +427,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000056
-    m_Localized: "Le co\xFBt des am\xE9liorations diminue de 20 %."
+    m_Localized: "Le co\xFBt des am\xE9liorations baisse de 30 %."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000057
@@ -447,8 +443,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000060
-    m_Localized: 10 % de chances que les cartons soient parfaits et rapportent 10
-      % de plus.
+    m_Localized: "Tous les clients demandent 2 articles aujourd'hui."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000061
@@ -456,7 +451,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000062
-    m_Localized: 20 % de clients en moins arrivent.
+    m_Localized: "20 % de clients en moins arrivent."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000063
@@ -464,7 +459,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000064
-    m_Localized: "Un bonus al\xE9atoire est obtenu au d\xE9but du jour."
+    m_Localized: "Un bonus d'argent al\xE9atoire est gagn\xE9 en d\xE9but de journ\xE9e."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000065
@@ -1642,6 +1637,114 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 144849164114263163
     m_Localized: "R\xE9serve de loyer"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263164
+    m_Localized: "JOURN\xC9E MONOCHROME"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263165
+    m_Localized: "Tous les camions et clients veulent la couleur unique du jour."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263166
+    m_Localized: "JOURN\xC9E DES QU\xCATES"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263167
+    m_Localized: "Les r\xE9compenses des qu\xEAtes termin\xE9es (argent + prestige) sont tripl\xE9es."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263168
+    m_Localized: "PRIME D'URGENCE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263169
+    m_Localized: "Les cartons livr\xE9s pendant la premi\xE8re moiti\xE9 du temps au hangar d'un camion rapportent 40 % de plus."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263170
+    m_Localized: "CHAUFFEURS IMPATIENTS"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263171
+    m_Localized: "Les camions restent 40 % moins longtemps au hangar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263172
+    m_Localized: "VAGUE DE RETOURS"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263173
+    m_Localized: "Le nombre de clients demandant un retour double presque."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263174
+    m_Localized: "GR\xC8VE DES FOURNISSEURS"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263175
+    m_Localized: "30 % de clients en moins et les gains baissent de 10 %."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263176
+    m_Localized: "EXP\xC9DITION MIXTE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263177
+    m_Localized: "Les camions peuvent aujourd'hui demander des couleurs m\xE9lang\xE9es."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263178
+    m_Localized: "Paiement \xE9chelonn\xE9"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263179
+    m_Localized: "Un paiement \xE9chelonn\xE9 suppl\xE9mentaire si tu ne peux pas payer le loyer. Il prend 70 % de ta caisse au lieu de 80 %."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263180
+    m_Localized: "Pot \xE0 pourboires"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263181
+    m_Localized: "Chaque client servi laisse un pourboire de 10 % (20 % au niveau 2) de la r\xE9compense par carton."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263182
+    m_Localized: "Ticket d'attente"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263183
+    m_Localized: "La patience des clients ne commence \xE0 s'\xE9couler qu'au comptoir, pas dans la file."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263184
+    m_Localized: "\xC9quipe du matin"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263185
+    m_Localized: "Chaque journ\xE9e commence avec 1 carton pr\xEAt (2 au niveau 2) sur une table libre."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263186
+    m_Localized: "Brise fra\xEEche"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263187
+    m_Localized: "Les effets des \xE9v\xE9nements n\xE9gatifs sont r\xE9duits de 75 %."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263188
+    m_Localized: "Bulletin m\xE9t\xE9o"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263189
+    m_Localized: "Une fois par p\xE9riode de loyer, tu peux remplacer l'\xE9v\xE9nement n\xE9gatif de demain par un positif."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263190
+    m_Localized: "BULLETIN M\xC9T\xC9O"
     m_Metadata:
       m_Items: []
   references:

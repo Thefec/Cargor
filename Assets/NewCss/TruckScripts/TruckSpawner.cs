@@ -531,7 +531,20 @@ namespace NewCss
             int cargoAmount = Random.Range(GetCargoAmountMin(), GetCargoAmountMaxExclusive());
             int currentDay = DayCycleManager.Instance != null ? DayCycleManager.Instance.currentDay : 0;
 
-            if (currentDay >= PostRentFeatureUnlocks.MIXED_TRUCK_UNLOCK_DAY)
+            // MONOCHROME DAY (§B.6, 2026-09-25): renk torbasını/karışık-tır modunu bypass et, günün
+            // rengini zorla — bu kontrol karışık-tır kontrolünden ÖNCE gelir (gün 13+ olsa bile
+            // Monochrome o günü tek renge çevirir).
+            if (EventEffectManager.Instance != null && EventEffectManager.Instance.TryGetForcedDayColor(out BoxInfo.BoxType forcedColor))
+            {
+                return ToCounts(forcedColor, cargoAmount);
+            }
+
+            // MIXED SHIPMENT (§B "Karışık Sevkiyat", KULLANICI KARARI S5, gün 5-11): gün 13 kilidini
+            // o gün için erken açar.
+            bool mixedUnlocked = currentDay >= PostRentFeatureUnlocks.MIXED_TRUCK_UNLOCK_DAY ||
+                (EventEffectManager.Instance != null && EventEffectManager.Instance.IsMixedShipmentDay());
+
+            if (mixedUnlocked)
             {
                 return GenerateMixedTruckData(cargoAmount);
             }

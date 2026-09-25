@@ -241,8 +241,25 @@ public static class EconomyInvariantCheck
         // Görev Kademesi omurgadır (effectId boş) → displayName ile.
         CheckUpgrade(r, upgrades, "Görev Kademesi",       maxLevel: 2, baseCost: 40,  costStep: 10);
 
+        // gameplay-B (2026-09-25): 6 kapalı kartın yeniden tasarımı —
+        // docs/economy/her-gun-event-ve-kart-tasarimi-2026-09-24.md §D. Hepsi artık effectId
+        // taşıyor (Backbone'lar dahil — displayName eşleşmesi tuzağından kaçınmak için).
+        CheckUpgradeByEffect(r, upgrades, "grace_plus",     maxLevel: 1, baseCost: 60);
+        CheckUpgradeByEffect(r, upgrades, "tip_jar",        maxLevel: 2, baseCost: 80, costStep: 80);
+        CheckUpgradeByEffect(r, upgrades, "ticket_queue",   maxLevel: 1, baseCost: 70);
+        CheckUpgradeByEffect(r, upgrades, "morning_shift",  maxLevel: 2, baseCost: 80, costStep: 80);
+        CheckUpgradeByEffect(r, upgrades, "cooler",         maxLevel: 1, baseCost: 40);
+        CheckUpgradeByEffect(r, upgrades, "forecast",       maxLevel: 1, baseCost: 60);
+
         CheckPerkFlag(r, upgrades, "emergency_brake", expectTier: PerkTier.T1, expectDisabled: null);
-        CheckPerkFlag(r, upgrades, "long_queue",     expectTier: null,          expectDisabled: true);
+        // long_queue artık hiçbir kartın effectId'si değil (Uzun Kuyruk → Hava Raporu/forecast
+        // oldu) — eski "expectDisabled: true" satırı kaldırıldı, forecast kontrolü onun yerine geçti.
+        CheckPerkFlag(r, upgrades, "forecast",       expectTier: PerkTier.T1,   expectDisabled: false);
+        CheckPerkFlag(r, upgrades, "grace_plus",     expectTier: null,          expectDisabled: false);
+        CheckPerkFlag(r, upgrades, "tip_jar",        expectTier: null,          expectDisabled: false);
+        CheckPerkFlag(r, upgrades, "ticket_queue",   expectTier: null,          expectDisabled: false);
+        CheckPerkFlag(r, upgrades, "morning_shift",  expectTier: null,          expectDisabled: false);
+        CheckPerkFlag(r, upgrades, "cooler",         expectTier: null,          expectDisabled: false);
 
         if (!string.IsNullOrEmpty(previouslyOpen) && previouslyOpen != MAIN_SCENE)
         {
@@ -392,13 +409,21 @@ public static class EconomyInvariantCheck
         // ── PERK SIZINTISI ────────────────────────────────────────────────────
         // Bu alanlar PerkEffect tarafından RUNTIME'DA doğrudan yazılıyor ve hiçbir yerde
         // geri alınmıyor. Taban değerden sapmışsa asset kalıcı olarak bozulmuş demektir.
-        r.ExpectPristine("gracePaymentPercent", eco.gracePaymentPercent, 0.8f, "leveraged_rent / all_in");
+        r.ExpectPristine("gracePaymentPercent", eco.gracePaymentPercent, 0.8f, "leveraged_rent / all_in / grace_plus");
         r.ExpectPristine("graceDisabled", eco.graceDisabled ? 1f : 0f, 0f, "leveraged_rent / all_in (Ö-C fix, 2026-09-24)");
         r.ExpectPristine("rentScaledMultiplier", eco.rentScaledMultiplier, 1f, "leveraged_rent");
         r.ExpectPristine("rewardVolatility", eco.rewardVolatility, 0f, "high_volatility");
         r.ExpectPristine("rewardVolatilityMean", eco.rewardVolatilityMean, 1f, "high_volatility");
         r.ExpectPristine("phoneCooldownPerkBonusSeconds", eco.phoneCooldownPerkBonusSeconds, 0f, "phone_line");
         r.ExpectPristine("phoneTimeSkipPerkMultiplier", eco.phoneTimeSkipPerkMultiplier, 1f, "phone_line"); // U4
+        // gameplay-B (2026-09-25) — PerkEffect.ApplyGracePlus/ApplyTipJar/ApplyTicketQueue/
+        // ApplyMorningShift/ApplyCooler runtime'da yazıyor, UpgradePanel.PerkAssetSnapshot
+        // restore ediyor. Taban sapmışsa asset kalıcı bozulmuş demektir.
+        r.ExpectPristine("graceExtraUses", eco.graceExtraUses, 0f, "grace_plus");
+        r.ExpectPristine("tipJarPercent", eco.tipJarPercent, 0f, "tip_jar");
+        r.ExpectPristine("ticketQueueActive", eco.ticketQueueActive ? 1f : 0f, 0f, "ticket_queue");
+        r.ExpectPristine("morningShiftBoxCount", eco.morningShiftBoxCount, 0f, "morning_shift");
+        r.ExpectPristine("negativeEventDampening", eco.negativeEventDampening, 0f, "cooler");
     }
 
     // ── DifficultyManager prefab ──────────────────────────────────────────────

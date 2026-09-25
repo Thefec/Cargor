@@ -331,7 +331,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000032
-    m_Localized: Die Kundenspawnrate steigt um 30 %.
+    m_Localized: "Kunden kommen 35 % h\xE4ufiger, die Geduld sinkt um 15 %."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000033
@@ -339,7 +339,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000034
-    m_Localized: Die Geduld der Kunden sinkt um 30 %.
+    m_Localized: "Die Geduld der Kunden sinkt um 40 %, es kommen 10 % mehr Kunden."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000035
@@ -347,7 +347,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000036
-    m_Localized: LKW verlassen die Szene 50 % langsamer.
+    m_Localized: "LKW brauchen doppelt so lange zum Abfahren und bringen 10 % weniger pro Kiste."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000037
@@ -355,7 +355,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000038
-    m_Localized: Die Bewegungsgeschwindigkeit sinkt insgesamt um 20 %.
+    m_Localized: "Die Bewegungsgeschwindigkeit sinkt um 15 %, die Sprintgeschwindigkeit um 20 %."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000039
@@ -363,8 +363,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000040
-    m_Localized: Ausdauer regeneriert 40 % langsamer und die Sprintgeschwindigkeit
-      sinkt um 30 %.
+    m_Localized: "Bewegung 10 % langsamer, Sprint 30 % langsamer; Ausdauer regeneriert 40 % langsamer."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000041
@@ -380,7 +379,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000044
-    m_Localized: 20 % mehr Kunden, aber 30 % weniger Einnahmen.
+    m_Localized: "20 % mehr Kunden, aber 30 % weniger Einnahmen."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000045
@@ -388,7 +387,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000046
-    m_Localized: "Das Empfangstelefon klingelt 50 % h\xE4ufiger."
+    m_Localized: "Anrufe am Empfangstelefon kosten keine Zeit."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000047
@@ -396,7 +395,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000048
-    m_Localized: Verdiene 20 % mehr Geld pro Lieferung.
+    m_Localized: "Verdiene 20 % mehr Geld pro Lieferung."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000049
@@ -404,7 +403,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000050
-    m_Localized: Die Geduld der Kunden steigt um 30 %.
+    m_Localized: "Die Geduld der Kunden steigt um 50 %, alle Strafen werden halbiert."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000051
@@ -412,7 +411,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000052
-    m_Localized: LKW verlassen die Szene 30 % schneller.
+    m_Localized: "LKW fahren 50 % schneller ab, bringen 10 % mehr pro Kiste und bleiben 20 % l\xE4nger im Hangar."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000053
@@ -420,9 +419,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000054
-    m_Localized: "Jede korrekt gelieferte Kiste bringt zus\xE4tzlich 30 %. Au\xDFerdem
-      20 % mehr Kunden, 20 % schnellere LKW-Abfahrten und 20 % schnellere Bewegung,
-      aber die Ausdauer regeneriert 20 % langsamer."
+    m_Localized: "Kisten in der Farbe des Tages bringen 60 % mehr."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000055
@@ -430,7 +427,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000056
-    m_Localized: Upgrade-Kosten sinken um 20 %.
+    m_Localized: "Die Upgrade-Kosten sinken um 30 %."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000057
@@ -446,7 +443,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000060
-    m_Localized: 10 % Chance, dass Kisten perfekt sind und 10 % mehr einbringen.
+    m_Localized: "Alle Kunden verlangen heute 2 Artikel."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000061
@@ -454,7 +451,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000062
-    m_Localized: 20 % weniger Kunden kommen.
+    m_Localized: "Es kommen 20 % weniger Kunden."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000063
@@ -462,7 +459,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000064
-    m_Localized: "Zuf\xE4lliger Bonus zu Tagesbeginn."
+    m_Localized: "Zu Tagesbeginn gibt es einen zuf\xE4lligen Geldbonus."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000065
@@ -1627,6 +1624,114 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 144849164114263163
     m_Localized: "Mietr\xFCcklage"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263164
+    m_Localized: "EINFARBIGER TAG"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263165
+    m_Localized: "Alle LKW und Kunden wollen heute nur die Farbe des Tages."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263166
+    m_Localized: "AUFTRAGSTAG"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263167
+    m_Localized: "Belohnungen abgeschlossener Auftr\xE4ge (Geld + Prestige) werden verdreifacht."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263168
+    m_Localized: "EILBONUS"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263169
+    m_Localized: "Kisten, die in der ersten H\xE4lfte der Hangarzeit eines LKW geliefert werden, bringen 40 % mehr."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263170
+    m_Localized: "UNGEDULDIGE FAHRER"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263171
+    m_Localized: "LKW bleiben 40 % k\xFCrzer im Hangar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263172
+    m_Localized: "R\xDCCKGABEWELLE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263173
+    m_Localized: "Die Zahl der Kunden mit R\xFCckgaben verdoppelt sich fast."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263174
+    m_Localized: "LIEFERSTREIK"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263175
+    m_Localized: "30 % weniger Kunden kommen und die Einnahmen sinken um 10 %."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263176
+    m_Localized: "GEMISCHTE LIEFERUNG"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263177
+    m_Localized: "LKW k\xF6nnen heute gemischte Farben verlangen."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263178
+    m_Localized: "Ratenzahlung"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263179
+    m_Localized: "Eine zus\xE4tzliche Rate, wenn du die Miete nicht zahlen kannst. Raten nehmen 70 % statt 80 % deines Geldes."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263180
+    m_Localized: "Trinkgeldglas"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263181
+    m_Localized: "Jeder bediente Kunde gibt ein Trinkgeld von 10 % (auf Stufe 2: 20 %) der Kistenbelohnung."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263182
+    m_Localized: "Wartenummer"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263183
+    m_Localized: "Die Geduld der Kunden l\xE4uft erst am Schalter ab, nicht in der Warteschlange."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263184
+    m_Localized: "Fr\xFChschicht"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263185
+    m_Localized: "Jeder Tag beginnt mit 1 fertig gepackten Kiste (auf Stufe 2: 2) auf einem freien Tisch."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263186
+    m_Localized: "K\xFChle Brise"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263187
+    m_Localized: "Negative Ereignisse wirken 75 % schw\xE4cher."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263188
+    m_Localized: "Wetterbericht"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263189
+    m_Localized: "Einmal pro Mietperiode kannst du das negative Ereignis von morgen gegen ein positives tauschen."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263190
+    m_Localized: "WETTERBERICHT"
     m_Metadata:
       m_Items: []
   references:

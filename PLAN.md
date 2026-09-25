@@ -123,6 +123,7 @@ aylardır sessizdi, geri bağlandı. Ayrıca `GetBaseRent` boş-dizi guard'ı, b
 | Dosya | İçerik | Durum |
 |---|---|---|
 | **[plans/devam.md](plans/devam.md)** | Oturum logu — oturum başında ÖNCE bunu oku | 🚧 **canlı — gerçek kaynak** |
+| **[plans/her-gun-event-ve-kart-yenileme.md](plans/her-gun-event-ve-kart-yenileme.md)** | 📅 Kira günü hariç her gün event (tekrarsız, katalog ≥20) + 6 kapalı karta yeni efekt | ✅ **main'de (2026-09-25) — kalan: playtest** |
 | **[plans/tutorial-rewrite.md](plans/tutorial-rewrite.md)** | 🎓 Tutorial sistemi sıfırdan yeniden yazım — klasör birleştirme, adım akışı, kapsam | 🚧 **aktif — dal `feature/tutorial-rewrite`** |
 | **[plans/playtest-checklist.md](plans/playtest-checklist.md)** | 🎮 Tüm açık playtest maddeleri tek listede (A: tek oyuncu · B: 2 istemci + WASD karar tablosu · C: konsol log avı) | 🔴 **bekliyor — kullanıcıda** |
 | **[plans/teknik-borc.md](plans/teknik-borc.md)** | 🧹 Teknik borç envanteri — 2026-08-31 denetim turunun kapanan/açık kalan tüm bulguları, çürütülen şüpheler dahil | 📖 **envanter — iş almadan önce doğrula** |

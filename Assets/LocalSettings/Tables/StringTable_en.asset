@@ -333,7 +333,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000032
-    m_Localized: Customer spawn rate increases by 30%.
+    m_Localized: "Customers arrive 35% more often, patience decreases by 15%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000033
@@ -341,7 +341,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000034
-    m_Localized: Customer patience decreases by 30%.
+    m_Localized: "Customer patience decreases by 40%, 10% more customers arrive."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000035
@@ -349,7 +349,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000036
-    m_Localized: Trucks leave the scene 50% slower.
+    m_Localized: "Trucks take twice as long to leave and earn 10% less per box."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000037
@@ -357,7 +357,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000038
-    m_Localized: Overall movement speed slows down by 20%.
+    m_Localized: "Movement speed decreases by 15% and sprint speed by 20%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000039
@@ -365,7 +365,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000040
-    m_Localized: Stamina regenerates 40% slower and sprint speed decreases by 30%.
+    m_Localized: "Movement speed decreases by 10%, sprint speed by 30%; stamina regenerates 40% slower."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000041
@@ -373,7 +373,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000042
-    m_Localized: All faulty operations penalize double.
+    m_Localized: "All faulty operations are penalized double."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000043
@@ -381,7 +381,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000044
-    m_Localized: 20% more customers, but 30% less earnings.
+    m_Localized: "20% more customers, but 30% less earnings."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000045
@@ -389,7 +389,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000046
-    m_Localized: Outgoing calls skip half as much time.
+    m_Localized: "Reception phone calls don't cost any time."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000047
@@ -397,7 +397,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000048
-    m_Localized: Earn 20% more money per delivery.
+    m_Localized: "Earn 20% more money per delivery."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000049
@@ -405,7 +405,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000050
-    m_Localized: Customer patience increases by 30%.
+    m_Localized: "Customer patience increases by 50%, all penalties are halved."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000051
@@ -413,7 +413,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000052
-    m_Localized: Trucks leave the scene 30% faster.
+    m_Localized: "Trucks leave 50% faster, earn 10% more per box and stay 20% longer in the hangar."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000053
@@ -421,9 +421,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000054
-    m_Localized: Each correct delivered box earns extra 30%. Also brings 20% more
-      customers, 20% faster truck exits and 20% faster movement, but stamina regenerates
-      20% slower.
+    m_Localized: "Boxes in today's color earn 60% more."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000055
@@ -431,7 +429,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000056
-    m_Localized: Upgrade costs decrease by 20%.
+    m_Localized: "Upgrade costs decrease by 30%."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000057
@@ -447,7 +445,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000060
-    m_Localized: 10% chance boxes are perfect and earn 10% more.
+    m_Localized: "All customers request 2 items today."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000061
@@ -455,7 +453,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000062
-    m_Localized: 20% fewer customers arrive.
+    m_Localized: "20% fewer customers arrive."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000063
@@ -463,7 +461,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000064
-    m_Localized: Random bonus is earned at day start.
+    m_Localized: "A random cash bonus is earned at the start of the day."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000065
@@ -1646,6 +1644,114 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 144849164114263163
     m_Localized: "Rent reserve"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263164
+    m_Localized: "MONOCHROME DAY"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263165
+    m_Localized: "All trucks and customers want today's single color."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263166
+    m_Localized: "QUEST DAY"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263167
+    m_Localized: "Completed quest rewards (money + prestige) are tripled."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263168
+    m_Localized: "RUSH BONUS"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263169
+    m_Localized: "Boxes delivered in the first half of a truck's hangar time earn 40% more."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263170
+    m_Localized: "IMPATIENT DRIVERS"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263171
+    m_Localized: "Trucks stay 40% less time in the hangar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263172
+    m_Localized: "RETURN WAVE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263173
+    m_Localized: "Customers requesting a return nearly double."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263174
+    m_Localized: "SUPPLY STRIKE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263175
+    m_Localized: "30% fewer customers arrive and earnings drop by 10%."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263176
+    m_Localized: "MIXED SHIPMENT"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263177
+    m_Localized: "Today's trucks can request mixed colors."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263178
+    m_Localized: "Installment"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263179
+    m_Localized: "One extra installment when you can't pay rent. Installments take 70% of your cash instead of 80%."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263180
+    m_Localized: "Tip Jar"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263181
+    m_Localized: "Every customer you serve leaves a tip worth 10% (20% at level 2) of the box reward."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263182
+    m_Localized: "Ticket Number"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263183
+    m_Localized: "Customer patience only starts ticking once they reach the counter, not while queueing."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263184
+    m_Localized: "Morning Shift"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263185
+    m_Localized: "Each day starts with 1 ready-packed box (2 at level 2) on a free table."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263186
+    m_Localized: "Cool Breeze"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263187
+    m_Localized: "Negative event effects are reduced by 75%."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263188
+    m_Localized: "Weather Forecast"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263189
+    m_Localized: "Once per rent period, you can swap tomorrow's negative event for a positive one."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263190
+    m_Localized: "WEATHER FORECAST"
     m_Metadata:
       m_Items: []
   references:

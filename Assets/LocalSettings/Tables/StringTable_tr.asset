@@ -331,7 +331,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000032
-    m_Localized: "M\xFC\u015Fteri do\u011Fma oran\u0131 %30 artar."
+    m_Localized: "M\xFC\u015Fteriler %35 daha s\u0131k gelir, sab\u0131r %15 azal\u0131r."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000033
@@ -339,7 +339,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000034
-    m_Localized: "M\xFC\u015Fteri sabr\u0131 %30 azal\u0131r."
+    m_Localized: "M\xFC\u015Fteri sabr\u0131 %40 azal\u0131r, %10 daha fazla m\xFC\u015Fteri gelir."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000035
@@ -347,7 +347,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000036
-    m_Localized: "Kamyonlar sahneyi %50 daha yava\u015F terk eder."
+    m_Localized: "T\u0131rlar\u0131n kalk\u0131\u015F\u0131 iki kat uzun s\xFCrer ve kutu ba\u015F\u0131na %10 daha az kazand\u0131r\u0131r."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000037
@@ -355,7 +355,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000038
-    m_Localized: "Genel hareket h\u0131z\u0131 %20 yava\u015Flar."
+    m_Localized: "Hareket h\u0131z\u0131 %15, ko\u015Fu h\u0131z\u0131 %20 azal\u0131r."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000039
@@ -363,8 +363,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000040
-    m_Localized: "Dayan\u0131kl\u0131l\u0131k %40 daha yava\u015F yenilenir ve ko\u015Fu
-      h\u0131z\u0131 %30 azal\u0131r."
+    m_Localized: "Hareket h\u0131z\u0131 %10, ko\u015Fu h\u0131z\u0131 %30 azal\u0131r; dayan\u0131kl\u0131l\u0131k %40 daha yava\u015F yenilenir."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000041
@@ -372,7 +371,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000042
-    m_Localized: "T\xFCm hatalar iki kat ceza al\u0131r."
+    m_Localized: "T\xFCm hatal\u0131 i\u015Flemler iki kat ceza al\u0131r."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000043
@@ -380,7 +379,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000044
-    m_Localized: "%20 fazla m\xFC\u015Fteri, ama %30 az kazan\xE7."
+    m_Localized: "%20 daha fazla m\xFC\u015Fteri gelir ama kazan\xE7 %30 d\xFC\u015Fer."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000045
@@ -388,8 +387,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000046
-    m_Localized: "D\u0131\u015Far\u0131 aramalarda zaman atlamas\u0131 yar\u0131ya
-      iner."
+    m_Localized: "Resepsiyon telefon aramalar\u0131 hi\xE7 zaman kaybettirmez."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000047
@@ -405,7 +403,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000050
-    m_Localized: "M\xFC\u015Fteri sabr\u0131 %30 artar."
+    m_Localized: "M\xFC\u015Fteri sabr\u0131 %50 artar, t\xFCm cezalar yar\u0131ya iner."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000051
@@ -413,7 +411,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000052
-    m_Localized: "Kamyonlar sahneyi %30 daha h\u0131zl\u0131 terk eder."
+    m_Localized: "T\u0131rlar %50 daha h\u0131zl\u0131 kalkar, kutu ba\u015F\u0131na %10 daha fazla kazand\u0131r\u0131r ve hangarda %20 daha uzun kal\u0131r."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000053
@@ -421,10 +419,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000054
-    m_Localized: "Do\u011Fru teslim edilen her kutu %30 ekstra kazan\u0131r. Ayr\u0131ca
-      %20 daha fazla m\xFC\u015Fteri gelir, kamyonlar %20 daha h\u0131zl\u0131 \xE7\u0131kar
-      ve hareket h\u0131z\u0131 %20 artar, ancak dayan\u0131kl\u0131l\u0131k %20
-      daha yava\u015F yenilenir."
+    m_Localized: "G\xFCn\xFCn rengindeki kutular %60 daha fazla kazand\u0131r\u0131r."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000055
@@ -432,7 +427,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000056
-    m_Localized: "Y\xFCkseltme maliyetleri %20 azal\u0131r."
+    m_Localized: "Y\xFCkseltme maliyetleri %30 azal\u0131r."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000057
@@ -448,7 +443,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000060
-    m_Localized: "%10 ihtimalle kutular m\xFCkemmel ve %10 daha fazla kazan\u0131r."
+    m_Localized: "Bug\xFCn t\xFCm m\xFC\u015Fteriler 2 \xFCr\xFCn ister."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000061
@@ -464,7 +459,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000064
-    m_Localized: "G\xFCn ba\u015F\u0131nda rastgele bonus kazan\u0131l\u0131r."
+    m_Localized: "G\xFCn ba\u015F\u0131nda rastgele bir para bonusu kazan\u0131l\u0131r."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000065
@@ -1640,6 +1635,114 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 144849164114263163
     m_Localized: "Kira fonu"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263164
+    m_Localized: "TEK RENK G\xDCN\xDC"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263165
+    m_Localized: "Bug\xFCn t\xFCm t\u0131rlar ve m\xFC\u015Fteriler g\xFCn\xFCn tek rengini istiyor."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263166
+    m_Localized: "G\xD6REV G\xDCN\xDC"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263167
+    m_Localized: "Tamamlanan g\xF6revlerin \xF6d\xFClleri (para + prestij) 3 kat\u0131na \xE7\u0131kar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263168
+    m_Localized: "ACELE PR\u0130M\u0130"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263169
+    m_Localized: "T\u0131r\u0131n hangar s\xFCresinin ilk yar\u0131s\u0131nda teslim edilen kutular %40 daha fazla kazand\u0131r\u0131r."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263170
+    m_Localized: "SABIRSIZ \u015EOF\xD6RLER"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263171
+    m_Localized: "T\u0131rlar hangarda %40 daha az s\xFCre kal\u0131yor."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263172
+    m_Localized: "\u0130ADE DALGASI"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263173
+    m_Localized: "\u0130ade isteyen m\xFC\u015Fteri oran\u0131 neredeyse ikiye katlan\u0131r."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263174
+    m_Localized: "TEDAR\u0130K GREV\u0130"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263175
+    m_Localized: "M\xFC\u015Fteri say\u0131s\u0131 %30 azal\u0131r, kazan\xE7 %10 d\xFC\u015Fer."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263176
+    m_Localized: "KARI\u015EIK SEVK\u0130YAT"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263177
+    m_Localized: "Bug\xFCn t\u0131rlar kar\u0131\u015F\u0131k renk isteyebilir."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263178
+    m_Localized: "Taksit"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263179
+    m_Localized: "Kiray\u0131 \xF6deyemedi\u011Finde 1 ek taksit hakk\u0131. Taksitlerde kasan\u0131n %80'i yerine %70'i al\u0131n\u0131r."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263180
+    m_Localized: "Bah\u015Fi\u015F"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263181
+    m_Localized: "Servis etti\u011Fin her m\xFC\u015Fteri, kutu \xF6d\xFCl\xFCn\xFCn %10'u (2. seviyede %20'si) kadar bah\u015Fi\u015F b\u0131rak\u0131r."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263182
+    m_Localized: "S\u0131ra Numarat\xF6r\xFC"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263183
+    m_Localized: "M\xFC\u015Fterinin sabr\u0131 kuyrukta de\u011Fil, servise al\u0131n\u0131nca i\u015Flemeye ba\u015Flar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263184
+    m_Localized: "Sabah Vardiyas\u0131"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263185
+    m_Localized: "Her g\xFCn ba\u015F\u0131nda bo\u015F bir masaya 1 haz\u0131r kutu (2. seviyede 2 kutu) gelir."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263186
+    m_Localized: "Serinlik"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263187
+    m_Localized: "Olumsuz olaylar\u0131n etkisi %75 hafifler."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263188
+    m_Localized: "Hava Raporu"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263189
+    m_Localized: "Her kira d\xF6neminde bir kez, yar\u0131n\u0131n olumsuz olay\u0131n\u0131 olumlu bir olayla de\u011Fi\u015Ftirebilirsin."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263190
+    m_Localized: "HAVA RAPORU"
     m_Metadata:
       m_Items: []
   references:

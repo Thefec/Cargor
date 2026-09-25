@@ -333,7 +333,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000032
-    m_Localized: "Hitrost prihoda strank se pove\u010Da za 30 %."
+    m_Localized: "Stranke prihajajo 35 % pogosteje, potrpe\u017Eljivost pade za 15 %."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000033
@@ -341,7 +341,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000034
-    m_Localized: "Potrpe\u017Eljivost strank se zmanj\u0161a za 30 %."
+    m_Localized: "Potrpe\u017Eljivost strank pade za 40 %, pride 10 % ve\u010D strank."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000035
@@ -349,7 +349,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000036
-    m_Localized: "Tovornjaki zapustijo prizori\u0161\u010De 50 % po\u010Dasneje."
+    m_Localized: "Tovornjaki potrebujejo dvakrat dlje za odhod in prinesejo 10 % manj na \u0161katlo."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000037
@@ -357,7 +357,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000038
-    m_Localized: "Splo\u0161na hitrost gibanja se zmanj\u0161a za 20 %."
+    m_Localized: "Hitrost gibanja pade za 15 %, hitrost teka pa za 20 %."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000039
@@ -365,8 +365,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000040
-    m_Localized: "Vzdr\u017Eljivost se obnavlja 40 % po\u010Dasneje, hitrost \u0161printa
-      pa se zmanj\u0161a za 30 %."
+    m_Localized: "Gibanje 10 % po\u010Dasnej\u0161e, tek 30 %; vzdr\u017Eljivost se obnavlja 40 % po\u010Dasneje."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000041
@@ -374,7 +373,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000042
-    m_Localized: "Vse napa\u010Dne operacije se kaznujejo dvojno."
+    m_Localized: "Vse napa\u010Dne operacije so kaznovane dvojno."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000043
@@ -382,7 +381,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000044
-    m_Localized: "20 % ve\u010D strank, a 30 % manj zaslu\u017Eka."
+    m_Localized: "20 % ve\u010D strank, a 30 % manj\u0161i zaslu\u017Eek."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000045
@@ -390,7 +389,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000046
-    m_Localized: Telefon na recepciji zvoni 50 % pogosteje.
+    m_Localized: "Klici s telefona na recepciji ne vzamejo ni\u010D \u010Dasa."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000047
@@ -406,7 +405,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000050
-    m_Localized: "Potrpe\u017Eljivost strank se pove\u010Da za 30 %."
+    m_Localized: "Potrpe\u017Eljivost strank se pove\u010Da za 50 %, vse kazni se prepolovijo."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000051
@@ -414,7 +413,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000052
-    m_Localized: "Tovornjaki zapustijo prizori\u0161\u010De 30 % hitreje."
+    m_Localized: "Tovornjaki odidejo 50 % hitreje, prinesejo 10 % ve\u010D na \u0161katlo in ostanejo v hangarju 20 % dlje."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000053
@@ -422,9 +421,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000054
-    m_Localized: "Vsaka pravilno dostavljena \u0161katla prinese dodatnih 30 %. Prinese
-      tudi 20 % ve\u010D strank, 20 % hitrej\u0161e odhode tovornjakov in 20 % hitrej\u0161e
-      gibanje, vendar se vzdr\u017Eljivost obnavlja 20 % po\u010Dasneje."
+    m_Localized: "\u0160katle v barvi dneva prinesejo 60 % ve\u010D."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000055
@@ -432,7 +429,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000056
-    m_Localized: "Stro\u0161ki nadgradenj se zmanj\u0161ajo za 20 %."
+    m_Localized: "Cena nadgradenj pade za 30 %."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000057
@@ -448,7 +445,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000060
-    m_Localized: "10 % mo\u017Enosti, da je \u0161katla popolna in prinese 10 % ve\u010D."
+    m_Localized: "Vse stranke danes zahtevajo 2 izdelka."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000061
@@ -456,7 +453,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000062
-    m_Localized: Prihaja 20 % manj strank.
+    m_Localized: "Pride 20 % manj strank."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000063
@@ -464,7 +461,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000064
-    m_Localized: "Na za\u010Detku dneva se prejme naklju\u010Dni bonus."
+    m_Localized: "Na za\u010Detku dneva dobite naklju\u010Dni denarni bonus."
     m_Metadata:
       m_Items: []
   - m_Id: 30570000000000065
@@ -1626,6 +1623,114 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 144849164114263163
     m_Localized: "Rezerva za najemnino"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263164
+    m_Localized: "ENOBARVNI DAN"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263165
+    m_Localized: "Vsi tovornjaki in stranke danes \u017Eelijo samo barvo dneva."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263166
+    m_Localized: "DAN NALOG"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263167
+    m_Localized: "Nagrade za opravljene naloge (denar + ugled) se potrojijo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263168
+    m_Localized: "BONUS ZA HITROST"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263169
+    m_Localized: "\u0160katle, dostavljene v prvi polovici \u010Dasa tovornjaka v hangarju, prinesejo 40 % ve\u010D."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263170
+    m_Localized: "NESTRPNI VOZNIKI"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263171
+    m_Localized: "Tovornjaki ostanejo v hangarju 40 % manj \u010Dasa."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263172
+    m_Localized: "VAL VRA\u010CIL"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263173
+    m_Localized: "\u0160tevilo strank, ki \u017Eelijo vra\u010Dilo, se skoraj podvoji."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263174
+    m_Localized: "STAVKA DOBAVITELJEV"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263175
+    m_Localized: "Pride 30 % manj strank, zaslu\u017Eek pa pade za 10 %."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263176
+    m_Localized: "ME\u0160ANA PO\u0160ILJKA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263177
+    m_Localized: "Tovornjaki lahko danes zahtevajo me\u0161ane barve."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263178
+    m_Localized: "Obroki"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263179
+    m_Localized: "En dodaten obrok, ko ne more\u0161 pla\u010Dati najemnine. Obroki vzamejo 70 % blagajne namesto 80 %."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263180
+    m_Localized: "Napitnina"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263181
+    m_Localized: "Vsaka postre\u017Eena stranka pusti napitnino v vi\u0161ini 10 % (20 % na 2. stopnji) nagrade za \u0161katlo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263182
+    m_Localized: "Vrstilna \u0161tevilka"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263183
+    m_Localized: "Potrpe\u017Eljivost stranke za\u010Dne te\u010Di \u0161ele pri pultu, ne v vrsti."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263184
+    m_Localized: "Jutranja izmena"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263185
+    m_Localized: "Vsak dan se za\u010Dne z 1 pripravljeno \u0161katlo (2 na 2. stopnji) na prosti mizi."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263186
+    m_Localized: "Hladen vetri\u010D"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263187
+    m_Localized: "U\u010Dinki negativnih dogodkov so za 75 % \u0161ibkej\u0161i."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263188
+    m_Localized: "Vremenska napoved"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263189
+    m_Localized: "Enkrat na obdobje najemnine lahko jutri\u0161nji negativni dogodek zamenja\u0161 s pozitivnim."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 144849164114263190
+    m_Localized: "VREMENSKA NAPOVED"
     m_Metadata:
       m_Items: []
   references:
